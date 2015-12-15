@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/google/go-github/github"
 	"github.com/kyoh86/ghu/gh"
@@ -72,19 +73,22 @@ func main() {
 		sort.Sort(pulls)
 
 		if conf.Methods.PullRequest.List.Header {
-			fmt.Println("#\ttitle\topen\tclose")
+			fmt.Println("#\ttitle\tbase\topen\tmerge\tclose")
 		}
+		now := time.Now()
+		in := func(t *time.Time) string {
+			if t == nil {
+				return "-"
+			}
+			return t.In(now.Location()).Format("01-02 15:04")
+		}
+
 		// TODO :表示する項目の選択をできるようにする
 		for i, request := range pulls.Array {
 			if i > conf.Methods.PullRequest.List.Limit && conf.Methods.PullRequest.List.Limit > 0 {
 				break
 			}
-			var closed string
-			if request.ClosedAt != nil {
-				closed = request.ClosedAt.Format("01-02T15:04")
-			}
-			fmt.Printf("#%d\t%s\t%s\t%s\n", *request.Number, *request.Title, request.CreatedAt.Format("01/02 15:04"), closed)
+			fmt.Printf("#%d\t%s\t%s\t%s\t%s\t%s\n", *request.Number, *request.Title, *request.Base.Ref, in(request.CreatedAt), in(request.MergedAt), in(request.ClosedAt))
 		}
 	}
-
 }
