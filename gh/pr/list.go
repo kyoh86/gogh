@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
 	"github.com/kyoh86/gogh/cl"
 	"github.com/kyoh86/gogh/gh"
@@ -24,8 +25,7 @@ func List(c *kingpin.CmdClause) gh.Command {
 		rowFormat string
 	)
 
-	flags.Owner(c).Required().StringVar(&owner)
-	flags.Repos(c).Required().StringVar(&repos)
+	flags.Repository(c, &owner, &repos)
 
 	flags.Sort(c).EnumVar(&ops.Sort, "closed", "created", "updated", "popularity", "long-running")
 	flags.Direction(c).EnumVar(&ops.Direction, "asc", "desc")
@@ -42,10 +42,12 @@ func List(c *kingpin.CmdClause) gh.Command {
 		`{{.Base.Ref}}`,
 		`{{.CreatedAt | date "01-02 15:04"}}`,
 		`{{.MergedAt | date "01-02 15:04"}}`,
-		`{{.ClosedAt | date "01-02 15:04"}}` + "\n",
-	}, "\t")).StringVar(&rowFormat)
+		`{{.ClosedAt | date "01-02 15:04"}}`,
+	}, "\t") + "\n").StringVar(&rowFormat)
 
 	return func() error {
+		logrus.Debugf("running on %s/%s", owner, repos)
+
 		t := flags.Template()
 		formatter, err := t.Parse(rowFormat)
 		if err != nil {
