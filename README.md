@@ -4,6 +4,8 @@
 
 GOGH; GO GitHub client
 
+![Codeship](https://img.shields.io/codeship/93571bb0-89d4-0133-ce96-7ad65eb0c455.svg)
+
 ## INSTALLATION
 
 ```
