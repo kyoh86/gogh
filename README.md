@@ -5,12 +5,19 @@
 GOGH; GO GitHub client
 
 ![Codeship](https://img.shields.io/codeship/93571bb0-89d4-0133-ce96-7ad65eb0c455.svg)
+[![Build Status](https://drone.io/github.com/kyoh86/gogh/status.png)](https://drone.io/github.com/kyoh86/gogh/latest)
 
 ## INSTALLATION
+
+For Go (golang) developers:
 
 ```
 go get github.com/kyoh86/gogh/...
 ```
+
+For others:
+
+[drone.io](https://drone.io/github.com/kyoh86/gogh/files)
 
 ## USAGE
 
