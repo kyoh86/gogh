@@ -30,7 +30,7 @@ func List(c *kingpin.CmdClause) gh.Command {
 	flags.Sort(c).EnumVar(&ops.Sort, "closed", "created", "updated", "popularity", "long-running")
 	flags.Direction(c).EnumVar(&ops.Direction, "asc", "desc")
 	flags.PerPage(c).IntVar(&ops.PerPage)
-	flags.Page(c).IntVar(&ops.PerPage)
+	flags.Page(c).IntVar(&ops.Page)
 
 	c.Flag("state", "Either open, closed, or all to filter by state").Default("all").EnumVar(&ops.State, "open", "closed", "all")
 	c.Flag("head", "Filter pulls by head user and branch name in the format of user:ref-name").StringVar(&ops.Head)
