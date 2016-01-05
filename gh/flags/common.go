@@ -2,9 +2,14 @@
 package flags
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"os/exec"
 	"regexp"
+	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/tcnksm/go-gitconfig"
@@ -16,6 +21,9 @@ var (
 	currentOwner        string
 	currentRepos        string
 	currentOnce         sync.Once
+
+	headBranch string
+	headOnce   sync.Once
 )
 
 // Running on directory being a GitHub repository, get that owner/repos name
@@ -36,6 +44,30 @@ func getCurrentRepositoryInfo() {
 		currentOwner = *owner
 		currentRepos = *repos
 		logrus.Debugf("CurrentOnRepository: %s/%s", *owner, *repos)
+	})
+}
+
+func getHeadBranchName() {
+	headOnce.Do(func() {
+		var stdout bytes.Buffer
+		cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+		cmd.Stdout = &stdout
+		cmd.Stderr = ioutil.Discard
+
+		err := cmd.Run()
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if waitStatus, ok := exitError.Sys().(syscall.WaitStatus); ok {
+				if waitStatus.ExitStatus() == 1 {
+					logrus.Debug("failed to get `git rev-parse for HEAD`")
+					return
+				}
+			}
+			logrus.Debugf("failed to get `git rev-parse for HEAD`: %s", exitError.Error())
+			return
+		}
+
+		headBranch = strings.TrimRight(stdout.String(), "\n")
+		return
 	})
 }
 
@@ -90,6 +122,16 @@ func Repos(cmd *kingpin.CmdClause) *kingpin.FlagClause {
 	f := cmd.Flag("repos", "Repository name").Short('r')
 	if currentOnRepository {
 		return f.Default(currentRepos)
+	}
+	return f.Required()
+}
+
+// HeadBranch sets flag for head branch name
+func HeadBranch(cmd *kingpin.CmdClause) *kingpin.FlagClause {
+	getHeadBranchName()
+	f := cmd.Flag("head", "The name of the branch where your changes are implemented").Short('h')
+	if headBranch != "" {
+		return f.Default(headBranch)
 	}
 	return f.Required()
 }
