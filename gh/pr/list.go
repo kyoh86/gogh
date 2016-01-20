@@ -14,23 +14,28 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// List pull requests
-func List(c *kingpin.CmdClause) gh.Command {
+// ListCommand pull requests
+func ListCommand(c *kingpin.CmdClause) gh.Command {
 	var (
-		owner string
-		repos string
+		repo gh.Repository
 
 		ops github.PullRequestListOptions
 
 		rowFormat string
 	)
 
-	flags.Repository(c, &owner, &repos)
-
 	flags.Sort(c).EnumVar(&ops.Sort, "closed", "created", "updated", "popularity", "long-running")
 	flags.Direction(c).EnumVar(&ops.Direction, "asc", "desc")
 	flags.PerPage(c).IntVar(&ops.PerPage)
 	flags.Page(c).IntVar(&ops.Page)
+
+	repoFlag := c.Flag("repo", "Repository name").Short('r')
+	if working, ok := gh.WorkingRepository(); ok {
+		repoFlag.Default(working.String())
+	} else {
+		repoFlag.Required()
+	}
+	repoFlag.SetValue(&repo)
 
 	c.Flag("state", "Either open, closed, or all to filter by state").Default("all").EnumVar(&ops.State, "open", "closed", "all")
 	c.Flag("head", "Filter pulls by head user and branch name in the format of user:ref-name").StringVar(&ops.Head)
@@ -46,7 +51,7 @@ func List(c *kingpin.CmdClause) gh.Command {
 	}, "\t") + "\n").StringVar(&rowFormat)
 
 	return func() error {
-		logrus.Debugf("running on %s/%s", owner, repos)
+		logrus.Debugf("running on %s", repo.String())
 
 		t := flags.Template()
 		formatter, err := t.Parse(rowFormat)
@@ -64,7 +69,7 @@ func List(c *kingpin.CmdClause) gh.Command {
 			ops.Sort = ""
 		}
 
-		requests, _, err := client.PullRequests.List(owner, repos, &ops)
+		requests, _, err := client.PullRequests.List(repo.Owner, repo.Repo, &ops)
 		if err != nil {
 			return util.WrapErr("Failed to list up pulls", err)
 		}

@@ -20,11 +20,11 @@ func main() {
 	app := kingpin.New(env.AppName, env.AppDescription).Author(env.Author)
 	prCmd := app.Command("pull-request", "Access for pull-requests").Alias("pr").Alias("pulls")
 	prListCmd := prCmd.Command("list", "List up pull-requests").Alias("ls")
-	prCreateCmd := prCmd.Command("create", "List up pull-requests").Alias("new").Alias("make").Alias("n")
+	prCreateCmd := prCmd.Command("create", "Create a pull-request").Alias("new").Alias("make").Alias("n")
 
 	commands := map[string]gh.Command{}
-	commands[prListCmd.FullCommand()] = pr.List(prListCmd)
-	commands[prCreateCmd.FullCommand()] = pr.Create(prCreateCmd)
+	commands[prListCmd.FullCommand()] = pr.ListCommand(prListCmd)
+	commands[prCreateCmd.FullCommand()] = pr.CreateCommand(prCreateCmd)
 
 	full := kingpin.MustParse(app.Parse(os.Args[1:]))
 	if err := commands[full](); err != nil {
