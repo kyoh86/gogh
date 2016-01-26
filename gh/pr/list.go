@@ -14,7 +14,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// ListCommand pull requests
+// ListCommand will list-up pull requests
 func ListCommand(c *kingpin.CmdClause) gh.Command {
 	var (
 		repo gh.Repository
@@ -41,7 +41,71 @@ func ListCommand(c *kingpin.CmdClause) gh.Command {
 	c.Flag("head", "Filter pulls by head user and branch name in the format of user:ref-name").StringVar(&ops.Head)
 	c.Flag("base", "Filter pulls by base branch name").StringVar(&ops.Base)
 
-	c.Flag("row-format", "Format to output with [gtf](https://github.com/leekchan/gtf)").Default(strings.Join([]string{
+	formatHelpMessage := `
+Format to output with [gtf](https://github.com/leekchan/gtf)
+
+Usable parameters:
+	.Number
+	.State
+	.Title
+	.Body
+	.CreatedAt
+	.UpdatedAt
+	.ClosedAt
+	.MergedAt
+	.User
+		.Login
+		.ID
+		.AvatarURL
+		.HTMLURL
+		.GravatarID
+		.Name
+		.Company
+		.Blog
+		.Location
+		.Email
+		.Hireable
+		.Bio
+		.PublicRepos
+		.PublicGists
+		.Followers
+		.Following
+		.CreatedAt
+		.UpdatedAt
+		.Type
+		.SiteAdmin
+		.TotalPrivateRepos
+		.OwnedPrivateRepos
+		.PrivateGists
+		.DiskUsage
+		.Collaborators
+		.Plan
+	.Merged
+	.Mergeable
+	.MergedBy
+		(has children as same as ".User" property)
+	.Comments
+	.Commits
+	.Additions
+	.Deletions
+	.ChangedFiles
+	.URL
+	.HTMLURL
+	.IssueURL
+	.StatusesURL
+	.DiffURL
+	.PatchURL
+	.Head
+		.Label
+		.Ref
+		.SHA
+	.Base
+		.Label
+		.Ref
+		.SHA
+`
+
+	c.Flag("row-format", formatHelpMessage).Default(strings.Join([]string{
 		`#{{.Number}}`,
 		`{{.Title}}`,
 		`{{.Base.Ref}}`,

@@ -16,6 +16,14 @@ type Configures struct {
 }
 
 var (
+	ConfigurationItemAccessToken = "access-token"
+)
+
+var ConfigureItems = []string{
+	ConfigurationItemAccessToken,
+}
+
+var (
 	// ErrNotUpdated stops `Set` func saving configurations
 	ErrNotUpdated = errors.New("not updated")
 )
