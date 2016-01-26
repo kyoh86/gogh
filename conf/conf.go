@@ -66,8 +66,12 @@ func Set(updater func(Configures) (Configures, error)) error {
 	if err != nil {
 		return err
 	}
-	_, err = file.Write(buf)
-	if err != nil {
+
+	if _, err = file.Seek(0, os.SEEK_SET); err != nil {
+		return err
+	}
+
+	if _, err = file.Write(buf); err != nil {
 		return err
 	}
 
