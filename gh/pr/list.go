@@ -133,10 +133,12 @@ Usable parameters:
 			ops.Sort = ""
 		}
 
+		logrus.Debugf("ops: %v", ops)
 		requests, _, err := client.PullRequests.List(repo.Owner, repo.Repo, &ops)
 		if err != nil {
 			return util.WrapErr("Failed to list up pulls", err)
 		}
+		logrus.Debugf("response: %v", requests)
 
 		pulls := &list{order: order, direction: ops.Direction, array: requests}
 		sort.Sort(pulls)

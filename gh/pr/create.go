@@ -48,6 +48,7 @@ func CreateCommand(c *kingpin.CmdClause) gh.Command {
 		} else {
 			ops.Head = util.StringPtr(head.Owner + ":" + head.Branch)
 		}
+		ops.Base = util.StringPtr(base.String())
 
 		client, err := cl.GitHubClient()
 		if err != nil {
@@ -97,5 +98,8 @@ func (r *BaseBranch) Set(value string) error {
 }
 
 func (r *BaseBranch) String() string {
+	if r.Owner == "" {
+		return r.Branch
+	}
 	return fmt.Sprintf("%s:%s", r.Owner, r.Branch)
 }
