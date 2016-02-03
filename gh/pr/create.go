@@ -67,7 +67,7 @@ func CreateCommand(c *kingpin.CmdClause) gh.Command {
 
 var (
 	// BaseBranchRegexp for text intending a base-branch
-	BaseBranchRegexp = regexp.MustCompile(`^(?P<owner>` + gh.NamePattern + `:)?(?P<branch>` + gh.NamePattern + `)$`)
+	BaseBranchRegexp = regexp.MustCompile(`^(?:(?P<owner>` + gh.NamePattern + `):)?(?P<branch>` + gh.NamePattern + `)$`)
 )
 
 // BaseBranch contains identifier of pull-request target branch: "[owner:]branch"
