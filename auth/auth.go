@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	requiredScopes = map[string]bool{"public_repo": true, "repo": true, "user": true}
+	requiredScopes = map[string]bool{"repo": true, "user": true}
 )
 
 type scopeError struct {
