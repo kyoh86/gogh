@@ -7,10 +7,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
-	"github.com/kyoh86/gogh/cl"
-	"github.com/kyoh86/gogh/gh"
-	"github.com/kyoh86/gogh/gh/flags"
-	"github.com/kyoh86/gogh/util"
+	"github.com/kyoh86/gogh/internal/cl"
+	"github.com/kyoh86/gogh/internal/gh"
+	"github.com/kyoh86/gogh/internal/gh/flags"
+	"github.com/kyoh86/gogh/internal/util"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

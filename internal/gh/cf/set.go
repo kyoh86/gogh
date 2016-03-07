@@ -1,8 +1,8 @@
 package cf
 
 import (
-	"github.com/kyoh86/gogh/conf"
-	"github.com/kyoh86/gogh/gh"
+	"github.com/kyoh86/gogh/internal/conf"
+	"github.com/kyoh86/gogh/internal/gh"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

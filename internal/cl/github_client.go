@@ -2,9 +2,9 @@ package cl
 
 import (
 	"github.com/google/go-github/github"
-	"github.com/kyoh86/gogh/auth"
-	"github.com/kyoh86/gogh/conf"
-	"github.com/kyoh86/gogh/util"
+	"github.com/kyoh86/gogh/internal/auth"
+	"github.com/kyoh86/gogh/internal/conf"
+	"github.com/kyoh86/gogh/internal/util"
 )
 
 // GitHubClient returns client for GitHub or error

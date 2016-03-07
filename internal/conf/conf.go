@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/internal/env"
 )
 
 // Configures for GOGH

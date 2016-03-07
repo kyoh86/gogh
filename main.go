@@ -7,10 +7,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/doloopwhile/logrusltsv"
-	"github.com/kyoh86/gogh/env"
-	"github.com/kyoh86/gogh/gh"
-	"github.com/kyoh86/gogh/gh/cf"
-	"github.com/kyoh86/gogh/gh/pr"
+	"github.com/kyoh86/gogh/internal/env"
+	"github.com/kyoh86/gogh/internal/gh"
+	"github.com/kyoh86/gogh/internal/gh/cf"
+	"github.com/kyoh86/gogh/internal/gh/pr"
 )
 
 func main() {

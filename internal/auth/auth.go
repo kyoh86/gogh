@@ -9,8 +9,8 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/google/go-github/github"
-	"github.com/kyoh86/gogh/env"
-	"github.com/kyoh86/gogh/util"
+	"github.com/kyoh86/gogh/internal/env"
+	"github.com/kyoh86/gogh/internal/util"
 	"github.com/octokit/go-octokit/octokit"
 )
 
