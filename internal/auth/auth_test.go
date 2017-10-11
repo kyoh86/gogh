@@ -1,50 +1,32 @@
 package auth
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestCheckScopes(t *testing.T) {
 	{
-		if err := checkScopes([]string{"public_repo", "repo", "user"}); err != nil {
-			t.Error(err)
-		}
+		assert.NoError(t, checkScopes([]string{"public_repo", "repo", "user"}))
 	}
 	{
 		err := checkScopes([]string{}).(*scopeError)
-		if err == nil {
-			t.Errorf("Expect the err is not nil")
-		}
-		if !err.required["repo"] {
-			t.Errorf("Expect 'repo' is required, but not required")
-		}
-		if !err.required["user"] {
-			t.Errorf("Expect 'user' is required, but not required")
-		}
+		assert.Error(t, err)
+		assert.Contains(t, err.required, "repo")
+		assert.Contains(t, err.required, "user")
 	}
 	{
 		err := checkScopes(nil).(*scopeError)
-		if err == nil {
-			t.Errorf("Expect the err is not nil")
-		}
-		if !err.required["repo"] {
-			t.Errorf("Expect 'repo' is required, but not required")
-		}
-		if !err.required["user"] {
-			t.Errorf("Expect 'user' is required, but not required")
-		}
+		assert.Error(t, err)
+		assert.Contains(t, err.required, "repo")
+		assert.Contains(t, err.required, "user")
 	}
 	{
 		err := checkScopes([]string{"user", "admin"}).(*scopeError)
-		if err == nil {
-			t.Errorf("Expect the err is not nil")
-		}
-		if !err.required["repo"] {
-			t.Errorf("Expect 'repo' is required, but not required")
-		}
-		if err.required["user"] {
-			t.Errorf("Expect 'user' is not more required, but required")
-		}
-		if err.required["admin"] {
-			t.Errorf("Expect 'admin' is not required, but required")
-		}
+		assert.Error(t, err)
+		assert.Contains(t, err.required, "repo")
+		assert.NotContains(t, err.required, "user")
+		assert.NotContains(t, err.required, "admin")
 	}
 }

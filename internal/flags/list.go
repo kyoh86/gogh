@@ -12,12 +12,12 @@ func Direction(cmd *kingpin.CmdClause) *kingpin.FlagClause {
 	return cmd.Flag("direction", "The direction of the sort")
 }
 
-// PerPage sets flag specifies further pages
-func PerPage(cmd *kingpin.CmdClause) *kingpin.FlagClause {
-	return cmd.Flag("per-page", "Specify further pages").Default("30")
+// PageSize sets flag sets a custom page size up to 100
+func PageSize(cmd *kingpin.CmdClause) *kingpin.FlagClause {
+	return cmd.Flag("per-page", "Custom page size up to 100").Default("30")
 }
 
-// Page sets flag sets a custom page size up to 100
+// Page sets flag specifies page number
 func Page(cmd *kingpin.CmdClause) *kingpin.FlagClause {
-	return cmd.Flag("page", "Custom page size up to 100").Default("1")
+	return cmd.Flag("page", "Specify page number").Default("1")
 }

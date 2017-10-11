@@ -1,35 +1,35 @@
-// Package auth defines GitHub authorization
+// Package auth defines GitHub authorization utilities
 package auth
 
 import (
+	"context"
+	"encoding/base64"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
-	"golang.org/x/oauth2"
-
 	"github.com/google/go-github/github"
-	"github.com/kyoh86/gogh/internal/env"
-	"github.com/kyoh86/gogh/internal/util"
-	"github.com/octokit/go-octokit/octokit"
+	"github.com/wacul/ptr"
+	"golang.org/x/oauth2"
 )
 
 var (
-	requiredScopes = map[string]bool{"repo": true, "user": true}
+	requiredScopes = []github.Scope{"repo", "user"}
 )
 
 type scopeError struct {
-	required map[string]bool
+	required []string
 }
 
 func (s *scopeError) Error() string {
-	return strings.Join(util.StringBoolMapKeys(s.required), ",")
+	return strings.Join(s.required, ",")
 }
 
 func checkScopes(scopes []string) error {
-	required := map[string]bool{}
-	for scope := range requiredScopes {
-		required[scope] = true
+	required := map[string]struct{}{}
+	for _, scope := range requiredScopes {
+		required[string(scope)] = struct{}{}
 	}
 	for _, scope := range scopes {
 		delete(required, scope)
@@ -37,41 +37,61 @@ func checkScopes(scopes []string) error {
 	if len(required) == 0 {
 		return nil
 	}
-	return &scopeError{required: required}
+	err := &scopeError{required: make([]string, 0, len(required))}
+	for req := range required {
+		err.required = append(err.required, req)
+	}
+	return err
 }
 
 // NewClient will connect to GitHub with the access-token, and return client
-func NewClient(token string) (*github.Client, error) {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
+func NewClient(oAuthContext context.Context, token string) *github.Client {
+	return github.NewClient(
+		oauth2.NewClient(
+			oAuthContext,
+			oauth2.StaticTokenSource(
+				&oauth2.Token{AccessToken: token},
+			),
+		),
 	)
-	tc := oauth2.NewClient(oauth2.NoContext, ts)
+}
 
-	client := github.NewClient(tc)
-
-	_, res, err := client.Users.Get("me")
+// Validate client authorization.
+func Validate(ctx context.Context, client *github.Client) error {
+	_, res, err := client.Users.Get(ctx, "me")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := checkScopes(strings.Split(res.Header.Get("X-OAuth-Scopes"), ", ")); err != nil {
-		return nil, fmt.Errorf("failed to get client: GOGH needs scopes [%s]", err.Error())
+		return fmt.Errorf("failed to get client: GOGH needs scopes [%s]", err.Error())
 	}
-	return client, nil
+	return nil
+}
+
+type basicAuthTransport struct {
+	Username string
+	Password string
+}
+
+func (b basicAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s",
+		base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s",
+			b.Username, b.Password)))))
+	return http.DefaultTransport.RoundTrip(req)
 }
 
 // Login will connect to GitHub with username and password, and return an access-token
-func Login(user, password string) (token string, err error) {
-	client := octokit.NewClient(octokit.BasicAuth{Login: user, Password: password})
-	u, _ := octokit.AuthorizationsURL.Expand(nil)
-	authorization, res := client.Authorizations(u).Create(octokit.M{
-		"scopes":      util.StringBoolMapKeys(requiredScopes),
-		"note":        fmt.Sprintf("%s; %s", env.AppName, env.AppDescription),
-		"note_url":    env.SiteURL,
-		"fingerprint": time.Now().Format(time.RFC3339Nano),
+func Login(ctx context.Context, user, password string) (token string, err error) {
+	client := github.NewClient(&http.Client{Transport: &basicAuthTransport{}})
+	auth, _, err := client.Authorizations.Create(ctx, &github.AuthorizationRequest{
+		Scopes:      []github.Scope{"repo", "user"},
+		Note:        ptr.String(fmt.Sprintf("%s; %s", "gogh", "GitHub CLI Client")),
+		NoteURL:     ptr.String("https://github.com/kyoh86/gogh"),
+		Fingerprint: ptr.String(time.Now().Format(time.RFC3339Nano)),
 	})
-	if res.HasError() {
-		return "", res
+	if err != nil {
+		return "", err
 	}
-	return authorization.Token, nil
+	return *auth.Token, nil
 }

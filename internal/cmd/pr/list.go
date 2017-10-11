@@ -1,41 +1,35 @@
 package pr
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"sort"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/google/go-github/github"
-	"github.com/kyoh86/gogh/internal/cl"
-	"github.com/kyoh86/gogh/internal/gh"
-	"github.com/kyoh86/gogh/internal/gh/flags"
-	"github.com/kyoh86/gogh/internal/util"
+	"github.com/k0kubun/pp"
+	"github.com/kyoh86/gogh/internal/cmd"
+	"github.com/kyoh86/gogh/internal/flags"
+	"github.com/kyoh86/gogh/internal/repo"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // ListCommand will list-up pull requests
-func ListCommand(c *kingpin.CmdClause) gh.Command {
+func ListCommand(c *kingpin.CmdClause, r *repo.Repository) cmd.Command {
 	var (
-		repo gh.Repository
-
 		ops github.PullRequestListOptions
 
+		separator string
 		rowFormat string
 	)
 
 	flags.Sort(c).EnumVar(&ops.Sort, "closed", "created", "updated", "popularity", "long-running")
 	flags.Direction(c).EnumVar(&ops.Direction, "asc", "desc")
-	flags.PerPage(c).IntVar(&ops.PerPage)
+	flags.PageSize(c).IntVar(&ops.PerPage)
 	flags.Page(c).IntVar(&ops.Page)
-
-	repoFlag := c.Flag("repo", "Repository name").Short('r')
-	if working, ok := gh.WorkingRepository(); ok {
-		repoFlag.Default(working.String())
-	} else {
-		repoFlag.Required()
-	}
-	repoFlag.SetValue(&repo)
 
 	c.Flag("state", "Either open, closed, or all to filter by state").Default("all").EnumVar(&ops.State, "open", "closed", "all")
 	c.Flag("head", "Filter pulls by head user and branch name in the format of user:ref-name").StringVar(&ops.Head)
@@ -105,6 +99,7 @@ Usable parameters:
 		.SHA
 `
 
+	c.Flag("separator", "Separator for each pull-request").Default("\n").StringVar(&separator)
 	c.Flag("row-format", formatHelpMessage).Default(strings.Join([]string{
 		`#{{.Number}}`,
 		`{{.Title}}`,
@@ -112,18 +107,16 @@ Usable parameters:
 		`{{.CreatedAt | date "01-02 15:04"}}`,
 		`{{.MergedAt | date "01-02 15:04"}}`,
 		`{{.ClosedAt | date "01-02 15:04"}}`,
-	}, "\t") + "\n").StringVar(&rowFormat)
+	}, "\t")).StringVar(&rowFormat)
 
-	return func() error {
-		logrus.Debugf("running on %s", repo.String())
-
+	return func(ctx context.Context) error {
 		t := flags.Template()
 		formatter, err := t.Parse(rowFormat)
 		if err != nil {
-			return util.WrapErr("Failed to parse row-format as template", err)
+			return errors.Wrap(err, "failed to parse row-format as template")
 		}
 
-		client, err := cl.GitHubClient()
+		client, err := cmd.GitHubClient()
 		if err != nil {
 			return err
 		}
@@ -133,18 +126,24 @@ Usable parameters:
 			ops.Sort = ""
 		}
 
-		logrus.Debugf("ops: %v", ops)
-		requests, _, err := client.PullRequests.List(repo.Owner, repo.Repo, &ops)
+		id, err := r.Identifier()
 		if err != nil {
-			return util.WrapErr("Failed to list up pulls", err)
+			return err
 		}
-		logrus.Debugf("response: %v", requests)
+
+		logrus.Debugf("ops: %s", pp.Sprint(ops))
+		requests, _, err := client.PullRequests.List(ctx, id.Owner, id.Name, &ops)
+		if err != nil {
+			return errors.Wrap(err, "Failed to list up pulls")
+		}
+		logrus.Debugf("response: %s", pp.Sprint(requests))
 
 		pulls := &list{order: order, direction: ops.Direction, array: requests}
 		sort.Sort(pulls)
 
 		for _, request := range pulls.array {
 			formatter.Execute(os.Stdout, request)
+			fmt.Print(separator)
 		}
 		return nil
 	}
@@ -153,7 +152,7 @@ Usable parameters:
 type list struct {
 	order     string
 	direction string
-	array     []github.PullRequest
+	array     []*github.PullRequest
 }
 
 func (p *list) Len() int {
