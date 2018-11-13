@@ -1,11 +1,12 @@
 # gogh
 
 GO GitHub project manager
+
 ![](./image/gogh.jpg)
 
 ## DESCRIPTION
 
-**`gogh` is based on [ghq](https://github.com/motemen/ghq).**
+**`gogh` is forked from [ghq](https://github.com/motemen/ghq).**
 
 `gogh` provides a way to organize remote repository clones, like `go get` does.
 When you clone a remote repository by `gogh get`, gogh makes a directory under a specific root directory (by default `~/go/src`) using the remote repository URL's host and path.
