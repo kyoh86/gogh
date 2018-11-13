@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 
 	"github.com/alecthomas/kingpin"
@@ -77,69 +78,30 @@ func main() {
 	cmdFork.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&optFork.Organization)
 	cmdFork.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&optFork.RepoSpec)
 
-	cmdNew := app.Command("new", "Create a repository in local and remote.")
-	_ = cmdNew
-	/*TODO: hub create options
-	arg: [[ORGANIZATION/]NAME]
-	-p     Create a private repository.
-
-	-d DESCRIPTION
-	      Use this text as the description of the GitHub repository.
-
-	-h HOMEPAGE
-	      Use this text as the URL of the GitHub repository.
-
-	-o, --browse
-	      Open the new repository in a web browser.
-
-	-c, --copy
-	      Put the URL of the new repository to clipboard instead of printing it.
-
-	[ORGANIZATION/]NAME
-	      The name for the repository on GitHub (default: name of the current working directory).
-
-	      Optionally, create the repository within ORGANIZATION.
-	*/
-	/*TODO: git init options
-	arg: [directory]
-	-q, --quiet
-	    Only print error and warning messages; all other output will be suppressed.
-
-	--bare
-	    Create a bare repository. If GITT_DIR environment is not set, it is set to the current working directory.
-
-	--template=<template_directory>
-	    Specify the directory from which templates will be used. (See the "TEMPLATE DIRECTORY" section below.)
-
-	--separate-git-dir=<git dir>
-	    Instead of initializing the repository as a directory to either $GITT_DIR or ./.git/, create a text file there containing the path to the actual repository. This file acts as filesystem-agnostic Git symbolic link to the repository.
-
-	    If this is reinitialization, the repository will be moved to the specified path.
-
-	--shared[=(false|true|umask|group|all|world|everybody|0xxx)]
-	    Specify that the Git repository is to be shared amongst several users. This allows users belonging to the same group to push into that repository. When specified, the config variable "core.sharedRepository" is set so that files and directories under $GITT_DIR are created with
-	    the requested permissions. When not specified, Git will use permissions reported by umask(2).
-
-	    The option can have the following values, defaulting to _group if no value is given:
-
-	    _umask (or _false)
-	        Use permissions reported by umask(2). The default, when --shared is not specified.
-
-	    _group (or _true)
-	        Make the repository group-writable, (and g+sx, since the git group may be not the primary group of all users). This is used to loosen the permissions of an otherwise safe umask(2) value. Note that the umask still applies to the other permission bits (e.g. if umask is
-	        _002, using _group will not remove read privileges from other (non-group) users). See _0xx for how to exactly specify the repository permissions.
-
-	    _al (or _world or _everybody)
-	        Same as _group, but make the repository readable by all users.
-
-	    _0xx
-	        _0xx is an octal number and each file will have mode _0xx.  _0xx will override users' umask(2) value (and not only loosen permissions as _group and _al does).  _0640 will create a repository which is group-readable, but not group-writable or accessible to others.  _0660
-	        will create a repo that is readable and writable to the current user and group, but inaccessible to others.
-
-	By default, the configuration flag receive.denyNonFastForwards is enabled in shared repositories, so that you cannot force a non fast-forwarding push into it.
-
-	If you provide a _directory, the command is run inside it. If this directory does not exist, it will be created.
-	*/
+	var optNew struct {
+		// hub create options
+		Private        bool
+		Description    string
+		Homepage       *url.URL
+		Browse         bool
+		Copy           bool
+		Bare           bool
+		Template       string
+		SeparateGitDir string
+		Shared         repo.Shared
+		RepoName       repo.Name
+	}
+	cmdNew := app.Command("new", "Create a repository in local and remote.").Alias("create")
+	cmdNew.Flag("private", "Create a private repository").BoolVar(&optNew.Private)
+	cmdNew.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&optNew.Description)
+	cmdNew.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&optNew.Homepage)
+	cmdNew.Flag("browse", "Open the new repository in a web browser").Short('o').BoolVar(&optNew.Browse)
+	cmdNew.Flag("copy", "Put the URL of the new repository to clipboard instead of printing it").Short('c').BoolVar(&optNew.Copy)
+	cmdNew.Flag("bare", "Create a bare repository. If GIT_DIR environment is not set, it is set to the current working directory").BoolVar(&optNew.Bare)
+	cmdNew.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&optNew.Template)
+	cmdNew.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&optNew.SeparateGitDir)
+	cmdNew.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&optNew.Shared)
+	cmdNew.Arg("repository name", "<user>/<name>").Required().SetValue(&optNew.RepoName)
 
 	var optList struct {
 		Exact    bool
@@ -182,6 +144,10 @@ func main() {
 		}
 	case cmdFork.FullCommand():
 		if err := gogh.Fork(optFork.Update, optFork.WithSSH, optFork.Shallow, optFork.NoRemote, optFork.RemoteName, optFork.Organization, optFork.RepoSpec); err != nil {
+			log.Fatal(err)
+		}
+	case cmdNew.FullCommand():
+		if err := gogh.New(optNew.Private, optNew.Description, optNew.Homepage, optNew.Browse, optNew.Copy, optNew.Bare, optNew.Template, optNew.SeparateGitDir, optNew.Shared, optNew.RepoName); err != nil {
 			log.Fatal(err)
 		}
 	case cmdList.FullCommand():

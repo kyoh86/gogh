@@ -6,10 +6,72 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/kyoh86/gogh/internal/git"
 )
+
+var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9])?)/(^[\w-]+)$`)
+
+// var capital = regexp.MustCompile(`[A-Z]`) // UNDONE: warn if name contains capital cases
+
+type Name struct {
+	user string
+	name string
+	text string
+}
+
+type Shared string
+
+var validShared = map[string]struct{}{
+	"false":     struct{}{},
+	"true":      struct{}{},
+	"umask":     struct{}{},
+	"group":     struct{}{},
+	"all":       struct{}{},
+	"world":     struct{}{},
+	"everybody": struct{}{},
+}
+
+func (s *Shared) Set(text string) error {
+	if _, ok := validShared[text]; ok {
+		*s = Shared(text)
+		return nil
+	}
+	if _, err := strconv.ParseInt(text, 8, 8); err == nil {
+		*s = Shared(text)
+		return nil
+	}
+	return fmt.Errorf(`invalid shared value %q; shared can be specified with "false", "true", "umask", "group", "all", "world", "everybody" or "0xxx" (octed value)`, text)
+}
+
+func (s Shared) String() string {
+	return string(s)
+}
+
+func (n *Name) Set(text string) error {
+	matches := validName.FindStringSubmatch(text)
+	if matches == nil {
+		return fmt.Errorf("invalid repository name %q; repository should be specified as <user>/<name>", text)
+	}
+	n.user = matches[1]
+	n.name = matches[2]
+	n.text = text
+	return nil
+}
+
+func (n Name) String() string {
+	return n.text
+}
+
+func (n Name) User() string {
+	return n.user
+}
+
+func (n Name) Name() string {
+	return n.name
+}
 
 type Spec struct {
 	ref   string

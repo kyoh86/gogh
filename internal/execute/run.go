@@ -2,6 +2,7 @@ package execute
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -10,14 +11,24 @@ import (
 
 func Run(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	return RunCommand(cmd)
 }
 
+func RunSilently(command string, args ...string) error {
+	cmd := exec.Command(command, args...)
+	cmd.Stdout = ioutil.Discard
+	cmd.Stderr = ioutil.Discard
+
+	return RunCommand(cmd)
+}
+
 func RunInDir(dir, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = dir
