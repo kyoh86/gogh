@@ -6,6 +6,7 @@ import (
 	"github.com/kyoh86/gogh/repo"
 )
 
+// Root prints a gogh.root
 func Root(all bool) error {
 	if !all {
 		fmt.Println(repo.PrimaryRoot())

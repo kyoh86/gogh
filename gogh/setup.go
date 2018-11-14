@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 )
 
+// Setup shells in shell scipt
+// Usage: eval "$(gogh setup)"
 func Setup(cdFuncName, shell string) error {
 	_, shName := filepath.Split(shell)
 	switch shName {

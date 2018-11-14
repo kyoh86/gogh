@@ -7,40 +7,9 @@ import (
 	"github.com/kyoh86/gogh/repo"
 )
 
+// List local repositories
 func List(exact, fullpath, short, primary bool, query string) error {
-	var filter func(*repo.Local) bool
-	switch {
-	case query == "":
-		if primary {
-			filter = func(repo *repo.Local) bool {
-				return repo.IsInPrimaryRoot()
-			}
-		} else {
-			filter = func(_ *repo.Local) bool {
-				return true
-			}
-		}
-	case exact:
-		if primary {
-			filter = func(repo *repo.Local) bool {
-				return repo.IsInPrimaryRoot() && repo.Matches(query)
-			}
-		} else {
-			filter = func(repo *repo.Local) bool {
-				return repo.Matches(query)
-			}
-		}
-	default:
-		if primary {
-			filter = func(repo *repo.Local) bool {
-				return repo.IsInPrimaryRoot() && strings.Contains(repo.NonHostPath(), query)
-			}
-		} else {
-			filter = func(repo *repo.Local) bool {
-				return strings.Contains(repo.NonHostPath(), query)
-			}
-		}
-	}
+	filter := filterFunc(exact, primary, query)
 
 	repos := []*repo.Local{}
 
@@ -75,6 +44,41 @@ func List(exact, fullpath, short, primary bool, query string) error {
 		}
 	}
 	return nil
+}
+
+func filterFunc(exact, primary bool, query string) func(*repo.Local) bool {
+	switch {
+	case query == "":
+		if primary {
+			return func(repo *repo.Local) bool {
+				return repo.IsInPrimaryRoot()
+			}
+		} else {
+			return func(_ *repo.Local) bool {
+				return true
+			}
+		}
+	case exact:
+		if primary {
+			return func(repo *repo.Local) bool {
+				return repo.IsInPrimaryRoot() && repo.Matches(query)
+			}
+		} else {
+			return func(repo *repo.Local) bool {
+				return repo.Matches(query)
+			}
+		}
+	default:
+		if primary {
+			return func(repo *repo.Local) bool {
+				return repo.IsInPrimaryRoot() && strings.Contains(repo.NonHostPath(), query)
+			}
+		} else {
+			return func(repo *repo.Local) bool {
+				return strings.Contains(repo.NonHostPath(), query)
+			}
+		}
+	}
 }
 
 func shortName(dups map[string]bool, repo *repo.Local) string {

@@ -99,6 +99,7 @@ func nameToPath(name string) (string, error) {
 	return loc.FullPath, nil
 }
 
+// New creates a repository in local and remote.
 func New(
 	private bool,
 	description string,
