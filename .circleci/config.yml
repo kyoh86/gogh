@@ -17,7 +17,7 @@ jobs:
       - checkout
       - run:
           name: take a coverage
-          command: "goverage -coverprofile=coverage.out ./..."
+          command: "go test -coverprofile=coverage.out ./..."
       - run:
           name: upload a coverage
           command: "bash <(curl -s https://codecov.io/bash)"
