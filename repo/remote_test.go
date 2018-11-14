@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kyoh86/gogh/internal/execute"
+	"github.com/kyoh86/gogh/internal/run"
 	. "github.com/onsi/gomega"
 )
 
@@ -44,7 +44,7 @@ func TestNewRepositoryGitHub(t *testing.T) {
 	Expect(repo.IsValid()).To(Equal(true))
 }
 
-func newFakeRunner(dispatch map[string]error) execute.RunFunc {
+func newFakeRunner(dispatch map[string]error) run.RunFunc {
 	return func(cmd *exec.Cmd) error {
 		cmdString := strings.Join(cmd.Args, " ")
 		for cmdPrefix, err := range dispatch {
@@ -80,7 +80,7 @@ func TestNewRepositoryGoogleCode(t *testing.T) {
 	repo, err = NewRepository(parseURL("https://code.google.com/p/git-core"))
 	Expect(err).To(BeNil())
 	Expect(repo.IsValid()).To(Equal(true))
-	execute.CommandRunner = newFakeRunner(map[string]error{
+	run.CommandRunner = newFakeRunner(map[string]error{
 		"git ls-remote": nil,
 	})
 }

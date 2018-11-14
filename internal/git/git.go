@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kyoh86/gogh/internal/execute"
+	"github.com/kyoh86/gogh/internal/run"
 )
 
 func Clone(remote *url.URL, local string, shallow bool) error {
@@ -21,8 +21,8 @@ func Clone(remote *url.URL, local string, shallow bool) error {
 	}
 	args = append(args, remote.String(), local)
 
-	return execute.Run("git", args...)
+	return run.Run("git", args...)
 }
 func Update(local string) error {
-	return execute.RunInDir(local, "git", "pull", "--ff-only")
+	return run.RunInDir(local, "git", "pull", "--ff-only")
 }

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kyoh86/gogh/internal/execute"
+	"github.com/kyoh86/gogh/internal/run"
 	. "github.com/onsi/gomega"
 )
 
@@ -28,7 +28,7 @@ func TestGitBackend(t *testing.T) {
 
 	commands := []*exec.Cmd{}
 	lastCommand := func() *exec.Cmd { return commands[len(commands)-1] }
-	execute.CommandRunner = func(cmd *exec.Cmd) error {
+	run.CommandRunner = func(cmd *exec.Cmd) error {
 		commands = append(commands, cmd)
 		return nil
 	}

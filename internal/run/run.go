@@ -1,4 +1,4 @@
-package execute
+package run
 
 import (
 	"fmt"

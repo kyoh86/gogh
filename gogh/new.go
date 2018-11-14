@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/github/hub/commands"
-	"github.com/kyoh86/gogh/internal/execute"
+	"github.com/kyoh86/gogh/internal/run"
 	"github.com/kyoh86/gogh/repo"
 )
 
@@ -132,8 +132,8 @@ func New(
 	}
 
 	// which yo
-	if err := execute.RunSilently("which", "yo"); err == nil {
-		if err := execute.RunInDir("yo", path); err != nil {
+	if err := run.RunSilently("which", "yo"); err == nil {
+		if err := run.RunInDir("yo", path); err != nil {
 			return err
 		}
 	}
