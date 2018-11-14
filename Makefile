@@ -19,6 +19,9 @@ lint:
 install:
 	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT)" ./...
 
+man:
+	man.sh
+
 seg = patch
 release:
 	git-vertag $(seg)

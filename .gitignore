@@ -1,4 +1,5 @@
 /dist
+/gogh.1
 
 # Binaries for programs and plugins
 *.exe

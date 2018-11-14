@@ -4,7 +4,9 @@ release:
     owner: kyoh86
     name: gogh
 brew:
-  install: bin.install "gogh"
+  install: |
+    bin.install "gogh"
+    man1.install "gogh.1"
   github:
     owner: kyoh86
     name: homebrew-tap
@@ -28,6 +30,8 @@ builds:
   main: .
   ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
   binary: gogh
+  hooks:
+    pre: make man
 archive:
   format: tar.gz
   name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
@@ -40,5 +44,6 @@ archive:
   - README*
   - changelog*
   - CHANGELOG*
+  - gogh.1
 snapshot:
   name_template: SNAPSHOT-{{ .Commit }}
