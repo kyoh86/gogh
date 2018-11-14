@@ -11,7 +11,6 @@ import (
 	"github.com/kyoh86/gogh/repo"
 )
 
-// nolint
 var (
 	version = "snapshot"
 	commit  = "snapshot"
@@ -22,157 +21,181 @@ func main() {
 	log.SetOutput(os.Stderr)
 	app := kingpin.New("gogh", "GO GitHub project manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
 
-	type getParams struct {
-		Update  bool
-		WithSSH bool
-		Shallow bool
+	cmds := map[string]func() error{}
+	for _, f := range []func(*kingpin.Application) (string, func() error){
+		get,
+		bulk,
+		pipe,
+		fork,
+		create,
+		list,
+		find,
+		root,
+		setup,
+	} {
+		key, run := f(app)
+		cmds[key] = run
 	}
-
-	var optGet struct {
-		getParams
-
-		RepoSpecs repo.Specs
+	if err := cmds[kingpin.MustParse(app.Parse(os.Args[1:]))](); err != nil {
+		log.Fatal(err)
 	}
-	cmdGet := app.Command("get", "Clone/sync with a remote repository")
-	cmdGet.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&optGet.Update)
-	cmdGet.Flag("ssh", "Clone with SSH").BoolVar(&optGet.WithSSH)
-	cmdGet.Flag("shallow", "Do a shallow clone").BoolVar(&optGet.Shallow)
-	cmdGet.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&optGet.RepoSpecs)
+}
 
-	var optBulk struct {
-		getParams
+func get(app *kingpin.Application) (string, func() error) {
+	var (
+		update    bool
+		withSSH   bool
+		shallow   bool
+		repoSpecs repo.Specs
+	)
+	cmd := app.Command("get", "Clone/sync with a remote repository")
+	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoSpecs)
+	return cmd.FullCommand(), func() error {
+		return gogh.GetAll(update, withSSH, shallow, repoSpecs)
 	}
-	cmdBulk := app.Command("bulk", "Bulk get repositories specified in stdin")
-	cmdBulk.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&optBulk.Update)
-	cmdBulk.Flag("ssh", "Clone with SSH").BoolVar(&optBulk.WithSSH)
-	cmdBulk.Flag("shallow", "Do a shallow clone").BoolVar(&optBulk.Shallow)
+}
 
-	var optPipe struct {
-		getParams
-
-		Command     string
-		CommandArgs []string
+func bulk(app *kingpin.Application) (string, func() error) {
+	var (
+		update  bool
+		withSSH bool
+		shallow bool
+	)
+	cmd := app.Command("bulk", "Bulk get repositories specified in stdin")
+	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	return cmd.FullCommand(), func() error {
+		return gogh.Bulk(update, withSSH, shallow)
 	}
-	cmdPipe := app.Command("pipe", "Bulk get repositories specified from other command output")
-	cmdPipe.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&optPipe.Update)
-	cmdPipe.Flag("ssh", "Clone with SSH").BoolVar(&optPipe.WithSSH)
-	cmdPipe.Flag("shallow", "Do a shallow clone").BoolVar(&optPipe.Shallow)
-	cmdPipe.Arg("command", "Subcommand calling to get import paths").StringVar(&optPipe.Command)
-	cmdPipe.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&optPipe.CommandArgs)
+}
 
-	var optFork struct {
-		getParams
-
-		NoRemote     bool
-		RemoteName   string
-		Organization string
-
-		RepoSpec repo.Spec
+func pipe(app *kingpin.Application) (string, func() error) {
+	var (
+		update      bool
+		withSSH     bool
+		shallow     bool
+		command     string
+		commandArgs []string
+	)
+	cmd := app.Command("pipe", "Bulk get repositories specified from other command output")
+	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&command)
+	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&commandArgs)
+	return cmd.FullCommand(), func() error {
+		return gogh.Pipe(update, withSSH, shallow, command, commandArgs)
 	}
-	cmdFork := app.Command("fork", "Clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin")
-	cmdFork.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&optFork.Update)
-	cmdFork.Flag("ssh", "Clone with SSH").BoolVar(&optFork.WithSSH)
-	cmdFork.Flag("shallow", "Do a shallow clone").BoolVar(&optFork.Shallow)
-	cmdFork.Flag("no-remote", "Skip adding a git remote for the fork").BoolVar(&optFork.NoRemote)
-	cmdFork.Flag("remote-name", "Set the name for the new git remote").PlaceHolder("REMOTE").StringVar(&optFork.RemoteName)
-	cmdFork.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&optFork.Organization)
-	cmdFork.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&optFork.RepoSpec)
+}
 
-	var optNew struct {
-		// hub create options
-		Private        bool
-		Description    string
-		Homepage       *url.URL
-		Browse         bool
-		Copy           bool
-		Bare           bool
-		Template       string
-		SeparateGitDir string
-		Shared         repo.Shared
-		RepoName       repo.Name
+func fork(app *kingpin.Application) (string, func() error) {
+	var (
+		update       bool
+		withSSH      bool
+		shallow      bool
+		noRemote     bool
+		remoteName   string
+		organization string
+		repoSpec     repo.Spec
+	)
+	cmd := app.Command("fork", "Clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin")
+	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd.Flag("no-remote", "Skip adding a git remote for the fork").BoolVar(&noRemote)
+	cmd.Flag("remote-name", "Set the name for the new git remote").PlaceHolder("REMOTE").StringVar(&remoteName)
+	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
+	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoSpec)
+
+	return cmd.FullCommand(), func() error {
+		return gogh.Fork(update, withSSH, shallow, noRemote, remoteName, organization, repoSpec)
 	}
-	cmdNew := app.Command("new", "Create a repository in local and remote.").Alias("create")
-	cmdNew.Flag("private", "Create a private repository").BoolVar(&optNew.Private)
-	cmdNew.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&optNew.Description)
-	cmdNew.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&optNew.Homepage)
-	cmdNew.Flag("browse", "Open the new repository in a web browser").Short('o').BoolVar(&optNew.Browse)
-	cmdNew.Flag("copy", "Put the URL of the new repository to clipboard instead of printing it").Short('c').BoolVar(&optNew.Copy)
-	cmdNew.Flag("bare", "Create a bare repository. If GIT_DIR environment is not set, it is set to the current working directory").BoolVar(&optNew.Bare)
-	cmdNew.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&optNew.Template)
-	cmdNew.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&optNew.SeparateGitDir)
-	cmdNew.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&optNew.Shared)
-	cmdNew.Arg("repository name", "<user>/<name>").Required().SetValue(&optNew.RepoName)
+}
 
-	var optList struct {
-		Exact    bool
-		FullPath bool
-		Short    bool
-		Primary  bool
-		Query    string
+func create(app *kingpin.Application) (string, func() error) {
+	var (
+		private        bool
+		description    string
+		homepage       *url.URL
+		browse         bool
+		clip           bool
+		bare           bool
+		template       string
+		separateGitDir string
+		shared         repo.Shared
+		repoName       repo.Name
+	)
+	cmd := app.Command("new", "Create a repository in local and remote.").Alias("create")
+	cmd.Flag("private", "Create a private repository").BoolVar(&private)
+	cmd.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&description)
+	cmd.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&homepage)
+	cmd.Flag("browse", "Open the new repository in a web browser").Short('o').BoolVar(&browse)
+	cmd.Flag("copy", "Put the URL of the new repository to clipboard instead of printing it").Short('c').BoolVar(&clip)
+	cmd.Flag("bare", "Create a bare repository. If GIT_DIR environment is not set, it is set to the current working directory").BoolVar(&bare)
+	cmd.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&template)
+	cmd.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&separateGitDir)
+	cmd.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&shared)
+	cmd.Arg("repository name", "<user>/<name>").Required().SetValue(&repoName)
+
+	return cmd.FullCommand(), func() error {
+		return gogh.New(private, description, homepage, browse, clip, bare, template, separateGitDir, shared, repoName)
 	}
-	cmdList := app.Command("list", "List local repositories")
-	cmdList.Flag("exact", "Perform an exact match").Short('e').BoolVar(&optList.Exact)
-	cmdList.Flag("full-path", "Print full paths").Short('f').BoolVar(&optList.FullPath)
-	cmdList.Flag("short", "Print short names").Short('s').BoolVar(&optList.Short)
-	cmdList.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&optList.Primary)
-	cmdList.Arg("query", "Repository name query").StringVar(&optList.Query)
+}
 
-	var optFind struct {
-		Name string
+func list(app *kingpin.Application) (string, func() error) {
+	var (
+		exact    bool
+		fullPath bool
+		short    bool
+		primary  bool
+		query    string
+	)
+	cmd := app.Command("list", "List local repositories")
+	cmd.Flag("exact", "Perform an exact match").Short('e').BoolVar(&exact)
+	cmd.Flag("full-path", "Print full paths").Short('f').BoolVar(&fullPath)
+	cmd.Flag("short", "Print short names").Short('s').BoolVar(&short)
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Arg("query", "Repository name query").StringVar(&query)
+
+	return cmd.FullCommand(), func() error {
+		return gogh.List(exact, fullPath, short, primary, query)
 	}
-	cmdFind := app.Command("find", "Find a path of a local repository")
-	cmdFind.Arg("name", "Target repository name").Required().StringVar(&optFind.Name)
+}
 
-	var optRoot struct {
-		All bool
+func find(app *kingpin.Application) (string, func() error) {
+	var name string
+	cmd := app.Command("find", "Find a path of a local repository")
+	cmd.Arg("name", "Target repository name").Required().StringVar(&name)
+
+	return cmd.FullCommand(), func() error {
+		return gogh.Find(name)
 	}
-	cmdRoot := app.Command("root", "Show repositories' root")
-	cmdRoot.Flag("all", "Show all roots").BoolVar(&optRoot.All)
+}
 
-	var optSetup struct {
-		CdFuncName string
-		Shell      string
+func root(app *kingpin.Application) (string, func() error) {
+	var all bool
+	cmd := app.Command("root", "Show repositories' root")
+	cmd.Flag("all", "Show all roots").BoolVar(&all)
+
+	return cmd.FullCommand(), func() error {
+		return gogh.Root(all)
 	}
-	cmdSetup := app.Command("setup", "Generate shell script to setup gogh").Hidden()
-	cmdSetup.Flag("cd-function-name", "Name of the function to define").Default("gogogh").Hidden().StringVar(&optSetup.CdFuncName)
-	cmdSetup.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&optSetup.Shell)
+}
 
-	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
-	case cmdGet.FullCommand():
-		if err := gogh.GetAll(optGet.Update, optGet.WithSSH, optGet.Shallow, optGet.RepoSpecs); err != nil {
-			log.Fatal(err)
-		}
-	case cmdBulk.FullCommand():
-		if err := gogh.Bulk(optBulk.Update, optBulk.WithSSH, optBulk.Shallow); err != nil {
-			log.Fatal(err)
-		}
-	case cmdPipe.FullCommand():
-		if err := gogh.Pipe(optPipe.Update, optPipe.WithSSH, optPipe.Shallow, optPipe.Command, optPipe.CommandArgs); err != nil {
-			log.Fatal(err)
-		}
-	case cmdFork.FullCommand():
-		if err := gogh.Fork(optFork.Update, optFork.WithSSH, optFork.Shallow, optFork.NoRemote, optFork.RemoteName, optFork.Organization, optFork.RepoSpec); err != nil {
-			log.Fatal(err)
-		}
-	case cmdNew.FullCommand():
-		if err := gogh.New(optNew.Private, optNew.Description, optNew.Homepage, optNew.Browse, optNew.Copy, optNew.Bare, optNew.Template, optNew.SeparateGitDir, optNew.Shared, optNew.RepoName); err != nil {
-			log.Fatal(err)
-		}
-	case cmdList.FullCommand():
-		if err := gogh.List(optList.Exact, optList.FullPath, optList.Short, optList.Primary, optList.Query); err != nil {
-			log.Fatal(err)
-		}
-	case cmdFind.FullCommand():
-		if err := gogh.Find(optFind.Name); err != nil {
-			log.Fatal(err)
-		}
-	case cmdRoot.FullCommand():
-		if err := gogh.Root(optRoot.All); err != nil {
-			log.Fatal(err)
-		}
-	case cmdSetup.FullCommand():
-		if err := gogh.Setup(optSetup.CdFuncName, optSetup.Shell); err != nil {
-			log.Fatal(err)
-		}
+func setup(app *kingpin.Application) (string, func() error) {
+	var (
+		cdFuncName string
+		shell      string
+	)
+	cmd := app.Command("setup", "Generate shell script to setup gogh").Hidden()
+	cmd.Flag("cd-function-name", "Name of the function to define").Default("gogogh").Hidden().StringVar(&cdFuncName)
+	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
+
+	return cmd.FullCommand(), func() error {
+		return gogh.Setup(cdFuncName, shell)
 	}
 }
