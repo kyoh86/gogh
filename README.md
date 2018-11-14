@@ -118,7 +118,9 @@ Local repositories are placed under `gogh.root` with named github.com/*user*/*re
 go get github.com/kyoh86/gogh
 ```
 
-## LICENSE
+# LICENSE
 
-This software is released under the MIT License, see LICENSE.
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](http://www.opensource.org/licenses/MIT)
+
+This software is released under the [MIT License](http://www.opensource.org/licenses/MIT), see LICENSE.
 And this software is based on [ghq](https://github.com/motemen/ghq).
