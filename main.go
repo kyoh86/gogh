@@ -20,7 +20,7 @@ var (
 
 func main() {
 	log.SetOutput(os.Stderr)
-	app := kingpin.New("gogh", "A Project Manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
+	app := kingpin.New("gogh", "GO GitHub project manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
 
 	type getParams struct {
 		Update  bool
