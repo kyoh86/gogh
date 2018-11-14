@@ -4,8 +4,7 @@ release:
     owner: kyoh86
     name: gogh
 brew:
-  install: |
-    bin.install "gogh", "gogogh"
+  install: bin.install "gogh"
   github:
     owner: kyoh86
     name: homebrew-tap
@@ -14,6 +13,10 @@ brew:
     - git
   homepage: https://github.com/kyoh86/gogh
   description: GO GitHub project manager
+  caveats: |
+    To use "gogogh" command to change directory into the project,
+    add the following line to your .bashrc / .zshrc
+      eval "$(gogh setup)"
 builds:
 - goos:
   - linux
@@ -37,6 +40,5 @@ archive:
   - README*
   - changelog*
   - CHANGELOG*
-  - gogogh
 snapshot:
   name_template: SNAPSHOT-{{ .Commit }}

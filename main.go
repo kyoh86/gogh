@@ -129,6 +129,14 @@ func main() {
 	cmdRoot := app.Command("root", "Show repositories' root")
 	cmdRoot.Flag("all", "Show all roots").BoolVar(&optRoot.All)
 
+	var optSetup struct {
+		CdFuncName string
+		Shell      string
+	}
+	cmdSetup := app.Command("setup", "Generate shell script to setup gogh").Hidden()
+	cmdSetup.Flag("cd-function-name", "Name of the function to define").Default("gogogh").Hidden().StringVar(&optSetup.CdFuncName)
+	cmdSetup.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&optSetup.Shell)
+
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case cmdGet.FullCommand():
 		if err := gogh.GetAll(optGet.Update, optGet.WithSSH, optGet.Shallow, optGet.RepoSpecs); err != nil {
@@ -160,6 +168,10 @@ func main() {
 		}
 	case cmdRoot.FullCommand():
 		if err := gogh.Root(optRoot.All); err != nil {
+			log.Fatal(err)
+		}
+	case cmdSetup.FullCommand():
+		if err := gogh.Setup(optSetup.CdFuncName, optSetup.Shell); err != nil {
 			log.Fatal(err)
 		}
 	}
