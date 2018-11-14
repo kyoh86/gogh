@@ -1,0 +1,42 @@
+project_name: gogh
+release:
+  github:
+    owner: kyoh86
+    name: gogh
+brew:
+  install: |
+    bin.install "gogh", "gogogh"
+  github:
+    owner: kyoh86
+    name: homebrew-tap
+  folder: Formula
+  dependencies:
+    - git
+  homepage: https://github.com/kyoh86/gogh
+  description: GO GitHub project manager
+builds:
+- goos:
+  - linux
+  - darwin
+  - windows
+  goarch:
+  - amd64
+  - "386"
+  main: .
+  ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+  binary: gogh
+archive:
+  format: tar.gz
+  name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+  files:
+  - licence*
+  - LICENCE*
+  - license*
+  - LICENSE*
+  - readme*
+  - README*
+  - changelog*
+  - CHANGELOG*
+  - gogogh
+snapshot:
+  name_template: SNAPSHOT-{{ .Commit }}
