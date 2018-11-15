@@ -32,6 +32,22 @@ gogh find (<project>)
 gogh root [--all]
 ```
 
+## INSTALLATION
+
+For Golang developers:
+
+```
+go get github.com/kyoh86/gogh
+```
+
+For [Homebrew](https://brew.sh/) users:
+
+```
+brew tap kyoh86/tap
+brew update
+brew install gogh
+```
+
 ## COMMANDS
 
 ### `get`
@@ -112,10 +128,22 @@ Local repositories are placed under `gogh.root` with named github.com/*user*/*re
   +-- kingpin/
 ```
 
-## INSTALLATION
+## SHELL EXTENTIONS
+
+To be enabled shell extentions (for zsh / bash), set up gogh in your shell-rc file (`.bashrc` / `.zshrc`).
+
+* `gogogh` command
+  * shorthand for `cd $(gogh find <project name>)`
+* auto-completions
 
 ```
-go get github.com/kyoh86/gogh
+eval "$(gogh setup)"
+```
+
+If you want to rename `gogogh` command, specify `--cd-function-name=<NAME>` like below.
+
+```
+eval "$(gogh setup --cd-function-name=foobar)"
 ```
 
 # LICENSE
