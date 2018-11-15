@@ -3,9 +3,12 @@ jobs:
   build:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
-      - image: kyoh86/gotest
+      - image: "kyoh86/gotest:latest-module"
     steps:
       - checkout
+      - run:
+          name: vendor
+          command: "go mod vendor"
       - run:
           name: go test
           command: "go test -race ./..."
@@ -18,7 +21,7 @@ jobs:
   cover:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
-      - image: kyoh86/gotest
+      - image: kyoh86/gotest:latest-module
     steps:
       - attach_workspace:
           at: /go
@@ -31,7 +34,7 @@ jobs:
   lint:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
-      - image: kyoh86/gotest
+      - image: kyoh86/gotest:latest
     steps:
       - attach_workspace:
           at: /go
