@@ -50,10 +50,18 @@ workflows:
   version: 2
   commit:
     jobs:
-      - build
+      - build:
+          branches:
+            only: /.*/
+          tags:
+            only: /.*/
       - lint:
           requires:
             - build
+          branches:
+            only: /.*/
+          tags:
+            only: /.*/
       - release:
           requires:
             - lint
