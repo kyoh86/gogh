@@ -16,24 +16,27 @@ var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9
 
 // var capital = regexp.MustCompile(`[A-Z]`) // UNDONE: warn if name contains capital cases
 
+// Name is the name for the repository like <user>/<name>
 type Name struct {
 	user string
 	name string
 	text string
 }
 
+// Shared notices file shared flag like group, all, everybody, 0766.
 type Shared string
 
 var validShared = map[string]struct{}{
-	"false":     struct{}{},
-	"true":      struct{}{},
-	"umask":     struct{}{},
-	"group":     struct{}{},
-	"all":       struct{}{},
-	"world":     struct{}{},
-	"everybody": struct{}{},
+	"false":     {},
+	"true":      {},
+	"umask":     {},
+	"group":     {},
+	"all":       {},
+	"world":     {},
+	"everybody": {},
 }
 
+// Set text as Shared
 func (s *Shared) Set(text string) error {
 	if _, ok := validShared[text]; ok {
 		*s = Shared(text)
@@ -50,6 +53,7 @@ func (s Shared) String() string {
 	return string(s)
 }
 
+// Set text as Name
 func (n *Name) Set(text string) error {
 	matches := validName.FindStringSubmatch(text)
 	if matches == nil {
@@ -65,20 +69,24 @@ func (n Name) String() string {
 	return n.text
 }
 
+// User is the part of the user in repo name like <user>/<name>.
 func (n Name) User() string {
 	return n.user
 }
 
+// Name is the part of the name in repo name like <user>/<name>.
 func (n Name) Name() string {
 	return n.name
 }
 
+// Spec specifies a repository in the GitHub
 type Spec struct {
 	ref   string
 	https *url.URL
 	ssh   *url.URL
 }
 
+// NewSpec parses ref string as a spacifier for a repository in the GitHub
 func NewSpec(ref string) (*Spec, error) {
 	spec := new(Spec)
 	if err := spec.Set(ref); err != nil {
@@ -87,9 +95,10 @@ func NewSpec(ref string) (*Spec, error) {
 	return spec, nil
 }
 
+// Set text as Spec
 func (s *Spec) Set(ref string) error {
-	if !hasSchemePattern.MatchString(ref) && scpLikeUrlPattern.MatchString(ref) {
-		matched := scpLikeUrlPattern.FindStringSubmatch(ref)
+	if !hasSchemePattern.MatchString(ref) && scpLikeURLPattern.MatchString(ref) {
+		matched := scpLikeURLPattern.FindStringSubmatch(ref)
 		user := matched[1]
 		host := matched[2]
 		path := matched[3]
@@ -125,11 +134,13 @@ func (s *Spec) Set(ref string) error {
 	return nil
 }
 
+// SSHURL will get a URL for a repository with ssh schema
 func (s *Spec) SSHURL() *url.URL {
 	u := *s.ssh
 	return &u
 }
 
+// URL will get a URL for a repository
 func (s *Spec) URL() *url.URL {
 	u := *s.https
 	return &u
@@ -143,7 +154,7 @@ func (s Spec) String() string {
 // ref. http://git-scm.com/docs/git-fetch#_git_urls
 // (golang hasn't supported Perl-like negative look-behind match)
 var hasSchemePattern = regexp.MustCompile("^[^:]+://")
-var scpLikeUrlPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
+var scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
 
 func getUserName() (string, error) {
 	user, err := git.GetOneConf("gogh.user")
@@ -173,6 +184,7 @@ func getUserName() (string, error) {
 // Specs is array of Spec
 type Specs []Spec
 
+// Set will add a text to Specs as a Spec
 func (s *Specs) Set(value string) error {
 	spec := new(Spec)
 	if err := spec.Set(value); err != nil {
@@ -197,6 +209,7 @@ func (s Specs) String() string {
 // IsCumulative : 複数指定可能
 func (s Specs) IsCumulative() bool { return true }
 
+// Remote repository which specified with Spec
 func (s *Spec) Remote(ssh bool) (Remote, error) {
 	url := s.URL()
 	if ssh {
