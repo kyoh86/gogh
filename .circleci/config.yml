@@ -9,12 +9,19 @@ jobs:
       - run:
           name: go test
           command: "go test -race ./..."
+      - persist_to_workspace:
+          root: /go
+          paths:
+            - "src"
+            - "pkg"
+            - "bin"
   cover:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
       - image: kyoh86/gotest
     steps:
-      - checkout
+      - attach_workspace:
+          at: /go
       - run:
           name: take a coverage
           command: "go test -coverprofile=coverage.out ./..."
@@ -26,10 +33,11 @@ jobs:
     docker:
       - image: kyoh86/gotest
     steps:
-      - checkout
+      - attach_workspace:
+          at: /go
       - run:
           name: search lints
-          command: "gometalinter --config /etc/gometalinter/config.json ./... | tee >( reviewdog -f=golint -reporter=github-pr-check )"
+          command: "gometalinter --config /etc/gometalinter/config.json ./... | grep -vFe '../pkg/mod/' | tee >( reviewdog -f=golint -reporter=github-pr-check )"
 
 workflows:
   version: 2
