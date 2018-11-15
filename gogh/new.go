@@ -133,8 +133,8 @@ func New(
 	}
 
 	// which yo
-	if err := run.RunSilently("which", "yo"); err == nil {
-		if err := run.RunInDir("yo", path); err != nil {
+	if err := run.Silently("which", "yo"); err == nil {
+		if err := run.InDir("yo", path); err != nil {
 			return err
 		}
 	}

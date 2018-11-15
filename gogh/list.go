@@ -53,30 +53,27 @@ func filterFunc(exact, primary bool, query string) func(*repo.Local) bool {
 			return func(repo *repo.Local) bool {
 				return repo.IsInPrimaryRoot()
 			}
-		} else {
-			return func(_ *repo.Local) bool {
-				return true
-			}
+		}
+		return func(_ *repo.Local) bool {
+			return true
 		}
 	case exact:
 		if primary {
 			return func(repo *repo.Local) bool {
 				return repo.IsInPrimaryRoot() && repo.Matches(query)
 			}
-		} else {
-			return func(repo *repo.Local) bool {
-				return repo.Matches(query)
-			}
+		}
+		return func(repo *repo.Local) bool {
+			return repo.Matches(query)
 		}
 	default:
 		if primary {
 			return func(repo *repo.Local) bool {
 				return repo.IsInPrimaryRoot() && strings.Contains(repo.NonHostPath(), query)
 			}
-		} else {
-			return func(repo *repo.Local) bool {
-				return strings.Contains(repo.NonHostPath(), query)
-			}
+		}
+		return func(repo *repo.Local) bool {
+			return strings.Contains(repo.NonHostPath(), query)
 		}
 	}
 }

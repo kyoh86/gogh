@@ -27,7 +27,7 @@ func Pipe(update, withSSH, shallow bool, command string, commandArgs []string) e
 	return bulkFromReader(in, update, withSSH, shallow)
 }
 
-// Bulk bulk get repositories specified in stdin.
+// Bulk get repositories specified in stdin.
 func Bulk(update, withSSH, shallow bool) error {
 	return bulkFromReader(os.Stdin, update, withSSH, shallow)
 }

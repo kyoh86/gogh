@@ -8,6 +8,7 @@ import (
 	"github.com/kyoh86/gogh/internal/run"
 )
 
+// Clone git repository
 func Clone(remote *url.URL, local string, shallow bool) error {
 	dir, _ := filepath.Split(local)
 	err := os.MkdirAll(dir, 0755)
@@ -23,6 +24,8 @@ func Clone(remote *url.URL, local string, shallow bool) error {
 
 	return run.Run("git", args...)
 }
+
+// Update pulls changes from remote repository
 func Update(local string) error {
-	return run.RunInDir(local, "git", "pull", "--ff-only")
+	return run.InDir(local, "git", "pull", "--ff-only")
 }

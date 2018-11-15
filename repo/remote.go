@@ -16,15 +16,17 @@ type Remote interface {
 	IsValid() bool
 }
 
-// A GitHubRepository represents a GitHub repository. Impliments Remote.
+// GitHubRepository represents a GitHub repository which implements a interface `Remote`.
 type GitHubRepository struct {
 	url *url.URL
 }
 
+// URL for the GitHub repository
 func (r *GitHubRepository) URL() *url.URL {
 	return r.url
 }
 
+// IsValid checks is the valid GitHub repository identifier valid
 func (r *GitHubRepository) IsValid() bool {
 	if strings.HasPrefix(r.url.Path, "/blog/") {
 		return false
@@ -39,6 +41,7 @@ func (r *GitHubRepository) IsValid() bool {
 	return true
 }
 
+// NewRepository create remote repository identifier from the url
 func NewRepository(url *url.URL) (Remote, error) {
 	if url.Host == "github.com" {
 		return &GitHubRepository{url}, nil

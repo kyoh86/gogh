@@ -212,7 +212,7 @@ func getRoots() ([]string, error) {
 	return rts, nil
 }
 
-// PrimaryRoot returns a first of the root directories to clone respository.
+// PrimaryRoot returns the first one of the root directories to clone repository.
 func PrimaryRoot() (string, error) {
 	rts, err := Roots()
 	if err != nil {
