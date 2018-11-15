@@ -12,12 +12,14 @@ import (
 // Find a path of a local repository
 func Find(name string) error {
 	reposFound := []*repo.Local{}
-	repo.Walk(func(repo *repo.Local) error {
+	if err := repo.Walk(func(repo *repo.Local) error {
 		if repo.Matches(name) {
 			reposFound = append(reposFound, repo)
 		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
 
 	switch len(reposFound) {
 	case 0:

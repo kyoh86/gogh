@@ -221,7 +221,7 @@ func (s *Spec) Remote(ssh bool) (Remote, error) {
 		return nil, err
 	}
 
-	if rmt.IsValid() == false {
+	if !rmt.IsValid() {
 		return nil, fmt.Errorf("Not a valid repository: %s", url)
 	}
 	return rmt, nil

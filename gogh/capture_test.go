@@ -2,7 +2,6 @@ package gogh
 
 import (
 	"io/ioutil"
-	"net/url"
 	"os"
 )
 
@@ -54,14 +53,4 @@ func capture(block func()) (string, string, error) {
 	}
 
 	return string(bufOut), string(bufErr), nil
-}
-
-type _cloneArgs struct {
-	remote  *url.URL
-	local   string
-	shallow bool
-}
-
-type _updateArgs struct {
-	local string
 }

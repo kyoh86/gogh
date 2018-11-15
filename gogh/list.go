@@ -13,14 +13,16 @@ func List(exact, fullpath, short, primary bool, query string) error {
 
 	repos := []*repo.Local{}
 
-	repo.Walk(func(repo *repo.Local) error {
-		if filter(repo) == false {
+	if err := repo.Walk(func(repo *repo.Local) error {
+		if !filter(repo) {
 			return nil
 		}
 
 		repos = append(repos, repo)
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
 
 	if short {
 		// mark duplicated subpath

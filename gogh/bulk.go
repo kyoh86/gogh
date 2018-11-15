@@ -10,7 +10,7 @@ import (
 )
 
 // Pipe handles like `gogh pipe github-list-starred kyoh86` calling `github-list-starred kyoh86` and bulk its output
-func Pipe(update, withSSH, shallow bool, command string, commandArgs []string) error {
+func Pipe(update, withSSH, shallow bool, command string, commandArgs []string) (retErr error) {
 	cmd := exec.Command(command, commandArgs...)
 	cmd.Stderr = os.Stderr
 
@@ -23,7 +23,11 @@ func Pipe(update, withSSH, shallow bool, command string, commandArgs []string) e
 		return err
 	}
 
-	defer cmd.Wait()
+	defer func() {
+		if err := cmd.Wait(); err != nil && retErr == nil {
+			retErr = err
+		}
+	}()
 	return bulkFromReader(in, update, withSSH, shallow)
 }
 

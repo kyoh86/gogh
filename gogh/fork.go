@@ -27,15 +27,9 @@ func Fork(update, withSSH, shallow, noRemote bool, remoteName string, organizati
 		return err
 	}
 	var hubArgs []string
-	if noRemote {
-		hubArgs = append(hubArgs, "--no-remote")
-	}
-	if remoteName != "" {
-		hubArgs = append(hubArgs, "--remote-name", remoteName)
-	}
-	if organization != "" {
-		hubArgs = append(hubArgs, "--organization", organization)
-	}
+	hubArgs = appendIf(hubArgs, "--no-remote", noRemote)
+	hubArgs = appendIfFilled(hubArgs, "--remote-name", remoteName)
+	hubArgs = appendIfFilled(hubArgs, "--organization", organization)
 	// call hub fork
 	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("fork"), commands.NewArgs(hubArgs))

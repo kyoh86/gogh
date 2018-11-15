@@ -17,18 +17,10 @@ func hubInit(
 	directory string,
 ) error {
 	var hubArgs []string
-	if bare {
-		hubArgs = append(hubArgs, "--bare")
-	}
-	if template != "" {
-		hubArgs = append(hubArgs, "--template", template)
-	}
-	if separateGitDir != "" {
-		hubArgs = append(hubArgs, "--separate-git-dir", separateGitDir)
-	}
-	if shared != "" {
-		hubArgs = append(hubArgs, "--shared", shared.String())
-	}
+	hubArgs = appendIf(hubArgs, "--bare", bare)
+	hubArgs = appendIfFilled(hubArgs, "--template", template)
+	hubArgs = appendIfFilled(hubArgs, "--separate-git-dir", separateGitDir)
+	hubArgs = appendIfFilled(hubArgs, "--shared", shared.String())
 	hubArgs = append(hubArgs, directory)
 	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("init"), commands.NewArgs(hubArgs))
@@ -62,17 +54,12 @@ func hubCreate(
 	}()
 
 	var hubArgs []string
-	if private {
-		hubArgs = append(hubArgs, "-p")
-	}
-	if description != "" {
-		hubArgs = append(hubArgs, "-d", description)
-	}
-	if browse {
-		hubArgs = append(hubArgs, "-o")
-	}
-	if clipboard {
-		hubArgs = append(hubArgs, "-c")
+	hubArgs = appendIf(hubArgs, "-p", private)
+	hubArgs = appendIf(hubArgs, "-o", browse)
+	hubArgs = appendIf(hubArgs, "-c", clipboard)
+	hubArgs = appendIfFilled(hubArgs, "-d", description)
+	if homepage != nil {
+		hubArgs = append(hubArgs, "-h", homepage.String())
 	}
 	hubArgs = append(hubArgs, repoName.String())
 	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.

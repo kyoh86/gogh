@@ -40,7 +40,7 @@ jobs:
           at: /go
       - run:
           name: search lints
-          command: "gometalinter --config /etc/gometalinter/config.json ./... | grep -vFe '../pkg/mod/' | tee >( reviewdog -f=golint -reporter=github-pr-check )"
+          command: "gometalinter --config /etc/gometalinter/config.json ./... | tee >( reviewdog -f=golint -reporter=github-pr-check )"
 
 workflows:
   version: 2

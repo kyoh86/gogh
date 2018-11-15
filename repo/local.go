@@ -26,7 +26,7 @@ func FromFullPath(fullPath string) (*Local, error) {
 		return nil, err
 	}
 	for _, root := range rts {
-		if strings.HasPrefix(fullPath, root) == false {
+		if !strings.HasPrefix(fullPath, root) {
 			continue
 		}
 
@@ -139,7 +139,7 @@ func Walk(callback func(*Local) error) error {
 			if err != nil {
 				return err
 			}
-			if info.IsDir() == false {
+			if !info.IsDir() {
 				return nil
 			}
 			if !isVcsDir(path) {

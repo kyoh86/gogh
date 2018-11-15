@@ -34,11 +34,7 @@ func (r *GitHubRepository) IsValid() bool {
 
 	// must be /{user}/{project}/?
 	pathComponents := strings.Split(strings.TrimRight(r.url.Path, "/"), "/")
-	if len(pathComponents) != 3 {
-		return false
-	}
-
-	return true
+	return len(pathComponents) == 3
 }
 
 // NewRepository create remote repository identifier from the url
