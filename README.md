@@ -146,6 +146,25 @@ If you want to rename `gogogh` command, specify `--cd-function-name=<NAME>` like
 eval "$(gogh setup --cd-function-name=foobar)"
 ```
 
+# DEFERENCES TO `ghq`
+
+* `ghq` is too complex for me. That's why I forked this project from it.
+    * `ghq look` runs new shell only to change working directory to a project.
+        * So I cannot back to previous by `cd -`. I need to `exit` to do it.
+        * But `ghq look` says `cd <project to path>` when I run it.
+    * `ghq list --unique` returns a bizarre and complex list when I set multiple root.
+    * `ghq import xxx` needs to setup `ghq.import.xxx` option to specify what command to run.
+    * `ghq.<url>.xxx`...
+        * To support VCSs other than GitHub, configurations are overly complex.
+        * If I want to manage projects in VCSs other than GitHub, I should use other tool, I think so.
+* I wanted to merge functions of [ghq](https://github.com/motemen/ghq) and [hub](https://github.com/github/hub).
+    * `gogh new` creates a new project with make both of local and remote ones.
+        * It calls `git init` and `hub create` in the gogh.root directory.
+    * `gogh fork` clones a remote repository into the gogh.root directory and fork it GitHub (with calling `hub fork`).
+    * But there may be some collision in configurations of **ghq** and **hub**. It offers a challenge for me to resolve them by gogh.
+* (nits) I don't like `github.com/onsi/gomega` and `github.com/urfave/cli`. But I love `github.com/stretchr/testify` and `github.com/alecthomas/kingpin`.
+* (nits) I want gogh to be able to be used as a library (`github.com/kyoh86/gogh/gogh` package).
+
 # LICENSE
 
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](http://www.opensource.org/licenses/MIT)
