@@ -115,14 +115,6 @@ func (repo *Local) Matches(pathQuery string) bool {
 	return false
 }
 
-func (repo *Local) hasDir(rel string) bool {
-	fi, err := os.Stat(filepath.Join(repo.FullPath, rel))
-	if err != nil {
-		return false
-	}
-	return fi.IsDir()
-}
-
 func isVcsDir(path string) bool {
 	_, err := os.Stat(filepath.Join(path, ".git"))
 	return err == nil
