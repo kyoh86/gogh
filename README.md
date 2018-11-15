@@ -1,5 +1,9 @@
 # gogh
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/kyoh86/gogh)](https://goreportcard.com/report/github.com/kyoh86/gogh)
+[![CircleCI](https://img.shields.io/circleci/project/github/kyoh86/gogh.svg)](https://circleci.com/gh/kyoh86/gogh)
+[![Coverage Status](https://img.shields.io/codecov/c/github/kyoh86/gogh.svg)](https://codecov.io/gh/kyoh86/gogh)
+
 GO GitHub project manager
 
 ![](./image/gogh.jpg)
