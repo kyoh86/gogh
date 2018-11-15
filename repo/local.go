@@ -12,12 +12,14 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 )
 
+// Local repository specifier
 type Local struct {
 	FullPath  string
 	RelPath   string
 	PathParts []string
 }
 
+// FromFullPath will get a local repository with a full path to the directory
 func FromFullPath(fullPath string) (*Local, error) {
 	rts, err := Roots()
 	if err != nil {
@@ -39,6 +41,7 @@ func FromFullPath(fullPath string) (*Local, error) {
 	return nil, fmt.Errorf("no repository found for: %s", fullPath)
 }
 
+// FromURL will get a local repository location from remote repository URL
 func FromURL(remote *url.URL) (*Local, error) {
 	pathParts := append(
 		[]string{remote.Host}, strings.Split(remote.Path, "/")...,
@@ -48,13 +51,15 @@ func FromURL(remote *url.URL) (*Local, error) {
 	var rep *Local
 
 	// Find existing repository first
-	Walk(func(repo *Local) error {
+	if err := Walk(func(repo *Local) error {
 		if repo.RelPath == relPath {
 			rep = repo
 			return filepath.SkipDir
 		}
 		return nil
-	})
+	}); err != nil {
+		return nil, err
+	}
 
 	if rep != nil {
 		return rep, nil
@@ -85,10 +90,12 @@ func (repo *Local) Subpaths() []string {
 	return tails
 }
 
+// NonHostPath will get a relative path from its hostname
 func (repo *Local) NonHostPath() string {
 	return strings.Join(repo.PathParts[1:], "/")
 }
 
+// IsInPrimaryRoot check which the repository is in primary root directory for gogh
 func (repo *Local) IsInPrimaryRoot() bool {
 	r, err := PrimaryRoot()
 	if err != nil {
@@ -121,6 +128,7 @@ func isVcsDir(path string) bool {
 	return err == nil
 }
 
+// Walk thorugh local repositories in gogh.root directories
 func Walk(callback func(*Local) error) error {
 	rts, err := Roots()
 	if err != nil {
@@ -154,7 +162,7 @@ func Walk(callback func(*Local) error) error {
 
 var roots []string
 
-// Roots returns ly cloned repositories' root directories.
+// Roots returns cloned repositories' root directories.
 // The root dirs are determined as following:
 //
 //   - If PM_ROOT environment variable is nonempty, use it as the only root dir.
@@ -204,6 +212,7 @@ func getRoots() ([]string, error) {
 	return rts, nil
 }
 
+// PrimaryRoot returns a first of the root directories to clone respository.
 func PrimaryRoot() (string, error) {
 	rts, err := Roots()
 	if err != nil {
