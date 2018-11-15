@@ -1,5 +1,6 @@
 /dist
 /gogh.1
+/vendor
 
 # Binaries for programs and plugins
 *.exe
