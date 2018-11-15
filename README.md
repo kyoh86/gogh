@@ -109,7 +109,7 @@ You may want to specify `$GOPATH/src` as a secondary root (environment variables
 
 ## ENVIRONMENT VARIABLES
 
-### `PM_ROOT`
+### `GOGH_ROOT`
 
 If set to a path, this value is used as the only root directory regardless of other existing `gogh.root` settings.
 

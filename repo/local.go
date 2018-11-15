@@ -157,7 +157,7 @@ var roots []string
 // Roots returns cloned repositories' root directories.
 // The root dirs are determined as following:
 //
-//   - If PM_ROOT environment variable is nonempty, use it as the only root dir.
+//   - If GOGH_ROOT environment variable is nonempty, use it as the only root dir.
 //   - Otherwise, use the result of `git config --get-all gogh.root` as the dirs.
 //   - Otherwise, fallback to the default root, `~/go/src`.
 func Roots() ([]string, error) {
@@ -172,7 +172,7 @@ func Roots() ([]string, error) {
 }
 
 func getRoots() ([]string, error) {
-	envRoot := os.Getenv("PM_ROOT")
+	envRoot := os.Getenv("GOGH_ROOT")
 	if envRoot != "" {
 		return filepath.SplitList(envRoot), nil
 	}
