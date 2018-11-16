@@ -43,6 +43,9 @@ jobs:
       - attach_workspace:
           at: /go
       - run:
+          name: install goreleaser
+          command: "curl -sL https://git.io/goreleaser | bash"
+      - run:
           name: goreleaser
           command: "goreleaser --rm-dist"
 
