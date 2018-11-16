@@ -1,4 +1,4 @@
-.PHONY: test gen lint release
+.PHONY: test gen lint install man release
 
 VERSION := `git vertag get`
 COMMIT  := `git rev-parse HEAD`
@@ -20,7 +20,7 @@ install:
 	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT)" ./...
 
 man:
-	man.sh
+	./man.sh
 
 seg = patch
 release:
