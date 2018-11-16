@@ -38,7 +38,7 @@ jobs:
   release:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
-      image: kyoh86/gotest:latest-module
+      - image: kyoh86/gotest:latest-module
     steps:
       - attach_workspace:
           at: /go
