@@ -128,7 +128,12 @@ func Walk(callback func(*Local) error) error {
 	}
 	for _, root := range rts {
 		if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
+			switch {
+			case err == nil:
+				// noop
+			case os.IsNotExist(err):
+				return nil
+			default:
 				return err
 			}
 			if !info.IsDir() {
@@ -189,10 +194,16 @@ func getRoots() ([]string, error) {
 		rts = []string{filepath.Join(home, "go", "src")}
 	}
 
+PATH_CHECK_LOOP:
 	for i, v := range rts {
 		path := filepath.Clean(v)
 		_, err := os.Stat(path)
-		if err != nil {
+		switch {
+		case err == nil:
+			// noop
+		case os.IsNotExist(err):
+			continue PATH_CHECK_LOOP
+		default:
 			return nil, err
 		}
 		rts[i], err = filepath.EvalSymlinks(path)
