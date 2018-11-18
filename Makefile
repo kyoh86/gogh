@@ -22,6 +22,9 @@ install:
 man:
 	./man.sh
 
+e2e:
+	circleci local execute --job e2e --volume $(PWD):/go/src/github.com/kyoh86/gogh
+
 seg = patch
 release:
 	git-vertag $(seg)

@@ -15,16 +15,13 @@ jobs:
       - run:
           name: go test and take coverage
           command: "go test -race -coverprofile=coverage.out ./..."
-      - run:
-          name: upload a coverage
-          command: "bash <(curl -s https://codecov.io/bash)"
       - persist_to_workspace:
           root: /go
           paths:
             - "src"
             - "pkg"
             - "bin"
-  lint:
+  lint-and-cover:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
       - image: kyoh86/gotest:latest
@@ -32,8 +29,52 @@ jobs:
       - attach_workspace:
           at: /go
       - run:
+          name: upload a coverage
+          command: "bash <(curl -s https://codecov.io/bash)"
+      - run:
           name: search lints
           command: "gometalinter --config /etc/gometalinter/config.json ./... | tee >( reviewdog -f=golint -reporter=github-pr-check )"
+
+  e2e:
+    working_directory: /go/src/github.com/kyoh86/gogh
+    docker:
+      - image: golang
+    environment:
+      USER: kyoh86
+      SHELL: bash
+    steps:
+      - attach_workspace:
+          at: /go
+      - run:
+          name: check current path
+          command: "pwd"
+      - run:
+          name: check files
+          command: "ls -la"
+      - run:
+          name: install
+          command: "go install ./..."
+      - run:
+          name: gogh root
+          command: "gogh root"
+      - run:
+          name: gogh setup
+          command: "gogh setup"
+      - run:
+          name: gogh list
+          command: "gogh list"
+      - run:
+          name: gogh get
+          command: "gogh get kyoh86/github-tryout1"
+      - run:
+          name: gogh bulk
+          command: "echo kyoh86/github-tryout2 | gogh bulk"
+      - run:
+          name: gogh pipe
+          command: "gogh pipe echo kyoh86/github-tryout3"
+      - run:
+          name: gogh find
+          command: "gogh find github-tryout1"
 
   release:
     working_directory: /go/src/github.com/kyoh86/gogh
@@ -56,7 +97,7 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-      - lint:
+      - lint-and-cover:
           requires:
             - build
           filters:
@@ -66,7 +107,8 @@ workflows:
               only: /.*/
       - release:
           requires:
-            - lint
+            - build
+            - lint-and-cover
           filters:
             branches:
               ignore: /.*/
