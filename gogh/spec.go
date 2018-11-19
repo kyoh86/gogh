@@ -1,23 +1,19 @@
-package repo
+package gogh
 
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
-
-	"github.com/kyoh86/gogh/internal/git"
 )
 
 var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9])?)/(^[\w-]+)$`)
 
 // var capital = regexp.MustCompile(`[A-Z]`) // UNDONE: warn if name contains capital cases
 
-// Name is the name for the repository like <user>/<name>
-type Name struct {
+// RepoName is the name for the repository like <user>/<name>
+type RepoName struct {
 	user string
 	name string
 	text string
@@ -53,8 +49,8 @@ func (s Shared) String() string {
 	return string(s)
 }
 
-// Set text as Name
-func (n *Name) Set(text string) error {
+// Set text as RepoName
+func (n *RepoName) Set(text string) error {
 	matches := validName.FindStringSubmatch(text)
 	if matches == nil {
 		return fmt.Errorf("invalid repository name %q; repository should be specified as <user>/<name>", text)
@@ -65,38 +61,37 @@ func (n *Name) Set(text string) error {
 	return nil
 }
 
-func (n Name) String() string {
+func (n RepoName) String() string {
 	return n.text
 }
 
 // User is the part of the user in repo name like <user>/<name>.
-func (n Name) User() string {
+func (n RepoName) User() string {
 	return n.user
 }
 
 // Name is the part of the name in repo name like <user>/<name>.
-func (n Name) Name() string {
+func (n RepoName) Name() string {
 	return n.name
 }
 
-// Spec specifies a repository in the GitHub
-type Spec struct {
-	ref   string
-	https *url.URL
-	ssh   *url.URL
+// RepoSpec specifies a repository in the GitHub
+type RepoSpec struct {
+	ref    string
+	refURL url.URL
 }
 
 // NewSpec parses ref string as a spacifier for a repository in the GitHub
-func NewSpec(ref string) (*Spec, error) {
-	spec := new(Spec)
+func NewSpec(ref string) (*RepoSpec, error) {
+	spec := new(RepoSpec)
 	if err := spec.Set(ref); err != nil {
 		return nil, err
 	}
 	return spec, nil
 }
 
-// Set text as Spec
-func (s *Spec) Set(ref string) error {
+// Set text as RepoSpec
+func (s *RepoSpec) Set(ref string) error {
 	if !hasSchemePattern.MatchString(ref) && scpLikeURLPattern.MatchString(ref) {
 		matched := scpLikeURLPattern.FindStringSubmatch(ref)
 		user := matched[1]
@@ -106,16 +101,23 @@ func (s *Spec) Set(ref string) error {
 		ref = fmt.Sprintf("ssh://%s%s/%s", user, host, path)
 	}
 
-	httpsURL, err := url.Parse(ref)
+	refURL, err := url.Parse(ref)
 	if err != nil {
 		return err
 	}
+	s.refURL = *refURL
+	return nil
+}
 
+// URL will get a URL for a repository
+func (s *RepoSpec) URL(ctx Context, ssh bool) (*url.URL, error) {
+	u := s.refURL // copy
+	httpsURL := &u
 	if !httpsURL.IsAbs() {
 		if !strings.Contains(httpsURL.Path, "/") {
-			user, err := getUserName()
+			user, err := ctx.UserName()
 			if err != nil {
-				return err
+				return nil, err
 			}
 			httpsURL.Path = user + "/" + httpsURL.Path
 		}
@@ -125,28 +127,17 @@ func (s *Spec) Set(ref string) error {
 			httpsURL.Path = "/" + httpsURL.Path
 		}
 	}
-	s.https = httpsURL
-	sshURL, err := url.Parse(fmt.Sprintf("ssh://git@%s%s", httpsURL.Host, httpsURL.Path))
-	if err != nil {
-		return err
+	if ssh {
+		sshURL, err := url.Parse(fmt.Sprintf("ssh://git@%s%s", httpsURL.Host, httpsURL.Path))
+		if err != nil {
+			return nil, err
+		}
+		return sshURL, nil
 	}
-	s.ssh = sshURL
-	return nil
+	return httpsURL, nil
 }
 
-// SSHURL will get a URL for a repository with ssh schema
-func (s *Spec) SSHURL() *url.URL {
-	u := *s.ssh
-	return &u
-}
-
-// URL will get a URL for a repository
-func (s *Spec) URL() *url.URL {
-	u := *s.https
-	return &u
-}
-
-func (s Spec) String() string {
+func (s RepoSpec) String() string {
 	return s.ref
 }
 
@@ -156,37 +147,12 @@ func (s Spec) String() string {
 var hasSchemePattern = regexp.MustCompile("^[^:]+://")
 var scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
 
-func getUserName() (string, error) {
-	user, err := git.GetOneConf("gogh.user")
-	if err != nil {
-		return "", err
-	}
-	if user != "" {
-		return user, nil
-	}
-	if user := os.Getenv("GITHUB_USER"); user != "" {
-		return user, nil
-	}
-	switch runtime.GOOS {
-	case "windows":
-		if user := os.Getenv("USERNAME"); user != "" {
-			return user, nil
-		}
-	default:
-		if user := os.Getenv("USER"); user != "" {
-			return user, nil
-		}
-	}
-	// Make the error if it does not match any pattern
-	return "", fmt.Errorf("set gogh.user to your gitconfig")
-}
+// Specs is array of RepoSpec
+type Specs []RepoSpec
 
-// Specs is array of Spec
-type Specs []Spec
-
-// Set will add a text to Specs as a Spec
+// Set will add a text to Specs as a RepoSpec
 func (s *Specs) Set(value string) error {
-	spec := new(Spec)
+	spec := new(RepoSpec)
 	if err := spec.Set(value); err != nil {
 		return err
 	}
@@ -209,14 +175,14 @@ func (s Specs) String() string {
 // IsCumulative : 複数指定可能
 func (s Specs) IsCumulative() bool { return true }
 
-// Remote repository which specified with Spec
-func (s *Spec) Remote(ssh bool) (Remote, error) {
-	url := s.URL()
-	if ssh {
-		url = s.SSHURL()
+// Remote repository which specified with RepoSpec
+func (s *RepoSpec) Remote(ctx Context, ssh bool) (RemoteRepo, error) {
+	url, err := s.URL(ctx, ssh)
+	if err != nil {
+		return nil, err
 	}
 
-	rmt, err := NewRepository(url)
+	rmt, err := NewRepository(ctx, url)
 	if err != nil {
 		return nil, err
 	}

@@ -5,20 +5,18 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/kyoh86/gogh/repo"
 )
 
 // Find a path of a local repository
-func Find(name string) error {
-	repos, err := findRepos(name)
+func Find(ctx Context, name string) error {
+	repos, err := findRepos(ctx, name)
 	if err != nil {
 		return err
 	}
 
 	switch len(repos) {
 	case 0:
-		path, err := getRepoFullPath(name)
+		path, err := getRepoFullPath(ctx, name)
 		if err != nil {
 			return err
 		}
@@ -39,9 +37,9 @@ func Find(name string) error {
 	return nil
 }
 
-func findRepos(name string) ([]*repo.Local, error) {
-	var repos []*repo.Local
-	return repos, repo.Walk(func(repo *repo.Local) error {
+func findRepos(ctx Context, name string) ([]*LocalRepo, error) {
+	var repos []*LocalRepo
+	return repos, Walk(ctx, func(repo *LocalRepo) error {
 		if repo.Matches(name) {
 			repos = append(repos, repo)
 		}
@@ -49,12 +47,16 @@ func findRepos(name string) ([]*repo.Local, error) {
 	})
 }
 
-func getRepoFullPath(name string) (string, error) {
-	spec, err := repo.NewSpec(name)
+func getRepoFullPath(ctx Context, name string) (string, error) {
+	spec, err := NewSpec(name)
 	if err != nil {
 		return "", err
 	}
-	repo, err := repo.FromURL(spec.URL())
+	url, err := spec.URL(ctx, false)
+	if err != nil {
+		return "", err
+	}
+	repo, err := FromURL(ctx, url)
 	if err != nil {
 		return "", err
 	}

@@ -1,4 +1,4 @@
-package repo
+package gogh
 
 import (
 	"net/url"
@@ -17,19 +17,20 @@ func parseURL(t *testing.T, urlString string) *url.URL {
 
 func TestNewRepositoryGitHub(t *testing.T) {
 	var (
-		repo Remote
+		repo RemoteRepo
 		err  error
 	)
+	ctx := &mockContext{}
 
-	repo, err = NewRepository(parseURL(t, "https://github.com/motemen/pusheen-explorer"))
+	repo, err = NewRepository(ctx, parseURL(t, "https://github.com/motemen/pusheen-explorer"))
 	require.NoError(t, err)
 	assert.True(t, repo.IsValid())
 
-	repo, err = NewRepository(parseURL(t, "https://github.com/motemen/pusheen-explorer/"))
+	repo, err = NewRepository(ctx, parseURL(t, "https://github.com/motemen/pusheen-explorer/"))
 	require.NoError(t, err)
 	assert.True(t, repo.IsValid())
 
-	repo, err = NewRepository(parseURL(t, "https://github.com/motemen/pusheen-explorer/blob/master/README.md"))
+	repo, err = NewRepository(ctx, parseURL(t, "https://github.com/motemen/pusheen-explorer/blob/master/README.md"))
 	require.NoError(t, err)
 	assert.False(t, repo.IsValid())
 }

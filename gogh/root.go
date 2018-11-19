@@ -2,17 +2,15 @@ package gogh
 
 import (
 	"fmt"
-
-	"github.com/kyoh86/gogh/repo"
 )
 
 // Root prints a gogh.root
-func Root(all bool) error {
+func Root(ctx Context, all bool) error {
 	if !all {
-		fmt.Println(repo.PrimaryRoot())
+		fmt.Println(ctx.PrimaryRoot())
 		return nil
 	}
-	rts, err := repo.Roots()
+	rts, err := ctx.Roots()
 	if err != nil {
 		return err
 	}

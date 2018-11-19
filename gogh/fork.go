@@ -5,21 +5,20 @@ import (
 	"os"
 
 	"github.com/github/hub/commands"
-	"github.com/kyoh86/gogh/repo"
 )
 
 // Fork clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin
-func Fork(update, withSSH, shallow, noRemote bool, remoteName string, organization string, repoSpec repo.Spec) error {
-	if err := Get(update, withSSH, shallow, repoSpec); err != nil {
+func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName string, organization string, repoSpec RepoSpec) error {
+	if err := Get(ctx, update, withSSH, shallow, repoSpec); err != nil {
 		return err
 	}
 
-	rmt, err := repoSpec.Remote(withSSH)
+	rmt, err := repoSpec.Remote(ctx, withSSH)
 	if err != nil {
 		return err
 	}
 	remoteURL := rmt.URL()
-	local, err := repo.FromURL(remoteURL)
+	local, err := FromURL(ctx, remoteURL)
 	if err != nil {
 		return err
 	}

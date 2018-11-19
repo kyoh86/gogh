@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/url"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/kyoh86/gogh/gogh"
-	"github.com/kyoh86/gogh/repo"
 )
 
 var (
@@ -46,15 +46,17 @@ func get(app *kingpin.Application) (string, func() error) {
 		update    bool
 		withSSH   bool
 		shallow   bool
-		repoSpecs repo.Specs
+		repoSpecs gogh.Specs
 	)
 	cmd := app.Command("get", "Clone/sync with a remote repository")
 	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoSpecs)
+	ctx := gogh.DefaultContext(context.Background())
+
 	return cmd.FullCommand(), func() error {
-		return gogh.GetAll(update, withSSH, shallow, repoSpecs)
+		return gogh.GetAll(ctx, update, withSSH, shallow, repoSpecs)
 	}
 }
 
@@ -68,8 +70,10 @@ func bulk(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	ctx := gogh.DefaultContext(context.Background())
+
 	return cmd.FullCommand(), func() error {
-		return gogh.Bulk(update, withSSH, shallow)
+		return gogh.Bulk(ctx, update, withSSH, shallow)
 	}
 }
 
@@ -87,8 +91,10 @@ func pipe(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&command)
 	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&commandArgs)
+	ctx := gogh.DefaultContext(context.Background())
+
 	return cmd.FullCommand(), func() error {
-		return gogh.Pipe(update, withSSH, shallow, command, commandArgs)
+		return gogh.Pipe(ctx, update, withSSH, shallow, command, commandArgs)
 	}
 }
 
@@ -100,7 +106,7 @@ func fork(app *kingpin.Application) (string, func() error) {
 		noRemote     bool
 		remoteName   string
 		organization string
-		repoSpec     repo.Spec
+		repoSpec     gogh.RepoSpec
 	)
 	cmd := app.Command("fork", "Clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin")
 	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
@@ -110,9 +116,10 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("remote-name", "Set the name for the new git remote").PlaceHolder("REMOTE").StringVar(&remoteName)
 	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoSpec)
+	ctx := gogh.DefaultContext(context.Background())
 
 	return cmd.FullCommand(), func() error {
-		return gogh.Fork(update, withSSH, shallow, noRemote, remoteName, organization, repoSpec)
+		return gogh.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, repoSpec)
 	}
 }
 
@@ -126,8 +133,8 @@ func create(app *kingpin.Application) (string, func() error) {
 		bare           bool
 		template       string
 		separateGitDir string
-		shared         repo.Shared
-		repoName       repo.Name
+		shared         gogh.Shared
+		repoName       gogh.RepoName
 	)
 	cmd := app.Command("new", "Create a repository in local and remote.").Alias("create")
 	cmd.Flag("private", "Create a private repository").BoolVar(&private)
@@ -140,9 +147,10 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&separateGitDir)
 	cmd.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&shared)
 	cmd.Arg("repository name", "<user>/<name>").Required().SetValue(&repoName)
+	ctx := gogh.DefaultContext(context.Background())
 
 	return cmd.FullCommand(), func() error {
-		return gogh.New(private, description, homepage, browse, clip, bare, template, separateGitDir, shared, repoName)
+		return gogh.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, repoName)
 	}
 }
 
@@ -160,9 +168,10 @@ func list(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("short", "Print short names").Short('s').BoolVar(&short)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Repository name query").StringVar(&query)
+	ctx := gogh.DefaultContext(context.Background())
 
 	return cmd.FullCommand(), func() error {
-		return gogh.List(exact, fullPath, short, primary, query)
+		return gogh.List(ctx, exact, fullPath, short, primary, query)
 	}
 }
 
@@ -170,9 +179,10 @@ func find(app *kingpin.Application) (string, func() error) {
 	var name string
 	cmd := app.Command("find", "Find a path of a local repository")
 	cmd.Arg("name", "Target repository name").Required().StringVar(&name)
+	ctx := gogh.DefaultContext(context.Background())
 
 	return cmd.FullCommand(), func() error {
-		return gogh.Find(name)
+		return gogh.Find(ctx, name)
 	}
 }
 
@@ -180,9 +190,10 @@ func root(app *kingpin.Application) (string, func() error) {
 	var all bool
 	cmd := app.Command("root", "Show repositories' root")
 	cmd.Flag("all", "Show all roots").BoolVar(&all)
+	ctx := gogh.DefaultContext(context.Background())
 
 	return cmd.FullCommand(), func() error {
-		return gogh.Root(all)
+		return gogh.Root(ctx, all)
 	}
 }
 
@@ -194,8 +205,9 @@ func setup(app *kingpin.Application) (string, func() error) {
 	cmd := app.Command("setup", "Generate shell script to setup gogh").Hidden()
 	cmd.Flag("cd-function-name", "Name of the function to define").Default("gogogh").Hidden().StringVar(&cdFuncName)
 	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
+	ctx := gogh.DefaultContext(context.Background())
 
 	return cmd.FullCommand(), func() error {
-		return gogh.Setup(cdFuncName, shell)
+		return gogh.Setup(ctx, cdFuncName, shell)
 	}
 }

@@ -1,4 +1,4 @@
-package repo
+package gogh
 
 import (
 	"io/ioutil"
@@ -14,10 +14,10 @@ import (
 func TestNewRepository(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	roots = []string{tmp}
+	ctx := &mockContext{roots: []string{tmp}}
 
 	t.Run("FromFullPath", func(t *testing.T) {
-		r, err := FromFullPath(filepath.Join(tmp, "github.com", "kyoh86", "gogh"))
+		r, err := FromFullPath(ctx, filepath.Join(tmp, "github.com", "kyoh86", "gogh"))
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", r.NonHostPath())
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
@@ -25,7 +25,7 @@ func TestNewRepository(t *testing.T) {
 
 	t.Run("FromURL", func(t *testing.T) {
 		githubURL, _ := url.Parse("ssh://git@github.com/kyoh86/gogh.git")
-		r, err := FromURL(githubURL)
+		r, err := FromURL(ctx, githubURL)
 		require.NoError(t, err)
 		assert.Equal(t, filepath.Join(tmp, "github.com", "kyoh86", "gogh"), r.FullPath)
 	})
@@ -39,7 +39,7 @@ func TestList_Symlink(t *testing.T) {
 	symDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 
-	roots = []string{root}
+	ctx := &mockContext{roots: []string{root}}
 
 	err = os.MkdirAll(filepath.Join(root, "github.com", "atom", "atom", ".git"), 0777)
 	require.NoError(t, err)
@@ -51,7 +51,7 @@ func TestList_Symlink(t *testing.T) {
 	require.NoError(t, err)
 
 	paths := []string{}
-	Walk(func(repo *Local) error {
+	Walk(ctx, func(repo *LocalRepo) error {
 		paths = append(paths, repo.RelPath)
 		return nil
 	})

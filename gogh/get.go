@@ -6,13 +6,12 @@ import (
 	"os"
 
 	"github.com/kyoh86/gogh/internal/git"
-	"github.com/kyoh86/gogh/repo"
 )
 
 // GetAll clonse or updates remote repositories.
-func GetAll(update, withSSH, shallow bool, repoSpecs repo.Specs) error {
+func GetAll(ctx Context, update, withSSH, shallow bool, repoSpecs Specs) error {
 	for _, repoSpec := range repoSpecs {
-		if err := Get(update, withSSH, shallow, repoSpec); err != nil {
+		if err := Get(ctx, update, withSSH, shallow, repoSpec); err != nil {
 			return err
 		}
 	}
@@ -22,14 +21,14 @@ func GetAll(update, withSSH, shallow bool, repoSpecs repo.Specs) error {
 // Get clones or updates a remote repository.
 // If update is true, updates the locally cloned repository. Otherwise does nothing.
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
-func Get(update, withSSH, shallow bool, repoSpec repo.Spec) error {
-	rmt, err := repoSpec.Remote(withSSH)
+func Get(ctx Context, update, withSSH, shallow bool, repoSpec RepoSpec) error {
+	rmt, err := repoSpec.Remote(ctx, withSSH)
 	if err != nil {
 		return err
 	}
 
 	remoteURL := rmt.URL()
-	local, err := repo.FromURL(remoteURL)
+	local, err := FromURL(ctx, remoteURL)
 	if err != nil {
 		return err
 	}

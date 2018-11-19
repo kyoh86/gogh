@@ -7,7 +7,7 @@ import (
 
 // Setup shells in shell scipt
 // Usage: eval "$(gogh setup)"
-func Setup(cdFuncName, shell string) error {
+func Setup(ctx Context, cdFuncName, shell string) error {
 	_, shName := filepath.Split(shell)
 	switch shName {
 	case "zsh":

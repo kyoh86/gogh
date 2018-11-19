@@ -1,22 +1,20 @@
-package repo
+package gogh
 
 import (
 	"fmt"
 	"net/url"
 	"strings"
-
-	"github.com/kyoh86/gogh/internal/git"
 )
 
-// A Remote represents a remote repository.
-type Remote interface {
+// RemoteRepo represents a remote repository.
+type RemoteRepo interface {
 	// The repository URL.
 	URL() *url.URL
 	// Checks if the URL is valid.
 	IsValid() bool
 }
 
-// GitHubRepository represents a GitHub repository which implements a interface `Remote`.
+// GitHubRepository represents a GitHub repository which implements a interface `RemoteRepo`.
 type GitHubRepository struct {
 	url *url.URL
 }
@@ -38,12 +36,12 @@ func (r *GitHubRepository) IsValid() bool {
 }
 
 // NewRepository create remote repository identifier from the url
-func NewRepository(url *url.URL) (Remote, error) {
+func NewRepository(ctx Context, url *url.URL) (RemoteRepo, error) {
 	if url.Host == "github.com" {
 		return &GitHubRepository{url}, nil
 	}
 
-	gheHosts, err := git.GetAllConf("gogh.ghe.host")
+	gheHosts, err := ctx.GHEHosts()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve GH:E hostname from .gitconfig: %s", err)
 	}

@@ -1,27 +1,24 @@
-package repo
+package gogh
 
 import (
 	"fmt"
-	"go/build"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
-
-	"github.com/kyoh86/gogh/internal/git"
 )
 
-// Local repository specifier
-type Local struct {
+// LocalRepo repository specifier
+type LocalRepo struct {
 	FullPath  string
 	RelPath   string
 	PathParts []string
 }
 
 // FromFullPath will get a local repository with a full path to the directory
-func FromFullPath(fullPath string) (*Local, error) {
-	rts, err := Roots()
+func FromFullPath(ctx Context, fullPath string) (*LocalRepo, error) {
+	rts, err := ctx.Roots()
 	if err != nil {
 		return nil, err
 	}
@@ -35,23 +32,23 @@ func FromFullPath(fullPath string) (*Local, error) {
 			continue
 		}
 		pathParts := strings.Split(rel, string(filepath.Separator))
-		return &Local{fullPath, filepath.ToSlash(rel), pathParts}, nil
+		return &LocalRepo{fullPath, filepath.ToSlash(rel), pathParts}, nil
 	}
 
 	return nil, fmt.Errorf("no repository found for: %s", fullPath)
 }
 
 // FromURL will get a local repository location from remote repository URL
-func FromURL(remote *url.URL) (*Local, error) {
+func FromURL(ctx Context, remote *url.URL) (*LocalRepo, error) {
 	pathParts := append(
 		[]string{remote.Host}, strings.Split(remote.Path, "/")...,
 	)
 	relPath := strings.TrimSuffix(path.Join(pathParts...), ".git")
 
-	var rep *Local
+	var rep *LocalRepo
 
 	// Find existing repository first
-	if err := Walk(func(repo *Local) error {
+	if err := Walk(ctx, func(repo *LocalRepo) error {
 		if repo.RelPath == relPath {
 			rep = repo
 			return filepath.SkipDir
@@ -65,13 +62,13 @@ func FromURL(remote *url.URL) (*Local, error) {
 		return rep, nil
 	}
 
-	r, err := PrimaryRoot()
+	r, err := ctx.PrimaryRoot()
 	if err != nil {
 		return nil, err
 	}
 
 	// No repository found, returning new one
-	return &Local{
+	return &LocalRepo{
 		path.Join(r, relPath),
 		relPath,
 		pathParts,
@@ -80,7 +77,7 @@ func FromURL(remote *url.URL) (*Local, error) {
 
 // Subpaths returns lists of tail parts of relative path from the root directory (shortest first)
 // for example, {"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"} for $root/github.com/kyoh86/gogh.
-func (repo *Local) Subpaths() []string {
+func (repo *LocalRepo) Subpaths() []string {
 	tails := make([]string, len(repo.PathParts))
 
 	for i := range repo.PathParts {
@@ -91,13 +88,13 @@ func (repo *Local) Subpaths() []string {
 }
 
 // NonHostPath will get a relative path from its hostname
-func (repo *Local) NonHostPath() string {
+func (repo *LocalRepo) NonHostPath() string {
 	return strings.Join(repo.PathParts[1:], "/")
 }
 
 // IsInPrimaryRoot check which the repository is in primary root directory for gogh
-func (repo *Local) IsInPrimaryRoot() bool {
-	r, err := PrimaryRoot()
+func (repo *LocalRepo) IsInPrimaryRoot(ctx Context) bool {
+	r, err := ctx.PrimaryRoot()
 	if err != nil {
 		return false
 	}
@@ -105,7 +102,7 @@ func (repo *Local) IsInPrimaryRoot() bool {
 }
 
 // Matches checks if any subpath of the repository equals the query.
-func (repo *Local) Matches(pathQuery string) bool {
+func (repo *LocalRepo) Matches(pathQuery string) bool {
 	for _, p := range repo.Subpaths() {
 		if p == pathQuery {
 			return true
@@ -121,8 +118,8 @@ func isVcsDir(path string) bool {
 }
 
 // Walk thorugh local repositories in gogh.root directories
-func Walk(callback func(*Local) error) error {
-	rts, err := Roots()
+func Walk(ctx Context, callback func(*LocalRepo) error) error {
+	rts, err := ctx.Roots()
 	if err != nil {
 		return err
 	}
@@ -142,7 +139,7 @@ func Walk(callback func(*Local) error) error {
 			if !isVcsDir(path) {
 				return nil
 			}
-			repo, err := FromFullPath(path)
+			repo, err := FromFullPath(ctx, path)
 			if err != nil {
 				return nil
 			}
@@ -155,68 +152,4 @@ func Walk(callback func(*Local) error) error {
 		}
 	}
 	return nil
-}
-
-var roots []string
-
-// Roots returns cloned repositories' root directories.
-// The root dirs are determined as following:
-//
-//   - If GOGH_ROOT environment variable is nonempty, use it as the only root dir.
-//   - Otherwise, use the result of `git config --get-all gogh.root` as the dirs.
-//   - Otherwise, fallback to the default root, `~/go/src`.
-func Roots() ([]string, error) {
-	if len(roots) == 0 {
-		rts, err := getRoots()
-		if err != nil {
-			return nil, err
-		}
-		roots = rts
-	}
-	return roots, nil
-}
-
-func getRoots() ([]string, error) {
-	envRoot := os.Getenv("GOGH_ROOT")
-	if envRoot != "" {
-		return filepath.SplitList(envRoot), nil
-	}
-	rts, err := git.GetAllConf("gogh.root")
-	if err != nil {
-		return nil, err
-	}
-
-	if len(rts) == 0 {
-		rts = []string{filepath.Join(build.Default.GOPATH, "src")}
-	}
-
-PATH_CHECK_LOOP:
-	for i, v := range rts {
-		path := filepath.Clean(v)
-		_, err := os.Stat(path)
-		switch {
-		case err == nil:
-			// noop
-		case os.IsNotExist(err):
-			rts[i] = path
-			continue PATH_CHECK_LOOP
-		default:
-			return nil, err
-		}
-		rts[i], err = filepath.EvalSymlinks(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return rts, nil
-}
-
-// PrimaryRoot returns the first one of the root directories to clone repository.
-func PrimaryRoot() (string, error) {
-	rts, err := Roots()
-	if err != nil {
-		return "", err
-	}
-	return rts[0], nil
 }

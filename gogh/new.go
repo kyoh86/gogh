@@ -6,14 +6,13 @@ import (
 
 	"github.com/github/hub/commands"
 	"github.com/kyoh86/gogh/internal/run"
-	"github.com/kyoh86/gogh/repo"
 )
 
 func hubInit(
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared repo.Shared,
+	shared Shared,
 	directory string,
 ) error {
 	var hubArgs []string
@@ -36,7 +35,7 @@ func hubCreate(
 	homepage *url.URL,
 	browse bool,
 	clipboard bool,
-	repoName repo.Name,
+	repoName RepoName,
 	directory string,
 ) (retErr error) {
 	// cd
@@ -70,16 +69,16 @@ func hubCreate(
 	return nil
 }
 
-func nameToPath(name string) (string, error) {
-	spec, err := repo.NewSpec(name)
+func nameToPath(ctx Context, name string) (string, error) {
+	spec, err := NewSpec(name)
 	if err != nil {
 		return "", err
 	}
-	rem, err := spec.Remote(false)
+	rem, err := spec.Remote(ctx, false)
 	if err != nil {
 		return "", err
 	}
-	loc, err := repo.FromURL(rem.URL())
+	loc, err := FromURL(ctx, rem.URL())
 	if err != nil {
 		return "", err
 	}
@@ -88,6 +87,7 @@ func nameToPath(name string) (string, error) {
 
 // New creates a repository in local and remote.
 func New(
+	ctx Context,
 	private bool,
 	description string,
 	homepage *url.URL,
@@ -96,10 +96,10 @@ func New(
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared repo.Shared,
-	repoName repo.Name,
+	shared Shared,
+	repoName RepoName,
 ) error {
-	path, err := nameToPath(repoName.String())
+	path, err := nameToPath(ctx, repoName.String())
 	if err != nil {
 		return err
 	}

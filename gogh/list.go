@@ -3,17 +3,15 @@ package gogh
 import (
 	"fmt"
 	"strings"
-
-	"github.com/kyoh86/gogh/repo"
 )
 
 // List local repositories
-func List(exact, fullpath, short, primary bool, query string) error {
-	filter := filterFunc(exact, primary, query)
+func List(ctx Context, exact, fullpath, short, primary bool, query string) error {
+	filter := filterFunc(ctx, exact, primary, query)
 
-	repos := []*repo.Local{}
+	repos := []*LocalRepo{}
 
-	if err := repo.Walk(func(repo *repo.Local) error {
+	if err := Walk(ctx, func(repo *LocalRepo) error {
 		if !filter(repo) {
 			return nil
 		}
@@ -48,39 +46,39 @@ func List(exact, fullpath, short, primary bool, query string) error {
 	return nil
 }
 
-func filterFunc(exact, primary bool, query string) func(*repo.Local) bool {
+func filterFunc(ctx Context, exact, primary bool, query string) func(*LocalRepo) bool {
 	switch {
 	case query == "":
 		if primary {
-			return func(repo *repo.Local) bool {
-				return repo.IsInPrimaryRoot()
+			return func(repo *LocalRepo) bool {
+				return repo.IsInPrimaryRoot(ctx)
 			}
 		}
-		return func(_ *repo.Local) bool {
+		return func(_ *LocalRepo) bool {
 			return true
 		}
 	case exact:
 		if primary {
-			return func(repo *repo.Local) bool {
-				return repo.IsInPrimaryRoot() && repo.Matches(query)
+			return func(repo *LocalRepo) bool {
+				return repo.IsInPrimaryRoot(ctx) && repo.Matches(query)
 			}
 		}
-		return func(repo *repo.Local) bool {
+		return func(repo *LocalRepo) bool {
 			return repo.Matches(query)
 		}
 	default:
 		if primary {
-			return func(repo *repo.Local) bool {
-				return repo.IsInPrimaryRoot() && strings.Contains(repo.NonHostPath(), query)
+			return func(repo *LocalRepo) bool {
+				return repo.IsInPrimaryRoot(ctx) && strings.Contains(repo.NonHostPath(), query)
 			}
 		}
-		return func(repo *repo.Local) bool {
+		return func(repo *LocalRepo) bool {
 			return strings.Contains(repo.NonHostPath(), query)
 		}
 	}
 }
 
-func shortName(dups map[string]bool, repo *repo.Local) string {
+func shortName(dups map[string]bool, repo *LocalRepo) string {
 	for _, p := range repo.Subpaths() {
 		if dups[p] {
 			continue
