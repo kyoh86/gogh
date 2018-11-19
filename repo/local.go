@@ -198,6 +198,7 @@ PATH_CHECK_LOOP:
 		case err == nil:
 			// noop
 		case os.IsNotExist(err):
+			rts[i] = path
 			continue PATH_CHECK_LOOP
 		default:
 			return nil, err
