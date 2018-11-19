@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"go/build"
 	"net/url"
 	"os"
 	"path"
@@ -9,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/internal/git"
-	homedir "github.com/mitchellh/go-homedir"
 )
 
 // Local repository specifier
@@ -187,11 +187,7 @@ func getRoots() ([]string, error) {
 	}
 
 	if len(rts) == 0 {
-		home, err := homedir.Dir()
-		if err != nil {
-			return nil, err
-		}
-		rts = []string{filepath.Join(home, "go", "src")}
+		rts = []string{filepath.Join(build.Default.GOPATH, "src")}
 	}
 
 PATH_CHECK_LOOP:
