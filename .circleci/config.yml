@@ -10,8 +10,8 @@ jobs:
           name: vendor
           command: "go mod vendor"
       - run:
-          name: go build
-          command: "go build ./..."
+          name: install
+          command: "go install ./..."
       - run:
           name: go test and take coverage
           command: "go test -race -coverprofile=coverage.out ./..."
