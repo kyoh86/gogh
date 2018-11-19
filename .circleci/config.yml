@@ -21,7 +21,7 @@ jobs:
             - "src"
             - "pkg"
             - "bin"
-  lint-and-cover:
+  lint_and_cover:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
       - image: kyoh86/gotest:latest
@@ -97,7 +97,7 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-      - lint-and-cover:
+      - lint_and_cover:
           requires:
             - build
           filters:
@@ -108,7 +108,7 @@ workflows:
       - release:
           requires:
             - build
-            - lint-and-cover
+            - lint_and_cover
           filters:
             branches:
               ignore: /.*/
