@@ -15,6 +15,7 @@ import (
 // Context holds configurations and environments
 type Context interface {
 	context.Context
+	LogLevel() string
 	UserName() string
 	Roots() []string
 	PrimaryRoot() string
@@ -23,6 +24,10 @@ type Context interface {
 
 // CurrentContext get current context from OS envars and Git configurations
 func CurrentContext(ctx context.Context) (Context, error) {
+	logLevel, err := getLogLevel()
+	if err != nil {
+		return nil, err
+	}
 	userName, err := getUserName()
 	if err != nil {
 		return nil, err
@@ -37,6 +42,7 @@ func CurrentContext(ctx context.Context) (Context, error) {
 	}
 	return &implContext{
 		Context:  ctx,
+		logLevel: logLevel,
 		userName: userName,
 		roots:    roots,
 		gheHosts: gheHosts,
@@ -45,9 +51,14 @@ func CurrentContext(ctx context.Context) (Context, error) {
 
 type implContext struct {
 	context.Context
+	logLevel string
 	userName string
 	roots    []string
 	gheHosts []string
+}
+
+func (c *implContext) LogLevel() string {
+	return c.logLevel
 }
 
 func (c *implContext) UserName() string {
@@ -65,6 +76,20 @@ func (c *implContext) PrimaryRoot() string {
 
 func (c *implContext) GHEHosts() []string {
 	return c.gheHosts
+}
+
+func getLogLevel() (string, error) {
+	user, err := getGitConf("gogh.log")
+	if err != nil {
+		return "", err
+	}
+	if user != "" {
+		return user, nil
+	}
+	if user := os.Getenv("GOGH_LOG_LEVEL"); user != "" {
+		return user, nil
+	}
+	return "Info", nil
 }
 
 func getUserName() (string, error) {
