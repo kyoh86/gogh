@@ -186,7 +186,7 @@ func getGitConfs(key string) ([]string, error) {
 
 // output invokes 'git config' and handles some errors properly.
 func output(args ...string) (string, error) {
-	cmd := exec.Command("git", append([]string{"config", "--path", "--null"}, args...)...)
+	cmd := exec.Command("git", append([]string{"config", "--type", "path", "--null"}, args...)...)
 	cmd.Stderr = os.Stderr
 
 	buf, err := cmd.Output()
