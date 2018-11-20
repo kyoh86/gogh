@@ -41,6 +41,7 @@ func FromURL(ctx Context, remote *url.URL) (*LocalRepo, error) {
 		[]string{remote.Host}, strings.Split(remote.Path, "/")...,
 	)
 	relPath := strings.TrimSuffix(path.Join(pathParts...), ".git")
+	pathParts = strings.Split(relPath, "/")
 
 	var rep *LocalRepo
 
