@@ -1,6 +1,7 @@
 package gogh
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -11,23 +12,130 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewRepository(t *testing.T) {
+func TestFromFullPath(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := &implContext{roots: []string{tmp}}
+	ctx := implContext{roots: []string{tmp}}
 
-	t.Run("FromFullPath", func(t *testing.T) {
-		r, err := FromFullPath(ctx, filepath.Join(tmp, "github.com", "kyoh86", "gogh"))
+	t.Run("in primary root", func(t *testing.T) {
+		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
+		r, err := FromFullPath(&ctx, path)
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", r.NonHostPath())
+		assert.Equal(t, path, r.FullPath)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+		assert.True(t, r.IsInPrimaryRoot(&ctx))
+		t.Run("TestMatch", func(t *testing.T) {
+			assert.True(t, r.Matches("gogh"))
+			assert.True(t, r.Matches("kyoh86/gogh"))
+			assert.True(t, r.Matches("github.com/kyoh86/gogh"))
+
+			assert.False(t, r.Matches("gigh"))
+			assert.False(t, r.Matches("kyoh85/gogh"))
+			assert.False(t, r.Matches("githib.com/kyoh86/gogh"))
+			assert.False(t, r.Matches("github.com/kyoh86"))
+		})
+	})
+	t.Run("secondary path", func(t *testing.T) {
+		tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
+		require.NoError(t, err)
+		ctx := ctx
+		ctx.roots = append(ctx.roots, tmp2)
+		path := filepath.Join(tmp2, "github.com", "kyoh86", "gogh")
+		r, err := FromFullPath(&ctx, path)
+		require.NoError(t, err)
+		assert.Equal(t, "kyoh86/gogh", r.NonHostPath())
+		assert.Equal(t, path, r.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+		assert.False(t, r.IsInPrimaryRoot(&ctx))
+	})
+	t.Run("not in root path", func(t *testing.T) {
+		path := filepath.Join("/src", "github.com", "kyoh86", "gogh")
+		_, err := FromFullPath(&ctx, path)
+		assert.Error(t, err, "no repository found for: "+path)
 	})
 
-	t.Run("FromURL", func(t *testing.T) {
+}
+
+func TestFromURL(t *testing.T) {
+	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+	require.NoError(t, err)
+	ctx := implContext{roots: []string{tmp}}
+
+	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
+	t.Run("not existing repository", func(t *testing.T) {
 		githubURL, _ := url.Parse("ssh://git@github.com/kyoh86/gogh.git")
-		r, err := FromURL(ctx, githubURL)
+		r, err := FromURL(&ctx, githubURL)
 		require.NoError(t, err)
-		assert.Equal(t, filepath.Join(tmp, "github.com", "kyoh86", "gogh"), r.FullPath)
+		assert.Equal(t, path, r.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+	})
+	t.Run("existing repository", func(t *testing.T) {
+		// Create dummy repository
+		require.NoError(t, os.MkdirAll(filepath.Join(tmp, "github.com", "kyoh85", "gogh", ".git"), 0755))
+		// Create target repository
+		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
+		defer func() {
+			require.NoError(t, os.RemoveAll(path))
+		}()
+		githubURL, _ := url.Parse("ssh://git@github.com/kyoh86/gogh.git")
+		r, err := FromURL(&ctx, githubURL)
+		require.NoError(t, err)
+		assert.Equal(t, path, r.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+	})
+}
+
+func TestWalk(t *testing.T) {
+	neverCalled := func(t *testing.T) func(*LocalRepo) error {
+		return func(*LocalRepo) error {
+			t.Fatal("should not be called but...")
+			return nil
+		}
+	}
+	t.Run("Not existing root", func(t *testing.T) {
+		t.Run("primary root", func(t *testing.T) {
+			ctx := implContext{roots: []string{"/that/will/never/exist"}}
+			require.NoError(t, Walk(&ctx, neverCalled(t)))
+		})
+		t.Run("secondary root", func(t *testing.T) {
+			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+			require.NoError(t, err)
+			ctx := implContext{roots: []string{tmp, "/that/will/never/exist"}}
+			require.NoError(t, Walk(&ctx, neverCalled(t)))
+		})
+	})
+
+	t.Run("Root specifies a file", func(t *testing.T) {
+		t.Run("Primary root is a file", func(t *testing.T) {
+			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+			require.NoError(t, err)
+			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
+			ctx := implContext{roots: []string{filepath.Join(tmp, "foo")}}
+			require.NoError(t, Walk(&ctx, neverCalled(t)))
+		})
+		t.Run("Secondary root is a file", func(t *testing.T) {
+			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+			require.NoError(t, err)
+			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
+			ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
+			require.NoError(t, Walk(&ctx, neverCalled(t)))
+		})
+	})
+
+	t.Run("through error from callback", func(t *testing.T) {
+		tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+		require.NoError(t, err)
+		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
+		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
+
+		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
+		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
+		err = errors.New("sample error")
+		assert.Error(t, err, Walk(&ctx, func(l *LocalRepo) error {
+			assert.Equal(t, path, l.FullPath)
+			return err
+		}))
 	})
 }
 
