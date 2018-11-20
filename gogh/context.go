@@ -150,15 +150,6 @@ func getRoots() ([]string, error) {
 	return rts, nil
 }
 
-// PrimaryRoot returns the first one of the root directories to clone repository.
-func getPrimaryRoot() (string, error) {
-	rts, err := getRoots()
-	if err != nil {
-		return "", err
-	}
-	return rts[0], nil
-}
-
 func getGHEHosts() ([]string, error) {
 	return getGitConfs("gogh.ghe.host")
 }
