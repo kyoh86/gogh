@@ -41,10 +41,7 @@ func NewRepository(ctx Context, url *url.URL) (RemoteRepo, error) {
 		return &GitHubRepository{url}, nil
 	}
 
-	gheHosts, err := ctx.GHEHosts()
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve GH:E hostname from .gitconfig: %s", err)
-	}
+	gheHosts := ctx.GHEHosts()
 
 	for _, host := range gheHosts {
 		if url.Host == host {

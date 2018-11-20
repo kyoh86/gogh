@@ -14,7 +14,7 @@ import (
 func TestNewRepository(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := &mockContext{roots: []string{tmp}}
+	ctx := &implContext{roots: []string{tmp}}
 
 	t.Run("FromFullPath", func(t *testing.T) {
 		r, err := FromFullPath(ctx, filepath.Join(tmp, "github.com", "kyoh86", "gogh"))
@@ -39,7 +39,7 @@ func TestList_Symlink(t *testing.T) {
 	symDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 
-	ctx := &mockContext{roots: []string{root}}
+	ctx := &implContext{roots: []string{root}}
 
 	err = os.MkdirAll(filepath.Join(root, "github.com", "atom", "atom", ".git"), 0777)
 	require.NoError(t, err)

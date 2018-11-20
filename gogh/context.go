@@ -12,23 +12,62 @@ import (
 	"syscall"
 )
 
+// Context holds configurations and environments
 type Context interface {
 	context.Context
-	UserName() (string, error)
-	Roots() ([]string, error)
-	PrimaryRoot() (string, error)
-	GHEHosts() ([]string, error)
+	UserName() string
+	Roots() []string
+	PrimaryRoot() string
+	GHEHosts() []string
 }
 
-func DefaultContext(ctx context.Context) Context {
-	return &implContext{Context: ctx}
+// CurrentContext get current context from OS envars and Git configurations
+func CurrentContext(ctx context.Context) (Context, error) {
+	userName, err := getUserName()
+	if err != nil {
+		return nil, err
+	}
+	roots, err := getRoots()
+	if err != nil {
+		return nil, err
+	}
+	gheHosts, err := getGHEHosts()
+	if err != nil {
+		return nil, err
+	}
+	return &implContext{
+		Context:  ctx,
+		userName: userName,
+		roots:    roots,
+		gheHosts: gheHosts,
+	}, nil
 }
 
 type implContext struct {
 	context.Context
+	userName string
+	roots    []string
+	gheHosts []string
 }
 
-func (c *implContext) UserName() (string, error) {
+func (c *implContext) UserName() string {
+	return c.userName
+}
+
+func (c *implContext) Roots() []string {
+	return c.roots
+}
+
+func (c *implContext) PrimaryRoot() string {
+	rts := c.Roots()
+	return rts[0]
+}
+
+func (c *implContext) GHEHosts() []string {
+	return c.gheHosts
+}
+
+func getUserName() (string, error) {
 	user, err := getGitConf("gogh.user")
 	if err != nil {
 		return "", err
@@ -53,7 +92,7 @@ func (c *implContext) UserName() (string, error) {
 	return "", fmt.Errorf("set gogh.user to your gitconfig")
 }
 
-func (c *implContext) Roots() ([]string, error) {
+func getRoots() ([]string, error) {
 	envRoot := os.Getenv("GOGH_ROOT")
 	if envRoot != "" {
 		return filepath.SplitList(envRoot), nil
@@ -67,21 +106,18 @@ func (c *implContext) Roots() ([]string, error) {
 		rts = []string{filepath.Join(build.Default.GOPATH, "src")}
 	}
 
-PATH_CHECK_LOOP:
 	for i, v := range rts {
 		path := filepath.Clean(v)
 		_, err := os.Stat(path)
 		switch {
 		case err == nil:
-			// noop
+			rts[i], err = filepath.EvalSymlinks(path)
+			if err != nil {
+				return nil, err
+			}
 		case os.IsNotExist(err):
 			rts[i] = path
-			continue PATH_CHECK_LOOP
 		default:
-			return nil, err
-		}
-		rts[i], err = filepath.EvalSymlinks(path)
-		if err != nil {
 			return nil, err
 		}
 	}
@@ -90,15 +126,15 @@ PATH_CHECK_LOOP:
 }
 
 // PrimaryRoot returns the first one of the root directories to clone repository.
-func (c *implContext) PrimaryRoot() (string, error) {
-	rts, err := c.Roots()
+func getPrimaryRoot() (string, error) {
+	rts, err := getRoots()
 	if err != nil {
 		return "", err
 	}
 	return rts[0], nil
 }
 
-func (c *implContext) GHEHosts() ([]string, error) {
+func getGHEHosts() ([]string, error) {
 	return getGitConfs("gogh.ghe.host")
 }
 

@@ -52,11 +52,7 @@ func getRepoFullPath(ctx Context, name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	url, err := spec.URL(ctx, false)
-	if err != nil {
-		return "", err
-	}
-	repo, err := FromURL(ctx, url)
+	repo, err := FromURL(ctx, spec.URL(ctx, false))
 	if err != nil {
 		return "", err
 	}

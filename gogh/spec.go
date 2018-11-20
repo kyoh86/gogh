@@ -110,15 +110,12 @@ func (s *RepoSpec) Set(ref string) error {
 }
 
 // URL will get a URL for a repository
-func (s *RepoSpec) URL(ctx Context, ssh bool) (*url.URL, error) {
+func (s *RepoSpec) URL(ctx Context, ssh bool) *url.URL {
 	u := s.refURL // copy
 	httpsURL := &u
 	if !httpsURL.IsAbs() {
 		if !strings.Contains(httpsURL.Path, "/") {
-			user, err := ctx.UserName()
-			if err != nil {
-				return nil, err
-			}
+			user := ctx.UserName()
 			httpsURL.Path = user + "/" + httpsURL.Path
 		}
 		httpsURL.Scheme = "https"
@@ -128,13 +125,10 @@ func (s *RepoSpec) URL(ctx Context, ssh bool) (*url.URL, error) {
 		}
 	}
 	if ssh {
-		sshURL, err := url.Parse(fmt.Sprintf("ssh://git@%s%s", httpsURL.Host, httpsURL.Path))
-		if err != nil {
-			return nil, err
-		}
-		return sshURL, nil
+		sshURL, _ := url.Parse(fmt.Sprintf("ssh://git@%s%s", httpsURL.Host, httpsURL.Path))
+		return sshURL
 	}
-	return httpsURL, nil
+	return httpsURL
 }
 
 func (s RepoSpec) String() string {
@@ -177,10 +171,7 @@ func (s Specs) IsCumulative() bool { return true }
 
 // Remote repository which specified with RepoSpec
 func (s *RepoSpec) Remote(ctx Context, ssh bool) (RemoteRepo, error) {
-	url, err := s.URL(ctx, ssh)
-	if err != nil {
-		return nil, err
-	}
+	url := s.URL(ctx, ssh)
 
 	rmt, err := NewRepository(ctx, url)
 	if err != nil {

@@ -18,10 +18,7 @@ type LocalRepo struct {
 
 // FromFullPath will get a local repository with a full path to the directory
 func FromFullPath(ctx Context, fullPath string) (*LocalRepo, error) {
-	rts, err := ctx.Roots()
-	if err != nil {
-		return nil, err
-	}
+	rts := ctx.Roots()
 	for _, root := range rts {
 		if !strings.HasPrefix(fullPath, root) {
 			continue
@@ -62,10 +59,7 @@ func FromURL(ctx Context, remote *url.URL) (*LocalRepo, error) {
 		return rep, nil
 	}
 
-	r, err := ctx.PrimaryRoot()
-	if err != nil {
-		return nil, err
-	}
+	r := ctx.PrimaryRoot()
 
 	// No repository found, returning new one
 	return &LocalRepo{
@@ -94,11 +88,7 @@ func (repo *LocalRepo) NonHostPath() string {
 
 // IsInPrimaryRoot check which the repository is in primary root directory for gogh
 func (repo *LocalRepo) IsInPrimaryRoot(ctx Context) bool {
-	r, err := ctx.PrimaryRoot()
-	if err != nil {
-		return false
-	}
-	return strings.HasPrefix(repo.FullPath, r)
+	return strings.HasPrefix(repo.FullPath, ctx.PrimaryRoot())
 }
 
 // Matches checks if any subpath of the repository equals the query.
@@ -119,11 +109,7 @@ func isVcsDir(path string) bool {
 
 // Walk thorugh local repositories in gogh.root directories
 func Walk(ctx Context, callback func(*LocalRepo) error) error {
-	rts, err := ctx.Roots()
-	if err != nil {
-		return err
-	}
-	for _, root := range rts {
+	for _, root := range ctx.Roots() {
 		if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 			switch {
 			case err == nil:

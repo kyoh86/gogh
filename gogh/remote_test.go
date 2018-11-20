@@ -20,7 +20,7 @@ func TestNewRepositoryGitHub(t *testing.T) {
 		repo RemoteRepo
 		err  error
 	)
-	ctx := &mockContext{}
+	ctx := &implContext{}
 
 	repo, err = NewRepository(ctx, parseURL(t, "https://github.com/motemen/pusheen-explorer"))
 	require.NoError(t, err)

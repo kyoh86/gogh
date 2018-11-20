@@ -10,11 +10,7 @@ func Root(ctx Context, all bool) error {
 		fmt.Println(ctx.PrimaryRoot())
 		return nil
 	}
-	rts, err := ctx.Roots()
-	if err != nil {
-		return err
-	}
-	for _, root := range rts {
+	for _, root := range ctx.Roots() {
 		fmt.Println(root)
 	}
 	return nil
