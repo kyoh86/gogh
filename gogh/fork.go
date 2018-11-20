@@ -13,12 +13,7 @@ func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName strin
 		return err
 	}
 
-	rmt, err := repoSpec.Remote(ctx, withSSH)
-	if err != nil {
-		return err
-	}
-	remoteURL := rmt.URL()
-	local, err := FromURL(ctx, remoteURL)
+	local, err := FromURL(ctx, repoSpec.URL(ctx, withSSH))
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package gogh
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -35,8 +36,32 @@ func FromFullPath(ctx Context, fullPath string) (*LocalRepo, error) {
 	return nil, fmt.Errorf("no repository found for: %s", fullPath)
 }
 
+// CheckURL checks url is valid GitHub url
+func CheckURL(ctx Context, url *url.URL) error {
+	pathParts := strings.Split(strings.TrimRight(url.Path, "/"), "/")
+	if len(pathParts) != 3 || len(pathParts[1]) == 0 || len(pathParts[2]) == 0 {
+		return errors.New("URL should be formed 'schema://hostname/user/name'")
+	}
+	if url.Host == "github.com" {
+		return nil
+	}
+
+	gheHosts := ctx.GHEHosts()
+
+	for _, host := range gheHosts {
+		if url.Host == host {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("not supported host: %q", url.Host)
+}
+
 // FromURL will get a local repository location from remote repository URL
 func FromURL(ctx Context, remote *url.URL) (*LocalRepo, error) {
+	if err := CheckURL(ctx, remote); err != nil {
+		return nil, err
+	}
 	pathParts := append(
 		[]string{remote.Host}, strings.Split(remote.Path, "/")...,
 	)

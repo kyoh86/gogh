@@ -168,18 +168,3 @@ func (s Specs) String() string {
 
 // IsCumulative : 複数指定可能
 func (s Specs) IsCumulative() bool { return true }
-
-// Remote repository which specified with RepoSpec
-func (s *RepoSpec) Remote(ctx Context, ssh bool) (RemoteRepo, error) {
-	url := s.URL(ctx, ssh)
-
-	rmt, err := NewRepository(ctx, url)
-	if err != nil {
-		return nil, err
-	}
-
-	if !rmt.IsValid() {
-		return nil, fmt.Errorf("Not a valid repository: %s", url)
-	}
-	return rmt, nil
-}

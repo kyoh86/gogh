@@ -74,11 +74,7 @@ func nameToPath(ctx Context, name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	rem, err := spec.Remote(ctx, false)
-	if err != nil {
-		return "", err
-	}
-	loc, err := FromURL(ctx, rem.URL())
+	loc, err := FromURL(ctx, spec.URL(ctx, false))
 	if err != nil {
 		return "", err
 	}

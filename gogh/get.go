@@ -22,12 +22,7 @@ func GetAll(ctx Context, update, withSSH, shallow bool, repoSpecs Specs) error {
 // If update is true, updates the locally cloned repository. Otherwise does nothing.
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
 func Get(ctx Context, update, withSSH, shallow bool, repoSpec RepoSpec) error {
-	rmt, err := repoSpec.Remote(ctx, withSSH)
-	if err != nil {
-		return err
-	}
-
-	remoteURL := rmt.URL()
+	remoteURL := repoSpec.URL(ctx, withSSH)
 	local, err := FromURL(ctx, remoteURL)
 	if err != nil {
 		return err
