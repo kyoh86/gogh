@@ -17,7 +17,7 @@ require (
 	github.com/ogier/pflag v0.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.2.2
-	golang.org/x/crypto v0.0.0-20181106171534-e4dc69e5b2fd // indirect
+	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869 // indirect
 	golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e // indirect
 	gopkg.in/yaml.v2 v2.2.1 // indirect
 )
