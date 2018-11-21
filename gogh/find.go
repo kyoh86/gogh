@@ -37,9 +37,9 @@ func Find(ctx Context, name string) error {
 	return nil
 }
 
-func findRepos(ctx Context, name string) ([]*LocalRepo, error) {
-	var repos []*LocalRepo
-	return repos, Walk(ctx, func(repo *LocalRepo) error {
+func findRepos(ctx Context, name string) ([]*Repository, error) {
+	var repos []*Repository
+	return repos, Walk(ctx, func(repo *Repository) error {
 		if repo.Matches(name) {
 			repos = append(repos, repo)
 		}

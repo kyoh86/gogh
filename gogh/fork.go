@@ -13,11 +13,11 @@ func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName strin
 		return err
 	}
 
-	local, err := FromURL(ctx, repoSpec.URL(ctx, withSSH))
+	repo, err := FromURL(ctx, repoSpec.URL(ctx, withSSH))
 	if err != nil {
 		return err
 	}
-	if err := os.Chdir(local.FullPath); err != nil {
+	if err := os.Chdir(repo.FullPath); err != nil {
 		return err
 	}
 	var hubArgs []string
@@ -30,6 +30,6 @@ func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName strin
 	if execErr.Err != nil {
 		return execErr.Err
 	}
-	fmt.Println(local.RelPath)
+	fmt.Println(repo.RelPath)
 	return nil
 }

@@ -23,12 +23,12 @@ func GetAll(ctx Context, update, withSSH, shallow bool, repoSpecs Specs) error {
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
 func Get(ctx Context, update, withSSH, shallow bool, repoSpec RepoSpec) error {
 	remoteURL := repoSpec.URL(ctx, withSSH)
-	local, err := FromURL(ctx, remoteURL)
+	repo, err := FromURL(ctx, remoteURL)
 	if err != nil {
 		return err
 	}
 
-	path := local.FullPath
+	path := repo.FullPath
 	newPath := false
 	_, err = os.Stat(path)
 	switch {

@@ -135,8 +135,8 @@ func TestCheckURL(t *testing.T) {
 }
 
 func TestWalk(t *testing.T) {
-	neverCalled := func(t *testing.T) func(*LocalRepo) error {
-		return func(*LocalRepo) error {
+	neverCalled := func(t *testing.T) func(*Repository) error {
+		return func(*Repository) error {
 			t.Fatal("should not be called but...")
 			return nil
 		}
@@ -180,7 +180,7 @@ func TestWalk(t *testing.T) {
 		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
 		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
 		err = errors.New("sample error")
-		assert.Error(t, err, Walk(&ctx, func(l *LocalRepo) error {
+		assert.Error(t, err, Walk(&ctx, func(l *Repository) error {
 			assert.Equal(t, path, l.FullPath)
 			return err
 		}))
@@ -207,7 +207,7 @@ func TestList_Symlink(t *testing.T) {
 	require.NoError(t, err)
 
 	paths := []string{}
-	Walk(ctx, func(repo *LocalRepo) error {
+	Walk(ctx, func(repo *Repository) error {
 		paths = append(paths, repo.RelPath)
 		return nil
 	})

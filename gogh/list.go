@@ -9,9 +9,9 @@ import (
 func List(ctx Context, exact, fullpath, short, primary bool, query string) error {
 	filter := filterFunc(ctx, exact, primary, query)
 
-	repos := []*LocalRepo{}
+	repos := []*Repository{}
 
-	if err := Walk(ctx, func(repo *LocalRepo) error {
+	if err := Walk(ctx, func(repo *Repository) error {
 		if !filter(repo) {
 			return nil
 		}
@@ -46,39 +46,39 @@ func List(ctx Context, exact, fullpath, short, primary bool, query string) error
 	return nil
 }
 
-func filterFunc(ctx Context, exact, primary bool, query string) func(*LocalRepo) bool {
+func filterFunc(ctx Context, exact, primary bool, query string) func(*Repository) bool {
 	switch {
 	case query == "":
 		if primary {
-			return func(repo *LocalRepo) bool {
+			return func(repo *Repository) bool {
 				return repo.IsInPrimaryRoot(ctx)
 			}
 		}
-		return func(_ *LocalRepo) bool {
+		return func(_ *Repository) bool {
 			return true
 		}
 	case exact:
 		if primary {
-			return func(repo *LocalRepo) bool {
+			return func(repo *Repository) bool {
 				return repo.IsInPrimaryRoot(ctx) && repo.Matches(query)
 			}
 		}
-		return func(repo *LocalRepo) bool {
+		return func(repo *Repository) bool {
 			return repo.Matches(query)
 		}
 	default:
 		if primary {
-			return func(repo *LocalRepo) bool {
+			return func(repo *Repository) bool {
 				return repo.IsInPrimaryRoot(ctx) && strings.Contains(repo.NonHostPath(), query)
 			}
 		}
-		return func(repo *LocalRepo) bool {
+		return func(repo *Repository) bool {
 			return strings.Contains(repo.NonHostPath(), query)
 		}
 	}
 }
 
-func shortName(dups map[string]bool, repo *LocalRepo) string {
+func shortName(dups map[string]bool, repo *Repository) string {
 	for _, p := range repo.Subpaths() {
 		if dups[p] {
 			continue
