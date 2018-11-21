@@ -64,11 +64,14 @@ func TestFromURL(t *testing.T) {
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 	t.Run("not existing repository", func(t *testing.T) {
-		githubURL, _ := url.Parse("ssh://git@github.com/kyoh86/gogh.git")
-		r, err := FromURL(&ctx, githubURL)
+		r, err := FromURL(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
 		assert.Equal(t, path, r.FullPath)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+	})
+	t.Run("not supported host URL", func(t *testing.T) {
+		_, err := FromURL(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
+		assert.Error(t, err, `not supported host: "example.com"`)
 	})
 	t.Run("existing repository", func(t *testing.T) {
 		// Create dummy repository
@@ -78,11 +81,56 @@ func TestFromURL(t *testing.T) {
 		defer func() {
 			require.NoError(t, os.RemoveAll(path))
 		}()
-		githubURL, _ := url.Parse("ssh://git@github.com/kyoh86/gogh.git")
-		r, err := FromURL(&ctx, githubURL)
+		r, err := FromURL(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
 		assert.Equal(t, path, r.FullPath)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+	})
+}
+
+func parseURL(t *testing.T, text string) *url.URL {
+	t.Helper()
+	u, err := url.Parse(text)
+	require.NoError(t, err)
+	return u
+}
+
+func TestCheckURL(t *testing.T) {
+	t.Run("valid github URL", func(t *testing.T) {
+		ctx := implContext{}
+		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://github.com/kyoh86/gogh")))
+	})
+	t.Run("valid GHE URL", func(t *testing.T) {
+		ctx := implContext{
+			gheHosts: []string{"example.com"},
+		}
+		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://example.com/kyoh86/gogh")))
+	})
+	t.Run("valid github URL with trailing slashes", func(t *testing.T) {
+		ctx := implContext{}
+		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://github.com/kyoh86/gogh/")))
+	})
+	t.Run("valid GHE URL with trailing slashes", func(t *testing.T) {
+		ctx := implContext{
+			gheHosts: []string{"example.com"},
+		}
+		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://example.com/kyoh86/gogh/")))
+	})
+	t.Run("not supported host URL", func(t *testing.T) {
+		ctx := implContext{
+			gheHosts: []string{"example.com"},
+		}
+		assert.Error(t, CheckURL(&ctx, parseURL(t, "https://kyoh86.work/kyoh86/gogh")), `not supported host: "kyoh86.work"`)
+	})
+	t.Run("invalid path on GitHub", func(t *testing.T) {
+		ctx := implContext{}
+		assert.Error(t, CheckURL(&ctx, parseURL(t, "https://github.com/kyoh86/gogh/blob/master/README.md")), `URL should be formed 'schema://hostname/user/name'`)
+	})
+	t.Run("invalid path on GHE", func(t *testing.T) {
+		ctx := implContext{
+			gheHosts: []string{"example.com"},
+		}
+		assert.Error(t, CheckURL(&ctx, parseURL(t, "https://example.com/kyoh86/gogh/blob/master/README.md")), `URL should be formed 'schema://hostname/user/name'`)
 	})
 }
 
