@@ -12,7 +12,7 @@ func hubInit(
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared Shared,
+	shared RepoShared,
 	directory string,
 ) error {
 	var hubArgs []string
@@ -92,7 +92,7 @@ func New(
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared Shared,
+	shared RepoShared,
 	repoName RepoName,
 ) error {
 	path, err := nameToPath(ctx, repoName.String())

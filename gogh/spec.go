@@ -19,8 +19,8 @@ type RepoName struct {
 	text string
 }
 
-// Shared notices file shared flag like group, all, everybody, 0766.
-type Shared string
+// RepoShared notices file shared flag like group, all, everybody, 0766.
+type RepoShared string
 
 var validShared = map[string]struct{}{
 	"false":     {},
@@ -32,20 +32,20 @@ var validShared = map[string]struct{}{
 	"everybody": {},
 }
 
-// Set text as Shared
-func (s *Shared) Set(text string) error {
+// Set text as RepoShared
+func (s *RepoShared) Set(text string) error {
 	if _, ok := validShared[text]; ok {
-		*s = Shared(text)
+		*s = RepoShared(text)
 		return nil
 	}
 	if _, err := strconv.ParseInt(text, 8, 8); err == nil {
-		*s = Shared(text)
+		*s = RepoShared(text)
 		return nil
 	}
 	return fmt.Errorf(`invalid shared value %q; shared can be specified with "false", "true", "umask", "group", "all", "world", "everybody" or "0xxx" (octed value)`, text)
 }
 
-func (s Shared) String() string {
+func (s RepoShared) String() string {
 	return string(s)
 }
 
@@ -92,6 +92,7 @@ func NewSpec(ref string) (*RepoSpec, error) {
 
 // Set text as RepoSpec
 func (s *RepoSpec) Set(ref string) error {
+	rawRef := ref
 	if !hasSchemePattern.MatchString(ref) && scpLikeURLPattern.MatchString(ref) {
 		matched := scpLikeURLPattern.FindStringSubmatch(ref)
 		user := matched[1]
@@ -106,6 +107,7 @@ func (s *RepoSpec) Set(ref string) error {
 		return err
 	}
 	s.refURL = *refURL
+	s.ref = rawRef
 	return nil
 }
 
@@ -141,11 +143,11 @@ func (s RepoSpec) String() string {
 var hasSchemePattern = regexp.MustCompile("^[^:]+://")
 var scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
 
-// Specs is array of RepoSpec
-type Specs []RepoSpec
+// RepoSpecs is array of RepoSpec
+type RepoSpecs []RepoSpec
 
-// Set will add a text to Specs as a RepoSpec
-func (s *Specs) Set(value string) error {
+// Set will add a text to RepoSpecs as a RepoSpec
+func (s *RepoSpecs) Set(value string) error {
 	spec := new(RepoSpec)
 	if err := spec.Set(value); err != nil {
 		return err
@@ -155,7 +157,7 @@ func (s *Specs) Set(value string) error {
 }
 
 // String : Stringに変換する
-func (s Specs) String() string {
+func (s RepoSpecs) String() string {
 	if len(s) == 0 {
 		return ""
 	}
@@ -167,4 +169,4 @@ func (s Specs) String() string {
 }
 
 // IsCumulative : 複数指定可能
-func (s Specs) IsCumulative() bool { return true }
+func (s RepoSpecs) IsCumulative() bool { return true }

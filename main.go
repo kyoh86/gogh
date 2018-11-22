@@ -56,7 +56,7 @@ func get(app *kingpin.Application) (string, func() error) {
 		update    bool
 		withSSH   bool
 		shallow   bool
-		repoSpecs gogh.Specs
+		repoSpecs gogh.RepoSpecs
 	)
 	cmd := app.Command("get", "Clone/sync with a remote repository")
 	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
@@ -139,7 +139,7 @@ func create(app *kingpin.Application) (string, func() error) {
 		bare           bool
 		template       string
 		separateGitDir string
-		shared         gogh.Shared
+		shared         gogh.RepoShared
 		repoName       gogh.RepoName
 	)
 	cmd := app.Command("new", "Create a repository in local and remote.").Alias("create")

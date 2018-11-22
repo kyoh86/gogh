@@ -9,7 +9,7 @@ import (
 )
 
 // GetAll clonse or updates remote repositories.
-func GetAll(ctx Context, update, withSSH, shallow bool, repoSpecs Specs) error {
+func GetAll(ctx Context, update, withSSH, shallow bool, repoSpecs RepoSpecs) error {
 	for _, repoSpec := range repoSpecs {
 		if err := Get(ctx, update, withSSH, shallow, repoSpec); err != nil {
 			return err
