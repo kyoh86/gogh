@@ -1,13 +1,13 @@
 package gogh
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"go/build"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"syscall"
 )
@@ -79,15 +79,15 @@ func (c *implContext) GHEHosts() []string {
 }
 
 func getLogLevel() (string, error) {
-	user, err := getGitConf("gogh.log")
+	if level := os.Getenv(envLogLevel); level != "" {
+		return level, nil
+	}
+	level, err := getGitConf("gogh.log")
 	if err != nil {
 		return "", err
 	}
-	if user != "" {
-		return user, nil
-	}
-	if user := os.Getenv("GOGH_LOG_LEVEL"); user != "" {
-		return user, nil
+	if level != "" {
+		return level, nil
 	}
 	return "Info", nil
 }
@@ -100,54 +100,50 @@ func getUserName() (string, error) {
 	if user != "" {
 		return user, nil
 	}
-	if user := os.Getenv("GITHUB_USER"); user != "" {
+	if user := os.Getenv(envGithubUser); user != "" {
 		return user, nil
 	}
-	switch runtime.GOOS {
-	case "windows":
-		if user := os.Getenv("USERNAME"); user != "" {
-			return user, nil
-		}
-	default:
-		if user := os.Getenv("USER"); user != "" {
-			return user, nil
-		}
+	if user := os.Getenv(envUserName); user != "" {
+		return user, nil
 	}
 	// Make the error if it does not match any pattern
 	return "", fmt.Errorf("set gogh.user to your gitconfig")
 }
 
 func getRoots() ([]string, error) {
-	envRoot := os.Getenv("GOGH_ROOT")
+	var roots []string
+	envRoot := os.Getenv(envRoot)
 	if envRoot != "" {
-		return filepath.SplitList(envRoot), nil
+		roots = filepath.SplitList(envRoot)
 	}
-	rts, err := getGitConfs("gogh.root")
-	if err != nil {
-		return nil, err
+	if len(roots) == 0 {
+		rts, err := getGitConfs("gogh.root")
+		if err != nil {
+			return nil, err
+		}
+		roots = rts
+	}
+	if len(roots) == 0 {
+		roots = []string{filepath.Join(build.Default.GOPATH, "src")}
 	}
 
-	if len(rts) == 0 {
-		rts = []string{filepath.Join(build.Default.GOPATH, "src")}
-	}
-
-	for i, v := range rts {
+	for i, v := range roots {
 		path := filepath.Clean(v)
 		_, err := os.Stat(path)
 		switch {
 		case err == nil:
-			rts[i], err = filepath.EvalSymlinks(path)
+			roots[i], err = filepath.EvalSymlinks(path)
 			if err != nil {
 				return nil, err
 			}
 		case os.IsNotExist(err):
-			rts[i] = path
+			roots[i] = path
 		default:
 			return nil, err
 		}
 	}
 
-	return rts, nil
+	return roots, nil
 }
 
 func getGHEHosts() ([]string, error) {
@@ -175,10 +171,17 @@ func getGitConfs(key string) ([]string, error) {
 	return strings.Split(value, "\000"), nil
 }
 
+var gitArgsForTest []string
+var gitStdinForTest []byte
+
 // output invokes 'git config' and handles some errors properly.
 func output(args ...string) (string, error) {
-	cmd := exec.Command("git", append([]string{"config", "--type", "path", "--null"}, args...)...)
+	param := append(append([]string{"config", "--type", "path", "--null"}, gitArgsForTest...), args...)
+	cmd := exec.Command("git", param...)
 	cmd.Stderr = os.Stderr
+	if gitStdinForTest != nil {
+		cmd.Stdin = bytes.NewBuffer(gitStdinForTest)
+	}
 
 	buf, err := cmd.Output()
 
