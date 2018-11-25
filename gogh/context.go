@@ -176,7 +176,7 @@ var gitStdinForTest []byte
 
 // output invokes 'git config' and handles some errors properly.
 func output(args ...string) (string, error) {
-	param := append(append([]string{"config", "--type", "path", "--null"}, gitArgsForTest...), args...)
+	param := append(append([]string{"config", "--path", "--null"}, gitArgsForTest...), args...)
 	cmd := exec.Command("git", param...)
 	cmd.Stderr = os.Stderr
 	if gitStdinForTest != nil {
