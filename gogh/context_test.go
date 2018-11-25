@@ -33,10 +33,12 @@ func TestGit(t *testing.T) {
 	root = /go/src
 	root = /foo/bar`, func(t *testing.T) {
 		resetEnv(t)
-		baseContext := context.WithValue(context.Background(), "test", "foo:bar")
+		type contextKey string
+		const testContextKey = contextKey("test")
+		baseContext := context.WithValue(context.Background(), testContextKey, "foo:bar")
 		gotContext, err := CurrentContext(baseContext)
 		require.NoError(t, err)
-		assert.Equal(t, "foo:bar", gotContext.Value("test"))
+		assert.Equal(t, "foo:bar", gotContext.Value(testContextKey))
 		assert.Equal(t, "Fatal", gotContext.LogLevel())
 		assert.Equal(t, "kyoh86", gotContext.UserName())
 		assert.Equal(t, []string{"/go/src", "/foo/bar"}, gotContext.Roots())
