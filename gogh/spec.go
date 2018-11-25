@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9])?)/(^[\w-]+)$`)
+var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9]+)?)/([\w-]+)$`)
 
 // var capital = regexp.MustCompile(`[A-Z]`) // UNDONE: warn if name contains capital cases
 
@@ -38,7 +38,7 @@ func (s *RepoShared) Set(text string) error {
 		*s = RepoShared(text)
 		return nil
 	}
-	if _, err := strconv.ParseInt(text, 8, 8); err == nil {
+	if _, err := strconv.ParseInt(text, 8, 16); err == nil {
 		*s = RepoShared(text)
 		return nil
 	}
