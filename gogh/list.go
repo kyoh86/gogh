@@ -6,8 +6,8 @@ import (
 )
 
 // List local repositories
-func List(ctx Context, exact, fullpath, short, primary bool, query string) error {
-	filter := filterFunc(ctx, exact, primary, query)
+func List(ctx Context, fullpath, short, primary bool, query string) error {
+	filter := filterFunc(ctx, primary, query)
 
 	repos := []*Repository{}
 
@@ -46,7 +46,7 @@ func List(ctx Context, exact, fullpath, short, primary bool, query string) error
 	return nil
 }
 
-func filterFunc(ctx Context, exact, primary bool, query string) func(*Repository) bool {
+func filterFunc(ctx Context, primary bool, query string) func(*Repository) bool {
 	switch {
 	case query == "":
 		if primary {
@@ -56,15 +56,6 @@ func filterFunc(ctx Context, exact, primary bool, query string) func(*Repository
 		}
 		return func(_ *Repository) bool {
 			return true
-		}
-	case exact:
-		if primary {
-			return func(repo *Repository) bool {
-				return repo.IsInPrimaryRoot(ctx) && repo.Matches(query)
-			}
-		}
-		return func(repo *Repository) bool {
-			return repo.Matches(query)
 		}
 	default:
 		if primary {

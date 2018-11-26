@@ -161,21 +161,19 @@ func create(app *kingpin.Application) (string, func() error) {
 
 func list(app *kingpin.Application) (string, func() error) {
 	var (
-		exact    bool
 		fullPath bool
 		short    bool
 		primary  bool
 		query    string
 	)
 	cmd := app.Command("list", "List local repositories")
-	cmd.Flag("exact", "Perform an exact match").Short('e').BoolVar(&exact)
 	cmd.Flag("full-path", "Print full paths").Short('f').BoolVar(&fullPath)
 	cmd.Flag("short", "Print short names").Short('s').BoolVar(&short)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Repository name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.List(ctx, exact, fullPath, short, primary, query)
+		return gogh.List(ctx, fullPath, short, primary, query)
 	})
 }
 
