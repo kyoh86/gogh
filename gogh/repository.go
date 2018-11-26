@@ -133,7 +133,10 @@ func isVcsDir(path string) bool {
 	return err == nil
 }
 
+// WalkFunc is the type of the function called for each repository visited by Walk / WalkInPrimary
 type WalkFunc func(*Repository) error
+
+// Walker is the type of the function to visit each repository
 type Walker func(Context, WalkFunc) error
 
 // walkInPath thorugh local repositories in a path
