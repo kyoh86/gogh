@@ -13,24 +13,29 @@ jobs:
           name: install
           command: "go install ./..."
       - run:
-          name: go test and take coverage
-          command: "go test -race -coverprofile=coverage.out ./..."
+          name: test and take coverage
+          command: |
+            mkdir -p .circleci/result
+            go test -race -coverprofile=coverage.out ./... | go-junit-report > .circleci/result/junit.xml;
+      - store_test_results:
+          path: ./.circleci/result
+      - run:
+          name: upload coverage
+          command: "bash <(curl -s https://codecov.io/bash)"
       - persist_to_workspace:
           root: /go
           paths:
             - "src"
             - "pkg"
             - "bin"
-  lint_and_cover:
+
+  lint:
     working_directory: /go/src/github.com/kyoh86/gogh
     docker:
       - image: kyoh86/gotest:latest
     steps:
       - attach_workspace:
           at: /go
-      - run:
-          name: upload a coverage
-          command: "bash <(curl -s https://codecov.io/bash)"
       - run:
           name: search lints
           command: "gometalinter --config /etc/gometalinter/config.json ./... | tee >( reviewdog -f=golint -reporter=github-pr-check )"
@@ -97,7 +102,7 @@ workflows:
               only: /.*/
             tags:
               only: /.*/
-      - lint_and_cover:
+      - lint:
           requires:
             - build
           filters:
@@ -108,7 +113,7 @@ workflows:
       - release:
           requires:
             - build
-            - lint_and_cover
+            - lint
           filters:
             branches:
               ignore: /.*/
