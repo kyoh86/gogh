@@ -1,11 +1,14 @@
 package gogh
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 // RepoListFormatter holds repository list to print them.
 type RepoListFormatter interface {
 	Add(*Repository)
-	PrintAll()
+	PrintAll(io.Writer, string)
 }
 
 // RepoListFormat specifies how gogh prints repo.
@@ -75,9 +78,9 @@ func (f *shortListFormatter) Add(r *Repository) {
 	f.list = append(f.list, r)
 }
 
-func (f *shortListFormatter) PrintAll() {
+func (f *shortListFormatter) PrintAll(w io.Writer, sep string) {
 	for _, repo := range f.list {
-		fmt.Println(f.shortName(repo))
+		fmt.Fprint(w, f.shortName(repo)+sep)
 	}
 }
 
@@ -103,9 +106,9 @@ type fullPathFormatter struct {
 	*simpleCollector
 }
 
-func (f *fullPathFormatter) PrintAll() {
+func (f *fullPathFormatter) PrintAll(w io.Writer, sep string) {
 	for _, repo := range f.list {
-		fmt.Println(repo.FullPath)
+		fmt.Fprint(w, repo.FullPath+sep)
 	}
 }
 
@@ -113,8 +116,8 @@ type relPathFormatter struct {
 	*simpleCollector
 }
 
-func (f *relPathFormatter) PrintAll() {
+func (f *relPathFormatter) PrintAll(w io.Writer, sep string) {
 	for _, repo := range f.list {
-		fmt.Println(repo.RelPath)
+		fmt.Fprint(w, repo.RelPath+sep)
 	}
 }
