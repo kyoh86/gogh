@@ -28,6 +28,5 @@ func List(ctx Context, format RepoListFormat, primary bool, query string) error 
 		return err
 	}
 
-	formatter.PrintAll(os.Stdout, "\n")
-	return nil
+	return formatter.PrintAll(os.Stdout, "\n")
 }

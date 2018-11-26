@@ -8,7 +8,7 @@ import (
 // RepoListFormatter holds repository list to print them.
 type RepoListFormatter interface {
 	Add(*Repository)
-	PrintAll(io.Writer, string)
+	PrintAll(io.Writer, string) error
 }
 
 // RepoListFormat specifies how gogh prints repo.
@@ -78,10 +78,13 @@ func (f *shortListFormatter) Add(r *Repository) {
 	f.list = append(f.list, r)
 }
 
-func (f *shortListFormatter) PrintAll(w io.Writer, sep string) {
+func (f *shortListFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, repo := range f.list {
-		fmt.Fprint(w, f.shortName(repo)+sep)
+		if _, err := fmt.Fprint(w, f.shortName(repo)+sep); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (f *shortListFormatter) shortName(r *Repository) string {
@@ -106,18 +109,24 @@ type fullPathFormatter struct {
 	*simpleCollector
 }
 
-func (f *fullPathFormatter) PrintAll(w io.Writer, sep string) {
+func (f *fullPathFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, repo := range f.list {
-		fmt.Fprint(w, repo.FullPath+sep)
+		if _, err := fmt.Fprint(w, repo.FullPath+sep); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 type relPathFormatter struct {
 	*simpleCollector
 }
 
-func (f *relPathFormatter) PrintAll(w io.Writer, sep string) {
+func (f *relPathFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, repo := range f.list {
-		fmt.Fprint(w, repo.RelPath+sep)
+		if _, err := fmt.Fprint(w, repo.RelPath+sep); err != nil {
+			return err
+		}
 	}
+	return nil
 }
