@@ -15,10 +15,10 @@ jobs:
       - run:
           name: test and take coverage
           command: |
-            mkdir -p .circleci/result
-            go test -race -coverprofile=coverage.out ./... | go-junit-report > .circleci/result/junit.xml;
+            mkdir -p .circleci/test/gotest
+            go test -race -coverprofile=coverage.out ./... | go-junit-report > .circleci/test/gotest/results.xml;
       - store_test_results:
-          path: ./.circleci/result
+          path: ./.circleci/test
       - run:
           name: upload coverage
           command: "bash <(curl -s https://codecov.io/bash)"
