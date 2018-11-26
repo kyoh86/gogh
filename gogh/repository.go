@@ -133,33 +133,46 @@ func isVcsDir(path string) bool {
 	return err == nil
 }
 
+type WalkFunc func(*Repository) error
+type Walker func(Context, WalkFunc) error
+
+// walkInPath thorugh local repositories in a path
+func walkInPath(ctx Context, path string, callback WalkFunc) error {
+	return filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		switch {
+		case err == nil:
+			// noop
+		case os.IsNotExist(err):
+			return nil
+		default:
+			return err
+		}
+		if !info.IsDir() {
+			return nil
+		}
+		if !isVcsDir(path) {
+			return nil
+		}
+		repo, err := FromFullPath(ctx, path)
+		if err != nil {
+			return nil
+		}
+		if err := callback(repo); err != nil {
+			return err
+		}
+		return filepath.SkipDir
+	})
+}
+
+// WalkInPrimary thorugh local repositories in the first gogh.root directory
+func WalkInPrimary(ctx Context, callback WalkFunc) error {
+	return walkInPath(ctx, ctx.PrimaryRoot(), callback)
+}
+
 // Walk thorugh local repositories in gogh.root directories
-func Walk(ctx Context, callback func(*Repository) error) error {
+func Walk(ctx Context, callback WalkFunc) error {
 	for _, root := range ctx.Roots() {
-		if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-			switch {
-			case err == nil:
-				// noop
-			case os.IsNotExist(err):
-				return nil
-			default:
-				return err
-			}
-			if !info.IsDir() {
-				return nil
-			}
-			if !isVcsDir(path) {
-				return nil
-			}
-			repo, err := FromFullPath(ctx, path)
-			if err != nil {
-				return nil
-			}
-			if err := callback(repo); err != nil {
-				return err
-			}
-			return filepath.SkipDir
-		}); err != nil {
+		if err := walkInPath(ctx, root, callback); err != nil {
 			return err
 		}
 	}

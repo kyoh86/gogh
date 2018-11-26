@@ -7,12 +7,15 @@ import (
 
 // List local repositories
 func List(ctx Context, fullpath, short, primary bool, query string) error {
-	filter := filterFunc(ctx, primary, query)
+	var walk Walker = Walk
+	if primary {
+		walk = WalkInPrimary
+	}
 
 	repos := []*Repository{}
 
-	if err := Walk(ctx, func(repo *Repository) error {
-		if !filter(repo) {
+	if err := walk(ctx, func(repo *Repository) error {
+		if query == "" || strings.Contains(repo.NonHostPath(), query) {
 			return nil
 		}
 
@@ -44,29 +47,6 @@ func List(ctx Context, fullpath, short, primary bool, query string) error {
 		}
 	}
 	return nil
-}
-
-func filterFunc(ctx Context, primary bool, query string) func(*Repository) bool {
-	switch {
-	case query == "":
-		if primary {
-			return func(repo *Repository) bool {
-				return repo.IsInPrimaryRoot(ctx)
-			}
-		}
-		return func(_ *Repository) bool {
-			return true
-		}
-	default:
-		if primary {
-			return func(repo *Repository) bool {
-				return repo.IsInPrimaryRoot(ctx) && strings.Contains(repo.NonHostPath(), query)
-			}
-		}
-		return func(repo *Repository) bool {
-			return strings.Contains(repo.NonHostPath(), query)
-		}
-	}
 }
 
 func shortName(dups map[string]bool, repo *Repository) string {
