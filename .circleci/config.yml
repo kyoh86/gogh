@@ -16,7 +16,7 @@ jobs:
           name: test and take coverage
           command: |
             mkdir -p .circleci/test/gotest
-            go test -race -coverprofile=coverage.out ./... | go-junit-report > .circleci/test/gotest/results.xml;
+            go test -v -race -coverprofile=coverage.out ./... | go-junit-report > .circleci/test/gotest/results.xml;
       - store_test_results:
           path: ./.circleci/test
       - run:
