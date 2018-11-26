@@ -161,19 +161,17 @@ func create(app *kingpin.Application) (string, func() error) {
 
 func list(app *kingpin.Application) (string, func() error) {
 	var (
-		fullPath bool
-		short    bool
-		primary  bool
-		query    string
+		format  string
+		primary bool
+		query   string
 	)
 	cmd := app.Command("list", "List local repositories")
-	cmd.Flag("full-path", "Print full paths").Short('f').BoolVar(&fullPath)
-	cmd.Flag("short", "Print short names").Short('s').BoolVar(&short)
+	cmd.Flag("format", "Format of each repository").Short('f').Default(gogh.RepoListFormatRelPath.String()).EnumVar(&format, gogh.RepoListFormats()...)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Repository name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.List(ctx, fullPath, short, primary, query)
+		return gogh.List(ctx, gogh.RepoListFormat(format), primary, query)
 	})
 }
 
