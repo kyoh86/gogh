@@ -28,7 +28,6 @@ func TestGit(t *testing.T) {
 	host = foo.example.com
 	host = bar.example.com
 [gogh]
-	log = Fatal
 	user = kyoh86
 	root = /go/src
 	root = /foo/bar`, func(t *testing.T) {
@@ -39,38 +38,10 @@ func TestGit(t *testing.T) {
 		gotContext, err := CurrentContext(baseContext)
 		require.NoError(t, err)
 		assert.Equal(t, "foo:bar", gotContext.Value(testContextKey))
-		assert.Equal(t, "Fatal", gotContext.LogLevel())
 		assert.Equal(t, "kyoh86", gotContext.UserName())
 		assert.Equal(t, []string{"/go/src", "/foo/bar"}, gotContext.Roots())
 		assert.Equal(t, "/go/src", gotContext.PrimaryRoot())
 		assert.Equal(t, []string{"foo.example.com", "bar.example.com"}, gotContext.GHEHosts())
-	})
-	run("get log level from envar", `[gogh] log=dummy`, func(t *testing.T) {
-		resetEnv(t)
-		require.NoError(t, os.Setenv(envLogLevel, "Warn"))
-		log, err := getLogLevel()
-		require.NoError(t, err)
-		assert.Equal(t, "Warn", log)
-	})
-
-	run("get log level from git config", `[gogh] log=Error`, func(t *testing.T) {
-		resetEnv(t)
-		log, err := getLogLevel()
-		require.NoError(t, err)
-		assert.Equal(t, "Error", log)
-	})
-
-	run("get default log level from envar", ``, func(t *testing.T) {
-		resetEnv(t)
-		log, err := getLogLevel()
-		require.NoError(t, err)
-		assert.Equal(t, "Info", log)
-	})
-
-	run("expect to fail to get log level with invalid config", `[gogh] =foobar`, func(t *testing.T) {
-		resetEnv(t)
-		_, err := getLogLevel()
-		assert.NotNil(t, err)
 	})
 
 	run("get user name from git config", "[gogh]\nuser = kyoh86", func(t *testing.T) {
