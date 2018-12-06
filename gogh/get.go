@@ -41,14 +41,14 @@ func Get(ctx Context, update, withSSH, shallow bool, repoSpec RepoSpec) error {
 	}
 
 	if newPath {
-		log.Println("clone", fmt.Sprintf("%s -> %s", remoteURL, path))
+		log.Println("info: clone", fmt.Sprintf("%s -> %s", remoteURL, path))
 
 		return git.Clone(remoteURL, path, shallow)
 	}
 	if update {
-		log.Println("update", path)
+		log.Println("info: update", path)
 		return git.Update(path)
 	}
-	log.Println("exists", path)
+	log.Println("warn: exists", path)
 	return nil
 }

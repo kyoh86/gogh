@@ -45,7 +45,7 @@ var CommandRunner = func(cmd *exec.Cmd) error {
 }
 
 func execCommand(cmd *exec.Cmd) error {
-	log.Println(cmd.Args[0], strings.Join(cmd.Args[1:], " "))
+	log.Println("info: calling", cmd.Args[0], strings.Join(cmd.Args[1:], " "))
 
 	err := CommandRunner(cmd)
 	if err != nil {
