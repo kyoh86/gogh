@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/alecthomas/kingpin"
+	"github.com/comail/colog"
 	"github.com/kyoh86/gogh/gogh"
 )
 
@@ -43,10 +44,16 @@ func main() {
 func wrapContext(f func(gogh.Context) error) func() error {
 	return func() error {
 		ctx, err := gogh.CurrentContext(context.Background())
-		log.SetOutput(ctx.Stderr())
 		if err != nil {
 			return err
 		}
+		lvl, err := colog.ParseLevel(ctx.LogLevel())
+		if err != nil {
+			return err
+		}
+		colog.Register()
+		colog.SetOutput(ctx.Stderr())
+		colog.SetMinLevel(lvl)
 		return f(ctx)
 	}
 }

@@ -3,6 +3,7 @@ package gogh
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
@@ -30,13 +31,11 @@ func Find(ctx Context, name string) error {
 		}
 
 	default:
-		var lines []string
-		lines = append(lines, "more than one repositories are found")
-		lines = append(lines, "try more precise name")
+		log.Println("warn: more than one repositories are found")
 		for _, repo := range repos {
-			lines = append(lines, "- "+strings.Join(repo.PathParts, "/"))
+			log.Println("warn: - " + strings.Join(repo.PathParts, "/"))
 		}
-		return errors.New(strings.Join(lines, "\n"))
+		return errors.New("try more precise name")
 	}
 	return nil
 }

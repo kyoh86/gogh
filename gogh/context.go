@@ -19,6 +19,7 @@ type Context interface {
 	Stdout() io.Writer
 	Stderr() io.Writer
 	UserName() string
+	LogLevel() string
 	Roots() []string
 	PrimaryRoot() string
 	GHEHosts() []string
@@ -27,6 +28,10 @@ type Context interface {
 // CurrentContext get current context from OS envars and Git configurations
 func CurrentContext(ctx context.Context) (Context, error) {
 	userName, err := getUserName()
+	if err != nil {
+		return nil, err
+	}
+	logLevel, err := getLogLevel()
 	if err != nil {
 		return nil, err
 	}
@@ -43,6 +48,7 @@ func CurrentContext(ctx context.Context) (Context, error) {
 		stdout:   os.Stdout,
 		stderr:   os.Stderr,
 		userName: userName,
+		logLevel: logLevel,
 		roots:    roots,
 		gheHosts: gheHosts,
 	}, nil
@@ -53,6 +59,7 @@ type implContext struct {
 	stdout   io.Writer
 	stderr   io.Writer
 	userName string
+	logLevel string
 	roots    []string
 	gheHosts []string
 }
@@ -67,6 +74,10 @@ func (c *implContext) Stderr() io.Writer {
 
 func (c *implContext) UserName() string {
 	return c.userName
+}
+
+func (c *implContext) LogLevel() string {
+	return c.logLevel
 }
 
 func (c *implContext) Roots() []string {
@@ -98,6 +109,20 @@ func getUserName() (string, error) {
 	}
 	// Make the error if it does not match any pattern
 	return "", fmt.Errorf("set gogh.user to your gitconfig")
+}
+
+func getLogLevel() (string, error) {
+	ll, err := getGitConf("gogh.logLevel")
+	if err != nil {
+		return "", err
+	}
+	if ll != "" {
+		return ll, nil
+	}
+	if ll := os.Getenv(envLogLevel); ll != "" {
+		return ll, nil
+	}
+	return "warn", nil // default: warn
 }
 
 func getRoots() ([]string, error) {

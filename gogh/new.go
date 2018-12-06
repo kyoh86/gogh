@@ -1,8 +1,10 @@
 package gogh
 
 import (
+	"log"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/github/hub/commands"
 )
@@ -21,6 +23,7 @@ func hubInit(
 	hubArgs = appendIfFilled(hubArgs, "--shared", shared.String())
 	hubArgs = append(hubArgs, directory)
 	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
+	log.Printf("debug: calling `hub init %s`", strings.Join(hubArgs, " "))
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("init"), commands.NewArgs(hubArgs))
 	if execErr.Err != nil {
 		return execErr.Err
@@ -61,6 +64,7 @@ func hubCreate(
 	}
 	hubArgs = append(hubArgs, repoName.String())
 	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
+	log.Printf("debug: calling `hub create %s`", strings.Join(hubArgs, " "))
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("create"), commands.NewArgs(hubArgs))
 	if execErr.Err != nil {
 		return execErr.Err
@@ -100,22 +104,26 @@ func New(
 	}
 
 	// mkdir
+	log.Println("info: creating a directory")
 	if err := os.MkdirAll(path, os.ModePerm); err != nil {
 		return err
 	}
 
 	// hub init
+	log.Println("info: initializing a repository")
 	if err := hubInit(bare, template, separateGitDir, shared, path); err != nil {
 		return err
 	}
 
 	// hub create
+	log.Println("info: creating a new repository in GitHub")
 	if err := hubCreate(private, description, homepage, browse, clipboard, repoName, path); err != nil {
 		return err
 	}
 
 	// which yo
 	if err := runSilently(ctx, "which", "yo"); err == nil {
+		log.Println("info: calling yo")
 		if err := runInDir(ctx, "yo", path); err != nil {
 			return err
 		}

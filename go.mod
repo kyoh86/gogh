@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/atotto/clipboard v0.1.1 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
+	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/github/hub v2.6.0+incompatible
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
