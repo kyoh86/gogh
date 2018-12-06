@@ -7,11 +7,15 @@ import (
 // Root prints a gogh.root
 func Root(ctx Context, all bool) error {
 	if !all {
-		fmt.Println(ctx.PrimaryRoot())
+		if _, err := fmt.Fprintln(ctx.Stdout(), ctx.PrimaryRoot()); err != nil {
+			return err
+		}
 		return nil
 	}
 	for _, root := range ctx.Roots() {
-		fmt.Println(root)
+		if _, err := fmt.Fprintln(ctx.Stdout(), root); err != nil {
+			return err
+		}
 	}
 	return nil
 }
