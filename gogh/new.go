@@ -1,35 +1,15 @@
 package gogh
 
 import (
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/github/hub/commands"
 )
-
-func hubInit(
-	bare bool,
-	template string,
-	separateGitDir string,
-	shared RepoShared,
-	directory string,
-) error {
-	var hubArgs []string
-	hubArgs = appendIf(hubArgs, "--bare", bare)
-	hubArgs = appendIfFilled(hubArgs, "--template", template)
-	hubArgs = appendIfFilled(hubArgs, "--separate-git-dir", separateGitDir)
-	hubArgs = appendIfFilled(hubArgs, "--shared", shared.String())
-	hubArgs = append(hubArgs, directory)
-	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
-	log.Printf("debug: calling `hub init %s`", strings.Join(hubArgs, " "))
-	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("init"), commands.NewArgs(hubArgs))
-	if execErr.Err != nil {
-		return execErr.Err
-	}
-	return nil
-}
 
 func hubCreate(
 	private bool,
@@ -109,9 +89,9 @@ func New(
 		return err
 	}
 
-	// hub init
+	// git init
 	log.Println("info: initializing a repository")
-	if err := hubInit(bare, template, separateGitDir, shared, path); err != nil {
+	if err := gitInit(ctx, bare, template, separateGitDir, shared, path); err != nil {
 		return err
 	}
 
@@ -122,9 +102,17 @@ func New(
 	}
 
 	// which yo
-	if err := runSilently(ctx, "which", "yo"); err == nil {
+	cmd := exec.Command("which", "yo")
+	cmd.Stdout = ioutil.Discard
+	cmd.Stderr = ioutil.Discard
+	if err := execCommand(cmd); err == nil {
 		log.Println("info: calling yo")
-		if err := runInDir(ctx, "yo", path); err != nil {
+		cmd := exec.Command("yo")
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = ctx.Stdout()
+		cmd.Stderr = ctx.Stderr()
+		cmd.Dir = path
+		if err := execCommand(cmd); err != nil {
 			return err
 		}
 	}

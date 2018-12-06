@@ -53,4 +53,11 @@ func TestGitBackend(t *testing.T) {
 		"git", "pull", "--ff-only",
 	}, lastCommand().Args)
 	assert.Equal(t, localDir, lastCommand().Dir)
+
+	err = gitInit(ctx, true, "foo/bar", "", RepoShared(""), "directory")
+	require.NoError(t, err)
+	assert.Len(t, commands, 4)
+	assert.Equal(t, []string{
+		"git", "init", "--bare", "--template", "foo/bar", "directory",
+	}, lastCommand().Args)
 }

@@ -2,42 +2,10 @@ package gogh
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 	"os/exec"
 	"strings"
 )
-
-// run command with through in/out
-func run(ctx Context, command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = ctx.Stdout()
-	cmd.Stderr = ctx.Stderr()
-
-	return execCommand(cmd)
-}
-
-// runSilently runs command without output
-func runSilently(ctx Context, command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Stdout = ioutil.Discard
-	cmd.Stderr = ioutil.Discard
-
-	return execCommand(cmd)
-}
-
-// runInDir runs a command within the directory
-func runInDir(ctx Context, dir, command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = ctx.Stdout()
-	cmd.Stderr = ctx.Stderr()
-	cmd.Dir = dir
-
-	return execCommand(cmd)
-}
 
 // commandRunner will run a command
 var commandRunner = func(cmd *exec.Cmd) error {
