@@ -8,10 +8,8 @@ import (
 // Root prints a gogh.root
 func Root(ctx Context, all bool) error {
 	if !all {
-		if _, err := fmt.Fprintln(ctx.Stdout(), ctx.PrimaryRoot()); err != nil {
-			return err
-		}
-		return nil
+		_, err := fmt.Fprintln(ctx.Stdout(), ctx.PrimaryRoot())
+		return err
 	}
 	log.Println("info: finding all roots...")
 	for _, root := range ctx.Roots() {
