@@ -30,6 +30,6 @@ func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName strin
 	if execErr.Err != nil {
 		return execErr.Err
 	}
-	fmt.Println(repo.RelPath)
+	fmt.Fprintln(ctx.Stdout(), repo.RelPath)
 	return nil
 }

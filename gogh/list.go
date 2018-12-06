@@ -1,7 +1,6 @@
 package gogh
 
 import (
-	"os"
 	"strings"
 )
 
@@ -28,5 +27,5 @@ func List(ctx Context, format RepoListFormat, primary bool, query string) error 
 		return err
 	}
 
-	return formatter.PrintAll(os.Stdout, "\n")
+	return formatter.PrintAll(ctx.Stdout(), "\n")
 }

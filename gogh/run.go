@@ -10,17 +10,17 @@ import (
 )
 
 // run command with through in/out
-func run(command string, args ...string) error {
+func run(ctx Context, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = ctx.Stdout()
+	cmd.Stderr = ctx.Stderr()
 
 	return execCommand(cmd)
 }
 
 // runSilently runs command without output
-func runSilently(command string, args ...string) error {
+func runSilently(ctx Context, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = ioutil.Discard
 	cmd.Stderr = ioutil.Discard
@@ -29,11 +29,11 @@ func runSilently(command string, args ...string) error {
 }
 
 // runInDir runs a command within the directory
-func runInDir(dir, command string, args ...string) error {
+func runInDir(ctx Context, dir, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = ctx.Stdout()
+	cmd.Stderr = ctx.Stderr()
 	cmd.Dir = dir
 
 	return execCommand(cmd)

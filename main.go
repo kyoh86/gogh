@@ -18,7 +18,6 @@ var (
 )
 
 func main() {
-	log.SetOutput(os.Stderr)
 	app := kingpin.New("gogh", "GO GitHub project manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
 
 	cmds := map[string]func() error{}
@@ -44,6 +43,7 @@ func main() {
 func wrapContext(f func(gogh.Context) error) func() error {
 	return func() error {
 		ctx, err := gogh.CurrentContext(context.Background())
+		log.SetOutput(ctx.Stderr())
 		if err != nil {
 			return err
 		}

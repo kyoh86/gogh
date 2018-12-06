@@ -20,10 +20,10 @@ func Find(ctx Context, name string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(path)
+		fmt.Fprintln(ctx.Stdout(), path)
 
 	case 1:
-		fmt.Println(repos[0].FullPath)
+		fmt.Fprintln(ctx.Stdout(), repos[0].FullPath)
 
 	default:
 		var lines []string

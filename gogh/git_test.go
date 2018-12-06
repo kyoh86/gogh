@@ -27,21 +27,26 @@ func TestGitBackend(t *testing.T) {
 		return nil
 	}
 
-	err = gitClone(remoteURL, localDir, false)
+	ctx := &implContext{
+		stderr: ioutil.Discard,
+		stdout: ioutil.Discard,
+	}
+
+	err = gitClone(ctx, remoteURL, localDir, false)
 	require.NoError(t, err)
 	assert.Len(t, commands, 1)
 	assert.Equal(t, []string{
 		"git", "clone", remoteURL.String(), localDir,
 	}, lastCommand().Args)
 
-	err = gitClone(remoteURL, localDir, true)
+	err = gitClone(ctx, remoteURL, localDir, true)
 	require.NoError(t, err)
 	assert.Len(t, commands, 2)
 	assert.Equal(t, []string{
 		"git", "clone", "--depth", "1", remoteURL.String(), localDir,
 	}, lastCommand().Args)
 
-	err = gitUpdate(localDir)
+	err = gitUpdate(ctx, localDir)
 	require.NoError(t, err)
 	assert.Len(t, commands, 3)
 	assert.Equal(t, []string{

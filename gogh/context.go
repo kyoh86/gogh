@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"go/build"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +16,8 @@ import (
 // Context holds configurations and environments
 type Context interface {
 	context.Context
+	Stdout() io.Writer
+	Stderr() io.Writer
 	UserName() string
 	Roots() []string
 	PrimaryRoot() string
@@ -37,6 +40,8 @@ func CurrentContext(ctx context.Context) (Context, error) {
 	}
 	return &implContext{
 		Context:  ctx,
+		stdout:   os.Stdout,
+		stderr:   os.Stderr,
 		userName: userName,
 		roots:    roots,
 		gheHosts: gheHosts,
@@ -45,9 +50,19 @@ func CurrentContext(ctx context.Context) (Context, error) {
 
 type implContext struct {
 	context.Context
+	stdout   io.Writer
+	stderr   io.Writer
 	userName string
 	roots    []string
 	gheHosts []string
+}
+
+func (c *implContext) Stdout() io.Writer {
+	return c.stdout
+}
+
+func (c *implContext) Stderr() io.Writer {
+	return c.stderr
 }
 
 func (c *implContext) UserName() string {

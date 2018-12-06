@@ -115,8 +115,8 @@ func New(
 	}
 
 	// which yo
-	if err := runSilently("which", "yo"); err == nil {
-		if err := runInDir("yo", path); err != nil {
+	if err := runSilently(ctx, "which", "yo"); err == nil {
+		if err := runInDir(ctx, "yo", path); err != nil {
 			return err
 		}
 	}

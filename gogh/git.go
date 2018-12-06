@@ -7,7 +7,7 @@ import (
 )
 
 // gitClone git repository
-func gitClone(remote *url.URL, local string, shallow bool) error {
+func gitClone(ctx Context, remote *url.URL, local string, shallow bool) error {
 	dir, _ := filepath.Split(local)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -20,10 +20,10 @@ func gitClone(remote *url.URL, local string, shallow bool) error {
 	}
 	args = append(args, remote.String(), local)
 
-	return run("git", args...)
+	return run(ctx, "git", args...)
 }
 
 // gitUpdate pulls changes from remote repository
-func gitUpdate(local string) error {
-	return runInDir(local, "git", "pull", "--ff-only")
+func gitUpdate(ctx Context, local string) error {
+	return runInDir(ctx, local, "git", "pull", "--ff-only")
 }
