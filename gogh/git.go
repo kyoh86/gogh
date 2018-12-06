@@ -25,11 +25,7 @@ func gitInit(
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = ctx.Stdout()
 	cmd.Stderr = ctx.Stderr()
-	err := execCommand(cmd)
-	if err != nil {
-		return err
-	}
-	return nil
+	return execCommand(cmd)
 }
 
 // gitClone git repository
