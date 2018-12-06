@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/kyoh86/gogh/internal/git"
 )
 
 // GetAll clonse or updates remote repositories.
@@ -43,11 +41,11 @@ func Get(ctx Context, update, withSSH, shallow bool, repoSpec RepoSpec) error {
 	if newPath {
 		log.Println("info: clone", fmt.Sprintf("%s -> %s", remoteURL, path))
 
-		return git.Clone(remoteURL, path, shallow)
+		return gitClone(remoteURL, path, shallow)
 	}
 	if update {
 		log.Println("info: update", path)
-		return git.Update(path)
+		return gitUpdate(path)
 	}
 	log.Println("warn: exists", path)
 	return nil

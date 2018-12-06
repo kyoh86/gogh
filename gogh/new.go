@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/github/hub/commands"
-	"github.com/kyoh86/gogh/internal/run"
 )
 
 func hubInit(
@@ -116,8 +115,8 @@ func New(
 	}
 
 	// which yo
-	if err := run.Silently("which", "yo"); err == nil {
-		if err := run.InDir("yo", path); err != nil {
+	if err := runSilently("which", "yo"); err == nil {
+		if err := runInDir("yo", path); err != nil {
 			return err
 		}
 	}

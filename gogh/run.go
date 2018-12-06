@@ -1,4 +1,4 @@
-package run
+package gogh
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-// Run command with through in/out
-func Run(command string, args ...string) error {
+// run command with through in/out
+func run(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -19,8 +19,8 @@ func Run(command string, args ...string) error {
 	return execCommand(cmd)
 }
 
-// Silently runs command without output
-func Silently(command string, args ...string) error {
+// runSilently runs command without output
+func runSilently(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = ioutil.Discard
 	cmd.Stderr = ioutil.Discard
@@ -28,8 +28,8 @@ func Silently(command string, args ...string) error {
 	return execCommand(cmd)
 }
 
-// InDir runs a command within the directory
-func InDir(dir, command string, args ...string) error {
+// runInDir runs a command within the directory
+func runInDir(dir, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -39,28 +39,28 @@ func InDir(dir, command string, args ...string) error {
 	return execCommand(cmd)
 }
 
-// CommandRunner will run a command
-var CommandRunner = func(cmd *exec.Cmd) error {
+// commandRunner will run a command
+var commandRunner = func(cmd *exec.Cmd) error {
 	return cmd.Run()
 }
 
 func execCommand(cmd *exec.Cmd) error {
 	log.Println("info: calling", cmd.Args[0], strings.Join(cmd.Args[1:], " "))
 
-	err := CommandRunner(cmd)
+	err := commandRunner(cmd)
 	if err != nil {
-		return &Error{cmd, err}
+		return &execError{cmd, err}
 	}
 
 	return nil
 }
 
-// Error holds command and its result
-type Error struct {
+// execError holds command and its result
+type execError struct {
 	Command   *exec.Cmd
 	ExecError error
 }
 
-func (e *Error) Error() string {
+func (e *execError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Command.Path, e.ExecError)
 }
