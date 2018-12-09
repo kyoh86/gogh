@@ -107,14 +107,18 @@ func (repo *Repository) Subpaths() []string {
 	return tails
 }
 
-// NonHostPath will get a relative path from its hostname
-func (repo *Repository) NonHostPath() string {
-	return strings.Join(repo.PathParts[1:], "/")
-}
-
 // IsInPrimaryRoot check which the repository is in primary root directory for gogh
 func (repo *Repository) IsInPrimaryRoot(ctx Context) bool {
 	return strings.HasPrefix(repo.FullPath, ctx.PrimaryRoot())
+}
+
+// Name returns repository owner and name.
+func (repo *Repository) Name() RepoName {
+	return RepoName{
+		text: strings.Join(repo.PathParts[1:], "/"),
+		user: repo.PathParts[1],
+		name: repo.PathParts[2],
+	}
 }
 
 // Matches checks if any subpath of the repository equals the query.
@@ -124,7 +128,6 @@ func (repo *Repository) Matches(pathQuery string) bool {
 			return true
 		}
 	}
-
 	return false
 }
 

@@ -18,7 +18,7 @@ func List(ctx Context, format RepoListFormat, primary bool, query string) error 
 	}
 
 	if err := walk(ctx, func(repo *Repository) error {
-		if query != "" || !strings.Contains(repo.NonHostPath(), query) {
+		if query != "" || !strings.Contains(repo.Name().String(), query) {
 			log.Printf("debug: found one repository (%q) but it's not matched for query\n", repo.FullPath)
 			return nil
 		}
