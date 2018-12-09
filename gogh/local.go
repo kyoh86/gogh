@@ -122,7 +122,7 @@ func walkInPath(ctx Context, root string, callback WalkFunc) error {
 		if !exists {
 			return nil
 		}
-		l, err := parseLocal(ctx, root, path)
+		l, err := parseLocal(root, path)
 		if err != nil {
 			return nil
 		}
@@ -133,7 +133,7 @@ func walkInPath(ctx Context, root string, callback WalkFunc) error {
 	})
 }
 
-func parseLocal(ctx Context, root string, fullPath string) (*Local, error) {
+func parseLocal(root string, fullPath string) (*Local, error) {
 	rel, err := filepath.Rel(root, fullPath)
 	if err != nil {
 		return nil, err

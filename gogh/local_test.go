@@ -18,7 +18,7 @@ func TestParseLocal(t *testing.T) {
 
 	t.Run("in primary root", func(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
-		l, err := parseLocal(&ctx, tmp, path)
+		l, err := parseLocal(tmp, path)
 		require.NoError(t, err)
 		assert.Equal(t, path, l.FullPath)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
@@ -30,7 +30,7 @@ func TestParseLocal(t *testing.T) {
 		ctx := ctx
 		ctx.roots = append(ctx.roots, tmp2)
 		path := filepath.Join(tmp2, "github.com", "kyoh86", "gogh")
-		l, err := parseLocal(&ctx, tmp2, path)
+		l, err := parseLocal(tmp2, path)
 		require.NoError(t, err)
 		assert.Equal(t, path, l.FullPath)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())

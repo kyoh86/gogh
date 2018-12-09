@@ -12,10 +12,7 @@ import (
 
 func TestFormatter(t *testing.T) {
 	t.Run("dry run formatters", func(t *testing.T) {
-		ctx := &implContext{
-			roots: []string{"/go/src"},
-		}
-		local, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/gogh")
+		local, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/gogh")
 		require.NoError(t, err)
 		for _, f := range RepoListFormats() {
 			formatter, err := RepoListFormat(f).Formatter()
@@ -26,12 +23,9 @@ func TestFormatter(t *testing.T) {
 	})
 
 	t.Run("rel path formatter", func(t *testing.T) {
-		ctx := &implContext{
-			roots: []string{"/go/src"},
-		}
-		local1, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
+		local1, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		local2, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/bar")
+		local2, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatRelPath.Formatter()
 		require.NoError(t, err)
@@ -43,12 +37,9 @@ func TestFormatter(t *testing.T) {
 	})
 
 	t.Run("full path formatter", func(t *testing.T) {
-		ctx := &implContext{
-			roots: []string{"/go/src"},
-		}
-		local1, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
+		local1, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		local2, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/bar")
+		local2, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatFullPath.Formatter()
 		require.NoError(t, err)
@@ -60,23 +51,17 @@ func TestFormatter(t *testing.T) {
 	})
 
 	t.Run("short formatter", func(t *testing.T) {
-		ctx := &implContext{
-			roots: []string{
-				"/go/src",
-				"/foo",
-			},
-		}
-		local1, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
+		local1, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		local2, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/bar")
+		local2, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		local3, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh87/bar")
+		local3, err := parseLocal("/go/src", "/go/src/github.com/kyoh87/bar")
 		require.NoError(t, err)
-		local4, err := parseLocal(ctx, "/go/src", "/go/src/example.com/kyoh86/bar")
+		local4, err := parseLocal("/go/src", "/go/src/example.com/kyoh86/bar")
 		require.NoError(t, err)
-		local5, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/baz")
+		local5, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/baz")
 		require.NoError(t, err)
-		local6, err := parseLocal(ctx, "/foo", "/foo/github.com/kyoh86/baz")
+		local6, err := parseLocal("/foo", "/foo/github.com/kyoh86/baz")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatShort.Formatter()
 		require.NoError(t, err)
@@ -97,10 +82,7 @@ func TestFormatter(t *testing.T) {
 	})
 
 	t.Run("writer error", func(t *testing.T) {
-		ctx := &implContext{
-			roots: []string{"/go/src"},
-		}
-		local, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
+		local, err := parseLocal("/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatShort.Formatter()
 		require.NoError(t, err)
