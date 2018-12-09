@@ -36,10 +36,10 @@ func Bulk(ctx Context, update, withSSH, shallow bool) error {
 
 // bulkFromReader bulk get repositories specified in reader.
 func bulkFromReader(ctx Context, in io.Reader, update, withSSH, shallow bool) error {
-	var remoteNames RemoteNames
+	var remotes Remotes
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
-		if err := remoteNames.Set(scanner.Text()); err != nil {
+		if err := remotes.Set(scanner.Text()); err != nil {
 			return err
 		}
 	}
@@ -47,5 +47,5 @@ func bulkFromReader(ctx Context, in io.Reader, update, withSSH, shallow bool) er
 		return err
 	}
 
-	return GetAll(ctx, update, withSSH, shallow, remoteNames)
+	return GetAll(ctx, update, withSSH, shallow, remotes)
 }

@@ -63,7 +63,7 @@ func get(app *kingpin.Application) (string, func() error) {
 		update      bool
 		withSSH     bool
 		shallow     bool
-		remoteNames gogh.RemoteNames
+		remoteNames gogh.Remotes
 	)
 	cmd := app.Command("get", "Clone/sync with a remote repository")
 	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
@@ -120,7 +120,7 @@ func fork(app *kingpin.Application) (string, func() error) {
 		noRemote     bool
 		remoteName   string
 		organization string
-		repoName     gogh.RemoteName
+		remote       gogh.Remote
 	)
 	cmd := app.Command("fork", "Clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin")
 	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
@@ -129,10 +129,10 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("no-remote", "Skip adding a git remote for the fork").BoolVar(&noRemote)
 	cmd.Flag("remote-name", "Set the name for the new git remote").PlaceHolder("REMOTE").StringVar(&remoteName)
 	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
-	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoName)
+	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remote)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, repoName)
+		return gogh.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, &remote)
 	})
 }
 
@@ -147,7 +147,7 @@ func create(app *kingpin.Application) (string, func() error) {
 		template       string
 		separateGitDir string
 		shared         gogh.RepoShared
-		repoName       gogh.LocalName
+		remote         gogh.Remote
 	)
 	cmd := app.Command("new", "Create a repository in local and remote.").Alias("create")
 	cmd.Flag("private", "Create a private repository").BoolVar(&private)
@@ -159,10 +159,10 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&template)
 	cmd.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&separateGitDir)
 	cmd.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&shared)
-	cmd.Arg("repository name", "<user>/<name>").Required().SetValue(&repoName)
+	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remote)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, repoName)
+		return gogh.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, &remote)
 	})
 }
 
@@ -175,7 +175,7 @@ func list(app *kingpin.Application) (string, func() error) {
 	cmd := app.Command("list", "List local repositories")
 	cmd.Flag("format", "Format of each repository").Short('f').Default(gogh.RepoListFormatRelPath.String()).EnumVar(&format, gogh.RepoListFormats()...)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
-	cmd.Arg("query", "Repository name query").StringVar(&query)
+	cmd.Arg("query", "Local name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
 		return gogh.List(ctx, gogh.RepoListFormat(format), primary, query)
@@ -183,12 +183,12 @@ func list(app *kingpin.Application) (string, func() error) {
 }
 
 func find(app *kingpin.Application) (string, func() error) {
-	var name string
+	var remote gogh.Remote
 	cmd := app.Command("find", "Find a path of a local repository")
-	cmd.Arg("name", "Target repository name").Required().StringVar(&name)
+	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remote)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Find(ctx, name)
+		return gogh.Find(ctx, &remote)
 	})
 }
 

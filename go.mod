@@ -18,6 +18,7 @@ require (
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/ogier/pflag v0.0.1 // indirect
+	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/crypto v0.0.0-20181126163421-e657309f52e7 // indirect

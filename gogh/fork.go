@@ -10,17 +10,17 @@ import (
 )
 
 // Fork clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin
-func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName string, organization string, repoName RemoteName) error {
+func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName string, organization string, remote *Remote) error {
 	log.Printf("info: cloning a repository")
-	if err := Get(ctx, update, withSSH, shallow, repoName); err != nil {
+	if err := Get(ctx, update, withSSH, shallow, remote); err != nil {
 		return err
 	}
 
-	repo, err := FromURL(ctx, repoName.URL(ctx, withSSH))
+	local, err := FindLocal(ctx, remote)
 	if err != nil {
 		return err
 	}
-	if err := os.Chdir(repo.FullPath); err != nil {
+	if err := os.Chdir(local.FullPath); err != nil {
 		return err
 	}
 
@@ -30,13 +30,13 @@ func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName strin
 	hubArgs = appendIfFilled(hubArgs, "--remote-name", remoteName)
 	hubArgs = appendIfFilled(hubArgs, "--organization", organization)
 	// call hub fork
-	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
+	os.Setenv("GITHUB_HOST", remote.Host(ctx))
 	log.Printf("debug: calling `hub fork %s`", strings.Join(hubArgs, " "))
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("fork"), commands.NewArgs(hubArgs))
 	if execErr.Err != nil {
 		return execErr.Err
 	}
-	if _, err := fmt.Fprintln(ctx.Stdout(), repo.RelPath); err != nil {
+	if _, err := fmt.Fprintln(ctx.Stdout(), local.RelPath); err != nil {
 		return err
 	}
 	return nil

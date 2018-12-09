@@ -3,7 +3,6 @@ package gogh
 import (
 	"errors"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,29 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFromFullPath(t *testing.T) {
+func TestParseLocal(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
 	ctx := implContext{roots: []string{tmp}}
 
 	t.Run("in primary root", func(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
-		r, err := FromFullPath(&ctx, path)
+		l, err := parseLocal(&ctx, tmp, path)
 		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/gogh", r.Name().String())
-		assert.Equal(t, path, r.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
-		assert.True(t, r.IsInPrimaryRoot(&ctx))
-		t.Run("TestMatch", func(t *testing.T) {
-			assert.True(t, r.Matches("gogh"))
-			assert.True(t, r.Matches("kyoh86/gogh"))
-			assert.True(t, r.Matches("github.com/kyoh86/gogh"))
-
-			assert.False(t, r.Matches("gigh"))
-			assert.False(t, r.Matches("kyoh85/gogh"))
-			assert.False(t, r.Matches("githib.com/kyoh86/gogh"))
-			assert.False(t, r.Matches("github.com/kyoh86"))
-		})
+		assert.Equal(t, path, l.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
+		assert.True(t, l.IsInPrimaryRoot(&ctx))
 	})
 	t.Run("secondary path", func(t *testing.T) {
 		tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
@@ -42,35 +30,28 @@ func TestFromFullPath(t *testing.T) {
 		ctx := ctx
 		ctx.roots = append(ctx.roots, tmp2)
 		path := filepath.Join(tmp2, "github.com", "kyoh86", "gogh")
-		r, err := FromFullPath(&ctx, path)
+		l, err := parseLocal(&ctx, tmp2, path)
 		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/gogh", r.Name().String())
-		assert.Equal(t, path, r.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
-		assert.False(t, r.IsInPrimaryRoot(&ctx))
+		assert.Equal(t, path, l.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
+		assert.False(t, l.IsInPrimaryRoot(&ctx))
 	})
-	t.Run("not in root path", func(t *testing.T) {
-		path := filepath.Join("/src", "github.com", "kyoh86", "gogh")
-		_, err := FromFullPath(&ctx, path)
-		assert.Error(t, err, "no repository found for: "+path)
-	})
-
 }
 
-func TestFromURL(t *testing.T) {
+func TestFindLocal(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
 	ctx := implContext{roots: []string{tmp}}
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 	t.Run("not existing repository", func(t *testing.T) {
-		r, err := FromURL(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		l, err := FindLocal(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
-		assert.Equal(t, path, r.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+		assert.Equal(t, path, l.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
 	})
 	t.Run("not supported host URL", func(t *testing.T) {
-		_, err := FromURL(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
+		_, err := FindLocal(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
 		assert.Error(t, err, `not supported host: "example.com"`)
 	})
 	t.Run("existing repository", func(t *testing.T) {
@@ -81,62 +62,23 @@ func TestFromURL(t *testing.T) {
 		defer func() {
 			require.NoError(t, os.RemoveAll(path))
 		}()
-		r, err := FromURL(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		l, err := FindLocal(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
-		assert.Equal(t, path, r.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, r.Subpaths())
+		assert.Equal(t, path, l.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
 	})
 }
 
-func parseURL(t *testing.T, text string) *url.URL {
+func parseURL(t *testing.T, text string) *Remote {
 	t.Helper()
-	u, err := url.Parse(text)
+	u, err := ParseRemote(text)
 	require.NoError(t, err)
 	return u
 }
 
-func TestCheckURL(t *testing.T) {
-	t.Run("valid github URL", func(t *testing.T) {
-		ctx := implContext{}
-		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://github.com/kyoh86/gogh")))
-	})
-	t.Run("valid GHE URL", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://example.com/kyoh86/gogh")))
-	})
-	t.Run("valid github URL with trailing slashes", func(t *testing.T) {
-		ctx := implContext{}
-		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://github.com/kyoh86/gogh/")))
-	})
-	t.Run("valid GHE URL with trailing slashes", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.NoError(t, CheckURL(&ctx, parseURL(t, "https://example.com/kyoh86/gogh/")))
-	})
-	t.Run("not supported host URL", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.Error(t, CheckURL(&ctx, parseURL(t, "https://kyoh86.work/kyoh86/gogh")), `not supported host: "kyoh86.work"`)
-	})
-	t.Run("invalid path on GitHub", func(t *testing.T) {
-		ctx := implContext{}
-		assert.Error(t, CheckURL(&ctx, parseURL(t, "https://github.com/kyoh86/gogh/blob/master/README.md")), `URL should be formed 'schema://hostname/user/name'`)
-	})
-	t.Run("invalid path on GHE", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.Error(t, CheckURL(&ctx, parseURL(t, "https://example.com/kyoh86/gogh/blob/master/README.md")), `URL should be formed 'schema://hostname/user/name'`)
-	})
-}
-
 func TestWalk(t *testing.T) {
-	neverCalled := func(t *testing.T) func(*Repository) error {
-		return func(*Repository) error {
+	neverCalled := func(t *testing.T) func(*Local) error {
+		return func(*Local) error {
 			t.Fatal("should not be called but...")
 			return nil
 		}
@@ -180,7 +122,7 @@ func TestWalk(t *testing.T) {
 		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
 		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
 		err = errors.New("sample error")
-		assert.Error(t, err, Walk(&ctx, func(l *Repository) error {
+		assert.Error(t, err, Walk(&ctx, func(l *Local) error {
 			assert.Equal(t, path, l.FullPath)
 			return err
 		}))
@@ -207,8 +149,8 @@ func TestList_Symlink(t *testing.T) {
 	require.NoError(t, err)
 
 	paths := []string{}
-	Walk(ctx, func(repo *Repository) error {
-		paths = append(paths, repo.RelPath)
+	Walk(ctx, func(l *Local) error {
+		paths = append(paths, l.RelPath)
 		return nil
 	})
 

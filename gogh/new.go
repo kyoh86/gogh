@@ -12,12 +12,13 @@ import (
 )
 
 func hubCreate(
+	ctx Context,
 	private bool,
 	description string,
 	homepage *url.URL,
 	browse bool,
 	clipboard bool,
-	localName LocalName,
+	remote *Remote,
 	directory string,
 ) (retErr error) {
 	// cd
@@ -42,26 +43,14 @@ func hubCreate(
 	if homepage != nil {
 		hubArgs = append(hubArgs, "-h", homepage.String())
 	}
-	hubArgs = append(hubArgs, localName.String())
-	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
+	hubArgs = append(hubArgs, remote.URL(ctx, false).String())
 	log.Printf("debug: calling `hub create %s`", strings.Join(hubArgs, " "))
+	os.Setenv("GITHUB_HOST", remote.Host(ctx))
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("create"), commands.NewArgs(hubArgs))
 	if execErr.Err != nil {
 		return execErr.Err
 	}
 	return nil
-}
-
-func nameToPath(ctx Context, name string) (string, error) {
-	spec, err := ParseRemoteName(name)
-	if err != nil {
-		return "", err
-	}
-	loc, err := FromURL(ctx, spec.URL(ctx, false))
-	if err != nil {
-		return "", err
-	}
-	return loc.FullPath, nil
 }
 
 // New creates a repository in local and remote.
@@ -76,28 +65,28 @@ func New(
 	template string,
 	separateGitDir string,
 	shared RepoShared,
-	localName LocalName,
+	remote *Remote,
 ) error {
-	path, err := nameToPath(ctx, localName.String())
+	local, err := FindLocal(ctx, remote)
 	if err != nil {
 		return err
 	}
 
 	// mkdir
 	log.Println("info: creating a directory")
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+	if err := os.MkdirAll(local.FullPath, os.ModePerm); err != nil {
 		return err
 	}
 
 	// git init
 	log.Println("info: initializing a repository")
-	if err := gitInit(ctx, bare, template, separateGitDir, shared, path); err != nil {
+	if err := gitInit(ctx, bare, template, separateGitDir, shared, local.FullPath); err != nil {
 		return err
 	}
 
 	// hub create
 	log.Println("info: creating a new repository in GitHub")
-	if err := hubCreate(private, description, homepage, browse, clipboard, localName, path); err != nil {
+	if err := hubCreate(ctx, private, description, homepage, browse, clipboard, remote, local.FullPath); err != nil {
 		return err
 	}
 
@@ -111,7 +100,7 @@ func New(
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = ctx.Stdout()
 		cmd.Stderr = ctx.Stderr()
-		cmd.Dir = path
+		cmd.Dir = local.FullPath
 		if err := execCommand(cmd); err != nil {
 			return err
 		}

@@ -7,7 +7,7 @@ import (
 
 // RepoListFormatter holds repository list to print them.
 type RepoListFormatter interface {
-	Add(*Repository)
+	Add(*Local)
 	PrintAll(io.Writer, string) error
 }
 
@@ -67,10 +67,10 @@ func RelPathFormatter() RepoListFormatter {
 type shortListFormatter struct {
 	// mark duplicated subpath
 	dups map[string]bool
-	list []*Repository
+	list []*Local
 }
 
-func (f *shortListFormatter) Add(r *Repository) {
+func (f *shortListFormatter) Add(r *Local) {
 	for _, p := range r.Subpaths() {
 		// (false, not ok) -> (false, ok) -> (true, ok) -> (true, ok) and so on
 		_, f.dups[p] = f.dups[p]
@@ -87,7 +87,7 @@ func (f *shortListFormatter) PrintAll(w io.Writer, sep string) error {
 	return nil
 }
 
-func (f *shortListFormatter) shortName(r *Repository) string {
+func (f *shortListFormatter) shortName(r *Local) string {
 	for _, p := range r.Subpaths() {
 		if f.dups[p] {
 			continue
@@ -98,10 +98,10 @@ func (f *shortListFormatter) shortName(r *Repository) string {
 }
 
 type simpleCollector struct {
-	list []*Repository
+	list []*Local
 }
 
-func (f *simpleCollector) Add(r *Repository) {
+func (f *simpleCollector) Add(r *Local) {
 	f.list = append(f.list, r)
 }
 

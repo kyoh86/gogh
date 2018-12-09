@@ -15,12 +15,12 @@ func TestFormatter(t *testing.T) {
 		ctx := &implContext{
 			roots: []string{"/go/src"},
 		}
-		repo, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/gogh")
+		local, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/gogh")
 		require.NoError(t, err)
 		for _, f := range RepoListFormats() {
 			formatter, err := RepoListFormat(f).Formatter()
 			require.NoError(t, err)
-			formatter.Add(repo)
+			formatter.Add(local)
 			require.NoError(t, formatter.PrintAll(ioutil.Discard, "\n"))
 		}
 	})
@@ -29,14 +29,14 @@ func TestFormatter(t *testing.T) {
 		ctx := &implContext{
 			roots: []string{"/go/src"},
 		}
-		repo1, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/foo")
+		local1, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		repo2, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/bar")
+		local2, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatRelPath.Formatter()
 		require.NoError(t, err)
-		formatter.Add(repo1)
-		formatter.Add(repo2)
+		formatter.Add(local1)
+		formatter.Add(local2)
 		var buf bytes.Buffer
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `github.com/kyoh86/foo:github.com/kyoh86/bar:`, buf.String())
@@ -46,14 +46,14 @@ func TestFormatter(t *testing.T) {
 		ctx := &implContext{
 			roots: []string{"/go/src"},
 		}
-		repo1, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/foo")
+		local1, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		repo2, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/bar")
+		local2, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatFullPath.Formatter()
 		require.NoError(t, err)
-		formatter.Add(repo1)
-		formatter.Add(repo2)
+		formatter.Add(local1)
+		formatter.Add(local2)
 		var buf bytes.Buffer
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `/go/src/github.com/kyoh86/foo:/go/src/github.com/kyoh86/bar:`, buf.String())
@@ -66,26 +66,26 @@ func TestFormatter(t *testing.T) {
 				"/foo",
 			},
 		}
-		repo1, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/foo")
+		local1, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		repo2, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/bar")
+		local2, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		repo3, err := FromFullPath(ctx, "/go/src/github.com/kyoh87/bar")
+		local3, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh87/bar")
 		require.NoError(t, err)
-		repo4, err := FromFullPath(ctx, "/go/src/example.com/kyoh86/bar")
+		local4, err := parseLocal(ctx, "/go/src", "/go/src/example.com/kyoh86/bar")
 		require.NoError(t, err)
-		repo5, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/baz")
+		local5, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/baz")
 		require.NoError(t, err)
-		repo6, err := FromFullPath(ctx, "/foo/github.com/kyoh86/baz")
+		local6, err := parseLocal(ctx, "/foo", "/foo/github.com/kyoh86/baz")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatShort.Formatter()
 		require.NoError(t, err)
-		formatter.Add(repo1)
-		formatter.Add(repo2)
-		formatter.Add(repo3)
-		formatter.Add(repo4)
-		formatter.Add(repo5)
-		formatter.Add(repo6)
+		formatter.Add(local1)
+		formatter.Add(local2)
+		formatter.Add(local3)
+		formatter.Add(local4)
+		formatter.Add(local5)
+		formatter.Add(local6)
 		var buf bytes.Buffer
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `foo:github.com/kyoh86/bar:kyoh87/bar:example.com/kyoh86/bar:/go/src/github.com/kyoh86/baz:/foo/github.com/kyoh86/baz:`, buf.String())
@@ -100,11 +100,11 @@ func TestFormatter(t *testing.T) {
 		ctx := &implContext{
 			roots: []string{"/go/src"},
 		}
-		repo, err := FromFullPath(ctx, "/go/src/github.com/kyoh86/foo")
+		local, err := parseLocal(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
 		formatter, err := RepoListFormatShort.Formatter()
 		require.NoError(t, err)
-		formatter.Add(repo)
+		formatter.Add(local)
 		require.Error(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
 	})
 }
