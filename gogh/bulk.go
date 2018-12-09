@@ -10,7 +10,7 @@ import (
 // Pipe handles like `gogh pipe github-list-starred kyoh86` calling `github-list-starred kyoh86` and bulk its output
 func Pipe(ctx Context, update, withSSH, shallow bool, command string, commandArgs []string) (retErr error) {
 	cmd := exec.Command(command, commandArgs...)
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = ctx.Stderr()
 
 	in, err := cmd.StdoutPipe()
 	if err != nil {
