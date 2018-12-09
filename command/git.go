@@ -1,18 +1,20 @@
-package gogh
+package command
 
 import (
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/kyoh86/gogh/gogh"
 )
 
 func gitInit(
-	ctx Context,
+	ctx gogh.Context,
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared RepoShared,
+	shared gogh.RepoShared,
 	directory string,
 ) error {
 	args := []string{"init"}
@@ -29,7 +31,7 @@ func gitInit(
 }
 
 // gitClone git repository
-func gitClone(ctx Context, remote *url.URL, local string, shallow bool) error {
+func gitClone(ctx gogh.Context, remote *url.URL, local string, shallow bool) error {
 	dir, _ := filepath.Split(local)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -50,7 +52,7 @@ func gitClone(ctx Context, remote *url.URL, local string, shallow bool) error {
 }
 
 // gitUpdate pulls changes from remote repository
-func gitUpdate(ctx Context, local string) error {
+func gitUpdate(ctx gogh.Context, local string) error {
 	cmd := exec.Command("git", "pull", "--ff-only")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = ctx.Stdout()

@@ -9,6 +9,7 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/comail/colog"
+	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/gogh"
 )
 
@@ -72,7 +73,7 @@ func get(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remoteNames)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.GetAll(ctx, update, withSSH, shallow, remoteNames)
+		return command.GetAll(ctx, update, withSSH, shallow, remoteNames)
 	})
 }
 
@@ -88,27 +89,27 @@ func bulk(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Bulk(ctx, update, withSSH, shallow)
+		return command.Bulk(ctx, update, withSSH, shallow)
 	})
 }
 
 func pipe(app *kingpin.Application) (string, func() error) {
 	var (
-		update      bool
-		withSSH     bool
-		shallow     bool
-		command     string
-		commandArgs []string
+		update     bool
+		withSSH    bool
+		shallow    bool
+		srcCmd     string
+		srcCmdArgs []string
 	)
 	cmd := app.Command("pipe", "Bulk get repositories specified from other command output")
 	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
-	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&command)
-	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&commandArgs)
+	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&srcCmd)
+	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&srcCmdArgs)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Pipe(ctx, update, withSSH, shallow, command, commandArgs)
+		return command.Pipe(ctx, update, withSSH, shallow, srcCmd, srcCmdArgs)
 	})
 }
 
@@ -132,7 +133,7 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remote)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, &remote)
+		return command.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, &remote)
 	})
 }
 
@@ -162,7 +163,7 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remote)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, &remote)
+		return command.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, &remote)
 	})
 }
 
@@ -178,7 +179,7 @@ func list(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("query", "Local name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.List(ctx, gogh.RepoListFormat(format), primary, query)
+		return command.List(ctx, gogh.RepoListFormat(format), primary, query)
 	})
 }
 
@@ -188,7 +189,7 @@ func find(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remote)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Find(ctx, &remote)
+		return command.Find(ctx, &remote)
 	})
 }
 
@@ -198,7 +199,7 @@ func root(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("all", "Show all roots").BoolVar(&all)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Root(ctx, all)
+		return command.Root(ctx, all)
 	})
 }
 
@@ -212,6 +213,6 @@ func setup(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return gogh.Setup(ctx, cdFuncName, shell)
+		return command.Setup(ctx, cdFuncName, shell)
 	})
 }

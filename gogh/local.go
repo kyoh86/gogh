@@ -1,6 +1,7 @@
 package gogh
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -155,4 +156,16 @@ func Walk(ctx Context, callback WalkFunc) error {
 		}
 	}
 	return nil
+}
+
+// Query searches local repositories with specified walker
+func Query(ctx Context, query string, walk Walker, callback WalkFunc) error {
+	return walk(ctx, func(l *Local) error {
+		if query != "" && !strings.Contains(l.RelPath, query) {
+			log.Printf("debug: found one repository (%q) but it's not matched for query\n", l.FullPath)
+			return nil
+		}
+
+		return callback(l)
+	})
 }

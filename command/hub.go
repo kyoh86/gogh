@@ -1,4 +1,4 @@
-package gogh
+package command
 
 import (
 	"log"
@@ -7,12 +7,13 @@ import (
 	"strings"
 
 	"github.com/github/hub/commands"
+	"github.com/kyoh86/gogh/gogh"
 )
 
 func hubFork(
-	ctx Context,
-	local *Local,
-	remote *Remote,
+	ctx gogh.Context,
+	local *gogh.Local,
+	remote *gogh.Remote,
 	noRemote bool,
 	remoteName string,
 	organization string,
@@ -48,13 +49,13 @@ func hubFork(
 }
 
 func hubCreate(
-	ctx Context,
+	ctx gogh.Context,
 	private bool,
 	description string,
 	homepage *url.URL,
 	browse bool,
 	clipboard bool,
-	remote *Remote,
+	remote *gogh.Remote,
 	directory string,
 ) (retErr error) {
 	// cd

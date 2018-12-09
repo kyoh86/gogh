@@ -1,13 +1,15 @@
-package gogh
+package command
 
 import (
 	"fmt"
 	"path/filepath"
+
+	"github.com/kyoh86/gogh/gogh"
 )
 
 // Setup shells in shell scipt
 // Usage: eval "$(gogh setup)"
-func Setup(ctx Context, cdFuncName, shell string) error {
+func Setup(ctx gogh.Context, cdFuncName, shell string) error {
 	_, shName := filepath.Split(shell)
 	switch shName {
 	case "zsh":

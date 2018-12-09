@@ -1,12 +1,14 @@
-package gogh
+package command
 
 import (
 	"fmt"
 	"log"
+
+	"github.com/kyoh86/gogh/gogh"
 )
 
 // Root prints a gogh.root
-func Root(ctx Context, all bool) error {
+func Root(ctx gogh.Context, all bool) error {
 	if !all {
 		_, err := fmt.Fprintln(ctx.Stdout(), ctx.PrimaryRoot())
 		return err

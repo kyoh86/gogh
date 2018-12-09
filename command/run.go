@@ -1,4 +1,4 @@
-package gogh
+package command
 
 import (
 	"fmt"

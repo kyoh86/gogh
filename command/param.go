@@ -1,4 +1,4 @@
-package gogh
+package command
 
 func appendIf(array []string, flag string, value bool) []string {
 	if value {

@@ -1,12 +1,14 @@
-package gogh
+package command
 
 import (
 	"fmt"
 	"log"
+
+	"github.com/kyoh86/gogh/gogh"
 )
 
 // GetAll clonse or updates remote repositories.
-func GetAll(ctx Context, update, withSSH, shallow bool, remotes Remotes) error {
+func GetAll(ctx gogh.Context, update, withSSH, shallow bool, remotes gogh.Remotes) error {
 	for _, remote := range remotes {
 		remote := remote
 		if err := Get(ctx, update, withSSH, shallow, &remote); err != nil {
@@ -19,9 +21,9 @@ func GetAll(ctx Context, update, withSSH, shallow bool, remotes Remotes) error {
 // Get clones or updates a remote repository.
 // If update is true, updates the locally cloned repository. Otherwise does nothing.
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
-func Get(ctx Context, update, withSSH, shallow bool, remote *Remote) error {
+func Get(ctx gogh.Context, update, withSSH, shallow bool, remote *gogh.Remote) error {
 	remoteURL := remote.URL(ctx, withSSH)
-	local, err := FindLocal(ctx, remote)
+	local, err := gogh.FindLocal(ctx, remote)
 	if err != nil {
 		return err
 	}

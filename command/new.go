@@ -1,4 +1,4 @@
-package gogh
+package command
 
 import (
 	"io/ioutil"
@@ -6,11 +6,13 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+
+	"github.com/kyoh86/gogh/gogh"
 )
 
 // New creates a repository in local and remote.
 func New(
-	ctx Context,
+	ctx gogh.Context,
 	private bool,
 	description string,
 	homepage *url.URL,
@@ -19,10 +21,10 @@ func New(
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared RepoShared,
-	remote *Remote,
+	shared gogh.RepoShared,
+	remote *gogh.Remote,
 ) error {
-	local, err := FindLocal(ctx, remote)
+	local, err := gogh.FindLocal(ctx, remote)
 	if err != nil {
 		return err
 	}
