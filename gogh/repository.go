@@ -42,7 +42,7 @@ func CheckURL(ctx Context, url *url.URL) error {
 	if len(pathParts) != 3 || len(pathParts[1]) == 0 || len(pathParts[2]) == 0 {
 		return errors.New("URL should be formed 'schema://hostname/user/name'")
 	}
-	if url.Host == "github.com" {
+	if url.Host == DefaultHost {
 		return nil
 	}
 

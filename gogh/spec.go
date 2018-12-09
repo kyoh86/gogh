@@ -3,9 +3,12 @@ package gogh
 import (
 	"fmt"
 	"net/url"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9]+)?)/([\w-]+)$`)
@@ -78,7 +81,16 @@ func (n LocalName) Name() string {
 // RemoteName specifies a repository in the GitHub
 type RemoteName struct {
 	raw string
-	url url.URL
+
+	scheme string
+	host   string        // host or host:port
+	user   *url.Userinfo // username and password information
+	owner  string
+	name   string
+
+	forceQuery bool   // append a query ('?') even if RawQuery is empty
+	rawQuery   string // encoded query values, without '?'
+	fragment   string // fragment for references, without '#'
 }
 
 // ParseRemoteName parses a remote-name for a repository in the GitHub
@@ -112,31 +124,79 @@ func (n *RemoteName) Set(rawName string) error {
 	if err != nil {
 		return err
 	}
-	n.url = *url
+
+	if url.IsAbs() {
+		n.scheme = url.Scheme
+		n.host = url.Host
+		n.user = url.User
+	} else {
+		n.scheme = "https"
+		n.host = DefaultHost
+		n.user = nil
+	}
+	n.forceQuery = url.ForceQuery
+	n.rawQuery = url.RawQuery
+	n.fragment = url.Fragment
+
+	pp := strings.Split(strings.TrimPrefix(url.Path, "/"), "/")
+	switch len(pp) {
+	case 0:
+		return errors.New("repository name has no local name")
+	case 1:
+		n.owner = "" // Use context.UserName() instead.
+		n.name = pp[0]
+	case 2:
+		n.owner = pp[0]
+		n.name = pp[1]
+	default:
+		return errors.New("repository name has too many slashes")
+	}
 	n.raw = raw
 	return nil
 }
 
+// DefaultHost is the default host name of the GitHub
+const DefaultHost = "github.com"
+
+// Scheme returns scheme of the repository
+func (n *RemoteName) Scheme(_ Context) string {
+	return n.scheme
+}
+
+// Host returns host name of the repository
+func (n *RemoteName) Host(_ Context) string {
+	return n.host
+}
+
+// Owner returns a user name of an owner of the repository
+func (n *RemoteName) Owner(ctx Context) string {
+	if n.owner == "" {
+		return ctx.UserName()
+	}
+	return n.owner
+}
+
+// Name returns a name of the repository
+func (n *RemoteName) Name(_ Context) string {
+	return n.name
+}
+
 // URL will get a URL for a repository
 func (n *RemoteName) URL(ctx Context, ssh bool) *url.URL {
-	u := n.url // copy
-	httpsURL := &u
-	if !httpsURL.IsAbs() {
-		if !strings.Contains(httpsURL.Path, "/") {
-			user := ctx.UserName()
-			httpsURL.Path = user + "/" + httpsURL.Path
-		}
-		httpsURL.Scheme = "https"
-		httpsURL.Host = "github.com"
-		if httpsURL.Path[0] != '/' {
-			httpsURL.Path = "/" + httpsURL.Path
-		}
-	}
 	if ssh {
-		sshURL, _ := url.Parse(fmt.Sprintf("ssh://git@%s%s", httpsURL.Host, httpsURL.Path))
-		return sshURL
+		return &url.URL{
+			Scheme: "ssh",
+			User:   url.User("git"),
+			Host:   n.Host(ctx),
+			Path:   path.Join("/", n.Owner(ctx), n.Name(ctx)),
+		}
 	}
-	return httpsURL
+	return &url.URL{
+		Scheme: n.Scheme(ctx),
+		User:   n.user,
+		Host:   n.Host(ctx),
+		Path:   path.Join("/", n.Owner(ctx), n.Name(ctx)),
+	}
 }
 
 func (n RemoteName) String() string {
