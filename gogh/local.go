@@ -113,7 +113,7 @@ type WalkFunc func(*Local) error
 type Walker func(Context, WalkFunc) error
 
 // walkInPath thorugh local repositories in a path
-func walkInPath(ctx Context, root string, callback WalkFunc) error {
+func walkInPath(root string, callback WalkFunc) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		exists, err := existsLocal(path, info, err)
 		if err != nil {
@@ -149,13 +149,13 @@ func parseLocal(root string, fullPath string) (*Local, error) {
 
 // WalkInPrimary thorugh local repositories in the first gogh.root directory
 func WalkInPrimary(ctx Context, callback WalkFunc) error {
-	return walkInPath(ctx, ctx.PrimaryRoot(), callback)
+	return walkInPath(ctx.PrimaryRoot(), callback)
 }
 
 // Walk thorugh local repositories in gogh.root directories
 func Walk(ctx Context, callback WalkFunc) error {
 	for _, root := range ctx.Roots() {
-		if err := walkInPath(ctx, root, callback); err != nil {
+		if err := walkInPath(root, callback); err != nil {
 			return err
 		}
 	}
