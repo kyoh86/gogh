@@ -28,6 +28,7 @@ func TestGit(t *testing.T) {
 	host = foo.example.com
 	host = bar.example.com
 [gogh]
+	logLevel = info
 	user = kyoh86
 	root = /go/src
 	root = /foo/bar`, func(t *testing.T) {
@@ -38,6 +39,7 @@ func TestGit(t *testing.T) {
 		gotContext, err := CurrentContext(baseContext)
 		require.NoError(t, err)
 		assert.Equal(t, "foo:bar", gotContext.Value(testContextKey))
+		assert.Equal(t, "info", gotContext.LogLevel())
 		assert.Equal(t, "kyoh86", gotContext.UserName())
 		assert.Equal(t, []string{"/go/src", "/foo/bar"}, gotContext.Roots())
 		assert.Equal(t, "/go/src", gotContext.PrimaryRoot())
@@ -76,6 +78,34 @@ func TestGit(t *testing.T) {
 	run("expect to fail to get user with name invalid config", `[gogh] =foobar`, func(t *testing.T) {
 		resetEnv(t)
 		_, err := getUserName()
+		assert.NotNil(t, err)
+	})
+
+	run("get log level from git config", "[gogh]\nlogLevel = error", func(t *testing.T) {
+		resetEnv(t)
+		logLevel, err := getLogLevel()
+		assert.NoError(t, err)
+		assert.Equal(t, "error", logLevel)
+	})
+
+	run("get Github log level from envar", "[gogh]\nlogLevel = error", func(t *testing.T) {
+		resetEnv(t)
+		require.NoError(t, os.Setenv(envLogLevel, "trace"))
+		logLevel, err := getLogLevel()
+		assert.NoError(t, err)
+		assert.Equal(t, "trace", logLevel)
+	})
+
+	run("expect to fail to get log level from anywhere", "", func(t *testing.T) {
+		resetEnv(t)
+		logLevel, err := getLogLevel()
+		assert.NoError(t, err)
+		assert.Equal(t, "warn", logLevel)
+	})
+
+	run("expect to fail to get log level with invalid config", `[gogh] =foobar`, func(t *testing.T) {
+		resetEnv(t)
+		_, err := getLogLevel()
 		assert.NotNil(t, err)
 	})
 

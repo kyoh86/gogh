@@ -112,14 +112,14 @@ func getUserName() (string, error) {
 }
 
 func getLogLevel() (string, error) {
+	if ll := os.Getenv(envLogLevel); ll != "" {
+		return ll, nil
+	}
 	ll, err := getGitConf("gogh.logLevel")
 	if err != nil {
 		return "", err
 	}
 	if ll != "" {
-		return ll, nil
-	}
-	if ll := os.Getenv(envLogLevel); ll != "" {
 		return ll, nil
 	}
 	return "warn", nil // default: warn
