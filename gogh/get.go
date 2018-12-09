@@ -7,9 +7,9 @@ import (
 )
 
 // GetAll clonse or updates remote repositories.
-func GetAll(ctx Context, update, withSSH, shallow bool, repoSpecs RepoSpecs) error {
-	for _, repoSpec := range repoSpecs {
-		if err := Get(ctx, update, withSSH, shallow, repoSpec); err != nil {
+func GetAll(ctx Context, update, withSSH, shallow bool, remoteNames RemoteNames) error {
+	for _, remoteName := range remoteNames {
+		if err := Get(ctx, update, withSSH, shallow, remoteName); err != nil {
 			return err
 		}
 	}
@@ -19,8 +19,8 @@ func GetAll(ctx Context, update, withSSH, shallow bool, repoSpecs RepoSpecs) err
 // Get clones or updates a remote repository.
 // If update is true, updates the locally cloned repository. Otherwise does nothing.
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
-func Get(ctx Context, update, withSSH, shallow bool, repoSpec RepoSpec) error {
-	remoteURL := repoSpec.URL(ctx, withSSH)
+func Get(ctx Context, update, withSSH, shallow bool, remoteName RemoteName) error {
+	remoteURL := remoteName.URL(ctx, withSSH)
 	repo, err := FromURL(ctx, remoteURL)
 	if err != nil {
 		return err

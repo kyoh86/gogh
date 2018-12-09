@@ -10,13 +10,13 @@ import (
 )
 
 // Fork clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin
-func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName string, organization string, repoSpec RepoSpec) error {
+func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName string, organization string, repoName RemoteName) error {
 	log.Printf("info: cloning a repository")
-	if err := Get(ctx, update, withSSH, shallow, repoSpec); err != nil {
+	if err := Get(ctx, update, withSSH, shallow, repoName); err != nil {
 		return err
 	}
 
-	repo, err := FromURL(ctx, repoSpec.URL(ctx, withSSH))
+	repo, err := FromURL(ctx, repoName.URL(ctx, withSSH))
 	if err != nil {
 		return err
 	}

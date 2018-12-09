@@ -50,12 +50,12 @@ func findRepos(ctx Context, name string) ([]*Repository, error) {
 	})
 }
 
-func getRepoFullPath(ctx Context, name string) (string, error) {
-	spec, err := NewSpec(name)
+func getRepoFullPath(ctx Context, nameQuery string) (string, error) {
+	name, err := ParseRemoteName(nameQuery)
 	if err != nil {
 		return "", err
 	}
-	repo, err := FromURL(ctx, spec.URL(ctx, false))
+	repo, err := FromURL(ctx, name.URL(ctx, false))
 	if err != nil {
 		return "", err
 	}

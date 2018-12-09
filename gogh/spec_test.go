@@ -40,28 +40,28 @@ func TestRepoShared(t *testing.T) {
 	})
 }
 
-func TestRepoName(t *testing.T) {
+func TestLocalName(t *testing.T) {
 	t.Run("valid name", func(t *testing.T) {
-		var name RepoName
+		var name LocalName
 		require.NoError(t, name.Set("kyoh86/gogh"))
 		assert.Equal(t, "kyoh86/gogh", name.String())
 		assert.Equal(t, "kyoh86", name.User())
 		assert.Equal(t, "gogh", name.Name())
 	})
 	t.Run("invalid name (single term)", func(t *testing.T) {
-		var name RepoName
+		var name LocalName
 		assert.NotNil(t, name.Set("gogh"))
 	})
 	t.Run("invalid name (triple term)", func(t *testing.T) {
-		var name RepoName
+		var name LocalName
 		assert.NotNil(t, name.Set("github.com/kyoh86/gogh"))
 	})
 }
 
-func TestRepoSpec(t *testing.T) {
+func TestRemoteName(t *testing.T) {
 	t.Run("full HTTPS URL", func(t *testing.T) {
 		ctx := &implContext{}
-		spec, err := NewSpec("https://github.com/kyoh86/pusheen-explorer")
+		spec, err := ParseRemoteName("https://github.com/kyoh86/pusheen-explorer")
 		require.NoError(t, err)
 		assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", spec.String())
 		assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", spec.URL(ctx, false).String())
@@ -70,7 +70,7 @@ func TestRepoSpec(t *testing.T) {
 
 	t.Run("scp like URL 1", func(t *testing.T) {
 		ctx := &implContext{}
-		spec, err := NewSpec("git@github.com:kyoh86/pusheen-explorer.git")
+		spec, err := ParseRemoteName("git@github.com:kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
 		assert.Equal(t, "git@github.com:kyoh86/pusheen-explorer.git", spec.String())
 		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer.git", spec.URL(ctx, false).String())
@@ -78,7 +78,7 @@ func TestRepoSpec(t *testing.T) {
 
 	t.Run("scp like URL 2", func(t *testing.T) {
 		ctx := &implContext{}
-		spec, err := NewSpec("git@github.com:/kyoh86/pusheen-explorer.git")
+		spec, err := ParseRemoteName("git@github.com:/kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
 		assert.Equal(t, "git@github.com:/kyoh86/pusheen-explorer.git", spec.String())
 		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer.git", spec.URL(ctx, false).String())
@@ -86,7 +86,7 @@ func TestRepoSpec(t *testing.T) {
 
 	t.Run("scp like URL 3", func(t *testing.T) {
 		ctx := &implContext{}
-		spec, err := NewSpec("github.com:kyoh86/pusheen-explorer.git")
+		spec, err := ParseRemoteName("github.com:kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
 		assert.Equal(t, "github.com:kyoh86/pusheen-explorer.git", spec.String())
 		assert.Equal(t, "ssh://github.com/kyoh86/pusheen-explorer.git", spec.URL(ctx, false).String())
@@ -94,7 +94,7 @@ func TestRepoSpec(t *testing.T) {
 
 	t.Run("owner/name spec", func(t *testing.T) {
 		ctx := &implContext{}
-		spec, err := NewSpec("kyoh86/gogh")
+		spec, err := ParseRemoteName("kyoh86/gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", spec.String())
 		assert.Equal(t, "https://github.com/kyoh86/gogh", spec.URL(ctx, false).String())
@@ -102,20 +102,20 @@ func TestRepoSpec(t *testing.T) {
 
 	t.Run("name only spec", func(t *testing.T) {
 		ctx := &implContext{userName: "kyoh86"}
-		spec, err := NewSpec("gogh")
+		spec, err := ParseRemoteName("gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "gogh", spec.String())
 		assert.Equal(t, "https://github.com/kyoh86/gogh", spec.URL(ctx, false).String())
 	})
 
 	t.Run("fail when invalid url given", func(t *testing.T) {
-		_, err := NewSpec("://////")
+		_, err := ParseRemoteName("://////")
 		assert.NotNil(t, err)
 	})
 }
 
-func TestRepoSpecs(t *testing.T) {
-	var specs RepoSpecs
+func TestRemoteNames(t *testing.T) {
+	var specs RemoteNames
 	require.True(t, specs.IsCumulative())
 	assert.Empty(t, specs.String())
 	assert.NoError(t, specs.Set("kyoh86/gogh"), "owner/name spec")

@@ -113,8 +113,8 @@ func (repo *Repository) IsInPrimaryRoot(ctx Context) bool {
 }
 
 // Name returns repository owner and name.
-func (repo *Repository) Name() RepoName {
-	return RepoName{
+func (repo *Repository) Name() LocalName {
+	return LocalName{
 		text: strings.Join(repo.PathParts[1:], "/"),
 		user: repo.PathParts[1],
 		name: repo.PathParts[2],

@@ -17,7 +17,7 @@ func hubCreate(
 	homepage *url.URL,
 	browse bool,
 	clipboard bool,
-	repoName RepoName,
+	localName LocalName,
 	directory string,
 ) (retErr error) {
 	// cd
@@ -42,7 +42,7 @@ func hubCreate(
 	if homepage != nil {
 		hubArgs = append(hubArgs, "-h", homepage.String())
 	}
-	hubArgs = append(hubArgs, repoName.String())
+	hubArgs = append(hubArgs, localName.String())
 	//UNDONE: Should I set GITHUB_HOST and HUB_PROTOCOL? : see `man hub`.
 	log.Printf("debug: calling `hub create %s`", strings.Join(hubArgs, " "))
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("create"), commands.NewArgs(hubArgs))
@@ -53,7 +53,7 @@ func hubCreate(
 }
 
 func nameToPath(ctx Context, name string) (string, error) {
-	spec, err := NewSpec(name)
+	spec, err := ParseRemoteName(name)
 	if err != nil {
 		return "", err
 	}
@@ -76,9 +76,9 @@ func New(
 	template string,
 	separateGitDir string,
 	shared RepoShared,
-	repoName RepoName,
+	localName LocalName,
 ) error {
-	path, err := nameToPath(ctx, repoName.String())
+	path, err := nameToPath(ctx, localName.String())
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func New(
 
 	// hub create
 	log.Println("info: creating a new repository in GitHub")
-	if err := hubCreate(private, description, homepage, browse, clipboard, repoName, path); err != nil {
+	if err := hubCreate(private, description, homepage, browse, clipboard, localName, path); err != nil {
 		return err
 	}
 
