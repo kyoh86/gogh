@@ -4,8 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Local repository specifier
@@ -27,9 +25,6 @@ func FindLocal(ctx Context, remote *Remote) (*Local, error) {
 	// Find existing repository first
 	if err := Walk(ctx, func(l *Local) error {
 		if l.RelPath == relPath {
-			if local != nil {
-				return errors.New("more than one repositories are found; try more precise name")
-			}
 			local = l
 			return filepath.SkipDir
 		}

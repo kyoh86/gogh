@@ -41,7 +41,7 @@ func TestParseLocal(t *testing.T) {
 func TestFindLocal(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := implContext{roots: []string{tmp}}
+	ctx := implContext{roots: []string{tmp}, userName: "kyoh86"}
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 	t.Run("not existing repository", func(t *testing.T) {
@@ -55,17 +55,35 @@ func TestFindLocal(t *testing.T) {
 		assert.Error(t, err, `not supported host: "example.com"`)
 	})
 	t.Run("existing repository", func(t *testing.T) {
-		// Create dummy repository
+		// Create same name repository
 		require.NoError(t, os.MkdirAll(filepath.Join(tmp, "github.com", "kyoh85", "gogh", ".git"), 0755))
+		// Create different name repository
+		require.NoError(t, os.MkdirAll(filepath.Join(tmp, "github.com", "kyoh86", "foo", ".git"), 0755))
 		// Create target repository
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
 		defer func() {
 			require.NoError(t, os.RemoveAll(path))
 		}()
-		l, err := FindLocal(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
-		require.NoError(t, err)
-		assert.Equal(t, path, l.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
+
+		t.Run("full name", func(t *testing.T) {
+			gotPath, err := FindLocalPath(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+			require.NoError(t, err)
+			assert.Equal(t, path, gotPath)
+		})
+
+		t.Run("shortest precise name (owner and name)", func(t *testing.T) {
+			l, err := FindLocal(&ctx, parseURL(t, "kyoh86/gogh"))
+			require.NoError(t, err)
+			assert.Equal(t, path, l.FullPath)
+			assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
+		})
+
+		t.Run("shortest pricese name (name only)", func(t *testing.T) {
+			l, err := FindLocal(&ctx, parseURL(t, "foo"))
+			require.NoError(t, err)
+			assert.Equal(t, filepath.Join(tmp, "github.com", "kyoh86", "foo"), l.FullPath)
+			assert.Equal(t, []string{"foo", "kyoh86/foo", "github.com/kyoh86/foo"}, l.Subpaths())
+		})
 	})
 }
 
@@ -103,6 +121,7 @@ func TestWalk(t *testing.T) {
 			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
 			ctx := implContext{roots: []string{filepath.Join(tmp, "foo")}}
 			require.NoError(t, Walk(&ctx, neverCalled(t)))
+			require.NoError(t, WalkInPrimary(&ctx, neverCalled(t)))
 		})
 		t.Run("Secondary root is a file", func(t *testing.T) {
 			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
@@ -110,6 +129,7 @@ func TestWalk(t *testing.T) {
 			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
 			ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
 			require.NoError(t, Walk(&ctx, neverCalled(t)))
+			require.NoError(t, WalkInPrimary(&ctx, neverCalled(t)))
 		})
 	})
 
