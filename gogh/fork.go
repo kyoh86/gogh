@@ -30,7 +30,9 @@ func Fork(ctx Context, update, withSSH, shallow, noRemote bool, remoteName strin
 	hubArgs = appendIfFilled(hubArgs, "--remote-name", remoteName)
 	hubArgs = appendIfFilled(hubArgs, "--organization", organization)
 	// call hub fork
-	os.Setenv("GITHUB_HOST", remote.Host(ctx))
+	if err := os.Setenv("GITHUB_HOST", remote.Host(ctx)); err != nil {
+		return err
+	}
 	log.Printf("debug: calling `hub fork %s`", strings.Join(hubArgs, " "))
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("fork"), commands.NewArgs(hubArgs))
 	if execErr.Err != nil {

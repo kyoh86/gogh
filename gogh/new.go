@@ -45,7 +45,9 @@ func hubCreate(
 	}
 	hubArgs = append(hubArgs, remote.URL(ctx, false).String())
 	log.Printf("debug: calling `hub create %s`", strings.Join(hubArgs, " "))
-	os.Setenv("GITHUB_HOST", remote.Host(ctx))
+	if err := os.Setenv("GITHUB_HOST", remote.Host(ctx)); err != nil {
+		return err
+	}
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("create"), commands.NewArgs(hubArgs))
 	if execErr.Err != nil {
 		return execErr.Err
