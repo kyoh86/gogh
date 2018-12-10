@@ -176,3 +176,119 @@ func TestList_Symlink(t *testing.T) {
 
 	assert.Len(t, paths, 2)
 }
+
+func TestQuery(t *testing.T) {
+	root1, err := ioutil.TempDir(os.TempDir(), "gogh-test1")
+	require.NoError(t, err)
+	root2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
+	require.NoError(t, err)
+	path1 := filepath.Join(root1, "github.com", "kyoh86", "gogh")
+	require.NoError(t, os.MkdirAll(filepath.Join(path1, ".git"), 0755))
+	path2 := filepath.Join(root1, "github.com", "kyoh85", "gogh")
+	require.NoError(t, os.MkdirAll(filepath.Join(path2, ".git"), 0755))
+	path3 := filepath.Join(root1, "github.com", "kyoh86", "foo")
+	require.NoError(t, os.MkdirAll(filepath.Join(path3, ".git"), 0755))
+	path4 := filepath.Join(root1, "example.com", "kyoh86", "gogh")
+	require.NoError(t, os.MkdirAll(filepath.Join(path4, ".git"), 0755))
+	path5 := filepath.Join(root2, "github.com", "kyoh86", "gogh")
+	require.NoError(t, os.MkdirAll(filepath.Join(path5, ".git"), 0755))
+
+	ctx := implContext{roots: []string{root1, root2}}
+
+	assert.NoError(t, Query(&ctx, "never found", Walk, func(*Local) error {
+		t.Fatal("should not be called but...")
+		return nil
+	}))
+
+	t.Run("NameOnly", func(t *testing.T) {
+		expect := map[string]struct{}{
+			path1: {},
+			path2: {},
+			path4: {},
+			path5: {},
+		}
+		assert.NoError(t, Query(&ctx, "gogh", Walk, func(l *Local) error {
+			assert.Contains(t, expect, l.FullPath)
+			delete(expect, l.FullPath)
+			return nil
+		}))
+		assert.Empty(t, expect)
+	})
+	t.Run("PartialName", func(t *testing.T) {
+		expect := map[string]struct{}{
+			path1: {},
+			path2: {},
+			path4: {},
+			path5: {},
+		}
+		assert.NoError(t, Query(&ctx, "gog", Walk, func(l *Local) error {
+			assert.Contains(t, expect, l.FullPath)
+			delete(expect, l.FullPath)
+			return nil
+		}))
+		assert.Empty(t, expect)
+	})
+	t.Run("OwnerAndName", func(t *testing.T) {
+		expect := map[string]struct{}{
+			path1: {},
+			path4: {},
+			path5: {},
+		}
+		assert.NoError(t, Query(&ctx, "kyoh86/gogh", Walk, func(l *Local) error {
+			assert.Contains(t, expect, l.FullPath)
+			delete(expect, l.FullPath)
+			return nil
+		}))
+		assert.Empty(t, expect)
+	})
+	t.Run("PartialOwnerAndName", func(t *testing.T) {
+		expect := map[string]struct{}{
+			path1: {},
+			path4: {},
+			path5: {},
+		}
+		assert.NoError(t, Query(&ctx, "yoh86/gog", Walk, func(l *Local) error {
+			assert.Contains(t, expect, l.FullPath)
+			delete(expect, l.FullPath)
+			return nil
+		}))
+		assert.Empty(t, expect)
+	})
+	t.Run("FullRemoteName", func(t *testing.T) {
+		expect := map[string]struct{}{
+			path1: {},
+			path5: {},
+		}
+		assert.NoError(t, Query(&ctx, "github.com/kyoh86/gogh", Walk, func(l *Local) error {
+			assert.Contains(t, expect, l.FullPath)
+			delete(expect, l.FullPath)
+			return nil
+		}))
+		assert.Empty(t, expect)
+	})
+	t.Run("PartialFullRemoteName", func(t *testing.T) {
+		expect := map[string]struct{}{
+			path1: {},
+			path5: {},
+		}
+		assert.NoError(t, Query(&ctx, "ithub.com/kyoh86/gog", Walk, func(l *Local) error {
+			assert.Contains(t, expect, l.FullPath)
+			delete(expect, l.FullPath)
+			return nil
+		}))
+		assert.Empty(t, expect)
+	})
+	t.Run("WalkInPrimary", func(t *testing.T) {
+		expect := map[string]struct{}{
+			path1: {},
+			path2: {},
+			path4: {},
+		}
+		assert.NoError(t, Query(&ctx, "gogh", WalkInPrimary, func(l *Local) error {
+			assert.Contains(t, expect, l.FullPath)
+			delete(expect, l.FullPath)
+			return nil
+		}))
+		assert.Empty(t, expect)
+	})
+}
