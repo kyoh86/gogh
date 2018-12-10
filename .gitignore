@@ -1,6 +1,7 @@
 /dist
 /gogh.1
 /vendor
+/.circleci/test
 
 # Binaries for programs and plugins
 *.exe
