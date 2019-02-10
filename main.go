@@ -29,6 +29,7 @@ func main() {
 		pipe,
 		fork,
 		create,
+		where,
 		list,
 		find,
 		root,
@@ -164,6 +165,20 @@ func create(app *kingpin.Application) (string, func() error) {
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
 		return command.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, &remote)
+	})
+}
+
+func where(app *kingpin.Application) (string, func() error) {
+	var (
+		primary bool
+		query   string
+	)
+	cmd := app.Command("where", "Where is a local repository")
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Arg("query", "Local name query").StringVar(&query)
+
+	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+		return command.Where(ctx, primary, query)
 	})
 }
 
