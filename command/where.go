@@ -25,7 +25,7 @@ func Where(ctx gogh.Context, primary bool, query string) error {
 		return err
 	}
 
-	if count > 0 {
+	if count > 1 {
 		log.Println("error: Multiple repositories are found")
 	}
 
