@@ -32,7 +32,7 @@ func Where(ctx gogh.Context, primary bool, query string) error {
 	if err := formatter.PrintAll(ctx.Stdout(), "\n"); err != nil {
 		return err
 	}
-	if count > 0 {
+	if count > 1 {
 		return errors.New("try more precise name")
 	}
 	return nil
