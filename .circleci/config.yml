@@ -7,8 +7,14 @@ jobs:
     steps:
       - checkout
       - run:
+          name: tidy modules
+          command: "go mod tidy"
+      - run:
           name: vendor
           command: "go mod vendor"
+      - run:
+          name: check dirty modules
+          command: "git diff --exit-code"
       - run:
           name: install
           command: "go install ./..."
@@ -38,7 +44,7 @@ jobs:
           at: /go
       - run:
           name: search lints
-          command: "gometalinter --config /etc/gometalinter/config.json ./... | tee >( reviewdog -f=golint -reporter=github-pr-check )"
+          command: "gometalinter ./... | tee >( reviewdog -f=golint -reporter=github-pr-check )"
 
   e2e:
     working_directory: /go/src/github.com/kyoh86/gogh

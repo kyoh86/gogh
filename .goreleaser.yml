@@ -11,14 +11,8 @@ brew:
     owner: kyoh86
     name: homebrew-tap
   folder: Formula
-  dependencies:
-    - git
   homepage: https://github.com/kyoh86/gogh
   description: GO GitHub project manager
-  caveats: |
-    To use "gogogh" command to change directory into the project,
-    add the following line to your .bashrc / .zshrc
-      eval "$(gogh setup)"
 builds:
 - goos:
   - linux
