@@ -1,6 +1,10 @@
+# for goreleaser output with .goreleaser.yml
 /dist
+
+# for man file
 /gogh.1
-/vendor
+
+# go-junit-report output in .circleci/config
 /.circleci/test
 
 # Binaries for programs and plugins
