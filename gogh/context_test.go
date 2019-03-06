@@ -27,9 +27,10 @@ func TestGit(t *testing.T) {
 	run("get current context", `[gogh "ghe"]
 	host = foo.example.com
 	host = bar.example.com
+[gogh "github"]
+	user = kyoh86
 [gogh]
 	logLevel = info
-	user = kyoh86
 	root = /go/src
 	root = /foo/bar`, func(t *testing.T) {
 		resetEnv(t)
@@ -46,7 +47,7 @@ func TestGit(t *testing.T) {
 		assert.Equal(t, []string{"foo.example.com", "bar.example.com"}, gotContext.GHEHosts())
 	})
 
-	run("get user name from git config", "[gogh]\nuser = kyoh86", func(t *testing.T) {
+	run("get user name from git config", "[gogh \"github\"]\nuser = kyoh86", func(t *testing.T) {
 		resetEnv(t)
 		userName, err := getUserName()
 		assert.NoError(t, err)

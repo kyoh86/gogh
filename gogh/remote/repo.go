@@ -19,6 +19,11 @@ import (
 // Returns:
 //   List of the url for repoisitories
 func Repo(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
+	client, err := NewClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	/*
 		Build GitHub requests.
 		See: https://developer.github.com/v3/repos/#parameters
@@ -50,7 +55,6 @@ func Repo(ctx gogh.Context, user string, own, collaborate, member bool, visibili
 	}
 
 	var list []string
-	client := NewClient(ctx)
 	last := 1
 	for page := 1; page <= last; page++ {
 		opts.ListOptions.Page = page
