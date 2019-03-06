@@ -98,6 +98,10 @@ Look into a locally cloned repository with the shell.
 
 Prints repositories' root (i.e. `gogh.root`). Without `--all` option, the primary one is shown.
 
+### `repo`
+
+Show a list of repositories for a user.
+
 ## CONFIGURATION
 
 Configuration uses `git-config` variables.
