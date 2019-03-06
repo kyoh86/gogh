@@ -16,11 +16,11 @@ type Project struct {
 }
 
 // FindProject will get a project (local repository) from remote repository URL
-func FindProject(ctx Context, remote *Remote) (*Project, error) {
-	if err := CheckRemoteHost(ctx, remote); err != nil {
+func FindProject(ctx Context, repo *Repo) (*Project, error) {
+	if err := CheckRepoHost(ctx, repo); err != nil {
 		return nil, err
 	}
-	relPath := remote.RelPath(ctx)
+	relPath := repo.RelPath(ctx)
 	var project *Project
 
 	// Find existing repository first
@@ -39,12 +39,12 @@ func FindProject(ctx Context, remote *Remote) (*Project, error) {
 	}
 
 	// No repository found, returning new one
-	return NewProject(ctx, remote)
+	return NewProject(ctx, repo)
 }
 
 // NewProject creates a project (local repository)
-func NewProject(ctx Context, remote *Remote) (*Project, error) {
-	relPath := remote.RelPath(ctx)
+func NewProject(ctx Context, repo *Repo) (*Project, error) {
+	relPath := repo.RelPath(ctx)
 	fullPath := filepath.Join(ctx.PrimaryRoot(), relPath)
 	info, err := os.Stat(fullPath)
 	exists, err := existsProject(fullPath, info, err)
@@ -54,7 +54,7 @@ func NewProject(ctx Context, remote *Remote) (*Project, error) {
 	return &Project{
 		FullPath:  fullPath,
 		RelPath:   relPath,
-		PathParts: []string{remote.Host(ctx), remote.Owner(ctx), remote.Name(ctx)},
+		PathParts: []string{repo.Host(ctx), repo.Owner(ctx), repo.Name(ctx)},
 		Exists:    exists,
 	}, nil
 }
@@ -72,8 +72,8 @@ func existsProject(path string, info os.FileInfo, err error) (bool, error) {
 }
 
 // FindProjectPath willl get a project (local repository) path from remote repository URL
-func FindProjectPath(ctx Context, remote *Remote) (string, error) {
-	project, err := FindProject(ctx, remote)
+func FindProjectPath(ctx Context, repo *Repo) (string, error) {
+	project, err := FindProject(ctx, repo)
 	if err != nil {
 		return "", err
 	}

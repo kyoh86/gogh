@@ -22,9 +22,9 @@ func New(
 	template string,
 	separateGitDir string,
 	shared gogh.ProjectShared,
-	remote *gogh.Remote,
+	repo *gogh.Repo,
 ) error {
-	project, err := gogh.FindProject(ctx, remote)
+	project, err := gogh.FindProject(ctx, repo)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func New(
 
 	// hub create
 	log.Println("info: creating a new repository in GitHub")
-	if err := hubCreate(ctx, private, description, homepage, browse, clipboard, remote, project.FullPath); err != nil {
+	if err := hubCreate(ctx, private, description, homepage, browse, clipboard, repo, project.FullPath); err != nil {
 		return err
 	}
 

@@ -7,8 +7,8 @@ import (
 )
 
 // Find a path of a project
-func Find(ctx gogh.Context, remote *gogh.Remote) error {
-	path, err := gogh.FindProjectPath(ctx, remote)
+func Find(ctx gogh.Context, repo *gogh.Repo) error {
+	path, err := gogh.FindProjectPath(ctx, repo)
 	if err != nil {
 		return err
 	}

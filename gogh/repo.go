@@ -11,8 +11,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Remote specifies a repository in the GitHub
-type Remote struct {
+// Repo specifies a repository in the GitHub
+type Repo struct {
 	raw string
 
 	scheme string
@@ -26,18 +26,18 @@ type Remote struct {
 	fragment   string // fragment for references, without '#'
 }
 
-// ParseRemote parses a remote-name for a repository in the GitHub
-func ParseRemote(rawRemote string) (*Remote, error) {
-	remote := new(Remote)
-	if err := remote.Set(rawRemote); err != nil {
+// ParseRepo parses a repo-name for a repository in the GitHub
+func ParseRepo(rawRepo string) (*Repo, error) {
+	repo := new(Repo)
+	if err := repo.Set(rawRepo); err != nil {
 		return nil, err
 	}
-	return remote, nil
+	return repo, nil
 }
 
-// CheckRemoteHost that remote is in supported host
-func CheckRemoteHost(ctx Context, remote *Remote) error {
-	host := remote.Host(ctx)
+// CheckRepoHost that repo is in supported host
+func CheckRepoHost(ctx Context, repo *Repo) error {
+	host := repo.Host(ctx)
 	if host == DefaultHost {
 		return nil
 	}
@@ -58,19 +58,19 @@ var scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
 //TODO: var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9]+)?)/([\w-]+)$`)
 //TODO: var capital = regexp.MustCompile(`[A-Z]`) // UNDONE: warn if name contains capital cases
 
-// Set text as Remote
-func (r *Remote) Set(rawRemote string) error {
-	raw := rawRemote
-	if !hasSchemePattern.MatchString(rawRemote) && scpLikeURLPattern.MatchString(rawRemote) {
-		matched := scpLikeURLPattern.FindStringSubmatch(rawRemote)
+// Set text as Repo
+func (r *Repo) Set(rawRepo string) error {
+	raw := rawRepo
+	if !hasSchemePattern.MatchString(rawRepo) && scpLikeURLPattern.MatchString(rawRepo) {
+		matched := scpLikeURLPattern.FindStringSubmatch(rawRepo)
 		user := matched[1]
 		host := matched[2]
 		path := matched[3]
 
-		rawRemote = fmt.Sprintf("ssh://%s%s/%s", user, host, path)
+		rawRepo = fmt.Sprintf("ssh://%s%s/%s", user, host, path)
 	}
 
-	url, err := url.Parse(rawRemote)
+	url, err := url.Parse(rawRepo)
 	if err != nil {
 		return err
 	}
@@ -109,17 +109,17 @@ func (r *Remote) Set(rawRemote string) error {
 const DefaultHost = "github.com"
 
 // Scheme returns scheme of the repository
-func (r *Remote) Scheme(_ Context) string {
+func (r *Repo) Scheme(_ Context) string {
 	return r.scheme
 }
 
 // Host returns host of the repository
-func (r *Remote) Host(_ Context) string {
+func (r *Repo) Host(_ Context) string {
 	return r.host
 }
 
 // Owner returns a user name of an owner of the repository
-func (r *Remote) Owner(ctx Context) string {
+func (r *Repo) Owner(ctx Context) string {
 	if r.owner == "" {
 		return ctx.UserName()
 	}
@@ -127,12 +127,12 @@ func (r *Remote) Owner(ctx Context) string {
 }
 
 // Name returns a name of the repository
-func (r *Remote) Name(_ Context) string {
+func (r *Repo) Name(_ Context) string {
 	return r.name
 }
 
 // URL will get a URL for a repository
-func (r *Remote) URL(ctx Context, ssh bool) *url.URL {
+func (r *Repo) URL(ctx Context, ssh bool) *url.URL {
 	if ssh {
 		return &url.URL{
 			Scheme: "ssh",
@@ -150,38 +150,38 @@ func (r *Remote) URL(ctx Context, ssh bool) *url.URL {
 }
 
 // RelPath get relative path from root directory
-func (r *Remote) RelPath(ctx Context) string {
+func (r *Repo) RelPath(ctx Context) string {
 	return filepath.Join(r.Host(ctx), r.Owner(ctx), r.Name(ctx))
 }
 
-func (r Remote) String() string {
+func (r Repo) String() string {
 	return r.raw
 }
 
-// Remotes is array of Remote
-type Remotes []Remote
+// Repos is array of Repo
+type Repos []Repo
 
-// Set will add a text to Remotes as a Remote
-func (r *Remotes) Set(value string) error {
-	remote := new(Remote)
-	if err := remote.Set(value); err != nil {
+// Set will add a text to Repos as a Repo
+func (r *Repos) Set(value string) error {
+	repo := new(Repo)
+	if err := repo.Set(value); err != nil {
 		return err
 	}
-	*r = append(*r, *remote)
+	*r = append(*r, *repo)
 	return nil
 }
 
 // String : Stringに変換する
-func (r Remotes) String() string {
+func (r Repos) String() string {
 	if len(r) == 0 {
 		return ""
 	}
 	strs := make([]string, 0, len(r))
-	for _, remote := range r {
-		strs = append(strs, remote.String())
+	for _, repo := range r {
+		strs = append(strs, repo.String())
 	}
 	return strings.Join(strs, ",")
 }
 
 // IsCumulative : 複数指定可能
-func (r Remotes) IsCumulative() bool { return true }
+func (r Repos) IsCumulative() bool { return true }

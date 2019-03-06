@@ -87,9 +87,9 @@ func TestFindProject(t *testing.T) {
 	})
 }
 
-func parseURL(t *testing.T, text string) *Remote {
+func parseURL(t *testing.T, text string) *Repo {
 	t.Helper()
-	u, err := ParseRemote(text)
+	u, err := ParseRepo(text)
 	require.NoError(t, err)
 	return u
 }
@@ -254,7 +254,7 @@ func TestQuery(t *testing.T) {
 		}))
 		assert.Empty(t, expect)
 	})
-	t.Run("FullRemoteName", func(t *testing.T) {
+	t.Run("FullRepoName", func(t *testing.T) {
 		expect := map[string]struct{}{
 			path1: {},
 			path5: {},
@@ -266,7 +266,7 @@ func TestQuery(t *testing.T) {
 		}))
 		assert.Empty(t, expect)
 	})
-	t.Run("PartialFullRemoteName", func(t *testing.T) {
+	t.Run("PartialFullRepoName", func(t *testing.T) {
 		expect := map[string]struct{}{
 			path1: {},
 			path5: {},

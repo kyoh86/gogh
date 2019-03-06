@@ -13,7 +13,7 @@ import (
 func hubFork(
 	ctx gogh.Context,
 	project *gogh.Project,
-	remote *gogh.Remote,
+	repo *gogh.Repo,
 	noRemote bool,
 	remoteName string,
 	organization string,
@@ -36,7 +36,7 @@ func hubFork(
 	hubArgs = appendIfFilled(hubArgs, "--remote-name", remoteName)
 	hubArgs = appendIfFilled(hubArgs, "--organization", organization)
 	// call hub fork
-	if err := os.Setenv("GITHUB_HOST", remote.Host(ctx)); err != nil {
+	if err := os.Setenv("GITHUB_HOST", repo.Host(ctx)); err != nil {
 		return err
 	}
 	log.Printf("debug: calling `hub fork %s`", strings.Join(hubArgs, " "))
@@ -55,7 +55,7 @@ func hubCreate(
 	homepage *url.URL,
 	browse bool,
 	clipboard bool,
-	remote *gogh.Remote,
+	repo *gogh.Repo,
 	directory string,
 ) (retErr error) {
 	// cd
@@ -80,9 +80,9 @@ func hubCreate(
 	if homepage != nil {
 		hubArgs = append(hubArgs, "-h", homepage.String())
 	}
-	hubArgs = append(hubArgs, remote.URL(ctx, false).String())
+	hubArgs = append(hubArgs, repo.URL(ctx, false).String())
 	log.Printf("debug: calling `hub create %s`", strings.Join(hubArgs, " "))
-	if err := os.Setenv("GITHUB_HOST", remote.Host(ctx)); err != nil {
+	if err := os.Setenv("GITHUB_HOST", repo.Host(ctx)); err != nil {
 		return err
 	}
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("create"), commands.NewArgs(hubArgs))
