@@ -44,6 +44,9 @@ func FindProject(ctx Context, repo *Repo) (*Project, error) {
 
 // NewProject creates a project (local repository)
 func NewProject(ctx Context, repo *Repo) (*Project, error) {
+	if err := CheckRepoHost(ctx, repo); err != nil {
+		return nil, err
+	}
 	relPath := repo.RelPath(ctx)
 	fullPath := filepath.Join(ctx.PrimaryRoot(), relPath)
 	info, err := os.Stat(fullPath)

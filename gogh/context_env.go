@@ -1,12 +1,22 @@
 package gogh
 
 var (
-	envLogLevel   = "GOGH_LOG_LEVEL"
-	envGithubUser = "GITHUB_USER"
-	envRoot       = "GOGH_ROOT"
-	envNames      = []string{
+	envLogLevel        = "GOGH_LOG_LEVEL"
+	envGoghGitHubUser  = "GOGH_GITHUB_USER"
+	envGoghGitHubToken = "GOGH_GITHUB_TOKEN"
+	envGoghGitHubHost  = "GOGH_GITHUB_HOST"
+	envGitHubUser      = "GITHUB_USER"
+	envGitHubToken     = "GITHUB_TOKEN"
+	envGitHubHost      = "GITHUB_HOST"
+	envRoot            = "GOGH_ROOT"
+	envNames           = []string{
 		envLogLevel,
-		envGithubUser,
+		envGoghGitHubUser,
+		envGoghGitHubToken,
+		envGoghGitHubHost,
+		envGitHubUser,
+		envGitHubToken,
+		envGitHubHost,
 		envUserName,
 		envRoot,
 	}

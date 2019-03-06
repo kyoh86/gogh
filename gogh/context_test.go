@@ -27,9 +27,10 @@ func TestGit(t *testing.T) {
 	run("get current context", `[gogh "ghe"]
 	host = foo.example.com
 	host = bar.example.com
+[gogh "github"]
+	user = kyoh86
 [gogh]
 	logLevel = info
-	user = kyoh86
 	root = /go/src
 	root = /foo/bar`, func(t *testing.T) {
 		resetEnv(t)
@@ -46,16 +47,16 @@ func TestGit(t *testing.T) {
 		assert.Equal(t, []string{"foo.example.com", "bar.example.com"}, gotContext.GHEHosts())
 	})
 
-	run("get user name from git config", "[gogh]\nuser = kyoh86", func(t *testing.T) {
+	run("get user name from git config", "[gogh \"github\"]\nuser = kyoh86", func(t *testing.T) {
 		resetEnv(t)
 		userName, err := getUserName()
 		assert.NoError(t, err)
 		assert.Equal(t, "kyoh86", userName)
 	})
 
-	run("get Github user name from envar", "", func(t *testing.T) {
+	run("get GitHub user name from envar", "", func(t *testing.T) {
 		resetEnv(t)
-		require.NoError(t, os.Setenv(envGithubUser, "kyoh87"))
+		require.NoError(t, os.Setenv(envGitHubUser, "kyoh87"))
 		userName, err := getUserName()
 		assert.NoError(t, err)
 		assert.Equal(t, "kyoh87", userName)
@@ -88,7 +89,7 @@ func TestGit(t *testing.T) {
 		assert.Equal(t, "error", logLevel)
 	})
 
-	run("get Github log level from envar", "[gogh]\nlogLevel = error", func(t *testing.T) {
+	run("get GitHub log level from envar", "[gogh]\nlogLevel = error", func(t *testing.T) {
 		resetEnv(t)
 		require.NoError(t, os.Setenv(envLogLevel, "trace"))
 		logLevel, err := getLogLevel()

@@ -77,7 +77,7 @@ func TestRepos(t *testing.T) {
 }
 
 func TestCheckRepoHost(t *testing.T) {
-	t.Run("valid github URL", func(t *testing.T) {
+	t.Run("valid GitHub URL", func(t *testing.T) {
 		ctx := implContext{}
 		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://github.com/kyoh86/gogh")))
 	})
@@ -87,7 +87,7 @@ func TestCheckRepoHost(t *testing.T) {
 		}
 		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://example.com/kyoh86/gogh")))
 	})
-	t.Run("valid github URL with trailing slashes", func(t *testing.T) {
+	t.Run("valid GitHub URL with trailing slashes", func(t *testing.T) {
 		ctx := implContext{}
 		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://github.com/kyoh86/gogh/")))
 	})

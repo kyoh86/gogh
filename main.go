@@ -10,6 +10,7 @@ import (
 	"github.com/alecthomas/kingpin"
 	"github.com/comail/colog"
 	"github.com/kyoh86/gogh/command"
+	"github.com/kyoh86/gogh/command/remote"
 	"github.com/kyoh86/gogh/gogh"
 )
 
@@ -34,6 +35,8 @@ func main() {
 		find,
 		root,
 		setup,
+
+		repos,
 	} {
 		key, run := f(app)
 		cmds[key] = run
@@ -229,5 +232,29 @@ func setup(app *kingpin.Application) (string, func() error) {
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
 		return command.Setup(ctx, cdFuncName, shell)
+	})
+}
+
+func repos(app *kingpin.Application) (string, func() error) {
+	var (
+		user        string
+		own         bool
+		collaborate bool
+		member      bool
+		visibility  string
+		sort        string
+		direction   string
+	)
+	cmd := app.Command("repo", "Generate shell script to setup gogh").Alias("repos")
+	cmd.Flag("user", "Who has the repositories. Empty means the authenticated user").StringVar(&user)
+	cmd.Flag("own", "Include repositories that are owned by the user").Default("true").BoolVar(&own)
+	cmd.Flag("collaborate", "Include repositories that the user has been added to as a collaborator").Default("true").BoolVar(&collaborate)
+	cmd.Flag("member", "Include repositories that the user has access to through being a member of an organization. This includes every repository on every team that the user is on").Default("true").BoolVar(&member)
+	cmd.Flag("visibility", "Include repositories that can be access public/private").Default("all").EnumVar(&visibility, "all", "public", "private")
+	cmd.Flag("sort", "Sort repositories by").Default("full_name").EnumVar(&sort, "created", "updated", "pushed", "full_name")
+	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
+
+	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+		return remote.Repo(ctx, user, own, collaborate, member, visibility, sort, direction)
 	})
 }

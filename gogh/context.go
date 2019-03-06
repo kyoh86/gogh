@@ -19,6 +19,8 @@ type Context interface {
 	Stdout() io.Writer
 	Stderr() io.Writer
 	UserName() string
+	GitHubToken() string
+	GitHubHost() string
 	LogLevel() string
 	Roots() []string
 	PrimaryRoot() string
@@ -28,6 +30,14 @@ type Context interface {
 // CurrentContext get current context from OS envars and Git configurations
 func CurrentContext(ctx context.Context) (Context, error) {
 	userName, err := getUserName()
+	if err != nil {
+		return nil, err
+	}
+	gitHubToken, err := getGitHubToken()
+	if err != nil {
+		return nil, err
+	}
+	gitHubHost, err := getGitHubHost()
 	if err != nil {
 		return nil, err
 	}
@@ -44,24 +54,28 @@ func CurrentContext(ctx context.Context) (Context, error) {
 		return nil, err
 	}
 	return &implContext{
-		Context:  ctx,
-		stdout:   os.Stdout,
-		stderr:   os.Stderr,
-		userName: userName,
-		logLevel: logLevel,
-		roots:    roots,
-		gheHosts: gheHosts,
+		Context:     ctx,
+		stdout:      os.Stdout,
+		stderr:      os.Stderr,
+		userName:    userName,
+		gitHubToken: gitHubToken,
+		gitHubHost:  gitHubHost,
+		logLevel:    logLevel,
+		roots:       roots,
+		gheHosts:    gheHosts,
 	}, nil
 }
 
 type implContext struct {
 	context.Context
-	stdout   io.Writer
-	stderr   io.Writer
-	userName string
-	logLevel string
-	roots    []string
-	gheHosts []string
+	stdout      io.Writer
+	stderr      io.Writer
+	userName    string
+	gitHubToken string
+	gitHubHost  string
+	logLevel    string
+	roots       []string
+	gheHosts    []string
 }
 
 func (c *implContext) Stdout() io.Writer {
@@ -74,6 +88,14 @@ func (c *implContext) Stderr() io.Writer {
 
 func (c *implContext) UserName() string {
 	return c.userName
+}
+
+func (c *implContext) GitHubToken() string {
+	return c.gitHubToken
+}
+
+func (c *implContext) GitHubHost() string {
+	return c.gitHubHost
 }
 
 func (c *implContext) LogLevel() string {
@@ -93,22 +115,39 @@ func (c *implContext) GHEHosts() []string {
 	return c.gheHosts
 }
 
-func getUserName() (string, error) {
-	user, err := getGitConf("gogh.user")
+func getConf(envName, confName string, altEnvNames ...string) (string, error) {
+	if val := os.Getenv(envName); val != "" {
+		return val, nil
+	}
+	val, err := getGitConf(confName)
 	if err != nil {
 		return "", err
 	}
-	if user != "" {
-		return user, nil
+	if val != "" {
+		return val, nil
 	}
-	if user := os.Getenv(envGithubUser); user != "" {
-		return user, nil
-	}
-	if user := os.Getenv(envUserName); user != "" {
-		return user, nil
+
+	for _, n := range altEnvNames {
+		if val := os.Getenv(n); val != "" {
+			return val, nil
+		}
 	}
 	// Make the error if it does not match any pattern
-	return "", fmt.Errorf("set gogh.user to your gitconfig")
+	return "", fmt.Errorf("set %s to your gitconfig", confName)
+}
+
+func getGitHubToken() (string, error) {
+	token, _ := getConf(envGoghGitHubToken, "gogh.github.token", envGitHubToken)
+	return token, nil
+}
+
+func getGitHubHost() (string, error) {
+	token, _ := getConf(envGoghGitHubHost, "gogh.github.host", envGitHubHost)
+	return token, nil
+}
+
+func getUserName() (string, error) {
+	return getConf(envGoghGitHubUser, "gogh.github.user", envGitHubUser, envUserName)
 }
 
 func getLogLevel() (string, error) {

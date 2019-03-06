@@ -39,6 +39,9 @@ func hubFork(
 	if err := os.Setenv("GITHUB_HOST", repo.Host(ctx)); err != nil {
 		return err
 	}
+	if err := os.Setenv("GITHUB_TOKEN", ctx.GitHubToken()); err != nil {
+		return err
+	}
 	log.Printf("debug: calling `hub fork %s`", strings.Join(hubArgs, " "))
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("fork"), commands.NewArgs(hubArgs))
 	if execErr.Err != nil {
@@ -83,6 +86,9 @@ func hubCreate(
 	hubArgs = append(hubArgs, repo.URL(ctx, false).String())
 	log.Printf("debug: calling `hub create %s`", strings.Join(hubArgs, " "))
 	if err := os.Setenv("GITHUB_HOST", repo.Host(ctx)); err != nil {
+		return err
+	}
+	if err := os.Setenv("GITHUB_TOKEN", ctx.GitHubToken()); err != nil {
 		return err
 	}
 	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("create"), commands.NewArgs(hubArgs))
