@@ -37,6 +37,10 @@ func CurrentContext(ctx context.Context) (Context, error) {
 	if err != nil {
 		return nil, err
 	}
+	gitHubHost, err := getGitHubHost()
+	if err != nil {
+		return nil, err
+	}
 	logLevel, err := getLogLevel()
 	if err != nil {
 		return nil, err
@@ -55,6 +59,7 @@ func CurrentContext(ctx context.Context) (Context, error) {
 		stderr:      os.Stderr,
 		userName:    userName,
 		gitHubToken: gitHubToken,
+		gitHubHost:  gitHubHost,
 		logLevel:    logLevel,
 		roots:       roots,
 		gheHosts:    gheHosts,
