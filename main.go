@@ -237,7 +237,7 @@ func setup(app *kingpin.Application) (string, func() error) {
 
 func repos(app *kingpin.Application) (string, func() error) {
 	var (
-		user  string
+		user        string
 		own         bool
 		collaborate bool
 		member      bool

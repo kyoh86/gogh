@@ -14,6 +14,8 @@ func NewClient(ctx gogh.Context) *github.Client {
 	}
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	client := github.NewClient(oauth2.NewClient(ctx, ts))
-	//UNDONE: support GHE
+	// TODO: support GHE
+	// Use GITHUB_HOST like `hub`.
+	// See: https://hub.github.com/hub.1.html#github-enterprise
 	return client
 }

@@ -38,20 +38,32 @@ func Repo(ctx gogh.Context, user string, own, collaborate, member bool, visibili
 		affs = append(affs, "organization_member")
 	}
 
-	client := NewClient(ctx)
-	repos, _, err := client.Repositories.List(ctx, user, &github.RepositoryListOptions{
+	opts := &github.RepositoryListOptions{
 		Visibility:  visibility,
 		Affiliation: strings.Join(affs, ","),
 		Sort:        sort,
 		Direction:   direction,
-	})
-	if err != nil {
-		return nil, err
+		ListOptions: github.ListOptions{
+			Page:    1,
+			PerPage: 100,
+		},
 	}
 
 	var list []string
-	for _, repo := range repos {
-		list = append(list, repo.GetHTMLURL())
+	client := NewClient(ctx)
+	last := 1
+	for page := 1; page <= last; page++ {
+		opts.ListOptions.Page = page
+
+		repos, res, err := client.Repositories.List(ctx, user, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		last = res.LastPage
+		for _, repo := range repos {
+			list = append(list, repo.GetHTMLURL())
+		}
 	}
 	return list, nil
 }
