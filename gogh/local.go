@@ -7,26 +7,26 @@ import (
 	"strings"
 )
 
-// Local repository specifier
-type Local struct {
+// Project repository specifier
+type Project struct {
 	FullPath  string
 	RelPath   string
 	PathParts []string
 	Exists    bool
 }
 
-// FindLocal will get a local repository from remote repository URL
-func FindLocal(ctx Context, remote *Remote) (*Local, error) {
+// FindProject will get a project (local repository) from remote repository URL
+func FindProject(ctx Context, remote *Remote) (*Project, error) {
 	if err := CheckRemoteHost(ctx, remote); err != nil {
 		return nil, err
 	}
 	relPath := remote.RelPath(ctx)
-	var local *Local
+	var project *Project
 
 	// Find existing repository first
-	if err := Walk(ctx, func(l *Local) error {
-		if l.RelPath == relPath {
-			local = l
+	if err := Walk(ctx, func(p *Project) error {
+		if p.RelPath == relPath {
+			project = p
 			return filepath.SkipDir
 		}
 		return nil
@@ -34,24 +34,24 @@ func FindLocal(ctx Context, remote *Remote) (*Local, error) {
 		return nil, err
 	}
 
-	if local != nil {
-		return local, nil
+	if project != nil {
+		return project, nil
 	}
 
 	// No repository found, returning new one
-	return NewLocal(ctx, remote)
+	return NewProject(ctx, remote)
 }
 
-// NewLocal creates a local repository
-func NewLocal(ctx Context, remote *Remote) (*Local, error) {
+// NewProject creates a project (local repository)
+func NewProject(ctx Context, remote *Remote) (*Project, error) {
 	relPath := remote.RelPath(ctx)
 	fullPath := filepath.Join(ctx.PrimaryRoot(), relPath)
 	info, err := os.Stat(fullPath)
-	exists, err := existsLocal(fullPath, info, err)
+	exists, err := existsProject(fullPath, info, err)
 	if err != nil {
 		return nil, err
 	}
-	return &Local{
+	return &Project{
 		FullPath:  fullPath,
 		RelPath:   relPath,
 		PathParts: []string{remote.Host(ctx), remote.Owner(ctx), remote.Name(ctx)},
@@ -59,7 +59,7 @@ func NewLocal(ctx Context, remote *Remote) (*Local, error) {
 	}, nil
 }
 
-func existsLocal(path string, info os.FileInfo, err error) (bool, error) {
+func existsProject(path string, info os.FileInfo, err error) (bool, error) {
 	switch {
 	case err == nil:
 		// noop
@@ -71,30 +71,30 @@ func existsLocal(path string, info os.FileInfo, err error) (bool, error) {
 	return info.IsDir() && isVcsDir(path), nil
 }
 
-// FindLocalPath willl get a local repository path from remote repository URL
-func FindLocalPath(ctx Context, remote *Remote) (string, error) {
-	local, err := FindLocal(ctx, remote)
+// FindProjectPath willl get a project (local repository) path from remote repository URL
+func FindProjectPath(ctx Context, remote *Remote) (string, error) {
+	project, err := FindProject(ctx, remote)
 	if err != nil {
 		return "", err
 	}
-	return local.FullPath, nil
+	return project.FullPath, nil
 }
 
 // Subpaths returns lists of tail parts of relative path from the root directory (shortest first)
 // for example, {"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"} for $root/github.com/kyoh86/gogh.
-func (l *Local) Subpaths() []string {
-	tails := make([]string, len(l.PathParts))
+func (p *Project) Subpaths() []string {
+	tails := make([]string, len(p.PathParts))
 
-	for i := range l.PathParts {
-		tails[i] = strings.Join(l.PathParts[len(l.PathParts)-(i+1):], "/")
+	for i := range p.PathParts {
+		tails[i] = strings.Join(p.PathParts[len(p.PathParts)-(i+1):], "/")
 	}
 
 	return tails
 }
 
 // IsInPrimaryRoot check which the repository is in primary root directory for gogh
-func (l *Local) IsInPrimaryRoot(ctx Context) bool {
-	return strings.HasPrefix(l.FullPath, ctx.PrimaryRoot())
+func (p *Project) IsInPrimaryRoot(ctx Context) bool {
+	return strings.HasPrefix(p.FullPath, ctx.PrimaryRoot())
 }
 
 func isVcsDir(path string) bool {
@@ -103,39 +103,39 @@ func isVcsDir(path string) bool {
 }
 
 // WalkFunc is the type of the function called for each repository visited by Walk / WalkInPrimary
-type WalkFunc func(*Local) error
+type WalkFunc func(*Project) error
 
 // Walker is the type of the function to visit each repository
 type Walker func(Context, WalkFunc) error
 
-// walkInPath thorugh local repositories in a path
+// walkInPath thorugh projects (local repositories) in a path
 func walkInPath(root string, callback WalkFunc) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		exists, err := existsLocal(path, info, err)
+		exists, err := existsProject(path, info, err)
 		if err != nil {
 			return err
 		}
 		if !exists {
 			return nil
 		}
-		l, err := parseLocal(root, path)
+		p, err := parseProject(root, path)
 		if err != nil {
 			return nil
 		}
-		if err := callback(l); err != nil {
+		if err := callback(p); err != nil {
 			return err
 		}
 		return filepath.SkipDir
 	})
 }
 
-func parseLocal(root string, fullPath string) (*Local, error) {
+func parseProject(root string, fullPath string) (*Project, error) {
 	rel, err := filepath.Rel(root, fullPath)
 	if err != nil {
 		return nil, err
 	}
 	pathParts := strings.Split(rel, string(filepath.Separator))
-	return &Local{
+	return &Project{
 		FullPath:  fullPath,
 		RelPath:   filepath.ToSlash(rel),
 		PathParts: pathParts,
@@ -143,12 +143,12 @@ func parseLocal(root string, fullPath string) (*Local, error) {
 	}, nil
 }
 
-// WalkInPrimary thorugh local repositories in the first gogh.root directory
+// WalkInPrimary thorugh projects (local repositories) in the first gogh.root directory
 func WalkInPrimary(ctx Context, callback WalkFunc) error {
 	return walkInPath(ctx.PrimaryRoot(), callback)
 }
 
-// Walk thorugh local repositories in gogh.root directories
+// Walk thorugh projects (local repositories) in gogh.root directories
 func Walk(ctx Context, callback WalkFunc) error {
 	for _, root := range ctx.Roots() {
 		if err := walkInPath(root, callback); err != nil {
@@ -158,14 +158,14 @@ func Walk(ctx Context, callback WalkFunc) error {
 	return nil
 }
 
-// Query searches local repositories with specified walker
+// Query searches projects (local repositories) with specified walker
 func Query(ctx Context, query string, walk Walker, callback WalkFunc) error {
-	return walk(ctx, func(l *Local) error {
-		if query != "" && !strings.Contains(l.RelPath, query) {
-			log.Printf("debug: found one repository (%q) but it's not matched for query\n", l.FullPath)
+	return walk(ctx, func(p *Project) error {
+		if query != "" && !strings.Contains(p.RelPath, query) {
+			log.Printf("debug: found one repository (%q) but it's not matched for query\n", p.FullPath)
 			return nil
 		}
 
-		return callback(l)
+		return callback(p)
 	})
 }

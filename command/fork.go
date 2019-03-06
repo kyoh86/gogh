@@ -14,16 +14,16 @@ func Fork(ctx gogh.Context, update, withSSH, shallow, noRemote bool, remoteName 
 		return err
 	}
 
-	local, err := gogh.FindLocal(ctx, remote)
+	project, err := gogh.FindProject(ctx, remote)
 	if err != nil {
 		return err
 	}
 	log.Printf("info: forking a repository")
-	if err := hubFork(ctx, local, remote, noRemote, remoteName, organization); err != nil {
+	if err := hubFork(ctx, project, remote, noRemote, remoteName, organization); err != nil {
 		return err
 	}
 
-	if _, err := fmt.Fprintln(ctx.Stdout(), local.RelPath); err != nil {
+	if _, err := fmt.Fprintln(ctx.Stdout(), project.RelPath); err != nil {
 		return err
 	}
 	return nil

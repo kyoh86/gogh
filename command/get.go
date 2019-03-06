@@ -23,19 +23,19 @@ func GetAll(ctx gogh.Context, update, withSSH, shallow bool, remotes gogh.Remote
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
 func Get(ctx gogh.Context, update, withSSH, shallow bool, remote *gogh.Remote) error {
 	remoteURL := remote.URL(ctx, withSSH)
-	local, err := gogh.FindLocal(ctx, remote)
+	project, err := gogh.FindProject(ctx, remote)
 	if err != nil {
 		return err
 	}
 
-	if !local.Exists {
-		log.Println("info: clone", fmt.Sprintf("%s -> %s", remoteURL, local.FullPath))
-		return gitClone(ctx, remoteURL, local.FullPath, shallow)
+	if !project.Exists {
+		log.Println("info: clone", fmt.Sprintf("%s -> %s", remoteURL, project.FullPath))
+		return gitClone(ctx, remoteURL, project.FullPath, shallow)
 	}
 	if update {
-		log.Println("info: update", local.FullPath)
-		return gitUpdate(ctx, local.FullPath)
+		log.Println("info: update", project.FullPath)
+		return gitUpdate(ctx, project.FullPath)
 	}
-	log.Println("warn: exists", local.FullPath)
+	log.Println("warn: exists", project.FullPath)
 	return nil
 }

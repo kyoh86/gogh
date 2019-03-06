@@ -11,18 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParseLocal(t *testing.T) {
+func TestParseProject(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
 	ctx := implContext{roots: []string{tmp}}
 
 	t.Run("in primary root", func(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
-		l, err := parseLocal(tmp, path)
+		p, err := parseProject(tmp, path)
 		require.NoError(t, err)
-		assert.Equal(t, path, l.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
-		assert.True(t, l.IsInPrimaryRoot(&ctx))
+		assert.Equal(t, path, p.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
+		assert.True(t, p.IsInPrimaryRoot(&ctx))
 	})
 	t.Run("secondary path", func(t *testing.T) {
 		tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
@@ -30,28 +30,28 @@ func TestParseLocal(t *testing.T) {
 		ctx := ctx
 		ctx.roots = append(ctx.roots, tmp2)
 		path := filepath.Join(tmp2, "github.com", "kyoh86", "gogh")
-		l, err := parseLocal(tmp2, path)
+		p, err := parseProject(tmp2, path)
 		require.NoError(t, err)
-		assert.Equal(t, path, l.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
-		assert.False(t, l.IsInPrimaryRoot(&ctx))
+		assert.Equal(t, path, p.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
+		assert.False(t, p.IsInPrimaryRoot(&ctx))
 	})
 }
 
-func TestFindLocal(t *testing.T) {
+func TestFindProject(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
 	ctx := implContext{roots: []string{tmp}, userName: "kyoh86"}
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 	t.Run("not existing repository", func(t *testing.T) {
-		l, err := FindLocal(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		p, err := FindProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
-		assert.Equal(t, path, l.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
+		assert.Equal(t, path, p.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 	})
 	t.Run("not supported host URL", func(t *testing.T) {
-		_, err := FindLocal(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
+		_, err := FindProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
 		assert.Error(t, err, `not supported host: "example.com"`)
 	})
 	t.Run("existing repository", func(t *testing.T) {
@@ -66,23 +66,23 @@ func TestFindLocal(t *testing.T) {
 		}()
 
 		t.Run("full name", func(t *testing.T) {
-			gotPath, err := FindLocalPath(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+			gotPath, err := FindProjectPath(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 			require.NoError(t, err)
 			assert.Equal(t, path, gotPath)
 		})
 
 		t.Run("shortest precise name (owner and name)", func(t *testing.T) {
-			l, err := FindLocal(&ctx, parseURL(t, "kyoh86/gogh"))
+			p, err := FindProject(&ctx, parseURL(t, "kyoh86/gogh"))
 			require.NoError(t, err)
-			assert.Equal(t, path, l.FullPath)
-			assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, l.Subpaths())
+			assert.Equal(t, path, p.FullPath)
+			assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 		})
 
 		t.Run("shortest pricese name (name only)", func(t *testing.T) {
-			l, err := FindLocal(&ctx, parseURL(t, "foo"))
+			p, err := FindProject(&ctx, parseURL(t, "foo"))
 			require.NoError(t, err)
-			assert.Equal(t, filepath.Join(tmp, "github.com", "kyoh86", "foo"), l.FullPath)
-			assert.Equal(t, []string{"foo", "kyoh86/foo", "github.com/kyoh86/foo"}, l.Subpaths())
+			assert.Equal(t, filepath.Join(tmp, "github.com", "kyoh86", "foo"), p.FullPath)
+			assert.Equal(t, []string{"foo", "kyoh86/foo", "github.com/kyoh86/foo"}, p.Subpaths())
 		})
 	})
 }
@@ -95,8 +95,8 @@ func parseURL(t *testing.T, text string) *Remote {
 }
 
 func TestWalk(t *testing.T) {
-	neverCalled := func(t *testing.T) func(*Local) error {
-		return func(*Local) error {
+	neverCalled := func(t *testing.T) func(*Project) error {
+		return func(*Project) error {
 			t.Fatal("should not be called but...")
 			return nil
 		}
@@ -142,8 +142,8 @@ func TestWalk(t *testing.T) {
 		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
 		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
 		err = errors.New("sample error")
-		assert.Error(t, err, Walk(&ctx, func(l *Local) error {
-			assert.Equal(t, path, l.FullPath)
+		assert.Error(t, err, Walk(&ctx, func(p *Project) error {
+			assert.Equal(t, path, p.FullPath)
 			return err
 		}))
 	})
@@ -169,8 +169,8 @@ func TestList_Symlink(t *testing.T) {
 	require.NoError(t, err)
 
 	paths := []string{}
-	Walk(ctx, func(l *Local) error {
-		paths = append(paths, l.RelPath)
+	Walk(ctx, func(p *Project) error {
+		paths = append(paths, p.RelPath)
 		return nil
 	})
 
@@ -195,7 +195,7 @@ func TestQuery(t *testing.T) {
 
 	ctx := implContext{roots: []string{root1, root2}}
 
-	assert.NoError(t, Query(&ctx, "never found", Walk, func(*Local) error {
+	assert.NoError(t, Query(&ctx, "never found", Walk, func(*Project) error {
 		t.Fatal("should not be called but...")
 		return nil
 	}))
@@ -207,9 +207,9 @@ func TestQuery(t *testing.T) {
 			path4: {},
 			path5: {},
 		}
-		assert.NoError(t, Query(&ctx, "gogh", Walk, func(l *Local) error {
-			assert.Contains(t, expect, l.FullPath)
-			delete(expect, l.FullPath)
+		assert.NoError(t, Query(&ctx, "gogh", Walk, func(p *Project) error {
+			assert.Contains(t, expect, p.FullPath)
+			delete(expect, p.FullPath)
 			return nil
 		}))
 		assert.Empty(t, expect)
@@ -221,9 +221,9 @@ func TestQuery(t *testing.T) {
 			path4: {},
 			path5: {},
 		}
-		assert.NoError(t, Query(&ctx, "gog", Walk, func(l *Local) error {
-			assert.Contains(t, expect, l.FullPath)
-			delete(expect, l.FullPath)
+		assert.NoError(t, Query(&ctx, "gog", Walk, func(p *Project) error {
+			assert.Contains(t, expect, p.FullPath)
+			delete(expect, p.FullPath)
 			return nil
 		}))
 		assert.Empty(t, expect)
@@ -234,9 +234,9 @@ func TestQuery(t *testing.T) {
 			path4: {},
 			path5: {},
 		}
-		assert.NoError(t, Query(&ctx, "kyoh86/gogh", Walk, func(l *Local) error {
-			assert.Contains(t, expect, l.FullPath)
-			delete(expect, l.FullPath)
+		assert.NoError(t, Query(&ctx, "kyoh86/gogh", Walk, func(p *Project) error {
+			assert.Contains(t, expect, p.FullPath)
+			delete(expect, p.FullPath)
 			return nil
 		}))
 		assert.Empty(t, expect)
@@ -247,9 +247,9 @@ func TestQuery(t *testing.T) {
 			path4: {},
 			path5: {},
 		}
-		assert.NoError(t, Query(&ctx, "yoh86/gog", Walk, func(l *Local) error {
-			assert.Contains(t, expect, l.FullPath)
-			delete(expect, l.FullPath)
+		assert.NoError(t, Query(&ctx, "yoh86/gog", Walk, func(p *Project) error {
+			assert.Contains(t, expect, p.FullPath)
+			delete(expect, p.FullPath)
 			return nil
 		}))
 		assert.Empty(t, expect)
@@ -259,9 +259,9 @@ func TestQuery(t *testing.T) {
 			path1: {},
 			path5: {},
 		}
-		assert.NoError(t, Query(&ctx, "github.com/kyoh86/gogh", Walk, func(l *Local) error {
-			assert.Contains(t, expect, l.FullPath)
-			delete(expect, l.FullPath)
+		assert.NoError(t, Query(&ctx, "github.com/kyoh86/gogh", Walk, func(p *Project) error {
+			assert.Contains(t, expect, p.FullPath)
+			delete(expect, p.FullPath)
 			return nil
 		}))
 		assert.Empty(t, expect)
@@ -271,9 +271,9 @@ func TestQuery(t *testing.T) {
 			path1: {},
 			path5: {},
 		}
-		assert.NoError(t, Query(&ctx, "ithub.com/kyoh86/gog", Walk, func(l *Local) error {
-			assert.Contains(t, expect, l.FullPath)
-			delete(expect, l.FullPath)
+		assert.NoError(t, Query(&ctx, "ithub.com/kyoh86/gog", Walk, func(p *Project) error {
+			assert.Contains(t, expect, p.FullPath)
+			delete(expect, p.FullPath)
 			return nil
 		}))
 		assert.Empty(t, expect)
@@ -284,9 +284,9 @@ func TestQuery(t *testing.T) {
 			path2: {},
 			path4: {},
 		}
-		assert.NoError(t, Query(&ctx, "gogh", WalkInPrimary, func(l *Local) error {
-			assert.Contains(t, expect, l.FullPath)
-			delete(expect, l.FullPath)
+		assert.NoError(t, Query(&ctx, "gogh", WalkInPrimary, func(p *Project) error {
+			assert.Contains(t, expect, p.FullPath)
+			delete(expect, p.FullPath)
 			return nil
 		}))
 		assert.Empty(t, expect)

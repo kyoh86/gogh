@@ -12,7 +12,7 @@ import (
 
 func hubFork(
 	ctx gogh.Context,
-	local *gogh.Local,
+	project *gogh.Project,
 	remote *gogh.Remote,
 	noRemote bool,
 	remoteName string,
@@ -22,7 +22,7 @@ func hubFork(
 	if err != nil {
 		return err
 	}
-	if err := os.Chdir(local.FullPath); err != nil {
+	if err := os.Chdir(project.FullPath); err != nil {
 		return err
 	}
 	defer func() {

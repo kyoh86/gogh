@@ -14,14 +14,14 @@ GO GitHub project manager
 
 `gogh` provides a way to organize remote repository clones, like `go get` does.
 When you clone a remote repository by `gogh get`, gogh makes a directory under a specific root directory (by default `~/go/src`) using the remote repository URL's host and path.
-And creating new repository by `gogh new`, gogh make both of local and remote ones.
+And creating new one by `gogh new`, gogh make both of a local project and a remote repository.
 
 ```
 $ gogh get https://github.com/kyoh86/gogh
 # Runs `git clone https://github.com/kyoh86/gogh ~/go/src/github.com/kyoh86/gogh`
 ```
 
-You can also list local repositories (`gogh list`), find a local repositories (`gogh find`).
+You can also list projects (local repositories) (`gogh list`), find a project (`gogh find`).
 
 ## SYNOPSIS
 
@@ -57,11 +57,11 @@ brew install gogh
 ### `get`
 
 Clone a remote repository under gogh root directory (see [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below).
-If the repository is already cloned to local, nothing will happen unless `-u` (`--update`) flag is supplied,
-in which case the local repository is updated (`git pull --ff-only` eg.).
+If the repository is already cloned to local project, nothing will happen unless `-u` (`--update`) flag is supplied,
+in which case the project (local repository) is updated (`git pull --ff-only` eg.).
 When you use `-p` option, the repository is cloned via SSH protocol.
 
-If there are multiple `gogh.root` s, existing local clones are searched first.
+If there are multiple `gogh.root`s, existing local clones are searched first.
 Then a new repository clone is created under the primary root if none is found.
 
 With `--shallow` option, a "shallow clone" will be performed (for Git repositories only, `git clone --depth 1 ...` eg.).
@@ -162,7 +162,7 @@ eval "$(gogh setup --cd-function-name=foobar)"
         * To support VCSs other than GitHub, configurations are overly complex.
         * If I want to manage projects in VCSs other than GitHub, I should use other tool, I think so.
 * I wanted to merge functions of [ghq](https://github.com/motemen/ghq) and [hub](https://github.com/github/hub).
-    * `gogh new` creates a new project with make both of local and remote ones.
+    * `gogh new` creates a new one with make both of a local project and a remote repository.
         * It calls `git init` and `hub create` in the gogh.root directory.
     * `gogh fork` clones a remote repository into the gogh.root directory and fork it GitHub (with calling `hub fork`).
     * But there may be some collision in configurations of **ghq** and **hub**. It offers a challenge for me to resolve them by gogh.

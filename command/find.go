@@ -6,9 +6,9 @@ import (
 	"github.com/kyoh86/gogh/gogh"
 )
 
-// Find a path of a local repository
+// Find a path of a project
 func Find(ctx gogh.Context, remote *gogh.Remote) error {
-	path, err := gogh.FindLocalPath(ctx, remote)
+	path, err := gogh.FindProjectPath(ctx, remote)
 	if err != nil {
 		return err
 	}

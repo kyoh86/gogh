@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Where is a local repository
+// Where is a local project
 func Where(ctx gogh.Context, primary bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
@@ -17,8 +17,8 @@ func Where(ctx gogh.Context, primary bool, query string) error {
 	formatter := gogh.FullPathFormatter()
 
 	count := 0
-	if err := gogh.Query(ctx, query, walk, func(l *gogh.Local) error {
-		formatter.Add(l)
+	if err := gogh.Query(ctx, query, walk, func(p *gogh.Project) error {
+		formatter.Add(p)
 		count++
 		return nil
 	}); err != nil {

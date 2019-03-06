@@ -14,7 +14,7 @@ func gitInit(
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared gogh.RepoShared,
+	shared gogh.ProjectShared,
 	directory string,
 ) error {
 	args := []string{"init"}

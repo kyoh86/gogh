@@ -8,7 +8,7 @@ import (
 
 func TestRepoShared(t *testing.T) {
 	t.Run("valid shareds", func(t *testing.T) {
-		var shared RepoShared
+		var shared ProjectShared
 		assert.NoError(t, shared.Set("false"))
 		assert.Equal(t, "false", shared.String())
 		assert.NoError(t, shared.Set("true"))
@@ -29,12 +29,12 @@ func TestRepoShared(t *testing.T) {
 		assert.Equal(t, "777", shared.String())
 	})
 	t.Run("invalid shared", func(t *testing.T) {
-		var shared RepoShared
+		var shared ProjectShared
 		assert.NotNil(t, shared.Set("gogh"))
 		assert.NotNil(t, shared.Set("800"))
 	})
 	t.Run("invalid shared (triple term)", func(t *testing.T) {
-		var shared RepoShared
+		var shared ProjectShared
 		assert.NotNil(t, shared.Set("github.com/kyoh86/gogh"))
 	})
 }

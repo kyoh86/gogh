@@ -5,72 +5,72 @@ import (
 	"io"
 )
 
-// RepoListFormatter holds repository list to print them.
-type RepoListFormatter interface {
-	Add(*Local)
+// ProjectListFormatter holds project list to print them.
+type ProjectListFormatter interface {
+	Add(*Project)
 	PrintAll(io.Writer, string) error
 }
 
-// RepoListFormat specifies how gogh prints repo.
-type RepoListFormat string
+// ProjectListFormat specifies how gogh prints a project.
+type ProjectListFormat string
 
-// RepoListFormat choices.
+// ProjectListFormat choices.
 const (
-	RepoListFormatShort    = RepoListFormat("short")
-	RepoListFormatFullPath = RepoListFormat("full")
-	RepoListFormatRelPath  = RepoListFormat("relative")
+	ProjectListFormatShort    = ProjectListFormat("short")
+	ProjectListFormatFullPath = ProjectListFormat("full")
+	ProjectListFormatRelPath  = ProjectListFormat("relative")
 )
 
-func (f RepoListFormat) String() string {
+func (f ProjectListFormat) String() string {
 	return string(f)
 }
 
-// RepoListFormats shows all of RepoListFormat constants.
-func RepoListFormats() []string {
+// ProjectListFormats shows all of ProjectListFormat constants.
+func ProjectListFormats() []string {
 	return []string{
-		RepoListFormatShort.String(),
-		RepoListFormatFullPath.String(),
-		RepoListFormatRelPath.String(),
+		ProjectListFormatShort.String(),
+		ProjectListFormatFullPath.String(),
+		ProjectListFormatRelPath.String(),
 	}
 }
 
 // Formatter will get a formatter to print list.
-func (f RepoListFormat) Formatter() (RepoListFormatter, error) {
+func (f ProjectListFormat) Formatter() (ProjectListFormatter, error) {
 	switch f {
-	case RepoListFormatRelPath:
+	case ProjectListFormatRelPath:
 		return RelPathFormatter(), nil
-	case RepoListFormatFullPath:
+	case ProjectListFormatFullPath:
 		return FullPathFormatter(), nil
-	case RepoListFormatShort:
+	case ProjectListFormatShort:
 		return ShortFormatter(), nil
 	}
-	return nil, fmt.Errorf("%q is invalid repo format", f)
+	return nil, fmt.Errorf("%q is invalid project format", f)
 }
 
-// ShortFormatter prints each repository as short as possible.
-func ShortFormatter() RepoListFormatter {
+// ShortFormatter prints each project as short as possible.
+func ShortFormatter() ProjectListFormatter {
 	return &shortListFormatter{
 		dups: map[string]bool{},
 	}
 }
 
-// FullPathFormatter prints each full-path of the repository
-func FullPathFormatter() RepoListFormatter {
+// FullPathFormatter prints each full-path of the project.
+func FullPathFormatter() ProjectListFormatter {
 	return &fullPathFormatter{&simpleCollector{}}
 }
 
-// RelPathFormatter prints each relative-path of the repository
-func RelPathFormatter() RepoListFormatter {
+// RelPathFormatter prints each relative-path of the project
+func RelPathFormatter() ProjectListFormatter {
 	return &relPathFormatter{&simpleCollector{}}
 }
 
 type shortListFormatter struct {
 	// mark duplicated subpath
 	dups map[string]bool
-	list []*Local
+	list []*Project
 }
 
-func (f *shortListFormatter) Add(r *Local) {
+func (f *shortListFormatter) Add(r *Project) {
 	for _, p := range r.Subpaths() {
 		// (false, not ok) -> (false, ok) -> (true, ok) -> (true, ok) and so on
 		_, f.dups[p] = f.dups[p]
@@ -79,15 +79,15 @@ func (f *shortListFormatter) Add(r *Local) {
 }
 
 func (f *shortListFormatter) PrintAll(w io.Writer, sep string) error {
-	for _, repo := range f.list {
-		if _, err := fmt.Fprint(w, f.shortName(repo)+sep); err != nil {
+	for _, project := range f.list {
+		if _, err := fmt.Fprint(w, f.shortName(project)+sep); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (f *shortListFormatter) shortName(r *Local) string {
+func (f *shortListFormatter) shortName(r *Project) string {
 	for _, p := range r.Subpaths() {
 		if f.dups[p] {
 			continue
@@ -98,10 +98,10 @@ func (f *shortListFormatter) shortName(r *Local) string {
 }
 
 type simpleCollector struct {
-	list []*Local
+	list []*Project
 }
 
-func (f *simpleCollector) Add(r *Local) {
+func (f *simpleCollector) Add(r *Project) {
 	f.list = append(f.list, r)
 }
 
@@ -110,8 +110,8 @@ type fullPathFormatter struct {
 }
 
 func (f *fullPathFormatter) PrintAll(w io.Writer, sep string) error {
-	for _, repo := range f.list {
-		if _, err := fmt.Fprint(w, repo.FullPath+sep); err != nil {
+	for _, project := range f.list {
+		if _, err := fmt.Fprint(w, project.FullPath+sep); err != nil {
 			return err
 		}
 	}
@@ -123,8 +123,8 @@ type relPathFormatter struct {
 }
 
 func (f *relPathFormatter) PrintAll(w io.Writer, sep string) error {
-	for _, repo := range f.list {
-		if _, err := fmt.Fprint(w, repo.RelPath+sep); err != nil {
+	for _, project := range f.list {
+		if _, err := fmt.Fprint(w, project.RelPath+sep); err != nil {
 			return err
 		}
 	}

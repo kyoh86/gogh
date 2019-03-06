@@ -68,7 +68,7 @@ func get(app *kingpin.Application) (string, func() error) {
 		remoteNames gogh.Remotes
 	)
 	cmd := app.Command("get", "Clone/sync with a remote repository")
-	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remoteNames)
@@ -85,7 +85,7 @@ func bulk(app *kingpin.Application) (string, func() error) {
 		shallow bool
 	)
 	cmd := app.Command("bulk", "Bulk get repositories specified in stdin")
-	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 
@@ -103,7 +103,7 @@ func pipe(app *kingpin.Application) (string, func() error) {
 		srcCmdArgs []string
 	)
 	cmd := app.Command("pipe", "Bulk get repositories specified from other command output")
-	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&srcCmd)
@@ -125,7 +125,7 @@ func fork(app *kingpin.Application) (string, func() error) {
 		remote       gogh.Remote
 	)
 	cmd := app.Command("fork", "Clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin")
-	cmd.Flag("update", "Update local repository if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 	cmd.Flag("no-remote", "Skip adding a git remote for the fork").BoolVar(&noRemote)
@@ -148,10 +148,10 @@ func create(app *kingpin.Application) (string, func() error) {
 		bare           bool
 		template       string
 		separateGitDir string
-		shared         gogh.RepoShared
+		shared         gogh.ProjectShared
 		remote         gogh.Remote
 	)
-	cmd := app.Command("new", "Create a repository in local and remote.").Alias("create")
+	cmd := app.Command("new", "Create a local project and a remote repository.").Alias("create")
 	cmd.Flag("private", "Create a private repository").BoolVar(&private)
 	cmd.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&description)
 	cmd.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&homepage)
@@ -173,9 +173,9 @@ func where(app *kingpin.Application) (string, func() error) {
 		primary bool
 		query   string
 	)
-	cmd := app.Command("where", "Where is a local repository")
+	cmd := app.Command("where", "Where is a local project")
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
-	cmd.Arg("query", "Local name query").StringVar(&query)
+	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
 		return command.Where(ctx, primary, query)
@@ -188,19 +188,19 @@ func list(app *kingpin.Application) (string, func() error) {
 		primary bool
 		query   string
 	)
-	cmd := app.Command("list", "List local repositories")
-	cmd.Flag("format", "Format of each repository").Short('f').Default(gogh.RepoListFormatRelPath.String()).EnumVar(&format, gogh.RepoListFormats()...)
+	cmd := app.Command("list", "List projects (local repositories)")
+	cmd.Flag("format", "Format of each repository").Short('f').Default(gogh.ProjectListFormatRelPath.String()).EnumVar(&format, gogh.ProjectListFormats()...)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
-	cmd.Arg("query", "Local name query").StringVar(&query)
+	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return command.List(ctx, gogh.RepoListFormat(format), primary, query)
+		return command.List(ctx, gogh.ProjectListFormat(format), primary, query)
 	})
 }
 
 func find(app *kingpin.Application) (string, func() error) {
 	var remote gogh.Remote
-	cmd := app.Command("find", "Find a path of a local repository")
+	cmd := app.Command("find", "Find a path of a project")
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&remote)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
