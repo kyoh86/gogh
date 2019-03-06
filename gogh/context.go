@@ -20,6 +20,7 @@ type Context interface {
 	Stderr() io.Writer
 	UserName() string
 	GitHubToken() string
+	GitHubHost() string
 	LogLevel() string
 	Roots() []string
 	PrimaryRoot() string
@@ -66,6 +67,7 @@ type implContext struct {
 	stderr      io.Writer
 	userName    string
 	gitHubToken string
+	gitHubHost  string
 	logLevel    string
 	roots       []string
 	gheHosts    []string
@@ -87,6 +89,10 @@ func (c *implContext) GitHubToken() string {
 	return c.gitHubToken
 }
 
+func (c *implContext) GitHubHost() string {
+	return c.gitHubHost
+}
+
 func (c *implContext) LogLevel() string {
 	return c.logLevel
 }
@@ -104,7 +110,10 @@ func (c *implContext) GHEHosts() []string {
 	return c.gheHosts
 }
 
-func getConf(confName string, envNames ...string) (string, error) {
+func getConf(envName, confName string, altEnvNames ...string) (string, error) {
+	if val := os.Getenv(envName); val != "" {
+		return val, nil
+	}
 	val, err := getGitConf(confName)
 	if err != nil {
 		return "", err
@@ -113,7 +122,7 @@ func getConf(confName string, envNames ...string) (string, error) {
 		return val, nil
 	}
 
-	for _, n := range envNames {
+	for _, n := range altEnvNames {
 		if val := os.Getenv(n); val != "" {
 			return val, nil
 		}
@@ -123,12 +132,17 @@ func getConf(confName string, envNames ...string) (string, error) {
 }
 
 func getGitHubToken() (string, error) {
-	token, _ := getConf("gogh.github.token", envGitHubToken)
+	token, _ := getConf(envGoghGitHubToken, "gogh.github.token", envGitHubToken)
+	return token, nil
+}
+
+func getGitHubHost() (string, error) {
+	token, _ := getConf(envGoghGitHubHost, "gogh.github.host", envGitHubHost)
 	return token, nil
 }
 
 func getUserName() (string, error) {
-	return getConf("gogh.user", envGitHubUser, envUserName)
+	return getConf(envGoghGitHubUser, "gogh.github.user", envGitHubUser, envUserName)
 }
 
 func getLogLevel() (string, error) {
