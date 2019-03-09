@@ -115,7 +115,7 @@ func (c *implContext) GHEHosts() []string {
 	return c.gheHosts
 }
 
-func getConf(envName, confName string, altEnvNames ...string) (string, error) {
+func getConf(required bool, envName, confName string, altEnvNames ...string) (string, error) {
 	if val := os.Getenv(envName); val != "" {
 		return val, nil
 	}
@@ -132,22 +132,23 @@ func getConf(envName, confName string, altEnvNames ...string) (string, error) {
 			return val, nil
 		}
 	}
-	// Make the error if it does not match any pattern
-	return "", fmt.Errorf("set %s to your gitconfig", confName)
+	if required {
+		// Make the error if it does not match any pattern
+		return "", fmt.Errorf("set %s to your gitconfig", confName)
+	}
+	return "", nil
 }
 
 func getGitHubToken() (string, error) {
-	token, _ := getConf(envGoghGitHubToken, "gogh.github.token", envGitHubToken)
-	return token, nil
+	return getConf(false, envGoghGitHubToken, "gogh.github.token", envGitHubToken)
 }
 
 func getGitHubHost() (string, error) {
-	token, _ := getConf(envGoghGitHubHost, "gogh.github.host", envGitHubHost)
-	return token, nil
+	return getConf(false, envGoghGitHubHost, "gogh.github.host", envGitHubHost)
 }
 
 func getUserName() (string, error) {
-	return getConf(envGoghGitHubUser, "gogh.github.user", envGitHubUser, envUserName)
+	return getConf(true, envGoghGitHubUser, "gogh.github.user", envGitHubUser, envUserName)
 }
 
 func getLogLevel() (string, error) {
