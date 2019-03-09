@@ -3,23 +3,23 @@ jobs:
   build:
     working_directory: /home/projects/github.com/kyoh86/gogh
     docker:
-      - image: "kyoh86/gotest:latest"
+      - image: kyoh86/gotest:latest
     steps:
       - checkout
       - run:
           name: install
-          command: "go install ./..."
+          command: go install ./...
       - run:
           name: test and take coverage
           command: |
             mkdir -p .circleci/test/gotest
             go test -v -race -coverprofile=coverage.out ./... | go-junit-report > .circleci/test/gotest/results.xml;
       - run:
-          name: search lints
-          command: "golangci-lint run"
-      - run:
           name: upload coverage
-          command: "bash <(curl -s https://codecov.io/bash)"
+          command: bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: search lints
+          command: golangci-lint run
 
   e2e:
     working_directory: /go/src/github.com/kyoh86/gogh
@@ -63,15 +63,14 @@ jobs:
           command: "gogh find github-tryout1"
 
   release:
-    working_directory: /go/src/github.com/kyoh86/gogh
+    working_directory: /home/projects/github.com/kyoh86/gogh
     docker:
       - image: kyoh86/gotest:latest
     steps:
-      - attach_workspace:
-          at: /go
+      - checkout
       - run:
           name: run goreleaser
-          command: "curl -sL https://git.io/goreleaser | bash"
+          command: curl -sL https://git.io/goreleaser | bash
 
 workflows:
   version: 2
