@@ -169,10 +169,10 @@ func TestList_Symlink(t *testing.T) {
 	require.NoError(t, err)
 
 	paths := []string{}
-	Walk(ctx, func(p *Project) error {
+	require.NoError(t, Walk(ctx, func(p *Project) error {
 		paths = append(paths, p.RelPath)
 		return nil
-	})
+	}))
 
 	assert.Len(t, paths, 2)
 }
