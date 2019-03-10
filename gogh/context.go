@@ -198,7 +198,7 @@ func getRoots() ([]string, error) {
 		}
 	}
 
-	return roots, nil
+	return unique(roots), nil
 }
 
 func getGHEHosts() ([]string, error) {
