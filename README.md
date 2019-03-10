@@ -102,24 +102,40 @@ Prints repositories' root (i.e. `gogh.root`). Without `--all` option, the primar
 
 Show a list of repositories for a user.
 
-## CONFIGURATION
+## ENVIRONMENT VARIABLES
 
-Configuration uses `git-config` variables.
+### GOGH_ROOT
 
-### `gogh.root`
-
-The path to directory under which cloned repositories are placed.
+The paths to directory under which cloned repositories are placed.
 See [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below. Defaults to `~/go/src`.
 
 This variable can have multiple values.
 If so, the first one becomes primary one i.e. new repository clones are always created under it.
 You may want to specify `$GOPATH/src` as a secondary root (environment variables should be expanded.)
 
-## ENVIRONMENT VARIABLES
+### GOGH_GITHUB_USER
 
-### `GOGH_ROOT`
+A name of your GitHub user (i.e. `kyoh86`).
+If it is not set, gogh uses `GITHUB_USER` envar or OS user name from envar (`USERNAME` in windows, `USER` in others) instead.
 
-If set to a path, this value is used as the only root directory regardless of other existing `gogh.root` settings.
+### GOGH_LOG_LEVEL
+
+The level to output logs (debug, info, warn, error or panic). Default: warn
+
+### GOGH_GHE_HOST
+
+Hostnames of your GitHub Enterprise installation.
+This variable can have multiple values that separated with spaces.
+
+### GOGH_GITHUB_TOKEN
+
+The token to connect GitHub API.
+If it is not set, gogh uses `GITHUB_TOKEN` envar instead.
+
+### GOGH_GITHUB_HOST
+
+The host to connect GitHub on default.
+If it is not set, gogh uses `GITHUB_HOST` envar or `github.com` instead.
 
 ## DIRECTORY STRUCTURES
 
@@ -162,9 +178,10 @@ eval "$(gogh setup --cd-function-name=foobar)"
         * But `ghq look` says `cd <project to path>` when I run it.
     * `ghq list --unique` returns a bizarre and complex list when I set multiple root.
     * `ghq import xxx` needs to setup `ghq.import.xxx` option to specify what command to run.
-    * `ghq.<url>.xxx`...
-        * To support VCSs other than GitHub, configurations are overly complex.
-        * If I want to manage projects in VCSs other than GitHub, I should use other tool, I think so.
+    * `git config ghq.xxx`...
+        * `gogh` can be configured with envars instead of git-config(1).
+* `gogh` doesn't support VCSs other than GitHub
+    * If I want to manage projects in VCSs other than GitHub, I should use other tool, I think so.
 * I wanted to merge functions of [ghq](https://github.com/motemen/ghq) and [hub](https://github.com/github/hub).
     * `gogh new` creates a new one with make both of a local project and a remote repository.
         * It calls `git init` and `hub create` in the gogh.root directory.
