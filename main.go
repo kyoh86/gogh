@@ -245,7 +245,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 		sort        string
 		direction   string
 	)
-	cmd := app.Command("repo", "Generate shell script to setup gogh").Alias("repos")
+	cmd := app.Command("repo", "List remote repositories").Alias("repos")
 	cmd.Flag("user", "Who has the repositories. Empty means the authenticated user").StringVar(&user)
 	cmd.Flag("own", "Include repositories that are owned by the user").Default("true").BoolVar(&own)
 	cmd.Flag("collaborate", "Include repositories that the user has been added to as a collaborator").Default("true").BoolVar(&collaborate)
