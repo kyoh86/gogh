@@ -33,6 +33,8 @@ gogh fork [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>
 gogh new [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
 gogh list [--exect,e] [--full-path,f] [--short,s] [--primary,p] [<query>]
 gogh find (<project>)
+gogh where [--primary,p] [<query>]
+gogh repo [--user=<USER>] [--own] [--collaborate] [--member] [--visibility=<VISIBILITY>] [--sort=<SORT>] [--direction=<DIRECTION>]
 gogh root [--all]
 ```
 
@@ -53,6 +55,10 @@ brew install gogh
 ```
 
 ## COMMANDS
+
+```
+gogh --long-help
+```
 
 ### `get`
 
@@ -94,13 +100,17 @@ IF `-s` (`--short`) is given, the names of the repository which as short as poss
 
 Look into a locally cloned repository with the shell.
 
-### `root`
+### `where`
 
-Prints repositories' root (i.e. `gogh.root`). Without `--all` option, the primary one is shown.
+Show where a local repository is.
 
 ### `repo`
 
 Show a list of repositories for a user.
+
+### `root`
+
+Prints repositories' root (i.e. `gogh.root`). Without `--all` option, the primary one is shown.
 
 ## ENVIRONMENT VARIABLES
 
