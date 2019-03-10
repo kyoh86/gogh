@@ -1,6 +1,7 @@
 package gogh
 
 import (
+	"context"
 	"go/build"
 	"os"
 	"path/filepath"
@@ -26,7 +27,7 @@ func TestContext(t *testing.T) {
 		require.NoError(t, os.Setenv(envLogLevel, "trace"))
 		require.NoError(t, os.Setenv(envGHEHosts, "example.com example.com:9999"))
 
-		ctx, err := CurrentContext(nil)
+		ctx, err := CurrentContext(context.Background())
 		require.NoError(t, err)
 		assert.Equal(t, "tokenx1", ctx.GitHubToken())
 		assert.Equal(t, "hostx1", ctx.GitHubHost())
