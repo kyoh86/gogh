@@ -93,7 +93,7 @@ func (r *Repo) Set(rawRepo string) error {
 	case 0:
 		return errors.New("repository remote has no local name")
 	case 1:
-		r.owner = "" // Use context.UserName() instead.
+		r.owner = "" // To use context.UserName() instead.
 		r.name = strings.TrimSuffix(pp[0], ".git")
 	case 2:
 		r.owner = pp[0]

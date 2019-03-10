@@ -8,6 +8,7 @@ var (
 	envGitHubUser      = "GITHUB_USER"
 	envGitHubToken     = "GITHUB_TOKEN"
 	envGitHubHost      = "GITHUB_HOST"
+	envGHEHosts        = "GOGH_GHE_HOST"
 	envRoot            = "GOGH_ROOT"
 	envNames           = []string{
 		envLogLevel,
@@ -18,6 +19,7 @@ var (
 		envGitHubToken,
 		envGitHubHost,
 		envUserName,
+		envGHEHosts,
 		envRoot,
 	}
 )

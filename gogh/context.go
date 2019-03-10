@@ -1,16 +1,13 @@
 package gogh
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"go/build"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 // Context holds configurations and environments
@@ -29,27 +26,12 @@ type Context interface {
 
 // CurrentContext get current context from OS envars and Git configurations
 func CurrentContext(ctx context.Context) (Context, error) {
-	userName, err := getUserName()
-	if err != nil {
-		return nil, err
-	}
-	gitHubToken, err := getGitHubToken()
-	if err != nil {
-		return nil, err
-	}
-	gitHubHost, err := getGitHubHost()
-	if err != nil {
-		return nil, err
-	}
-	logLevel, err := getLogLevel()
-	if err != nil {
-		return nil, err
-	}
+	userName := getUserName()
+	gitHubToken := getGitHubToken()
+	gitHubHost := getGitHubHost()
+	logLevel := getLogLevel()
+	gheHosts := getGHEHosts()
 	roots, err := getRoots()
-	if err != nil {
-		return nil, err
-	}
-	gheHosts, err := getGHEHosts()
 	if err != nil {
 		return nil, err
 	}
@@ -115,71 +97,50 @@ func (c *implContext) GHEHosts() []string {
 	return c.gheHosts
 }
 
-func getConf(required bool, envName, confName string, altEnvNames ...string) (string, error) {
-	if val := os.Getenv(envName); val != "" {
-		return val, nil
-	}
-	val, err := getGitConf(confName)
-	if err != nil {
-		return "", err
-	}
-	if val != "" {
-		return val, nil
-	}
-
-	for _, n := range altEnvNames {
+func getConf(envNames ...string) string {
+	for _, n := range envNames {
 		if val := os.Getenv(n); val != "" {
-			return val, nil
+			return val
 		}
 	}
-	if required {
+	return ""
+}
+
+func getGitHubToken() string {
+	return getConf(envGoghGitHubToken, envGitHubToken)
+}
+
+func getGitHubHost() string {
+	return getConf(envGoghGitHubHost, envGitHubHost)
+}
+
+func getUserName() string {
+	name := getConf(envGoghGitHubUser, envGitHubUser, envUserName)
+	if name == "" {
 		// Make the error if it does not match any pattern
-		return "", fmt.Errorf("set %s to your gitconfig", confName)
+		panic(fmt.Errorf("set %s to your environment variable", envGoghGitHubUser))
 	}
-	return "", nil
+	return name
 }
 
-func getGitHubToken() (string, error) {
-	return getConf(false, envGoghGitHubToken, "gogh.github.token", envGitHubToken)
-}
-
-func getGitHubHost() (string, error) {
-	return getConf(false, envGoghGitHubHost, "gogh.github.host", envGitHubHost)
-}
-
-func getUserName() (string, error) {
-	return getConf(true, envGoghGitHubUser, "gogh.github.user", envGitHubUser, envUserName)
-}
-
-func getLogLevel() (string, error) {
+func getLogLevel() string {
 	if ll := os.Getenv(envLogLevel); ll != "" {
-		return ll, nil
+		return ll
 	}
-	ll, err := getGitConf("gogh.logLevel")
-	if err != nil {
-		return "", err
-	}
-	if ll != "" {
-		return ll, nil
-	}
-	return "warn", nil // default: warn
+	return "warn" // default: warn
 }
 
 func getRoots() ([]string, error) {
 	var roots []string
 	envRoot := os.Getenv(envRoot)
-	if envRoot != "" {
-		roots = filepath.SplitList(envRoot)
-	}
-	if len(roots) == 0 {
-		rts, err := getGitConfs("gogh.root")
-		if err != nil {
-			return nil, err
+	if envRoot == "" {
+		gopaths := filepath.SplitList(build.Default.GOPATH)
+		roots = make([]string, 0, len(gopaths))
+		for _, gopath := range gopaths {
+			roots = append(roots, filepath.Join(gopath, "src"))
 		}
-		roots = rts
-	}
-	if len(roots) == 0 {
-		roots = []string{filepath.Join(build.Default.GOPATH, "src")}
+	} else {
+		roots = filepath.SplitList(envRoot)
 	}
 
 	for i, v := range roots {
@@ -201,55 +162,6 @@ func getRoots() ([]string, error) {
 	return unique(roots), nil
 }
 
-func getGHEHosts() ([]string, error) {
-	return getGitConfs("gogh.ghe.host")
-}
-
-// getGitConf fetches single git-config variable.
-// returns an empty string and no error if no variable is found with the given key.
-func getGitConf(key string) (string, error) {
-	return output("--get", key)
-}
-
-// getGitConfs fetches git-config variable of multiple values.
-func getGitConfs(key string) ([]string, error) {
-	value, err := output("--get-all", key)
-	if err != nil {
-		return nil, err
-	}
-
-	// No results found, return an empty slice
-	if value == "" {
-		return nil, nil
-	}
-
-	return strings.Split(value, "\000"), nil
-}
-
-var gitArgsForTest []string
-var gitStdinForTest []byte
-
-// output invokes 'git config' and handles some errors properly.
-func output(args ...string) (string, error) {
-	param := append(append([]string{"config", "--path", "--null"}, gitArgsForTest...), args...)
-	cmd := exec.Command("git", param...)
-	cmd.Stderr = os.Stderr
-	if gitStdinForTest != nil {
-		cmd.Stdin = bytes.NewBuffer(gitStdinForTest)
-	}
-
-	buf, err := cmd.Output()
-
-	if exitError, ok := err.(*exec.ExitError); ok {
-		if waitStatus, ok := exitError.Sys().(syscall.WaitStatus); ok {
-			if waitStatus.ExitStatus() == 1 {
-				// The key was not found, do not treat as an error
-				return "", nil
-			}
-		}
-
-		return "", err
-	}
-
-	return strings.TrimRight(string(buf), "\000"), nil
+func getGHEHosts() []string {
+	return unique(strings.Split(os.Getenv(envGHEHosts), " "))
 }
