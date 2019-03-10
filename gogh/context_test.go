@@ -132,6 +132,21 @@ func TestGit(t *testing.T) {
 		assert.Equal(t, []string{filepath.Join(build.Default.GOPATH, "src")}, rts)
 	})
 
+	run("expects roots are not duplicated from envar", "[gogh]\nroot=/dummy", func(t *testing.T) {
+		resetEnv(t)
+		require.NoError(t, os.Setenv(envRoot, "/foo:/bar:/bar:/foo"))
+		rts, err := getRoots()
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"/foo", "/bar"}, rts)
+	})
+
+	run("expects roots are not duplicated from git config", "[gogh]\nroot=/foo\nroot=/bar\nroot=/bar\nroot=/foo", func(t *testing.T) {
+		resetEnv(t)
+		rts, err := getRoots()
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"/foo", "/bar"}, rts)
+	})
+
 	run("expect to fail to get roots with invalid config", `[gogh] =foobar`, func(t *testing.T) {
 		resetEnv(t)
 		_, err := getRoots()
