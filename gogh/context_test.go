@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGit(t *testing.T) {
+func TestContext(t *testing.T) {
 	run := func(label, conf string, f func(*testing.T)) {
 		gitArgsForTest = []string{"--file", "-"}
 		gitStdinForTest = []byte(conf)
