@@ -24,45 +24,35 @@ jobs:
           command: golangci-lint run
 
   e2e:
-    working_directory: /go/src/github.com/kyoh86/gogh
+    working_directory: /home/projects/github.com/kyoh86/gogh
     docker:
       - image: golang
     environment:
       USER: kyoh86
       SHELL: bash
     steps:
-      - attach_workspace:
-          at: /go
+      - checkout
       - run:
           name: check current path
-          command: "pwd"
+          command: pwd
       - run:
           name: check files
-          command: "ls -la"
+          command: ls -la
       - run:
           name: install
-          command: "go install ./..."
+          command: go install ./...
       - run:
-          name: gogh root
-          command: "gogh root"
-      - run:
-          name: gogh setup
-          command: "gogh setup"
-      - run:
-          name: gogh list
-          command: "gogh list"
-      - run:
-          name: gogh get
-          command: "gogh get kyoh86/github-tryout1"
-      - run:
-          name: gogh bulk
-          command: "echo kyoh86/github-tryout2 | gogh bulk"
-      - run:
-          name: gogh pipe
-          command: "gogh pipe echo kyoh86/github-tryout3"
-      - run:
-          name: gogh find
-          command: "gogh find github-tryout1"
+          name: run vacant local subcommands
+          command: |
+            gogh get kyoh86/gogh
+            echo kyoh86/gogh | gogh bulk
+            gogh pipe echo kyoh86/gogh
+            gogh list
+            gogh find gogh
+            gogh where gogh
+            gogh repo
+            gogh root
+            gogh setup
 
   release:
     working_directory: /home/projects/github.com/kyoh86/gogh
@@ -92,3 +82,16 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v[0-9]+(\.[0-9]+){2}$/
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build
+      - e2e:
+          requires:
+            - build
