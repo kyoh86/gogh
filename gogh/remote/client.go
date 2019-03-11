@@ -1,7 +1,6 @@
 package remote
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -14,16 +13,20 @@ import (
 func NewClient(ctx gogh.Context) (*github.Client, error) {
 	if host := ctx.GitHubHost(); host != "" && host != gogh.DefaultHost {
 		url := fmt.Sprintf("https://%s/api/v3", host)
-		return github.NewEnterpriseClient(url, url, oauth2Client(ctx, ctx.GitHubToken()))
+		return github.NewEnterpriseClient(url, url, oauth2Client(ctx))
 	}
 
-	return github.NewClient(oauth2Client(ctx, ctx.GitHubToken())), nil
+	return github.NewClient(oauth2Client(ctx)), nil
 }
 
-func oauth2Client(ctx context.Context, token string) *http.Client {
-	if token == "" {
+func authenticated(ctx gogh.Context) bool {
+	return ctx.GitHubToken() != ""
+}
+
+func oauth2Client(ctx gogh.Context) *http.Client {
+	if !authenticated(ctx) {
 		return nil
 	}
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: ctx.GitHubToken()})
 	return oauth2.NewClient(ctx, ts)
 }

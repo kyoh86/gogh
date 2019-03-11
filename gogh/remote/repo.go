@@ -9,7 +9,7 @@ import (
 
 // Repo will get a list of repositories for a user.
 // Parameters:
-//   * user:        Who has the repositories. Empty means the authenticated user.
+//   * user:        Who has the repositories. Empty means the "me" (authenticated user, or GOGH_GITHUB_USER).
 //   * own:         Include repositories that are owned by the user
 //   * collaborate: Include repositories that the user has been added to as a collaborator
 //   * member:      Include repositories that the user has access to through being a member of an organization. This includes every repository on every team that the user is on
@@ -41,6 +41,10 @@ func Repo(ctx gogh.Context, user string, own, collaborate, member bool, visibili
 	}
 	if member {
 		affs = append(affs, "organization_member")
+	}
+	// If the context has no authentication token, specifies context user name for "me".
+	if user == "" && !authenticated(ctx) {
+		user = ctx.UserName()
 	}
 
 	opts := &github.RepositoryListOptions{
