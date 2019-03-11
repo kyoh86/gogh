@@ -17,6 +17,8 @@ jobs:
       - run:
           name: upload coverage
           command: bash <(curl -s https://codecov.io/bash)
+      - store_test_results:
+          path: .circleci/test
       - run:
           name: search lints
           command: golangci-lint run
