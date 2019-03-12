@@ -1,10 +1,11 @@
 package gogh
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/kyoh86/fastwalk"
 )
 
 // Project repository specifier
@@ -49,29 +50,12 @@ func NewProject(ctx Context, repo *Repo) (*Project, error) {
 	}
 	relPath := repo.RelPath(ctx)
 	fullPath := filepath.Join(ctx.PrimaryRoot(), relPath)
-	info, err := os.Stat(fullPath)
-	exists, err := existsProject(fullPath, info, err)
-	if err != nil {
-		return nil, err
-	}
 	return &Project{
 		FullPath:  fullPath,
 		RelPath:   relPath,
 		PathParts: []string{repo.Host(ctx), repo.Owner(ctx), repo.Name(ctx)},
-		Exists:    exists,
+		Exists:    isVcsDir(fullPath),
 	}, nil
-}
-
-func existsProject(path string, info os.FileInfo, err error) (bool, error) {
-	switch {
-	case err == nil:
-		// noop
-	case os.IsNotExist(err):
-		return false, nil
-	default:
-		return false, err
-	}
-	return info.IsDir() && isVcsDir(path), nil
 }
 
 // FindProjectPath willl get a project (local repository) path from remote repository URL
@@ -113,12 +97,8 @@ type Walker func(Context, WalkFunc) error
 
 // walkInPath thorugh projects (local repositories) in a path
 func walkInPath(root string, callback WalkFunc) error {
-	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		exists, err := existsProject(path, info, err)
-		if err != nil {
-			return err
-		}
-		if !exists {
+	return fastwalk.Walk(root, func(path string, typ os.FileMode) error {
+		if !isVcsDir(path) {
 			return nil
 		}
 		p, err := parseProject(root, path)
@@ -165,7 +145,6 @@ func Walk(ctx Context, callback WalkFunc) error {
 func Query(ctx Context, query string, walk Walker, callback WalkFunc) error {
 	return walk(ctx, func(p *Project) error {
 		if query != "" && !strings.Contains(p.RelPath, query) {
-			log.Printf("debug: found one repository (%q) but it's not matched for query\n", p.FullPath)
 			return nil
 		}
 
