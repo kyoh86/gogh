@@ -13,7 +13,7 @@ func Root(ctx gogh.Context, all bool) error {
 		_, err := fmt.Fprintln(ctx.Stdout(), ctx.PrimaryRoot())
 		return err
 	}
-	log.Println("info: finding all roots...")
+	log.Println("info: Finding all roots...")
 	for _, root := range ctx.Roots() {
 		if _, err := fmt.Fprintln(ctx.Stdout(), root); err != nil {
 			return err

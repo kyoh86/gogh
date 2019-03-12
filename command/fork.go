@@ -9,7 +9,7 @@ import (
 
 // Fork clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin
 func Fork(ctx gogh.Context, update, withSSH, shallow, noRemote bool, remoteName string, organization string, repo *gogh.Repo) error {
-	log.Printf("info: cloning a repository")
+	log.Printf("info: Cloning a repository")
 	if err := Get(ctx, update, withSSH, shallow, repo); err != nil {
 		return err
 	}
@@ -18,7 +18,7 @@ func Fork(ctx gogh.Context, update, withSSH, shallow, noRemote bool, remoteName 
 	if err != nil {
 		return err
 	}
-	log.Printf("info: forking a repository")
+	log.Printf("info: Forking a repository")
 	if err := hubFork(ctx, project, repo, noRemote, remoteName, organization); err != nil {
 		return err
 	}

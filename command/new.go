@@ -30,19 +30,19 @@ func New(
 	}
 
 	// mkdir
-	log.Println("info: creating a directory")
+	log.Println("info: Creating a directory")
 	if err := os.MkdirAll(project.FullPath, os.ModePerm); err != nil {
 		return err
 	}
 
 	// git init
-	log.Println("info: initializing a repository")
+	log.Println("info: Initializing a repository")
 	if err := gitInit(ctx, bare, template, separateGitDir, shared, project.FullPath); err != nil {
 		return err
 	}
 
 	// hub create
-	log.Println("info: creating a new repository in GitHub")
+	log.Println("info: Creating a new repository in GitHub")
 	if err := hubCreate(ctx, private, description, homepage, browse, clipboard, repo, project.FullPath); err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func New(
 	cmd.Stdout = ioutil.Discard
 	cmd.Stderr = ioutil.Discard
 	if err := execCommand(cmd); err == nil {
-		log.Println("info: calling yo")
+		log.Println("info: Calling yo")
 		cmd := exec.Command("yo")
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = ctx.Stdout()

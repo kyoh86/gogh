@@ -59,6 +59,7 @@ func wrapContext(f func(gogh.Context) error) func() error {
 		colog.Register()
 		colog.SetOutput(ctx.Stderr())
 		colog.SetMinLevel(lvl)
+		colog.SetDefaultLevel(colog.LError)
 		return f(ctx)
 	}
 }

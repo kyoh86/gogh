@@ -29,13 +29,13 @@ func Get(ctx gogh.Context, update, withSSH, shallow bool, repo *gogh.Repo) error
 	}
 
 	if !project.Exists {
-		log.Println("info: clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
+		log.Println("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
 		return gitClone(ctx, repoURL, project.FullPath, shallow)
 	}
 	if update {
-		log.Println("info: update", project.FullPath)
+		log.Println("info: Update", project.FullPath)
 		return gitUpdate(ctx, project.FullPath)
 	}
-	log.Println("warn: exists", project.FullPath)
+	log.Println("warn: Exists", project.FullPath)
 	return nil
 }

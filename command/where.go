@@ -9,6 +9,8 @@ import (
 
 // Where is a local project
 func Where(ctx gogh.Context, primary bool, query string) error {
+	log.Printf("info: Finding a repository by query %s", query)
+
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
