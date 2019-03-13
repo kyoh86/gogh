@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kyoh86/fastwalk"
+	"github.com/karrick/godirwalk"
 )
 
 // Project repository specifier
@@ -112,18 +112,22 @@ func walkInPath(root string, callback WalkFunc) error {
 		log.Printf("warn: root dir %s is not a directory", root)
 		return nil
 	}
-	return fastwalk.Walk(root, func(path string, typ os.FileMode) error {
-		if !isVcsDir(path) {
+
+	return godirwalk.Walk(root, &godirwalk.Options{
+		Callback: func(path string, _ *godirwalk.Dirent) error {
+			if !isVcsDir(path) {
+				return nil
+			}
+			p, err := parseProject(root, path)
+			if err != nil {
+				return nil
+			}
+			if err := callback(p); err != nil {
+				return err
+			}
 			return nil
-		}
-		p, err := parseProject(root, path)
-		if err != nil {
-			return nil
-		}
-		if err := callback(p); err != nil {
-			return err
-		}
-		return nil
+		},
+		Unsorted: true, // (optional) set true for faster yet non-deterministic enumeration (see godoc)
 	})
 }
 
