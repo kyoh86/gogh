@@ -19,8 +19,7 @@ require (
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/ogier/pflag v0.0.1 // indirect
 	github.com/pkg/errors v0.8.0
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/stretchr/testify v1.2.2
+	github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6 // indirect
 	golang.org/x/tools v0.0.0-20190311215038-5c2858a9cfe5 // indirect
