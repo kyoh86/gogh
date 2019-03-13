@@ -1,6 +1,7 @@
 package gogh
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -97,6 +98,20 @@ type Walker func(Context, WalkFunc) error
 
 // walkInPath thorugh projects (local repositories) in a path
 func walkInPath(root string, callback WalkFunc) error {
+	stat, err := os.Stat(root)
+	switch {
+	case err == nil:
+		// noop
+	case os.IsNotExist(err):
+		log.Printf("warn: root dir %s is not exist", root)
+		return nil
+	default:
+		return err
+	}
+	if !stat.IsDir() {
+		log.Printf("warn: root dir %s is not a directory", root)
+		return nil
+	}
 	return fastwalk.Walk(root, func(path string, typ os.FileMode) error {
 		if !isVcsDir(path) {
 			return nil
@@ -108,7 +123,7 @@ func walkInPath(root string, callback WalkFunc) error {
 		if err := callback(p); err != nil {
 			return err
 		}
-		return filepath.SkipDir
+		return nil
 	})
 }
 
