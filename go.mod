@@ -2,13 +2,10 @@ module github.com/kyoh86/gogh
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/alecthomas/kingpin v2.2.6+incompatible
-	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
-	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
+	github.com/alecthomas/kingpin v0.0.0-20190313214811-7613e5d4efd9
 	github.com/atotto/clipboard v0.1.1 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/github/hub v2.6.0+incompatible
 	github.com/google/go-github/v24 v24.0.1
 	github.com/karrick/godirwalk v1.8.0
