@@ -125,9 +125,10 @@ func walkInPath(root string, callback WalkFunc) error {
 			if err := callback(p); err != nil {
 				return err
 			}
-			return nil
+			return filepath.SkipDir
 		},
-		Unsorted: true, // (optional) set true for faster yet non-deterministic enumeration (see godoc)
+		FollowSymbolicLinks: true,
+		Unsorted:            true, // (optional) set true for faster yet non-deterministic enumeration (see godoc)
 	})
 }
 
