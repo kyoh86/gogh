@@ -1,11 +1,9 @@
 package command
 
 import (
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
-	"os/exec"
 
 	"github.com/kyoh86/gogh/gogh"
 )
@@ -24,6 +22,7 @@ func New(
 	shared gogh.ProjectShared,
 	repo *gogh.Repo,
 ) error {
+	log.Printf("info: Creating new project and a remote repository %s", repo)
 	project, err := gogh.FindProject(ctx, repo)
 	if err != nil {
 		return err
@@ -43,24 +42,5 @@ func New(
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	if err := hubCreate(ctx, private, description, homepage, browse, clipboard, repo, project.FullPath); err != nil {
-		return err
-	}
-
-	// which yo
-	cmd := exec.Command("which", "yo")
-	cmd.Stdout = ioutil.Discard
-	cmd.Stderr = ioutil.Discard
-	if err := execCommand(cmd); err == nil {
-		log.Println("info: Calling yo")
-		cmd := exec.Command("yo")
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = ctx.Stdout()
-		cmd.Stderr = ctx.Stderr()
-		cmd.Dir = project.FullPath
-		if err := execCommand(cmd); err != nil {
-			return err
-		}
-	}
-	return nil
+	return hubCreate(ctx, private, description, homepage, browse, clipboard, repo, project.FullPath)
 }
