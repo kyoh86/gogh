@@ -12,6 +12,7 @@ func TestRepo(t *testing.T) {
 		ctx := &implContext{}
 		spec, err := ParseRepo("https://github.com/kyoh86/pusheen-explorer")
 		require.NoError(t, err)
+		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
 		assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", spec.String())
 		assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", spec.URL(ctx, false).String())
 		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer", spec.URL(ctx, true).String())
@@ -21,6 +22,7 @@ func TestRepo(t *testing.T) {
 		ctx := &implContext{}
 		spec, err := ParseRepo("git@github.com:kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
+		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
 		assert.Equal(t, "git@github.com:kyoh86/pusheen-explorer.git", spec.String())
 		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer", spec.URL(ctx, false).String())
 	})
@@ -29,6 +31,7 @@ func TestRepo(t *testing.T) {
 		ctx := &implContext{}
 		spec, err := ParseRepo("git@github.com:/kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
+		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
 		assert.Equal(t, "git@github.com:/kyoh86/pusheen-explorer.git", spec.String())
 		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer", spec.URL(ctx, false).String())
 	})
@@ -37,6 +40,7 @@ func TestRepo(t *testing.T) {
 		ctx := &implContext{}
 		spec, err := ParseRepo("github.com:kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
+		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
 		assert.Equal(t, "github.com:kyoh86/pusheen-explorer.git", spec.String())
 		assert.Equal(t, "ssh://github.com/kyoh86/pusheen-explorer", spec.URL(ctx, false).String())
 	})
@@ -45,6 +49,7 @@ func TestRepo(t *testing.T) {
 		ctx := &implContext{}
 		spec, err := ParseRepo("kyoh86/gogh")
 		require.NoError(t, err)
+		assert.Equal(t, "kyoh86/gogh", spec.FullName(ctx))
 		assert.Equal(t, "kyoh86/gogh", spec.String())
 		assert.Equal(t, "https://github.com/kyoh86/gogh", spec.URL(ctx, false).String())
 	})
@@ -53,6 +58,7 @@ func TestRepo(t *testing.T) {
 		ctx := &implContext{userName: "kyoh86"}
 		spec, err := ParseRepo("gogh")
 		require.NoError(t, err)
+		assert.Equal(t, "kyoh86/gogh", spec.FullName(ctx))
 		assert.Equal(t, "gogh", spec.String())
 		assert.Equal(t, "https://github.com/kyoh86/gogh", spec.URL(ctx, false).String())
 	})

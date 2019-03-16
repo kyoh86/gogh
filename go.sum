@@ -17,6 +17,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/github/hub v2.6.0+incompatible h1:dnPzCgdKQn7MPbQ1FDdVIyc9J+9RjS1wc2hkPW5QJq8=
 github.com/github/hub v2.6.0+incompatible/go.mod h1:zQrzJEdze2hfWJDgktd/L6sROjAdCThFrzjbxw4keTs=
+github.com/github/hub v2.10.0+incompatible h1:gK3M/y1ZD/Mc0ytSDykzL8C9q8k7pVTTiEa+1SanJZk=
+github.com/github/hub v2.10.0+incompatible/go.mod h1:zQrzJEdze2hfWJDgktd/L6sROjAdCThFrzjbxw4keTs=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/google/go-github v17.0.0+incompatible h1:N0LgJ1j65A7kfXrZnUDaYCs/Sf4rEjNlfyDHW9dolSY=

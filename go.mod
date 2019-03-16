@@ -6,7 +6,7 @@ require (
 	github.com/atotto/clipboard v0.1.1 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
-	github.com/github/hub v2.6.0+incompatible
+	github.com/github/hub v2.10.0+incompatible
 	github.com/google/go-github/v24 v24.0.1
 	github.com/karrick/godirwalk v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect

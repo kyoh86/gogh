@@ -43,7 +43,7 @@ func hubFork(
 		}
 	}()
 
-	var hubArgs []string
+	hubArgs := []string{"hub", "fork"}
 	hubArgs = appendIf(hubArgs, "--no-remote", noRemote)
 	hubArgs = appendIfFilled(hubArgs, "--remote-name", remoteName)
 	hubArgs = appendIfFilled(hubArgs, "--organization", organization)
@@ -54,10 +54,9 @@ func hubFork(
 	if err := os.Setenv("GITHUB_TOKEN", ctx.GitHubToken()); err != nil {
 		return err
 	}
-	log.Printf("debug: Calling `hub fork %s`", strings.Join(hubArgs, " "))
-	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("fork"), commands.NewArgs(hubArgs))
-	if execErr.Err != nil {
-		return execErr.Err
+	log.Printf("debug: Calling `%s`", strings.Join(hubArgs, " "))
+	if err := commands.CmdRunner.Execute(hubArgs); err != nil {
+		return err
 	}
 
 	return nil
@@ -83,7 +82,7 @@ func hubCreate(
 		}
 	}()
 
-	var hubArgs []string
+	hubArgs := []string{"hub", "create"}
 	hubArgs = appendIf(hubArgs, "-p", private)
 	hubArgs = appendIf(hubArgs, "-o", browse)
 	hubArgs = appendIf(hubArgs, "-c", clipboard)
@@ -91,17 +90,16 @@ func hubCreate(
 	if homepage != nil {
 		hubArgs = append(hubArgs, "-h", homepage.String())
 	}
-	hubArgs = append(hubArgs, repo.URL(ctx, false).String())
-	log.Printf("debug: Calling `hub create %s`", strings.Join(hubArgs, " "))
+	hubArgs = append(hubArgs, repo.FullName(ctx))
+	log.Printf("debug: Calling `%s`", strings.Join(hubArgs, " "))
 	if err := os.Setenv("GITHUB_HOST", repo.Host(ctx)); err != nil {
 		return err
 	}
 	if err := os.Setenv("GITHUB_TOKEN", ctx.GitHubToken()); err != nil {
 		return err
 	}
-	execErr := commands.CmdRunner.Call(commands.CmdRunner.Lookup("create"), commands.NewArgs(hubArgs))
-	if execErr.Err != nil {
-		return execErr.Err
+	if err := commands.CmdRunner.Execute(hubArgs); err != nil {
+		return err
 	}
 	return nil
 }

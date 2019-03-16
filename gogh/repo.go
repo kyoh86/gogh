@@ -131,6 +131,11 @@ func (r *Repo) Name(_ Context) string {
 	return r.name
 }
 
+// FullName returns a repository identifier that is formed like {Owner/Name}
+func (r *Repo) FullName(ctx Context) string {
+	return path.Join(r.Owner(ctx), r.Name(ctx))
+}
+
 // URL will get a URL for a repository
 func (r *Repo) URL(ctx Context, ssh bool) *url.URL {
 	if ssh {
