@@ -51,8 +51,8 @@ func FindProject(ctx Context, repo *Repo) (*Project, error) {
 	return nil, ProjectNotFound
 }
 
-// FindProjectOrNew will find a project (local repository) that matches exactly or create new one.
-func FindProjectOrNew(ctx Context, repo *Repo) (*Project, error) {
+// FindOrNewProject will find a project (local repository) that matches exactly or create new one.
+func FindOrNewProject(ctx Context, repo *Repo) (*Project, error) {
 	switch p, err := FindProject(ctx, repo); err {
 	case ProjectNotFound:
 		// No repository found, returning new one
