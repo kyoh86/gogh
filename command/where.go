@@ -29,13 +29,14 @@ func Where(ctx gogh.Context, primary bool, query string) error {
 
 	if count > 1 {
 		log.Println("error: Multiple repositories are found")
-	}
-
-	if err := formatter.PrintAll(ctx.Stdout(), "\n"); err != nil {
-		return err
-	}
-	if count > 1 {
+		if err := formatter.PrintAll(ctx.Stderr(), "\n"); err != nil {
+			return err
+		}
 		return errors.New("try more precise name")
+	} else {
+		if err := formatter.PrintAll(ctx.Stdout(), "\n"); err != nil {
+			return err
+		}
 	}
 	return nil
 }
