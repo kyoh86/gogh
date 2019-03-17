@@ -87,7 +87,7 @@ func TestFormatter(t *testing.T) {
 		formatter, err := ProjectListFormatShort.Formatter()
 		require.NoError(t, err)
 		formatter.Add(project)
-		require.Error(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
 	})
 }
 

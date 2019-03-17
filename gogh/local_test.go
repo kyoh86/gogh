@@ -52,7 +52,7 @@ func TestFindProject(t *testing.T) {
 	})
 	t.Run("not supported host URL", func(t *testing.T) {
 		_, err := FindProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
-		assert.Error(t, err, `not supported host: "example.com"`)
+		assert.EqualError(t, err, `not supported host: "example.com"`)
 	})
 	t.Run("existing repository", func(t *testing.T) {
 		// Create same name repository
@@ -142,10 +142,10 @@ func TestWalk(t *testing.T) {
 		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
 		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
 		err = errors.New("sample error")
-		assert.Error(t, err, Walk(&ctx, func(p *Project) error {
+		assert.EqualError(t, Walk(&ctx, func(p *Project) error {
 			assert.Equal(t, path, p.FullPath)
 			return err
-		}))
+		}), "sample error")
 	})
 }
 

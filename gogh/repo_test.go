@@ -107,6 +107,6 @@ func TestCheckRepoHost(t *testing.T) {
 		ctx := implContext{
 			gheHosts: []string{"example.com"},
 		}
-		assert.Error(t, CheckRepoHost(&ctx, parseURL(t, "https://kyoh86.work/kyoh86/gogh")), `not supported host: "kyoh86.work"`)
+		assert.EqualError(t, CheckRepoHost(&ctx, parseURL(t, "https://kyoh86.work/kyoh86/gogh")), `not supported host: "kyoh86.work"`)
 	})
 }
