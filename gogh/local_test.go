@@ -45,10 +45,8 @@ func TestFindProject(t *testing.T) {
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 	t.Run("not existing repository", func(t *testing.T) {
-		p, err := FindProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
-		require.NoError(t, err)
-		assert.Equal(t, path, p.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
+		_, err := FindProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		assert.EqualError(t, err, "project not found")
 	})
 	t.Run("not supported host URL", func(t *testing.T) {
 		_, err := FindProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
