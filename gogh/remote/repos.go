@@ -7,7 +7,7 @@ import (
 	"github.com/kyoh86/gogh/gogh"
 )
 
-// Repo will get a list of repositories for a user.
+// Repos will get a list of repositories for a user.
 // Parameters:
 //   * user:        Who has the repositories. Empty means the "me" (authenticated user, or GOGH_GITHUB_USER).
 //   * own:         Include repositories that are owned by the user
@@ -18,7 +18,7 @@ import (
 //   * direction:   Can be one of asc or desc default. Default means asc when using full_name, otherwise desc
 // Returns:
 //   List of the url for repoisitories
-func Repo(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
+func Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
 	client, err := NewClient(ctx)
 	if err != nil {
 		return nil, err
