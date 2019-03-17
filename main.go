@@ -192,7 +192,7 @@ func list(app *kingpin.Application) (string, func() error) {
 		primary bool
 		query   string
 	)
-	cmd := app.Command("list", "List projects (local repositories)")
+	cmd := app.Command("list", "List projects (local repositories)").Alias("ls")
 	cmd.Flag("format", "Format of each repository").Short('f').Default(gogh.ProjectListFormatRelPath.String()).EnumVar(&format, gogh.ProjectListFormats()...)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
@@ -204,7 +204,7 @@ func list(app *kingpin.Application) (string, func() error) {
 
 func find(app *kingpin.Application) (string, func() error) {
 	var repo gogh.Repo
-	cmd := app.Command("find", "Find a path of a project")
+	cmd := app.Command("find", "Find a path of a project").Alias("search-project")
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
@@ -246,7 +246,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 		sort        string
 		direction   string
 	)
-	cmd := app.Command("repo", "List remote repositories").Alias("repos")
+	cmd := app.Command("repo", "List remote repositories").Alias("repos").Alias("search-repo").Alias("search-repos")
 	cmd.Flag("user", "Who has the repositories. Empty means the authenticated user").StringVar(&user)
 	cmd.Flag("own", "Include repositories that are owned by the user").Default("true").BoolVar(&own)
 	cmd.Flag("collaborate", "Include repositories that the user has been added to as a collaborator").Default("true").BoolVar(&collaborate)
