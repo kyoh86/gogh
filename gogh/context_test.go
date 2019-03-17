@@ -51,18 +51,30 @@ func TestContext(t *testing.T) {
 	t.Run("get GitHub user name", func(t *testing.T) {
 		resetEnv(t)
 		require.NoError(t, os.Setenv(envGitHubUser, "kyoh87"))
-		assert.Equal(t, "kyoh87", getUserName())
+		name, err := getUserName()
+		require.NoError(t, err)
+		assert.Equal(t, "kyoh87", name)
 	})
 
 	t.Run("get OS user name", func(t *testing.T) {
 		resetEnv(t)
 		require.NoError(t, os.Setenv(envUserName, "kyoh88"))
-		assert.Equal(t, "kyoh88", getUserName())
+		name, err := getUserName()
+		require.NoError(t, err)
+		assert.Equal(t, "kyoh88", name)
 	})
 
 	t.Run("expect to fail to get user name from anywhere", func(t *testing.T) {
 		resetEnv(t)
-		assert.Panics(t, func() { getUserName() })
+		_, err := getUserName()
+		require.EqualError(t, err, "failed to find user name. set GOGH_GITHUB_USER in environment variable")
+	})
+
+	t.Run("expect to get invalid user name", func(t *testing.T) {
+		resetEnv(t)
+		require.NoError(t, os.Setenv(envUserName, "-kyoh88"))
+		_, err := getUserName()
+		require.NotNil(t, err)
 	})
 
 	t.Run("expect to fail to get log level from anywhere", func(t *testing.T) {

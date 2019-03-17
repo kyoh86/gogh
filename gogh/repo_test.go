@@ -64,9 +64,71 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("fail when invalid url given", func(t *testing.T) {
-		_, err := ParseRepo("://////")
+		r, err := ParseRepo("://////")
 		assert.NotNil(t, err)
+		assert.Nil(t, r)
 	})
+
+	t.Run("fail when empty owner is given", func(t *testing.T) {
+		r, err := ParseRepo("/test")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when empty name is given", func(t *testing.T) {
+		r, err := ParseRepo("test/")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when owner name contains invalid charactor", func(t *testing.T) {
+		r, err := ParseRepo("kyoh_86/test")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when owner name starts with hyphen", func(t *testing.T) {
+		r, err := ParseRepo("-kyoh86/test")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when owner name ends with hyphen", func(t *testing.T) {
+		r, err := ParseRepo("kyoh86-/test")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when project name contains invalid charactor", func(t *testing.T) {
+		r, err := ParseRepo("kyoh86/foo,bar")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when owner name contains double hyphen", func(t *testing.T) {
+		r, err := ParseRepo("kyoh--86/test")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when url has no path", func(t *testing.T) {
+		r, err := ParseRepo("https://github.com/")
+		assert.EqualError(t, err, "empty project name")
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail when url has subfolder", func(t *testing.T) {
+		r, err := ParseRepo("https://github.com/kyoh86/gogh/blob/master/gogh/repo.go")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("fail to parse `dot`", func(t *testing.T) {
+		r, err := ParseRepo(".")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
 }
 
 func TestRepos(t *testing.T) {

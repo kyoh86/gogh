@@ -55,8 +55,29 @@ func CheckRepoHost(ctx Context, repo *Repo) error {
 var hasSchemePattern = regexp.MustCompile("^[^:]+://")
 var scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
 
-//TODO: var validName = regexp.MustCompile(`^([a-zA-Z0-9](?:(?:-[a-zA-Z0-9]+)*[a-zA-Z0-9]+)?)/([\w-]+)$`)
-//TODO: var capital = regexp.MustCompile(`[A-Z]`) // UNDONE: warn if name contains capital cases
+var invalidNameRegexp = regexp.MustCompile(`[^\w\-\.]`)
+
+func ValidateName(name string) error {
+	if name == "." || name == ".." {
+		return errors.New("'.' or '..' is reserved name")
+	}
+	if name == "" {
+		return errors.New("empty project name")
+	}
+	if invalidNameRegexp.MatchString(name) {
+		return errors.New("project name may only contain alphanumeric characters, dots or hyphens")
+	}
+	return nil
+}
+
+var validOwnerRegexp = regexp.MustCompile(`^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$`)
+
+func ValidateOwner(owner string) error {
+	if !validOwnerRegexp.MatchString(owner) {
+		return errors.New("owner name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen")
+	}
+	return nil
+}
 
 // Set text as Repo
 func (r *Repo) Set(rawRepo string) error {
@@ -75,29 +96,39 @@ func (r *Repo) Set(rawRepo string) error {
 		return err
 	}
 
+	var path string
 	if url.IsAbs() {
 		r.scheme = url.Scheme
 		r.host = url.Host
 		r.user = url.User
+		path = strings.Trim(url.Path, "/")
 	} else {
 		r.scheme = "https"
 		r.host = DefaultHost
 		r.user = nil
+		path = url.Path
 	}
 	r.forceQuery = url.ForceQuery
 	r.rawQuery = url.RawQuery
 	r.fragment = url.Fragment
 
-	pp := strings.Split(strings.Trim(url.Path, "/"), "/")
+	pp := strings.Split(path, "/")
 	switch len(pp) {
-	case 0:
-		return errors.New("repository remote has no local name")
 	case 1:
 		r.owner = "" // To use context.UserName() instead.
 		r.name = strings.TrimSuffix(pp[0], ".git")
+		if err := ValidateName(r.name); err != nil {
+			return err
+		}
 	case 2:
 		r.owner = pp[0]
+		if err := ValidateOwner(r.owner); err != nil {
+			return err
+		}
 		r.name = strings.TrimSuffix(pp[1], ".git")
+		if err := ValidateName(r.name); err != nil {
+			return err
+		}
 	default:
 		return errors.New("repository remote has too many slashes")
 	}

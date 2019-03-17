@@ -26,7 +26,10 @@ type Context interface {
 
 // CurrentContext get current context from OS envars and Git configurations
 func CurrentContext(ctx context.Context) (Context, error) {
-	userName := getUserName()
+	userName, err := getUserName()
+	if err != nil {
+		return nil, err
+	}
 	gitHubToken := getGitHubToken()
 	gitHubHost := getGitHubHost()
 	logLevel := getLogLevel()
@@ -114,13 +117,16 @@ func getGitHubHost() string {
 	return getConf(envGoghGitHubHost, envGitHubHost)
 }
 
-func getUserName() string {
+func getUserName() (string, error) {
 	name := getConf(envGoghGitHubUser, envGitHubUser, envUserName)
 	if name == "" {
 		// Make the error if it does not match any pattern
-		panic(fmt.Errorf("set %s to your environment variable", envGoghGitHubUser))
+		return name, fmt.Errorf("failed to find user name. set %s in environment variable", envGoghGitHubUser)
 	}
-	return name
+	if err := ValidateOwner(name); err != nil {
+		return name, err
+	}
+	return name, nil
 }
 
 func getLogLevel() string {
