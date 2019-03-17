@@ -1,6 +1,7 @@
 package gogh
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,7 +18,14 @@ type Project struct {
 	Exists    bool
 }
 
-// FindProject will get a project (local repository) from remote repository URL
+var (
+	// ProjectNotFound is the error will be raised when a project is not found.
+	ProjectNotFound = errors.New("project not found")
+	// ProjectNotFound is the error will be raised when a project already exists.
+	ProjectAlreadyExists = errors.New("project already exists")
+)
+
+// FindProject will find a project (local repository) that matches exactly.
 func FindProject(ctx Context, repo *Repo) (*Project, error) {
 	if err := CheckRepoHost(ctx, repo); err != nil {
 		return nil, err
@@ -40,8 +48,20 @@ func FindProject(ctx Context, repo *Repo) (*Project, error) {
 		return project, nil
 	}
 
-	// No repository found, returning new one
-	return NewProject(ctx, repo)
+	return nil, ProjectNotFound
+}
+
+// FindProjectOrNew will find a project (local repository) that matches exactly or create new one.
+func FindProjectOrNew(ctx Context, repo *Repo) (*Project, error) {
+	switch p, err := FindProject(ctx, repo); err {
+	case ProjectNotFound:
+		// No repository found, returning new one
+		return NewProject(ctx, repo)
+	case nil:
+		return p, nil
+	default:
+		return nil, err
+	}
 }
 
 // NewProject creates a project (local repository)

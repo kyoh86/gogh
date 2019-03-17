@@ -24,7 +24,15 @@ func New(
 ) error {
 	log.Printf("info: Creating new project and a remote repository %s", repo)
 	project, err := gogh.FindProject(ctx, repo)
-	if err != nil {
+	switch err {
+	case gogh.ProjectNotFound:
+		project, err = gogh.NewProject(ctx, repo)
+		if err != nil {
+			return err
+		}
+	case nil:
+		return gogh.ProjectAlreadyExists
+	default:
 		return err
 	}
 
