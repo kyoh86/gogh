@@ -215,7 +215,7 @@ func find(app *kingpin.Application) (string, func() error) {
 func root(app *kingpin.Application) (string, func() error) {
 	var all bool
 	cmd := app.Command("root", "Show repositories' root")
-	cmd.Flag("all", "Show all roots").BoolVar(&all)
+	cmd.Flag("all", "Show all roots").Envar("GOGH_FLAG_ROOT_ALL").BoolVar(&all)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
 		return command.Root(ctx, all)

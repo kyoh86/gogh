@@ -147,6 +147,28 @@ If it is not set, gogh uses `GITHUB_TOKEN` envar instead.
 The host to connect GitHub on default.
 If it is not set, gogh uses `GITHUB_HOST` envar or `github.com` instead.
 
+### GOGH_FLAG_ROOT_ALL
+
+We can set it truely value and `gogh root` shows all of the roots like `gogh root --all`.
+If we want show only primary root, call `gogh root --no-all`.
+
+e.g.
+
+```
+$ echo $GOGH_ROOT
+/Users/kyoh86/Projects:/Users/kyoh86/go/src
+$ gogh root
+/Users/kyoh86/Projects
+$ gogh root --all
+/Users/kyoh86/Projects
+/Users/kyoh86/go/src
+$ GOGH_FLAG_ROOT_ALL=1 gogh root
+/Users/kyoh86/Projects
+/Users/kyoh86/go/src
+$ GOGH_FLAG_ROOT_ALL=1 gogh root --no-all
+/Users/kyoh86/Projects
+```
+
 ## DIRECTORY STRUCTURES
 
 Local repositories are placed under `gogh.root` with named github.com/*user*/*repo*.
