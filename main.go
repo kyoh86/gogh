@@ -176,14 +176,16 @@ func create(app *kingpin.Application) (string, func() error) {
 func where(app *kingpin.Application) (string, func() error) {
 	var (
 		primary bool
+		exact   bool
 		query   string
 	)
 	cmd := app.Command("where", "Where is a local project")
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Flag("exact", "Specifies name of the project in query").Short('e').BoolVar(&exact)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return command.Where(ctx, primary, query)
+		return command.Where(ctx, primary, exact, query)
 	})
 }
 
@@ -218,12 +220,16 @@ func dump(app *kingpin.Application) (string, func() error) {
 }
 
 func find(app *kingpin.Application) (string, func() error) {
-	var repo gogh.Repo
-	cmd := app.Command("find", "Find a path of a project").Alias("search-project")
-	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
+	var (
+		primary bool
+		query   string
+	)
+	cmd := app.Command("find", "Find a path of a project. This is shorthand of `gogh where --exact`")
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return command.Find(ctx, &repo)
+		return command.Where(ctx, primary, true, query)
 	})
 }
 

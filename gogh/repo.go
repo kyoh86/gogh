@@ -134,7 +134,7 @@ func (r *Repo) Set(rawRepo string) error {
 			return err
 		}
 	default:
-		return errors.New("repository remote has too many slashes")
+		return errors.New("repository name has too many slashes")
 	}
 	r.raw = raw
 	return nil
