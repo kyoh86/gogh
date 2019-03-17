@@ -31,7 +31,8 @@ gogh bulk [--update,u] [--ssh] [--shallow]
 gogh pipe [--update,u] [--ssh] [--shallow] <command> <command-args>...
 gogh fork [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
 gogh new [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
-gogh list [--exect,e] [--full-path,f] [--short,s] [--primary,p] [<query>]
+gogh list [--format,f=short|full|relative|url] [--primary,p] [<query>]
+gogh dump [--primary,p] [<query>]
 gogh find (<project>)
 gogh where [--primary,p] [<query>]
 gogh repo [--user=<USER>] [--own] [--collaborate] [--member] [--visibility=<VISIBILITY>] [--sort=<SORT>] [--direction=<DIRECTION>]
@@ -92,9 +93,28 @@ And fork int on remote GitHub repository with calling `hub fork`
 
 List locally cloned repositories.
 If a query argument is given, only repositories whose names contain that query text are listed.
-`-e` (`--exact`) forces the match to be an exact one (i.e. the query equals to _project_ or _user_/_project_)
-If `-p` (`--full-path`) is given, the full paths to the repository root are printed instead of relative ones.
-IF `-s` (`--short`) is given, the names of the repository which as short as possible are printed instead of relative paths.
+`-f` (`--format`) specifies format of the item. Default: `relative`.
+
+* `-f=full` is given, the full paths to the repository will be printed.
+* `-f=short` is given, gogh prints each project as short as possible.
+* `-f=relative` is given, the relative paths from gogh root to the repository will be printed.
+* `-f=url` is given, the urls of the repository will be printed.
+
+### `list`
+
+Dump local repository list.
+This is shorthand for `gogh list --format=url`.
+It can be used to backup and restore projects.
+
+e.g.
+
+```
+$ gogh dump > projects.txt
+
+# copy projects.txt to another machine
+
+$ cat projects.txt | gogh bulk
+```
 
 ### `find`
 

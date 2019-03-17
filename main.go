@@ -32,6 +32,7 @@ func main() {
 		create,
 		where,
 		list,
+		dump,
 		find,
 		root,
 		setup,
@@ -199,6 +200,20 @@ func list(app *kingpin.Application) (string, func() error) {
 
 	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
 		return command.List(ctx, gogh.ProjectListFormat(format), primary, query)
+	})
+}
+
+func dump(app *kingpin.Application) (string, func() error) {
+	var (
+		primary bool
+		query   string
+	)
+	cmd := app.Command("dump", "Dump list of projects (local repositories)")
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Arg("query", "Project name query").StringVar(&query)
+
+	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+		return command.List(ctx, gogh.ProjectListFormatURL, primary, query)
 	})
 }
 

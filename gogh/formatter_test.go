@@ -50,6 +50,20 @@ func TestFormatter(t *testing.T) {
 		assert.Equal(t, `/go/src/github.com/kyoh86/foo:/go/src/github.com/kyoh86/bar:`, buf.String())
 	})
 
+	t.Run("url formatter", func(t *testing.T) {
+		project1, err := parseProject("/go/src", "/go/src/github.com/kyoh86/foo")
+		require.NoError(t, err)
+		project2, err := parseProject("/go/src", "/go/src/github.com/kyoh86/bar")
+		require.NoError(t, err)
+		formatter, err := ProjectListFormatURL.Formatter()
+		require.NoError(t, err)
+		formatter.Add(project1)
+		formatter.Add(project2)
+		var buf bytes.Buffer
+		require.NoError(t, formatter.PrintAll(&buf, ":"))
+		assert.Equal(t, `https://github.com/kyoh86/foo:https://github.com/kyoh86/bar:`, buf.String())
+	})
+
 	t.Run("short formatter", func(t *testing.T) {
 		project1, err := parseProject("/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)

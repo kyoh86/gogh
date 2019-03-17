@@ -18,6 +18,7 @@ type ProjectListFormat string
 const (
 	ProjectListFormatShort    = ProjectListFormat("short")
 	ProjectListFormatFullPath = ProjectListFormat("full")
+	ProjectListFormatURL      = ProjectListFormat("url")
 	ProjectListFormatRelPath  = ProjectListFormat("relative")
 )
 
@@ -30,6 +31,7 @@ func ProjectListFormats() []string {
 	return []string{
 		ProjectListFormatShort.String(),
 		ProjectListFormatFullPath.String(),
+		ProjectListFormatURL.String(),
 		ProjectListFormatRelPath.String(),
 	}
 }
@@ -41,6 +43,8 @@ func (f ProjectListFormat) Formatter() (ProjectListFormatter, error) {
 		return RelPathFormatter(), nil
 	case ProjectListFormatFullPath:
 		return FullPathFormatter(), nil
+	case ProjectListFormatURL:
+		return URLFormatter(), nil
 	case ProjectListFormatShort:
 		return ShortFormatter(), nil
 	}
@@ -57,6 +61,11 @@ func ShortFormatter() ProjectListFormatter {
 // FullPathFormatter prints each full-path of the project.
 func FullPathFormatter() ProjectListFormatter {
 	return &fullPathFormatter{&simpleCollector{}}
+}
+
+// URLFormatter prints each project as url.
+func URLFormatter() ProjectListFormatter {
+	return &urlFormatter{&simpleCollector{}}
 }
 
 // RelPathFormatter prints each relative-path of the project
@@ -112,6 +121,19 @@ type fullPathFormatter struct {
 func (f *fullPathFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
 		if _, err := fmt.Fprint(w, project.FullPath+sep); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type urlFormatter struct {
+	*simpleCollector
+}
+
+func (f *urlFormatter) PrintAll(w io.Writer, sep string) error {
+	for _, project := range f.list {
+		if _, err := fmt.Fprint(w, "https://"+project.RelPath+sep); err != nil {
 			return err
 		}
 	}
