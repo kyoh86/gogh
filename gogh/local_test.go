@@ -38,18 +38,29 @@ func TestParseProject(t *testing.T) {
 	})
 }
 
-func TestFindProject(t *testing.T) {
+func TestFindOrNewProject(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
 	ctx := implContext{roots: []string{tmp}, userName: "kyoh86"}
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
+
 	t.Run("not existing repository", func(t *testing.T) {
+		p, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		require.NoError(t, err)
+		assert.Equal(t, path, p.FullPath)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
+	})
+	t.Run("not existing repository with FindProject", func(t *testing.T) {
 		_, err := FindProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, "project not found")
 	})
-	t.Run("not supported host URL", func(t *testing.T) {
-		_, err := FindProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
+	t.Run("not supported host URL by FindProject", func(t *testing.T) {
+		_, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
+		assert.EqualError(t, err, `not supported host: "example.com"`)
+	})
+	t.Run("not supported host URL by NewProject", func(t *testing.T) {
+		_, err := NewProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, `not supported host: "example.com"`)
 	})
 	t.Run("existing repository", func(t *testing.T) {
@@ -70,14 +81,14 @@ func TestFindProject(t *testing.T) {
 		})
 
 		t.Run("shortest precise name (owner and name)", func(t *testing.T) {
-			p, err := FindProject(&ctx, parseURL(t, "kyoh86/gogh"))
+			p, err := FindOrNewProject(&ctx, parseURL(t, "kyoh86/gogh"))
 			require.NoError(t, err)
 			assert.Equal(t, path, p.FullPath)
 			assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 		})
 
 		t.Run("shortest pricese name (name only)", func(t *testing.T) {
-			p, err := FindProject(&ctx, parseURL(t, "foo"))
+			p, err := FindOrNewProject(&ctx, parseURL(t, "foo"))
 			require.NoError(t, err)
 			assert.Equal(t, filepath.Join(tmp, "github.com", "kyoh86", "foo"), p.FullPath)
 			assert.Equal(t, []string{"foo", "kyoh86/foo", "github.com/kyoh86/foo"}, p.Subpaths())
