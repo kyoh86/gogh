@@ -89,7 +89,7 @@ func bulk(app *kingpin.Application) (string, func() error) {
 		withSSH bool
 		shallow bool
 	)
-	cmd := app.Command("bulk", "Bulk get repositories specified in stdin")
+	cmd := app.Command("bulk-get", "Bulk get repositories specified in stdin")
 	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
@@ -107,7 +107,7 @@ func pipe(app *kingpin.Application) (string, func() error) {
 		srcCmd     string
 		srcCmdArgs []string
 	)
-	cmd := app.Command("pipe", "Bulk get repositories specified from other command output")
+	cmd := app.Command("pipe-get", "Bulk get repositories specified from other command output")
 	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)

@@ -27,8 +27,8 @@ You can also list projects (local repositories) (`gogh list`), find a project (`
 
 ```
 gogh get [--update,u] [--ssh] [--shallow] [(<repository URL> | <user>/<project> | <project>)...]
-gogh bulk [--update,u] [--ssh] [--shallow]
-gogh pipe [--update,u] [--ssh] [--shallow] <command> <command-args>...
+gogh bulk-get [--update,u] [--ssh] [--shallow]
+gogh pipe-get [--update,u] [--ssh] [--shallow] <command> <command-args>...
 gogh fork [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
 gogh new [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
 gogh list [--format,f=short|full|relative|url] [--primary,p] [<query>]
@@ -76,11 +76,11 @@ Be careful that a shallow-cloned repository cannot be pushed to remote.
 
 Currently Git and Mercurial repositories are supported.
 
-### `bulk`
+### `bulk-get`
 
 Reads repository URLs from stdin line by line and performs 'get' for each of them.
 
-### `pipe`
+### `pipe-get`
 
 Reads repository URLs from other command output by line and performs 'get' for each of them.
 
@@ -113,7 +113,7 @@ $ gogh dump > projects.txt
 
 # copy projects.txt to another machine
 
-$ cat projects.txt | gogh bulk
+$ cat projects.txt | gogh bulk-get
 ```
 
 ### `find`
