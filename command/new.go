@@ -27,7 +27,7 @@ func New(
 	if err != nil {
 		return err
 	}
-	if project.IsExists {
+	if project.Exists {
 		return gogh.ProjectAlreadyExists
 	}
 
