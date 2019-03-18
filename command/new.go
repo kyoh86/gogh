@@ -23,17 +23,12 @@ func New(
 	repo *gogh.Repo,
 ) error {
 	log.Printf("info: Creating new project and a remote repository %s", repo)
-	project, err := gogh.FindProject(ctx, repo)
-	switch err {
-	case gogh.ProjectNotFound:
-		project, err = gogh.NewProject(ctx, repo)
-		if err != nil {
-			return err
-		}
-	case nil:
-		return gogh.ProjectAlreadyExists
-	default:
+	project, err := gogh.FindOrNewProject(ctx, repo)
+	if err != nil {
 		return err
+	}
+	if project.IsExists {
+		return gogh.ProjectAlreadyExists
 	}
 
 	// mkdir

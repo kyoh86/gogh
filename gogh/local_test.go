@@ -59,6 +59,10 @@ func TestFindOrNewProject(t *testing.T) {
 		_, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, `not supported host: "example.com"`)
 	})
+	t.Run("not supported host URL by FindProjectPath", func(t *testing.T) {
+		_, err := FindProjectPath(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
+		assert.EqualError(t, err, `not supported host: "example.com"`)
+	})
 	t.Run("not supported host URL by NewProject", func(t *testing.T) {
 		_, err := NewProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, `not supported host: "example.com"`)
