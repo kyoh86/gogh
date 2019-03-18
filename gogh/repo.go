@@ -37,7 +37,11 @@ func ParseRepo(rawRepo string) (*Repo, error) {
 
 // CheckRepoHost that repo is in supported host
 func CheckRepoHost(ctx Context, repo *Repo) error {
-	host := repo.Host(ctx)
+	return ValidateHost(ctx, repo.Host(ctx))
+}
+
+// ValidateHost that repo is in supported host
+func ValidateHost(ctx Context, host string) error {
 	if host == DefaultHost {
 		return nil
 	}

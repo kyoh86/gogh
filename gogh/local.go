@@ -117,7 +117,7 @@ type WalkFunc func(*Project) error
 type Walker func(Context, WalkFunc) error
 
 // walkInPath thorugh projects (local repositories) in a path
-func walkInPath(root string, callback WalkFunc) error {
+func walkInPath(ctx Context, root string, callback WalkFunc) error {
 	stat, err := os.Stat(root)
 	switch {
 	case err == nil:
@@ -138,7 +138,7 @@ func walkInPath(root string, callback WalkFunc) error {
 			if !isVcsDir(path) {
 				return nil
 			}
-			p, err := parseProject(root, path)
+			p, err := parseProject(ctx, root, path)
 			if err != nil {
 				return nil
 			}
@@ -152,12 +152,24 @@ func walkInPath(root string, callback WalkFunc) error {
 	})
 }
 
-func parseProject(root string, fullPath string) (*Project, error) {
+func parseProject(ctx Context, root string, fullPath string) (*Project, error) {
 	rel, err := filepath.Rel(root, fullPath)
 	if err != nil {
 		return nil, err
 	}
 	pathParts := strings.Split(rel, string(filepath.Separator))
+	if len(pathParts) != 3 {
+		return nil, errors.New("not supported project path")
+	}
+	if err := ValidateHost(ctx, pathParts[0]); err != nil {
+		return nil, err
+	}
+	if err := ValidateOwner(pathParts[1]); err != nil {
+		return nil, err
+	}
+	if err := ValidateName(pathParts[2]); err != nil {
+		return nil, err
+	}
 	return &Project{
 		FullPath:  fullPath,
 		RelPath:   filepath.ToSlash(rel),
@@ -168,13 +180,13 @@ func parseProject(root string, fullPath string) (*Project, error) {
 
 // WalkInPrimary thorugh projects (local repositories) in the first gogh.root directory
 func WalkInPrimary(ctx Context, callback WalkFunc) error {
-	return walkInPath(ctx.PrimaryRoot(), callback)
+	return walkInPath(ctx, ctx.PrimaryRoot(), callback)
 }
 
 // Walk thorugh projects (local repositories) in gogh.root directories
 func Walk(ctx Context, callback WalkFunc) error {
 	for _, root := range ctx.Roots() {
-		if err := walkInPath(root, callback); err != nil {
+		if err := walkInPath(ctx, root, callback); err != nil {
 			return err
 		}
 	}

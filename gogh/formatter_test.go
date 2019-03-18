@@ -12,7 +12,7 @@ import (
 
 func TestFormatter(t *testing.T) {
 	t.Run("dry run formatters", func(t *testing.T) {
-		project, err := parseProject("/go/src", "/go/src/github.com/kyoh86/gogh")
+		project, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/gogh")
 		require.NoError(t, err)
 		for _, f := range ProjectListFormats() {
 			formatter, err := ProjectListFormat(f).Formatter()
@@ -23,9 +23,9 @@ func TestFormatter(t *testing.T) {
 	})
 
 	t.Run("rel path formatter", func(t *testing.T) {
-		project1, err := parseProject("/go/src", "/go/src/github.com/kyoh86/foo")
+		project1, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		project2, err := parseProject("/go/src", "/go/src/github.com/kyoh86/bar")
+		project2, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
 		formatter, err := ProjectListFormatRelPath.Formatter()
 		require.NoError(t, err)
@@ -35,11 +35,19 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `github.com/kyoh86/foo:github.com/kyoh86/bar:`, buf.String())
 	})
+	t.Run("writer error by rel path formatter", func(t *testing.T) {
+		project, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
+		require.NoError(t, err)
+		formatter, err := ProjectListFormatRelPath.Formatter()
+		require.NoError(t, err)
+		formatter.Add(project)
+		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+	})
 
 	t.Run("full path formatter", func(t *testing.T) {
-		project1, err := parseProject("/go/src", "/go/src/github.com/kyoh86/foo")
+		project1, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		project2, err := parseProject("/go/src", "/go/src/github.com/kyoh86/bar")
+		project2, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
 		formatter, err := ProjectListFormatFullPath.Formatter()
 		require.NoError(t, err)
@@ -49,11 +57,19 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `/go/src/github.com/kyoh86/foo:/go/src/github.com/kyoh86/bar:`, buf.String())
 	})
+	t.Run("writer error by full path formatter", func(t *testing.T) {
+		project, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
+		require.NoError(t, err)
+		formatter, err := ProjectListFormatFullPath.Formatter()
+		require.NoError(t, err)
+		formatter.Add(project)
+		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+	})
 
 	t.Run("url formatter", func(t *testing.T) {
-		project1, err := parseProject("/go/src", "/go/src/github.com/kyoh86/foo")
+		project1, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		project2, err := parseProject("/go/src", "/go/src/github.com/kyoh86/bar")
+		project2, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
 		formatter, err := ProjectListFormatURL.Formatter()
 		require.NoError(t, err)
@@ -63,19 +79,27 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `https://github.com/kyoh86/foo:https://github.com/kyoh86/bar:`, buf.String())
 	})
+	t.Run("writer error by url formatter", func(t *testing.T) {
+		project, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
+		require.NoError(t, err)
+		formatter, err := ProjectListFormatURL.Formatter()
+		require.NoError(t, err)
+		formatter.Add(project)
+		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+	})
 
 	t.Run("short formatter", func(t *testing.T) {
-		project1, err := parseProject("/go/src", "/go/src/github.com/kyoh86/foo")
+		project1, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		project2, err := parseProject("/go/src", "/go/src/github.com/kyoh86/bar")
+		project2, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		project3, err := parseProject("/go/src", "/go/src/github.com/kyoh87/bar")
+		project3, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh87/bar")
 		require.NoError(t, err)
-		project4, err := parseProject("/go/src", "/go/src/example.com/kyoh86/bar")
+		project4, err := parseProject(&implContext{gheHosts: []string{"example.com"}}, "/go/src", "/go/src/example.com/kyoh86/bar")
 		require.NoError(t, err)
-		project5, err := parseProject("/go/src", "/go/src/github.com/kyoh86/baz")
+		project5, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/baz")
 		require.NoError(t, err)
-		project6, err := parseProject("/foo", "/foo/github.com/kyoh86/baz")
+		project6, err := parseProject(&implContext{}, "/foo", "/foo/github.com/kyoh86/baz")
 		require.NoError(t, err)
 		formatter, err := ProjectListFormatShort.Formatter()
 		require.NoError(t, err)
@@ -89,20 +113,20 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `foo:github.com/kyoh86/bar:kyoh87/bar:example.com/kyoh86/bar:/go/src/github.com/kyoh86/baz:/foo/github.com/kyoh86/baz:`, buf.String())
 	})
-
-	t.Run("invalid formatter", func(t *testing.T) {
-		_, err := ProjectListFormat("dummy").Formatter()
-		assert.Errorf(t, err, "%q is invalid project format", "dummy")
-	})
-
-	t.Run("writer error", func(t *testing.T) {
-		project, err := parseProject("/go/src", "/go/src/github.com/kyoh86/foo")
+	t.Run("writer error by short formatter", func(t *testing.T) {
+		project, err := parseProject(&implContext{}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
 		formatter, err := ProjectListFormatShort.Formatter()
 		require.NoError(t, err)
 		formatter.Add(project)
 		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
 	})
+
+	t.Run("invalid formatter", func(t *testing.T) {
+		_, err := ProjectListFormat("dummy").Formatter()
+		assert.Errorf(t, err, "%q is invalid project format", "dummy")
+	})
+
 }
 
 type invalidWriter struct {

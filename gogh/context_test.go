@@ -66,7 +66,7 @@ func TestContext(t *testing.T) {
 
 	t.Run("expect to fail to get user name from anywhere", func(t *testing.T) {
 		resetEnv(t)
-		_, err := getUserName()
+		_, err := CurrentContext(context.Background())
 		require.EqualError(t, err, "failed to find user name. set GOGH_GITHUB_USER in environment variable")
 	})
 

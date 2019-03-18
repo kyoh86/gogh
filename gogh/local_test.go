@@ -18,24 +18,50 @@ func TestParseProject(t *testing.T) {
 
 	t.Run("in primary root", func(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
-		p, err := parseProject(tmp, path)
+		p, err := parseProject(&ctx, tmp, path)
 		require.NoError(t, err)
 		assert.Equal(t, path, p.FullPath)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 		assert.True(t, p.IsInPrimaryRoot(&ctx))
 	})
+
 	t.Run("secondary path", func(t *testing.T) {
 		tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
 		require.NoError(t, err)
 		ctx := ctx
 		ctx.roots = append(ctx.roots, tmp2)
 		path := filepath.Join(tmp2, "github.com", "kyoh86", "gogh")
-		p, err := parseProject(tmp2, path)
+		p, err := parseProject(&ctx, tmp2, path)
 		require.NoError(t, err)
 		assert.Equal(t, path, p.FullPath)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 		assert.False(t, p.IsInPrimaryRoot(&ctx))
 	})
+
+	t.Run("expect to fail to parse unsupported depth", func(t *testing.T) {
+		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/kyoh86/gogh/gogh"))
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("expect to fail to parse unsupported host", func(t *testing.T) {
+		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "example.com/kyoh86/gogh"))
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("expect to fail to parse owner name that starts with hyphen", func(t *testing.T) {
+		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/-kyoh86/gogh"))
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
+	t.Run("expect to fail to parse project name that contains invalid charactor", func(t *testing.T) {
+		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/kyoh86/foo,bar"))
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
 }
 
 func TestFindOrNewProject(t *testing.T) {
@@ -146,6 +172,16 @@ func TestWalk(t *testing.T) {
 		})
 	})
 
+	t.Run("through error with invalid project name", func(t *testing.T) {
+		tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+		require.NoError(t, err)
+		path := filepath.Join(tmp, "github.com", "kyoh--86", "gogh")
+		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
+
+		ctx := implContext{roots: []string{tmp, filepath.Join(tmp)}}
+		assert.NoError(t, Walk(&ctx, neverCalled(t)))
+	})
+
 	t.Run("through error from callback", func(t *testing.T) {
 		tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 		require.NoError(t, err)
@@ -206,7 +242,7 @@ func TestQuery(t *testing.T) {
 	path5 := filepath.Join(root2, "github.com", "kyoh86", "gogh")
 	require.NoError(t, os.MkdirAll(filepath.Join(path5, ".git"), 0755))
 
-	ctx := implContext{roots: []string{root1, root2}}
+	ctx := implContext{roots: []string{root1, root2}, gheHosts: []string{"example.com"}}
 
 	assert.NoError(t, Query(&ctx, "never found", Walk, func(*Project) error {
 		t.Fatal("should not be called but...")
