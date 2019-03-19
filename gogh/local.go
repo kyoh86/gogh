@@ -70,7 +70,7 @@ func NewProject(ctx Context, repo *Repo) (*Project, error) {
 		return nil, err
 	}
 	relPath := repo.RelPath(ctx)
-	fullPath := filepath.Join(ctx.PrimaryRoot(), relPath)
+	fullPath := filepath.Join(PrimaryRoot(ctx), relPath)
 	return &Project{
 		FullPath:  fullPath,
 		RelPath:   relPath,
@@ -102,7 +102,7 @@ func (p *Project) Subpaths() []string {
 
 // IsInPrimaryRoot check which the repository is in primary root directory for gogh
 func (p *Project) IsInPrimaryRoot(ctx Context) bool {
-	return strings.HasPrefix(p.FullPath, ctx.PrimaryRoot())
+	return strings.HasPrefix(p.FullPath, PrimaryRoot(ctx))
 }
 
 func isVcsDir(path string) bool {
@@ -180,7 +180,7 @@ func parseProject(ctx Context, root string, fullPath string) (*Project, error) {
 
 // WalkInPrimary thorugh projects (local repositories) in the first gogh.root directory
 func WalkInPrimary(ctx Context, callback WalkFunc) error {
-	return walkInPath(ctx, ctx.PrimaryRoot(), callback)
+	return walkInPath(ctx, PrimaryRoot(ctx), callback)
 }
 
 // Walk thorugh projects (local repositories) in gogh.root directories

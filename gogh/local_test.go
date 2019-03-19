@@ -14,7 +14,7 @@ import (
 func TestParseProject(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := implContext{roots: []string{tmp}}
+	ctx := implContext{roots: []string{tmp}, gitHubHost: "github.com"}
 
 	t.Run("in primary root", func(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
@@ -67,7 +67,7 @@ func TestParseProject(t *testing.T) {
 func TestFindOrNewProject(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := implContext{roots: []string{tmp}, userName: "kyoh86"}
+	ctx := implContext{roots: []string{tmp}, gitHubUser: "kyoh86", gitHubHost: "github.com"}
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 
@@ -189,7 +189,7 @@ func TestWalk(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
 
 		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
+		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}, gitHubHost: "github.com"}
 		err = errors.New("sample error")
 		assert.EqualError(t, Walk(&ctx, func(p *Project) error {
 			assert.Equal(t, path, p.FullPath)
@@ -206,7 +206,7 @@ func TestList_Symlink(t *testing.T) {
 	symDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 
-	ctx := &implContext{roots: []string{root}}
+	ctx := &implContext{roots: []string{root}, gitHubHost: "github.com"}
 
 	err = os.MkdirAll(filepath.Join(root, "github.com", "atom", "atom", ".git"), 0777)
 	require.NoError(t, err)
@@ -237,12 +237,10 @@ func TestQuery(t *testing.T) {
 	require.NoError(t, os.MkdirAll(filepath.Join(path2, ".git"), 0755))
 	path3 := filepath.Join(root1, "github.com", "kyoh86", "foo")
 	require.NoError(t, os.MkdirAll(filepath.Join(path3, ".git"), 0755))
-	path4 := filepath.Join(root1, "example.com", "kyoh86", "gogh")
-	require.NoError(t, os.MkdirAll(filepath.Join(path4, ".git"), 0755))
 	path5 := filepath.Join(root2, "github.com", "kyoh86", "gogh")
 	require.NoError(t, os.MkdirAll(filepath.Join(path5, ".git"), 0755))
 
-	ctx := implContext{roots: []string{root1, root2}, gheHosts: []string{"example.com"}}
+	ctx := implContext{roots: []string{root1, root2}, gitHubHost: "github.com"}
 
 	assert.NoError(t, Query(&ctx, "never found", Walk, func(*Project) error {
 		t.Fatal("should not be called but...")
@@ -253,7 +251,6 @@ func TestQuery(t *testing.T) {
 		expect := map[string]struct{}{
 			path1: {},
 			path2: {},
-			path4: {},
 			path5: {},
 		}
 		assert.NoError(t, Query(&ctx, "gogh", Walk, func(p *Project) error {
@@ -267,7 +264,6 @@ func TestQuery(t *testing.T) {
 		expect := map[string]struct{}{
 			path1: {},
 			path2: {},
-			path4: {},
 			path5: {},
 		}
 		assert.NoError(t, Query(&ctx, "gog", Walk, func(p *Project) error {
@@ -280,7 +276,6 @@ func TestQuery(t *testing.T) {
 	t.Run("OwnerAndName", func(t *testing.T) {
 		expect := map[string]struct{}{
 			path1: {},
-			path4: {},
 			path5: {},
 		}
 		assert.NoError(t, Query(&ctx, "kyoh86/gogh", Walk, func(p *Project) error {
@@ -293,7 +288,6 @@ func TestQuery(t *testing.T) {
 	t.Run("PartialOwnerAndName", func(t *testing.T) {
 		expect := map[string]struct{}{
 			path1: {},
-			path4: {},
 			path5: {},
 		}
 		assert.NoError(t, Query(&ctx, "yoh86/gog", Walk, func(p *Project) error {
@@ -331,7 +325,6 @@ func TestQuery(t *testing.T) {
 		expect := map[string]struct{}{
 			path1: {},
 			path2: {},
-			path4: {},
 		}
 		assert.NoError(t, Query(&ctx, "gogh", WalkInPrimary, func(p *Project) error {
 			assert.Contains(t, expect, p.FullPath)

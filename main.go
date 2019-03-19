@@ -6,12 +6,14 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
 
 	"github.com/alecthomas/kingpin"
 	"github.com/comail/colog"
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/command/remote"
 	"github.com/kyoh86/gogh/gogh"
+	"github.com/kyoh86/xdg"
+	toml "github.com/pelletier/go-toml"
 )
 
 var (
@@ -21,10 +23,28 @@ var (
 )
 
 func main() {
+	var configFile string
+	var config gogh.Config
+
 	app := kingpin.New("gogh", "GO GitHub project manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
+	app.Flag("config", "configuration file").
+		Default(filepath.Join(xdg.CacheHome(), "gogh", "config.yml")).
+		Envar("GOGH_CONFIG").
+		Action(func(ctx *kingpin.ParseContext) error {
+			file, err := os.Open(configFile)
+			switch {
+			case err == nil:
+				// noop
+			case os.IsNotExist(err):
+				return nil
+			default:
+				return err
+			}
+			return toml.NewDecoder(file).Decode(&config)
+		}).StringVar(&configFile)
 
 	cmds := map[string]func() error{}
-	for _, f := range []func(*kingpin.Application) (string, func() error){
+	for _, f := range []func(*kingpin.Application, gogh.Config) (string, func() error){
 		get,
 		bulk,
 		pipe,
@@ -39,7 +59,7 @@ func main() {
 
 		repos,
 	} {
-		key, run := f(app)
+		key, run := f(app, config)
 		cmds[key] = run
 	}
 	if err := cmds[kingpin.MustParse(app.Parse(os.Args[1:]))](); err != nil {
@@ -47,9 +67,9 @@ func main() {
 	}
 }
 
-func wrapContext(f func(gogh.Context) error) func() error {
+func wrapContext(config gogh.Config, f func(gogh.Context) error) func() error {
 	return func() error {
-		ctx, err := gogh.CurrentContext(context.Background())
+		ctx, err := gogh.CurrentContext(context.Background(), config)
 		if err != nil {
 			return err
 		}
@@ -65,7 +85,7 @@ func wrapContext(f func(gogh.Context) error) func() error {
 	}
 }
 
-func get(app *kingpin.Application) (string, func() error) {
+func get(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		update    bool
 		withSSH   bool
@@ -78,12 +98,12 @@ func get(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoNames)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.GetAll(ctx, update, withSSH, shallow, repoNames)
 	})
 }
 
-func bulk(app *kingpin.Application) (string, func() error) {
+func bulk(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		update  bool
 		withSSH bool
@@ -94,12 +114,12 @@ func bulk(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.Bulk(ctx, update, withSSH, shallow)
 	})
 }
 
-func pipe(app *kingpin.Application) (string, func() error) {
+func pipe(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		update     bool
 		withSSH    bool
@@ -114,12 +134,12 @@ func pipe(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&srcCmd)
 	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&srcCmdArgs)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.Pipe(ctx, update, withSSH, shallow, srcCmd, srcCmdArgs)
 	})
 }
 
-func fork(app *kingpin.Application) (string, func() error) {
+func fork(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		update       bool
 		withSSH      bool
@@ -138,12 +158,12 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, &repo)
 	})
 }
 
-func create(app *kingpin.Application) (string, func() error) {
+func create(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		private        bool
 		description    string
@@ -168,12 +188,12 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&shared)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, &repo)
 	})
 }
 
-func where(app *kingpin.Application) (string, func() error) {
+func where(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		primary bool
 		exact   bool
@@ -184,12 +204,12 @@ func where(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("exact", "Specifies name of the project in query").Short('e').BoolVar(&exact)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.Where(ctx, primary, exact, query)
 	})
 }
 
-func list(app *kingpin.Application) (string, func() error) {
+func list(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		format  string
 		primary bool
@@ -200,12 +220,12 @@ func list(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.List(ctx, gogh.ProjectListFormat(format), primary, query)
 	})
 }
 
-func dump(app *kingpin.Application) (string, func() error) {
+func dump(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		primary bool
 		query   string
@@ -214,12 +234,12 @@ func dump(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.List(ctx, gogh.ProjectListFormatURL, primary, query)
 	})
 }
 
-func find(app *kingpin.Application) (string, func() error) {
+func find(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		primary bool
 		query   string
@@ -228,22 +248,22 @@ func find(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.Where(ctx, primary, true, query)
 	})
 }
 
-func root(app *kingpin.Application) (string, func() error) {
+func root(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var all bool
 	cmd := app.Command("root", "Show repositories' root")
 	cmd.Flag("all", "Show all roots").Envar("GOGH_FLAG_ROOT_ALL").BoolVar(&all)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.Root(ctx, all)
 	})
 }
 
-func setup(app *kingpin.Application) (string, func() error) {
+func setup(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		cdFuncName string
 		shell      string
@@ -252,12 +272,12 @@ func setup(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("cd-function-name", "Name of the function to define").Default("gogogh").Hidden().StringVar(&cdFuncName)
 	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
 		return command.Setup(ctx, cdFuncName, shell)
 	})
 }
 
-func repos(app *kingpin.Application) (string, func() error) {
+func repos(app *kingpin.Application, config gogh.Config) (string, func() error) {
 	var (
 		user        string
 		own         bool
@@ -276,7 +296,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("sort", "Sort repositories by").Default("full_name").EnumVar(&sort, "created", "updated", "pushed", "full_name")
 	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
 
-	return cmd.FullCommand(), wrapContext(func(ctx gogh.Context) error {
-		return remote.Repo(ctx, user, own, collaborate, member, visibility, sort, direction)
+	return cmd.FullCommand(), wrapContext(config, func(ctx gogh.Context) error {
+		return command.Repos(ctx, user, own, collaborate, member, visibility, sort, direction)
 	})
 }

@@ -55,7 +55,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("name only spec", func(t *testing.T) {
-		ctx := &implContext{userName: "kyoh86"}
+		ctx := &implContext{gitHubUser: "kyoh86"}
 		spec, err := ParseRepo("gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", spec.FullName(ctx))
@@ -146,29 +146,15 @@ func TestRepos(t *testing.T) {
 
 func TestCheckRepoHost(t *testing.T) {
 	t.Run("valid GitHub URL", func(t *testing.T) {
-		ctx := implContext{}
+		ctx := implContext{gitHubHost: "github.com"}
 		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://github.com/kyoh86/gogh")))
 	})
-	t.Run("valid GHE URL", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://example.com/kyoh86/gogh")))
-	})
 	t.Run("valid GitHub URL with trailing slashes", func(t *testing.T) {
-		ctx := implContext{}
+		ctx := implContext{gitHubHost: "github.com"}
 		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://github.com/kyoh86/gogh/")))
 	})
-	t.Run("valid GHE URL with trailing slashes", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://example.com/kyoh86/gogh/")))
-	})
 	t.Run("not supported host URL", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
+		ctx := implContext{gitHubHost: "github.com"}
 		assert.EqualError(t, CheckRepoHost(&ctx, parseURL(t, "https://kyoh86.work/kyoh86/gogh")), `not supported host: "kyoh86.work"`)
 	})
 }

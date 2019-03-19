@@ -152,11 +152,6 @@ If it is not set, gogh uses `GITHUB_USER` envar or OS user name from envar (`USE
 
 The level to output logs (debug, info, warn, error or panic). Default: warn
 
-### GOGH_GHE_HOST
-
-Hostnames of your GitHub Enterprise installation.
-This variable can have multiple values that separated with spaces.
-
 ### GOGH_GITHUB_TOKEN
 
 The token to connect GitHub API.

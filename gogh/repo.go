@@ -42,13 +42,8 @@ func CheckRepoHost(ctx Context, repo *Repo) error {
 
 // ValidateHost that repo is in supported host
 func ValidateHost(ctx Context, host string) error {
-	if host == DefaultHost {
+	if host == ctx.GitHubHost() {
 		return nil
-	}
-	for _, h := range ctx.GHEHosts() {
-		if h == host {
-			return nil
-		}
 	}
 	return fmt.Errorf("not supported host: %q", host)
 }
@@ -140,9 +135,6 @@ func (r *Repo) Set(rawRepo string) error {
 	return nil
 }
 
-// DefaultHost is the default host of the GitHub
-const DefaultHost = "github.com"
-
 // Scheme returns scheme of the repository
 func (r *Repo) Scheme(_ Context) string {
 	return r.scheme
@@ -156,7 +148,7 @@ func (r *Repo) Host(_ Context) string {
 // Owner returns a user name of an owner of the repository
 func (r *Repo) Owner(ctx Context) string {
 	if r.owner == "" {
-		return ctx.UserName()
+		return ctx.GitHubUser()
 	}
 	return r.owner
 }

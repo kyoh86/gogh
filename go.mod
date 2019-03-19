@@ -11,10 +11,12 @@ require (
 	github.com/karrick/godirwalk v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kyoh86/xdg v1.0.0
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/ogier/pflag v0.0.1 // indirect
+	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.0
 	github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709
 	golang.org/x/net v0.0.0-20190311183353-d8887717615a // indirect

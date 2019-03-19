@@ -11,103 +11,122 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestContext(t *testing.T) {
-	resetEnv := func(t *testing.T) {
-		t.Helper()
-		for _, key := range envNames {
-			require.NoError(t, os.Setenv(key, ""))
-		}
+func resetEnv(t *testing.T) {
+	t.Helper()
+	for _, key := range envNames {
+		require.NoError(t, os.Setenv(key, ""))
 	}
+}
 
-	t.Run("get context without roots", func(t *testing.T) {
+func TestContext(t *testing.T) {
+	t.Run("get context from envar (without configuration)", func(t *testing.T) {
 		resetEnv(t)
 		require.NoError(t, os.Setenv(envGoghGitHubToken, "tokenx1"))
+		require.NoError(t, os.Setenv(envGitHubToken, "tokenx2")) // alt: never used
 		require.NoError(t, os.Setenv(envGoghGitHubHost, "hostx1"))
+		require.NoError(t, os.Setenv(envGitHubHost, "hostx2")) // alt: never used
 		require.NoError(t, os.Setenv(envGoghGitHubUser, "kyoh86"))
-		require.NoError(t, os.Setenv(envLogLevel, "trace"))
-		require.NoError(t, os.Setenv(envGHEHosts, "example.com example.com:9999"))
-
-		ctx, err := CurrentContext(context.Background())
+		require.NoError(t, os.Setenv(envGitHubUser, "kyoh87")) // alt: never used
+		require.NoError(t, os.Setenv(envUserName, "kyoh88"))   // alt: never used
+		require.NoError(t, os.Setenv(envGoghLogLevel, "trace"))
+		require.NoError(t, os.Setenv(envGoghRoot, "/foo:/bar"))
+		require.NoError(t, os.Setenv(envGoghRoot, "/foo:/bar"))
+		ctx, err := CurrentContext(context.Background(), nil)
 		require.NoError(t, err)
 		assert.Equal(t, "tokenx1", ctx.GitHubToken())
 		assert.Equal(t, "hostx1", ctx.GitHubHost())
-		assert.Equal(t, "kyoh86", ctx.UserName())
+		assert.Equal(t, "kyoh86", ctx.GitHubUser())
 		assert.Equal(t, "trace", ctx.LogLevel())
-		assert.Equal(t, []string{"example.com", "example.com:9999"}, ctx.GHEHosts())
+		assert.Equal(t, []string{"/foo", "/bar"}, ctx.Roots())
 	})
 
-	t.Run("get GitHub token", func(t *testing.T) {
+	t.Run("get context from envar (with configuration)", func(t *testing.T) {
 		resetEnv(t)
-		require.NoError(t, os.Setenv(envGitHubToken, "tokenx2"))
-		assert.Equal(t, "tokenx2", getGitHubToken())
-	})
-
-	t.Run("get GitHub host", func(t *testing.T) {
-		resetEnv(t)
-		require.NoError(t, os.Setenv(envGitHubHost, "hostx2"))
-		assert.Equal(t, "hostx2", getGitHubHost())
-	})
-
-	t.Run("get GitHub user name", func(t *testing.T) {
-		resetEnv(t)
-		require.NoError(t, os.Setenv(envGitHubUser, "kyoh87"))
-		name, err := getUserName()
+		require.NoError(t, os.Setenv(envGoghGitHubToken, "tokenx1"))
+		require.NoError(t, os.Setenv(envGitHubToken, "tokenx2")) // alt: never used
+		require.NoError(t, os.Setenv(envGoghGitHubHost, "hostx1"))
+		require.NoError(t, os.Setenv(envGitHubHost, "hostx2")) // alt: never used
+		require.NoError(t, os.Setenv(envGoghGitHubUser, "kyoh86"))
+		require.NoError(t, os.Setenv(envGitHubUser, "kyoh87")) // alt: never used
+		require.NoError(t, os.Setenv(envUserName, "kyoh88"))   // alt: never used
+		require.NoError(t, os.Setenv(envGoghLogLevel, "trace"))
+		require.NoError(t, os.Setenv(envGoghRoot, "/foo:/bar"))
+		ctx, err := CurrentContext(context.Background(), Config{ // config: never used
+			confKeyGitHubToken: "tokenx2",
+			confKeyGitHubHost:  "hostx2",
+			confKeyGitHubUser:  "kyoh87",
+			confKeyLogLevel:    "error",
+			confKeyRoot:        []string{"/baz", "/bux"},
+		})
 		require.NoError(t, err)
-		assert.Equal(t, "kyoh87", name)
+		assert.Equal(t, "tokenx1", ctx.GitHubToken())
+		assert.Equal(t, "hostx1", ctx.GitHubHost())
+		assert.Equal(t, "kyoh86", ctx.GitHubUser())
+		assert.Equal(t, "trace", ctx.LogLevel())
+		assert.Equal(t, []string{"/foo", "/bar"}, ctx.Roots())
 	})
 
-	t.Run("get OS user name", func(t *testing.T) {
+	t.Run("get context from configuration", func(t *testing.T) {
 		resetEnv(t)
-		require.NoError(t, os.Setenv(envUserName, "kyoh88"))
-		name, err := getUserName()
+		require.NoError(t, os.Setenv(envGitHubToken, "tokenx2")) // alt: never used
+		require.NoError(t, os.Setenv(envGitHubHost, "hostx2"))   // alt: never used
+		require.NoError(t, os.Setenv(envGitHubUser, "kyoh87"))   // alt: never used
+		require.NoError(t, os.Setenv(envUserName, "kyoh88"))     // alt: never used
+		ctx, err := CurrentContext(context.Background(), Config{
+			confKeyGitHubToken: "tokenx1",
+			confKeyGitHubHost:  "hostx1",
+			confKeyGitHubUser:  "kyoh86",
+			confKeyLogLevel:    "error",
+			confKeyRoot:        []string{"/baz", "/bux"},
+		})
 		require.NoError(t, err)
-		assert.Equal(t, "kyoh88", name)
+		assert.Equal(t, "tokenx1", ctx.GitHubToken())
+		assert.Equal(t, "hostx1", ctx.GitHubHost())
+		assert.Equal(t, "kyoh86", ctx.GitHubUser())
+		assert.Equal(t, "error", ctx.LogLevel())
+		assert.Equal(t, []string{"/baz", "/bux"}, ctx.Roots())
+	})
+
+	t.Run("get context from alt envars", func(t *testing.T) {
+		resetEnv(t)
+		require.NoError(t, os.Setenv(envGitHubToken, "tokenx1"))
+		require.NoError(t, os.Setenv(envGitHubHost, "hostx1"))
+		require.NoError(t, os.Setenv(envGitHubUser, "kyoh86"))
+		require.NoError(t, os.Setenv(envUserName, "kyoh87")) // low priority: never used
+		ctx, err := CurrentContext(context.Background(), nil)
+		require.NoError(t, err)
+		assert.Equal(t, "tokenx1", ctx.GitHubToken())
+		assert.Equal(t, "hostx1", ctx.GitHubHost())
+		assert.Equal(t, "kyoh86", ctx.GitHubUser())
+	})
+
+	t.Run("get default context", func(t *testing.T) {
+		resetEnv(t)
+		require.NoError(t, os.Setenv(envGoghGitHubUser, "kyoh86"))
+		ctx, err := CurrentContext(context.Background(), nil)
+		require.NoError(t, err)
+		assert.Equal(t, "", ctx.GitHubToken())
+		assert.Equal(t, DefaultHost, ctx.GitHubHost())
+		assert.Equal(t, "warn", ctx.LogLevel())
+		assert.Equal(t, []string{filepath.Join(build.Default.GOPATH, "src")}, ctx.Roots())
 	})
 
 	t.Run("expect to fail to get user name from anywhere", func(t *testing.T) {
 		resetEnv(t)
-		_, err := CurrentContext(context.Background())
+		_, err := CurrentContext(context.Background(), nil)
 		require.EqualError(t, err, "failed to find user name. set GOGH_GITHUB_USER in environment variable")
 	})
 
 	t.Run("expect to get invalid user name", func(t *testing.T) {
 		resetEnv(t)
 		require.NoError(t, os.Setenv(envUserName, "-kyoh88"))
-		_, err := getUserName()
-		require.NotNil(t, err)
-	})
-
-	t.Run("expect to fail to get log level from anywhere", func(t *testing.T) {
-		resetEnv(t)
-		assert.Equal(t, "warn", getLogLevel())
-	})
-
-	t.Run("get root paths", func(t *testing.T) {
-		resetEnv(t)
-		require.NoError(t, os.Setenv(envRoot, "/foo:/bar"))
-		rts, err := getRoots()
-		assert.NoError(t, err)
-		assert.Equal(t, []string{"/foo", "/bar"}, rts)
-	})
-
-	t.Run("get root paths from GOPATH", func(t *testing.T) {
-		resetEnv(t)
-		rts, err := getRoots()
-		assert.NoError(t, err)
-		assert.Equal(t, []string{filepath.Join(build.Default.GOPATH, "src")}, rts)
+		_, err := CurrentContext(context.Background(), nil)
+		require.EqualError(t, err, "owner name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen")
 	})
 
 	t.Run("expects roots are not duplicated", func(t *testing.T) {
 		resetEnv(t)
-		require.NoError(t, os.Setenv(envRoot, "/foo:/bar:/bar:/foo"))
-		rts, err := getRoots()
-		assert.NoError(t, err)
-		assert.Equal(t, []string{"/foo", "/bar"}, rts)
-	})
-
-	t.Run("expects GHE hosts are not duplicated", func(t *testing.T) {
-		resetEnv(t)
-		require.NoError(t, os.Setenv(envGHEHosts, "example.com example.com:9999 example.com:9999 example.com"))
-		assert.Equal(t, []string{"example.com", "example.com:9999"}, getGHEHosts())
+		require.NoError(t, os.Setenv(envGoghRoot, "/foo:/bar:/bar:/foo"))
+		assert.Equal(t, []string{"/foo", "/bar"}, getRoots(nil))
 	})
 }

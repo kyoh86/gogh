@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"go/build"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // Context holds configurations and environments
@@ -15,39 +15,48 @@ type Context interface {
 	context.Context
 	Stdout() io.Writer
 	Stderr() io.Writer
-	UserName() string
+	LogLevel() string
+
+	GitHubUser() string
 	GitHubToken() string
 	GitHubHost() string
-	LogLevel() string
 	Roots() []string
-	PrimaryRoot() string
-	GHEHosts() []string
 }
 
+func PrimaryRoot(ctx Context) string {
+	rts := ctx.Roots()
+	return rts[0]
+}
+
+// Config holds configuration file values.
+type Config map[string]interface{}
+
 // CurrentContext get current context from OS envars and Git configurations
-func CurrentContext(ctx context.Context) (Context, error) {
-	userName, err := getUserName()
-	if err != nil {
+func CurrentContext(ctx context.Context, config Config) (Context, error) {
+	gitHubUser := getGitHubUser(config)
+	if gitHubUser == "" {
+		// Make the error if the GitHubUser is not set.
+		return nil, fmt.Errorf("failed to find user name. set %s in environment variable", envGoghGitHubUser)
+	}
+	if err := ValidateOwner(gitHubUser); err != nil {
 		return nil, err
 	}
-	gitHubToken := getGitHubToken()
-	gitHubHost := getGitHubHost()
-	logLevel := getLogLevel()
-	gheHosts := getGHEHosts()
-	roots, err := getRoots()
-	if err != nil {
+	gitHubToken := getGitHubToken(config)
+	gitHubHost := getGitHubHost(config)
+	logLevel := getLogLevel(config)
+	roots := getRoots(config)
+	if err := validateRoots(roots); err != nil {
 		return nil, err
 	}
 	return &implContext{
 		Context:     ctx,
 		stdout:      os.Stdout,
 		stderr:      os.Stderr,
-		userName:    userName,
+		gitHubUser:  gitHubUser,
 		gitHubToken: gitHubToken,
 		gitHubHost:  gitHubHost,
 		logLevel:    logLevel,
 		roots:       roots,
-		gheHosts:    gheHosts,
 	}, nil
 }
 
@@ -55,12 +64,11 @@ type implContext struct {
 	context.Context
 	stdout      io.Writer
 	stderr      io.Writer
-	userName    string
+	gitHubUser  string
 	gitHubToken string
 	gitHubHost  string
 	logLevel    string
 	roots       []string
-	gheHosts    []string
 }
 
 func (c *implContext) Stdout() io.Writer {
@@ -71,8 +79,8 @@ func (c *implContext) Stderr() io.Writer {
 	return c.stderr
 }
 
-func (c *implContext) UserName() string {
-	return c.userName
+func (c *implContext) GitHubUser() string {
+	return c.gitHubUser
 }
 
 func (c *implContext) GitHubToken() string {
@@ -91,64 +99,73 @@ func (c *implContext) Roots() []string {
 	return c.roots
 }
 
-func (c *implContext) PrimaryRoot() string {
-	rts := c.Roots()
-	return rts[0]
-}
-
-func (c *implContext) GHEHosts() []string {
-	return c.gheHosts
-}
-
-func getConf(envNames ...string) string {
-	for _, n := range envNames {
-		if val := os.Getenv(n); val != "" {
+func getConf(def string, envar string, config Config, key string, altEnvars ...string) string {
+	if val := os.Getenv(envar); val != "" {
+		log.Printf("debug: Context %s from envar is %q", key, val)
+		return val
+	}
+	if config != nil {
+		val, ok := config[key]
+		if ok {
+			str, ok := val.(string)
+			if ok {
+				log.Printf("debug: Context %s from file is %q", key, str)
+				return str
+			} else {
+				log.Printf("warn: Config.%s expects string", confKeyRoot)
+			}
+		}
+	}
+	for _, e := range altEnvars {
+		if val := os.Getenv(e); val != "" {
+			log.Printf("debug: Context %s from alt-envar is %q", key, val)
 			return val
 		}
 	}
-	return ""
+	return def
 }
 
-func getGitHubToken() string {
-	return getConf(envGoghGitHubToken, envGitHubToken)
+func getGitHubToken(config Config) string {
+	return getConf("", envGoghGitHubToken, config, confKeyGitHubToken, envGitHubToken)
 }
 
-func getGitHubHost() string {
-	return getConf(envGoghGitHubHost, envGitHubHost)
+func getGitHubHost(config Config) string {
+	return getConf(DefaultHost, envGoghGitHubHost, config, confKeyGitHubHost, envGitHubHost)
 }
 
-func getUserName() (string, error) {
-	name := getConf(envGoghGitHubUser, envGitHubUser, envUserName)
-	if name == "" {
-		// Make the error if it does not match any pattern
-		return name, fmt.Errorf("failed to find user name. set %s in environment variable", envGoghGitHubUser)
-	}
-	if err := ValidateOwner(name); err != nil {
-		return name, err
-	}
-	return name, nil
+func getGitHubUser(config Config) string {
+	return getConf("", envGoghGitHubUser, config, confKeyGitHubUser, envGitHubUser, envUserName)
 }
 
-func getLogLevel() string {
-	if ll := os.Getenv(envLogLevel); ll != "" {
-		return ll
-	}
-	return "warn" // default: warn
+func getLogLevel(config Config) string {
+	return getConf(DefaultLogLevel, envGoghLogLevel, config, confKeyLogLevel)
 }
 
-func getRoots() ([]string, error) {
-	var roots []string
-	envRoot := os.Getenv(envRoot)
+func getRoots(config Config) []string {
+	envRoot := os.Getenv(envGoghRoot)
 	if envRoot == "" {
+		if config != nil {
+			val, ok := config[confKeyRoot]
+			if ok {
+				arr, ok := val.([]string)
+				if ok {
+					return unique(arr)
+				} else {
+					log.Printf("warn: Config.%s expects string array", confKeyRoot)
+				}
+			}
+		}
 		gopaths := filepath.SplitList(build.Default.GOPATH)
-		roots = make([]string, 0, len(gopaths))
+		roots := make([]string, 0, len(gopaths))
 		for _, gopath := range gopaths {
 			roots = append(roots, filepath.Join(gopath, "src"))
 		}
-	} else {
-		roots = filepath.SplitList(envRoot)
+		return unique(roots)
 	}
+	return unique(filepath.SplitList(envRoot))
+}
 
+func validateRoots(roots []string) error {
 	for i, v := range roots {
 		path := filepath.Clean(v)
 		_, err := os.Stat(path)
@@ -156,18 +173,14 @@ func getRoots() ([]string, error) {
 		case err == nil:
 			roots[i], err = filepath.EvalSymlinks(path)
 			if err != nil {
-				return nil, err
+				return err
 			}
 		case os.IsNotExist(err):
 			roots[i] = path
 		default:
-			return nil, err
+			return err
 		}
 	}
 
-	return unique(roots), nil
-}
-
-func getGHEHosts() []string {
-	return unique(strings.Split(os.Getenv(envGHEHosts), " "))
+	return nil
 }
