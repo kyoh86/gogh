@@ -23,23 +23,18 @@ func GetAll(ctx gogh.Context, update, withSSH, shallow bool, repos gogh.Repos) e
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
 func Get(ctx gogh.Context, update, withSSH, shallow bool, repo *gogh.Repo) error {
 	repoURL := repo.URL(ctx, withSSH)
-	project, err := gogh.FindProject(ctx, repo)
-	switch err {
-	case gogh.ProjectNotFound:
-		log.Println("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
-		project, err := gogh.NewProject(ctx, repo)
-		if err != nil {
-			return err
-		}
-		return gitClone(ctx, repoURL, project.FullPath, shallow)
-	case nil:
-		if update {
-			log.Println("info: Update", project.FullPath)
-			return gitUpdate(ctx, project.FullPath)
-		}
-		log.Println("warn: Exists", project.FullPath)
-		return nil
-	default:
+	project, err := gogh.FindOrNewProject(ctx, repo)
+	if err != nil {
 		return err
 	}
+	if !project.Exists {
+		log.Println("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
+		return gitClone(ctx, repoURL, project.FullPath, shallow)
+	}
+	if update {
+		log.Println("info: Update", project.FullPath)
+		return gitUpdate(ctx, project.FullPath)
+	}
+	log.Println("warn: Exists", project.FullPath)
+	return nil
 }

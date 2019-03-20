@@ -42,17 +42,32 @@ jobs:
           name: install
           command: go install ./...
       - run:
-          name: run vacant local subcommands
-          command: |
-            gogh get kyoh86/gogh
-            echo kyoh86/gogh | gogh bulk
-            gogh pipe echo kyoh86/gogh
-            gogh list
-            gogh find gogh
-            gogh where gogh
-            gogh repo
-            gogh root
-            gogh setup
+          name: run get
+          command: gogh get kyoh86/gogh
+      - run:
+          name: run bulk-get
+          command: echo kyoh86/gogh | gogh bulk-get
+      - run:
+          name: run pipe-get
+          command: gogh pipe-get echo kyoh86/gogh
+      - run:
+          name: run list
+          command: gogh list
+      - run:
+          name: run find
+          command: gogh find gogh
+      - run:
+          name: run where
+          command: gogh where gogh
+      - run:
+          name: run repo
+          command: gogh repo
+      - run:
+          name: run root
+          command: gogh root
+      - run:
+          name: run setup
+          command: gogh setup
 
   release:
     working_directory: /home/projects/github.com/kyoh86/gogh
