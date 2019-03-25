@@ -103,7 +103,7 @@ func (r *Repo) Set(rawRepo string) error {
 		path = strings.Trim(url.Path, "/")
 	} else {
 		r.scheme = "https"
-		r.host = DefaultHost
+		r.host = "" // use default value
 		r.user = nil
 		path = url.Path
 	}
@@ -141,7 +141,10 @@ func (r *Repo) Scheme(_ Context) string {
 }
 
 // Host returns host of the repository
-func (r *Repo) Host(_ Context) string {
+func (r *Repo) Host(ctx Context) string {
+	if r.host == "" {
+		return ctx.GitHubHost()
+	}
 	return r.host
 }
 

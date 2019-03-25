@@ -46,7 +46,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("owner/name spec", func(t *testing.T) {
-		ctx := &implContext{}
+		ctx := &implContext{gitHubHost: "github.com"}
 		spec, err := ParseRepo("kyoh86/gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", spec.FullName(ctx))
@@ -55,7 +55,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("name only spec", func(t *testing.T) {
-		ctx := &implContext{gitHubUser: "kyoh86"}
+		ctx := &implContext{gitHubUser: "kyoh86", gitHubHost: "github.com"}
 		spec, err := ParseRepo("gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", spec.FullName(ctx))

@@ -11,7 +11,7 @@ import (
 
 // NewClient builds GitHub Client with GitHub API token that is configured.
 func NewClient(ctx gogh.Context) (*github.Client, error) {
-	if host := ctx.GitHubHost(); host != "" && host != gogh.DefaultHost {
+	if host := ctx.GitHubHost(); host != "" && host != "github.com" {
 		url := fmt.Sprintf("https://%s/api/v3", host)
 		return github.NewEnterpriseClient(url, url, oauth2Client(ctx))
 	}

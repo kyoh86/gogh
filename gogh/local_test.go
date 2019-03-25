@@ -14,7 +14,7 @@ import (
 func TestParseProject(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := implContext{roots: []string{tmp}, gitHubHost: "github.com"}
+	ctx := implContext{root: []string{tmp}, gitHubHost: "github.com"}
 
 	t.Run("in primary root", func(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
@@ -29,7 +29,7 @@ func TestParseProject(t *testing.T) {
 		tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
 		require.NoError(t, err)
 		ctx := ctx
-		ctx.roots = append(ctx.roots, tmp2)
+		ctx.root = append(ctx.root, tmp2)
 		path := filepath.Join(tmp2, "github.com", "kyoh86", "gogh")
 		p, err := parseProject(&ctx, tmp2, path)
 		require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestParseProject(t *testing.T) {
 func TestFindOrNewProject(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := implContext{roots: []string{tmp}, gitHubUser: "kyoh86", gitHubHost: "github.com"}
+	ctx := implContext{root: []string{tmp}, gitHubUser: "kyoh86", gitHubHost: "github.com"}
 
 	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 
@@ -142,13 +142,13 @@ func TestWalk(t *testing.T) {
 	}
 	t.Run("Not existing root", func(t *testing.T) {
 		t.Run("primary root", func(t *testing.T) {
-			ctx := implContext{roots: []string{"/that/will/never/exist"}}
+			ctx := implContext{root: []string{"/that/will/never/exist"}}
 			require.NoError(t, Walk(&ctx, neverCalled(t)))
 		})
 		t.Run("secondary root", func(t *testing.T) {
 			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 			require.NoError(t, err)
-			ctx := implContext{roots: []string{tmp, "/that/will/never/exist"}}
+			ctx := implContext{root: []string{tmp, "/that/will/never/exist"}}
 			require.NoError(t, Walk(&ctx, neverCalled(t)))
 		})
 	})
@@ -158,7 +158,7 @@ func TestWalk(t *testing.T) {
 			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 			require.NoError(t, err)
 			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-			ctx := implContext{roots: []string{filepath.Join(tmp, "foo")}}
+			ctx := implContext{root: []string{filepath.Join(tmp, "foo")}}
 			require.NoError(t, Walk(&ctx, neverCalled(t)))
 			require.NoError(t, WalkInPrimary(&ctx, neverCalled(t)))
 		})
@@ -166,7 +166,7 @@ func TestWalk(t *testing.T) {
 			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 			require.NoError(t, err)
 			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-			ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}}
+			ctx := implContext{root: []string{tmp, filepath.Join(tmp, "foo")}}
 			require.NoError(t, Walk(&ctx, neverCalled(t)))
 			require.NoError(t, WalkInPrimary(&ctx, neverCalled(t)))
 		})
@@ -178,7 +178,7 @@ func TestWalk(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh--86", "gogh")
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
 
-		ctx := implContext{roots: []string{tmp, filepath.Join(tmp)}}
+		ctx := implContext{root: []string{tmp, filepath.Join(tmp)}}
 		assert.NoError(t, Walk(&ctx, neverCalled(t)))
 	})
 
@@ -189,7 +189,7 @@ func TestWalk(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
 
 		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-		ctx := implContext{roots: []string{tmp, filepath.Join(tmp, "foo")}, gitHubHost: "github.com"}
+		ctx := implContext{root: []string{tmp, filepath.Join(tmp, "foo")}, gitHubHost: "github.com"}
 		err = errors.New("sample error")
 		assert.EqualError(t, Walk(&ctx, func(p *Project) error {
 			assert.Equal(t, path, p.FullPath)
@@ -206,7 +206,7 @@ func TestList_Symlink(t *testing.T) {
 	symDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 
-	ctx := &implContext{roots: []string{root}, gitHubHost: "github.com"}
+	ctx := &implContext{root: []string{root}, gitHubHost: "github.com"}
 
 	err = os.MkdirAll(filepath.Join(root, "github.com", "atom", "atom", ".git"), 0777)
 	require.NoError(t, err)
@@ -240,7 +240,7 @@ func TestQuery(t *testing.T) {
 	path5 := filepath.Join(root2, "github.com", "kyoh86", "gogh")
 	require.NoError(t, os.MkdirAll(filepath.Join(path5, ".git"), 0755))
 
-	ctx := implContext{roots: []string{root1, root2}, gitHubHost: "github.com"}
+	ctx := implContext{root: []string{root1, root2}, gitHubHost: "github.com"}
 
 	assert.NoError(t, Query(&ctx, "never found", Walk, func(*Project) error {
 		t.Fatal("should not be called but...")
