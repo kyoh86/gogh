@@ -37,8 +37,11 @@ func currentConfig(configFile string) (*gogh.Config, *gogh.Config, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-
-	return fileConfig, gogh.MergeConfig(gogh.DefaultConfig(), fileConfig, envarConfig), nil
+	config := gogh.MergeConfig(gogh.DefaultConfig(), fileConfig, envarConfig)
+	if err := gogh.ValidateContext(config); err != nil {
+		return nil, nil, err
+	}
+	return fileConfig, config, nil
 }
 
 func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Context) error) (string, func() error) {
