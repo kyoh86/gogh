@@ -109,15 +109,10 @@ func DefaultConfig() *Config {
 	return &defaultConfig
 }
 
-func LoadFileConfig(filename string) (config *Config, err error) {
-	file, err := os.Open(filename)
-	switch {
-	case err == nil:
-		defer file.Close()
-		config = &Config{}
-		err = toml.NewDecoder(file).Decode(config)
-	case os.IsNotExist(err):
-		err = nil
+func LoadConfig(r io.Reader) (config *Config, err error) {
+	config = &Config{}
+	if err := toml.NewDecoder(r).Decode(config); err != nil {
+		return nil, err
 	}
 	config.VRoot = unique(config.VRoot)
 	return

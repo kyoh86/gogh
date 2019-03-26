@@ -47,6 +47,9 @@ func ValidateRoot(root []string) error {
 			return err
 		}
 	}
+	if len(root) == 0 {
+		return errors.New("no root")
+	}
 
 	return nil
 }

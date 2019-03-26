@@ -1,6 +1,7 @@
 package mainutil
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/alecthomas/kingpin"
@@ -29,8 +30,18 @@ func initLog(ctx gogh.Context) error {
 }
 
 func currentConfig(configFile string) (*gogh.Config, *gogh.Config, error) {
-	fileConfig, err := gogh.LoadFileConfig(configFile)
-	if err != nil {
+	var fileConfig *gogh.Config
+	file, err := os.Open(configFile)
+	switch {
+	case err == nil:
+		defer file.Close()
+		fileConfig, err = gogh.LoadConfig(file)
+		if err != nil {
+			return nil, nil, err
+		}
+	case os.IsNotExist(err):
+		fileConfig = &gogh.Config{}
+	default:
 		return nil, nil, err
 	}
 	envarConfig, err := gogh.GetEnvarConfig()
