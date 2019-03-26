@@ -31,6 +31,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)
+		assert.Equal(t, 2, formatter.Len())
 		var buf bytes.Buffer
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `github.com/kyoh86/foo:github.com/kyoh86/bar:`, buf.String())
@@ -53,6 +54,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)
+		assert.Equal(t, 2, formatter.Len())
 		var buf bytes.Buffer
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `/go/src/github.com/kyoh86/foo:/go/src/github.com/kyoh86/bar:`, buf.String())
@@ -75,6 +77,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)
+		assert.Equal(t, 2, formatter.Len())
 		var buf bytes.Buffer
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `https://github.com/kyoh86/foo:https://github.com/kyoh86/bar:`, buf.String())
@@ -109,6 +112,7 @@ func TestFormatter(t *testing.T) {
 		formatter.Add(project4)
 		formatter.Add(project5)
 		formatter.Add(project6)
+		assert.Equal(t, 6, formatter.Len())
 		var buf bytes.Buffer
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `foo:github.com/kyoh86/bar:kyoh87/bar:example.com/kyoh86/bar:/go/src/github.com/kyoh86/baz:/foo/github.com/kyoh86/baz:`, buf.String())
