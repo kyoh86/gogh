@@ -37,11 +37,11 @@ func ParseRepo(rawRepo string) (*Repo, error) {
 
 // CheckRepoHost that repo is in supported host
 func CheckRepoHost(ctx Context, repo *Repo) error {
-	return ValidateHost(ctx, repo.Host(ctx))
+	return SupportedHost(ctx, repo.Host(ctx))
 }
 
-// ValidateHost that repo is in supported host
-func ValidateHost(ctx Context, host string) error {
+// SupportedHost that repo is in supported host
+func SupportedHost(ctx Context, host string) error {
 	if host == ctx.GitHubHost() {
 		return nil
 	}
@@ -53,30 +53,6 @@ func ValidateHost(ctx Context, host string) error {
 // (golang hasn't supported Perl-like negative look-behind match)
 var hasSchemePattern = regexp.MustCompile("^[^:]+://")
 var scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
-
-var invalidNameRegexp = regexp.MustCompile(`[^\w\-\.]`)
-
-func ValidateName(name string) error {
-	if name == "." || name == ".." {
-		return errors.New("'.' or '..' is reserved name")
-	}
-	if name == "" {
-		return errors.New("empty project name")
-	}
-	if invalidNameRegexp.MatchString(name) {
-		return errors.New("project name may only contain alphanumeric characters, dots or hyphens")
-	}
-	return nil
-}
-
-var validOwnerRegexp = regexp.MustCompile(`^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$`)
-
-func ValidateOwner(owner string) error {
-	if !validOwnerRegexp.MatchString(owner) {
-		return errors.New("owner name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen")
-	}
-	return nil
-}
 
 // Set text as Repo
 func (r *Repo) Set(rawRepo string) error {

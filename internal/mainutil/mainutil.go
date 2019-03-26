@@ -5,19 +5,18 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/comail/colog"
-	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/xdg"
 )
 
-func SetConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
+func setConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
 	cmd.Flag("config", "configuration file").
 		Default(filepath.Join(xdg.CacheHome(), "gogh", "config.toml")).
 		Envar("GOGH_CONFIG").
 		StringVar(configFile)
 }
 
-func InitLog(ctx gogh.Context) error {
+func initLog(ctx gogh.Context) error {
 	lvl, err := colog.ParseLevel(ctx.LogLevel())
 	if err != nil {
 		return err
@@ -29,22 +28,48 @@ func InitLog(ctx gogh.Context) error {
 	return nil
 }
 
+func currentConfig(configFile string) (*gogh.Config, *gogh.Config, error) {
+	fileConfig, err := gogh.LoadFileConfig(configFile)
+	if err != nil {
+		return nil, nil, err
+	}
+	envarConfig, err := gogh.GetEnvarConfig()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return fileConfig, gogh.MergeConfig(gogh.DefaultConfig(), fileConfig, envarConfig), nil
+}
+
 func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Context) error) (string, func() error) {
 	var configFile string
-	SetConfigFlag(cmd, &configFile)
+	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() error {
-		fileConfig, err := command.LoadFileConfig(configFile)
-		if err != nil {
-			return err
-		}
-		envarConfig, err := command.GetEnvarConfig()
+		_, config, err := currentConfig(configFile)
 		if err != nil {
 			return err
 		}
 
-		ctx := command.MergeConfig(command.DefaultConfig(), fileConfig, envarConfig)
+		if err := initLog(config); err != nil {
+			return err
+		}
+		return f(config)
+	}
+}
 
-		InitLog(&ctx)
-		return f(&ctx)
+func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Context, *gogh.Config) error) (string, func() error) {
+	var configFile string
+	setConfigFlag(cmd, &configFile)
+	return cmd.FullCommand(), func() error {
+		fileConfig, config, err := currentConfig(configFile)
+		if err != nil {
+			return err
+		}
+
+		if err := initLog(config); err != nil {
+			return err
+		}
+
+		return f(config, fileConfig)
 	}
 }

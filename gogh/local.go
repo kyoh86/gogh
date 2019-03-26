@@ -161,7 +161,7 @@ func parseProject(ctx Context, root string, fullPath string) (*Project, error) {
 	if len(pathParts) != 3 {
 		return nil, errors.New("not supported project path")
 	}
-	if err := ValidateHost(ctx, pathParts[0]); err != nil {
+	if err := SupportedHost(ctx, pathParts[0]); err != nil {
 		return nil, err
 	}
 	if err := ValidateOwner(pathParts[1]); err != nil {

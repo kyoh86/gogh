@@ -1,4 +1,4 @@
-package command
+package gogh
 
 func unique(items []string) (uniq []string) {
 	dups := map[string]struct{}{}

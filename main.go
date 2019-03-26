@@ -72,35 +72,22 @@ func configGetAll(app *kingpin.Application) (string, func() error) {
 
 func configSet(app *kingpin.Application) (string, func() error) {
 	var (
-		name       string
-		value      string
-		configFile string
+		name  string
+		value string
 	)
 	cmd := app.GetCommand("config").Command("set", "set an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 	cmd.Arg("value", "option value").Required().StringVar(&value)
 
-	mainutil.SetConfigFlag(cmd, &configFile)
-
-	return cmd.FullCommand(), func() error {
-		fileConfig, err := command.LoadFileConfig(configFile)
-		if err != nil {
-			return err
-		}
-		envarConfig, err := command.GetEnvarConfig()
-		if err != nil {
-			return err
-		}
-		ctx := command.MergeConfig(command.DefaultConfig(), fileConfig, envarConfig)
-		mainutil.InitLog(&ctx)
-		config, err := command.ConfigSet(&fileConfig, name, value)
+	return mainutil.WrapConfigurableCommand(cmd, func(ctx gogh.Context, config *gogh.Config) error {
+		config, err := command.ConfigSet(config, name, value)
 		if err != nil {
 			return err
 		}
 		_ = config
 		//TODO: save config
 		return nil
-	}
+	})
 }
 
 func get(app *kingpin.Application) (string, func() error) {
