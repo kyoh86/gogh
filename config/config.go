@@ -1,4 +1,4 @@
-package gogh
+package config
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/joeshaw/envdecode"
+	"github.com/kyoh86/gogh/internal/util"
 	"github.com/pelletier/go-toml"
 )
 
@@ -104,7 +105,7 @@ func DefaultConfig() *Config {
 		for _, gopath := range gopaths {
 			root = append(root, filepath.Join(gopath, "src"))
 		}
-		defaultConfig.VRoot = unique(root)
+		defaultConfig.VRoot = util.UniqueStringArray(root)
 	})
 	return &defaultConfig
 }
@@ -114,7 +115,7 @@ func LoadConfig(r io.Reader) (config *Config, err error) {
 	if err := toml.NewDecoder(r).Decode(config); err != nil {
 		return nil, err
 	}
-	config.VRoot = unique(config.VRoot)
+	config.VRoot = util.UniqueStringArray(config.VRoot)
 	return
 }
 
@@ -124,7 +125,7 @@ func GetEnvarConfig() (config *Config, err error) {
 	if err == envdecode.ErrNoTargetFieldsAreSet {
 		err = nil
 	}
-	config.VRoot = unique(config.VRoot)
+	config.VRoot = util.UniqueStringArray(config.VRoot)
 	return
 }
 

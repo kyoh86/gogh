@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/comail/colog"
 )
 
 var invalidNameRegexp = regexp.MustCompile(`[^\w\-\.]`)
@@ -31,34 +33,47 @@ func ValidateOwner(owner string) error {
 	return nil
 }
 
-func ValidateRoot(root []string) error {
-	for i, v := range root {
-		path := filepath.Clean(v)
-		_, err := os.Stat(path)
-		switch {
-		case err == nil:
-			root[i], err = filepath.EvalSymlinks(path)
-			if err != nil {
-				return err
-			}
-		case os.IsNotExist(err):
-			root[i] = path
-		default:
+func ValidateRoot(root string) (string, error) {
+	path := filepath.Clean(root)
+	_, err := os.Stat(path)
+	switch {
+	case err == nil:
+		return filepath.EvalSymlinks(path)
+	case os.IsNotExist(err):
+		return path, nil
+	default:
+		return "", err
+	}
+}
+
+func ValidateRoots(roots []string) error {
+	for i, v := range roots {
+		r, err := ValidateRoot(v)
+		if err != nil {
 			return err
 		}
+		roots[i] = r
 	}
-	if len(root) == 0 {
+	if len(roots) == 0 {
 		return errors.New("no root")
 	}
 
 	return nil
 }
 
+func ValidateLogLevel(level string) error {
+	_, err := colog.ParseLevel(level)
+	return err
+}
+
 func ValidateContext(ctx Context) error {
-	if err := ValidateRoot(ctx.Root()); err != nil {
+	if err := ValidateRoots(ctx.Root()); err != nil {
 		return err
 	}
 	if err := ValidateOwner(ctx.GitHubUser()); err != nil {
+		return err
+	}
+	if err := ValidateLogLevel(ctx.LogLevel()); err != nil {
 		return err
 	}
 	return nil

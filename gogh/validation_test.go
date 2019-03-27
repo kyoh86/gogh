@@ -26,19 +26,20 @@ func TestValidateOwner(t *testing.T) {
 	assert.NoError(t, ValidateOwner("kyoh86"), "success")
 }
 
-func TestValidateRoot(t *testing.T) {
+func TestValidateRoots(t *testing.T) {
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	assert.EqualError(t, ValidateRoot([]string{}), "no root", "fail when no path in root")
-	assert.NoError(t, ValidateRoot([]string{"/path/to/not/existing", tmp}))
+	assert.EqualError(t, ValidateRoots([]string{}), "no root", "fail when no path in root")
+	assert.NoError(t, ValidateRoots([]string{"/path/to/not/existing", tmp}))
 }
 
 func TestValidateContext(t *testing.T) {
-	ctx := &Config{
-		VRoot: RootConfig{"/path/to/not/existing"},
+	ctx := &implContext{
+		root:     []string{"/path/to/not/existing"},
+		logLevel: "warn",
 	}
-	ctx.GitHub.User = ""
+	ctx.gitHubUser = ""
 	assert.Error(t, ValidateContext(ctx), "fail when empty owner is given")
-	ctx.GitHub.User = "kyoh86"
+	ctx.gitHubUser = "kyoh86"
 	assert.NoError(t, ValidateContext(ctx), "success")
 }

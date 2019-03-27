@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/kyoh86/gogh/gogh"
-	"github.com/kyoh86/gogh/gogh/remote"
+	"github.com/kyoh86/gogh/remote"
 )
 
 // Repos will show a list of repositories for a user.

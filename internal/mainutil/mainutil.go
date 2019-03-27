@@ -6,6 +6,7 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/comail/colog"
+	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/xdg"
 )
@@ -29,26 +30,26 @@ func initLog(ctx gogh.Context) error {
 	return nil
 }
 
-func currentConfig(configFile string) (*gogh.Config, *gogh.Config, error) {
-	var fileConfig *gogh.Config
+func currentConfig(configFile string) (*config.Config, *config.Config, error) {
+	var fileConfig *config.Config
 	file, err := os.Open(configFile)
 	switch {
 	case err == nil:
 		defer file.Close()
-		fileConfig, err = gogh.LoadConfig(file)
+		fileConfig, err = config.LoadConfig(file)
 		if err != nil {
 			return nil, nil, err
 		}
 	case os.IsNotExist(err):
-		fileConfig = &gogh.Config{}
+		fileConfig = &config.Config{}
 	default:
 		return nil, nil, err
 	}
-	envarConfig, err := gogh.GetEnvarConfig()
+	envarConfig, err := config.GetEnvarConfig()
 	if err != nil {
 		return nil, nil, err
 	}
-	config := gogh.MergeConfig(gogh.DefaultConfig(), fileConfig, envarConfig)
+	config := config.MergeConfig(config.DefaultConfig(), fileConfig, envarConfig)
 	if err := gogh.ValidateContext(config); err != nil {
 		return nil, nil, err
 	}
@@ -71,7 +72,7 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Context) error) (string, fu
 	}
 }
 
-func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Context, *gogh.Config) error) (string, func() error) {
+func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*config.Config) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() error {
@@ -84,6 +85,10 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Context, *gogh.
 			return err
 		}
 
-		return f(config, fileConfig)
+		if err = f(fileConfig); err != nil {
+			return err
+		}
+		//TODO: save fileConfig
+		return nil
 	}
 }

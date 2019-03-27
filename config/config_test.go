@@ -1,4 +1,4 @@
-package gogh
+package config
 
 import (
 	"bytes"
@@ -121,14 +121,6 @@ host = "hostx1"
 		assert.NotEmpty(t, cfg.PrimaryRoot())
 		assert.Equal(t, os.Stderr, cfg.Stderr())
 		assert.Equal(t, os.Stdout, cfg.Stdout())
-	})
-
-	t.Run("expect to get invalid user name", func(t *testing.T) {
-		resetEnv(t)
-		require.NoError(t, os.Setenv(envGoghGitHubUser, "-kyoh88"))
-		cfg, err := GetEnvarConfig()
-		require.NoError(t, err)
-		require.NotNil(t, ValidateContext(cfg))
 	})
 
 	t.Run("expects roots are not duplicated", func(t *testing.T) {
