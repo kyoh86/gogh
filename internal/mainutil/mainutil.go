@@ -25,6 +25,7 @@ func initLog(ctx gogh.Context) error {
 	}
 	colog.Register()
 	colog.SetOutput(ctx.Stderr())
+	colog.SetFlags(ctx.LogFlags())
 	colog.SetMinLevel(lvl)
 	colog.SetDefaultLevel(colog.LError)
 	return nil

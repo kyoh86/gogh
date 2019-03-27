@@ -2,24 +2,33 @@ package config
 
 import (
 	"context"
-	"go/build"
 	"io"
+	"log"
 	"os"
-	"path/filepath"
-	"strings"
-	"sync"
-
-	"github.com/joeshaw/envdecode"
-	"github.com/kyoh86/gogh/internal/util"
-	"github.com/pelletier/go-toml"
 )
 
 // Config holds configuration file values.
 type Config struct {
 	context.Context
-	VLogLevel string       `toml:"loglevel,omitempty" env:"GOGH_LOG_LEVEL"`
-	VRoot     RootConfig   `toml:"root,omitempty" env:"GOGH_ROOT"`
-	GitHub    GitHubConfig `toml:"github,omitempty"`
+	Log    LogConfig         `yaml:"log"`
+	VRoot  StringArrayConfig `yaml:"root,omitempty" env:"GOGH_ROOT"`
+	GitHub GitHubConfig      `yaml:"github,omitempty"`
+}
+
+type LogConfig struct {
+	Level        string     `yaml:"level,omitempty" env:"GOGH_LOG_LEVEL"`
+	Date         BoolConfig `yaml:"date,omitempty" env:"GOGH_LOG_DATE"`                 // the date in the local time zone: 2009/01/23
+	Time         BoolConfig `yaml:"time,omitempty" env:"GOGH_LOG_TIME"`                 // the time in the local time zone: 01:23:23
+	MicroSeconds BoolConfig `yaml:"microseconds,omitempty" env:"GOGH_LOG_MICROSECONDS"` // microsecond resolution: 01:23:23.123123.  assumes Ltime.
+	LongFile     BoolConfig `yaml:"longfile,omitempty" env:"GOGH_LOG_LONGFILE"`         // full file name and line number: /a/b/c/d.go:23
+	ShortFile    BoolConfig `yaml:"shortfile,omitempty" env:"GOGH_LOG_SHORTFILE"`       // final file name element and line number: d.go:23. overrides Llongfile
+	UTC          BoolConfig `yaml:"utc,omitempty" env:"GOGH_LOG_UTC"`                   // if Ldate or Ltime is set, use UTC rather than the local time zone
+}
+
+type GitHubConfig struct {
+	Token string `yaml:"token,omitempty" env:"GOGH_GITHUB_TOKEN"`
+	User  string `yaml:"user,omitempty" env:"GOGH_GITHUB_USER"`
+	Host  string `yaml:"host,omitempty" env:"GOGH_GITHUB_HOST"`
 }
 
 func (c *Config) Stdout() io.Writer {
@@ -43,7 +52,30 @@ func (c *Config) GitHubHost() string {
 }
 
 func (c *Config) LogLevel() string {
-	return c.VLogLevel
+	return c.Log.Level
+}
+
+func (c *Config) LogFlags() int {
+	var f int
+	if c.Log.Date.Bool() {
+		f |= log.Ldate
+	}
+	if c.Log.Time.Bool() {
+		f |= log.Ltime
+	}
+	if c.Log.MicroSeconds.Bool() {
+		f |= log.Lmicroseconds
+	}
+	if c.Log.LongFile.Bool() {
+		f |= log.Llongfile
+	}
+	if c.Log.ShortFile.Bool() {
+		f |= log.Lshortfile
+	}
+	if c.Log.UTC.Bool() {
+		f |= log.LUTC
+	}
+	return f
 }
 
 func (c *Config) Root() []string {
@@ -52,105 +84,4 @@ func (c *Config) Root() []string {
 
 func (c *Config) PrimaryRoot() string {
 	return c.VRoot[0]
-}
-
-type RootConfig []string
-
-// Decode implements the interface `envdecode.Decoder`
-func (r *RootConfig) Decode(repl string) error {
-	*r = strings.Split(repl, ":")
-	return nil
-}
-
-type GitHubConfig struct {
-	Token string `toml:"token,omitempty" env:"GOGH_GITHUB_TOKEN"`
-	User  string `toml:"user,omitempty" env:"GOGH_GITHUB_USER"`
-	Host  string `toml:"host,omitempty" env:"GOGH_GITHUB_HOST"`
-}
-
-var (
-	envGoghLogLevel    = "GOGH_LOG_LEVEL"
-	envGoghGitHubUser  = "GOGH_GITHUB_USER"
-	envGoghGitHubToken = "GOGH_GITHUB_TOKEN"
-	envGoghGitHubHost  = "GOGH_GITHUB_HOST"
-	envGoghRoot        = "GOGH_ROOT"
-	envNames           = []string{
-		envGoghLogLevel,
-		envGoghGitHubUser,
-		envGoghGitHubToken,
-		envGoghGitHubHost,
-		envGoghRoot,
-	}
-)
-
-const (
-	// DefaultHost is the default host of the GitHub
-	DefaultHost     = "github.com"
-	DefaultLogLevel = "warn"
-)
-
-var defaultConfig = Config{
-	VLogLevel: DefaultLogLevel,
-	GitHub: GitHubConfig{
-		Host: DefaultHost,
-	},
-}
-
-var initDefaultConfig sync.Once
-
-func DefaultConfig() *Config {
-	initDefaultConfig.Do(func() {
-		gopaths := filepath.SplitList(build.Default.GOPATH)
-		root := make([]string, 0, len(gopaths))
-		for _, gopath := range gopaths {
-			root = append(root, filepath.Join(gopath, "src"))
-		}
-		defaultConfig.VRoot = util.UniqueStringArray(root)
-	})
-	return &defaultConfig
-}
-
-func LoadConfig(r io.Reader) (config *Config, err error) {
-	config = &Config{}
-	if err := toml.NewDecoder(r).Decode(config); err != nil {
-		return nil, err
-	}
-	config.VRoot = util.UniqueStringArray(config.VRoot)
-	return
-}
-
-func GetEnvarConfig() (config *Config, err error) {
-	config = &Config{}
-	err = envdecode.Decode(config)
-	if err == envdecode.ErrNoTargetFieldsAreSet {
-		err = nil
-	}
-	config.VRoot = util.UniqueStringArray(config.VRoot)
-	return
-}
-
-func MergeConfig(base *Config, override ...*Config) *Config {
-	c := base
-	for _, o := range override {
-		c.VLogLevel = mergeStringOption(c.VLogLevel, o.VLogLevel)
-		c.VRoot = mergeStringArrayOption(c.VRoot, o.VRoot)
-		c.GitHub.Token = mergeStringOption(c.GitHub.Token, o.GitHub.Token)
-		c.GitHub.User = mergeStringOption(c.GitHub.User, o.GitHub.User)
-		c.GitHub.Host = mergeStringOption(c.GitHub.Host, o.GitHub.Host)
-	}
-	return c
-}
-
-func mergeStringOption(base, override string) string {
-	if override != "" {
-		return override
-	}
-	return base
-}
-
-func mergeStringArrayOption(base, override []string) []string {
-	if len(override) > 0 {
-		return override
-	}
-	return base
 }

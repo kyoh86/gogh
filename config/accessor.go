@@ -122,7 +122,7 @@ var (
 	}
 
 	LogLevelOptionAccessor = OptionAccessor{
-		optionName: "loglevel",
+		optionName: "log.level",
 		getter: func(ctx gogh.Context) string {
 			return ctx.LogLevel()
 		},
@@ -133,11 +133,11 @@ var (
 			if err := gogh.ValidateLogLevel(value); err != nil {
 				return err
 			}
-			config.VLogLevel = value
+			config.Log.Level = value
 			return nil
 		},
 		unsetter: func(config *Config) error {
-			config.VLogLevel = ""
+			config.Log.Level = ""
 			return nil
 		},
 	}

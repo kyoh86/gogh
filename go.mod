@@ -16,12 +16,11 @@ require (
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
-	github.com/pelletier/go-toml v1.2.0
 	github.com/pkg/errors v0.8.0
 	github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709
 	golang.org/x/net v0.0.0-20190311183353-d8887717615a // indirect
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/yaml.v2 v2.2.1 // indirect
+	gopkg.in/yaml.v2 v2.2.1
 )

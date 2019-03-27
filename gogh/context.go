@@ -14,6 +14,7 @@ type Context interface {
 	GitHubToken() string
 	GitHubHost() string
 	LogLevel() string
+	LogFlags() int // log.Lxxx flags
 	Root() []string
 	PrimaryRoot() string
 }
