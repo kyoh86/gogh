@@ -13,8 +13,8 @@ func (c *PathListOption) Decode(repl string) error {
 }
 
 // MarshalYAML implements the interface `yaml.Marshaler`
-func (c *PathListOption) MarshalYAML() (interface{}, error) {
-	return []string(*c), nil
+func (c PathListOption) MarshalYAML() (interface{}, error) {
+	return []string(c), nil
 }
 
 // UnmarshalYAML implements the interface `yaml.Unmarshaler`
