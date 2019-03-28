@@ -38,6 +38,12 @@ func TestParseProject(t *testing.T) {
 		assert.False(t, p.IsInPrimaryRoot(&ctx))
 	})
 
+	t.Run("expect to fail to parse relative path", func(t *testing.T) {
+		r, err := parseProject(&ctx, tmp, "./github.com/kyoh86/gogh/gogh")
+		assert.NotNil(t, err)
+		assert.Nil(t, r)
+	})
+
 	t.Run("expect to fail to parse unsupported depth", func(t *testing.T) {
 		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/kyoh86/gogh/gogh"))
 		assert.NotNil(t, err)
