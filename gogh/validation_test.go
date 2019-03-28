@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/kyoh86/gogh/internal/context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -36,34 +37,34 @@ func TestValidateRoots(t *testing.T) {
 
 func TestValidateContext(t *testing.T) {
 	t.Run("invalid root", func(t *testing.T) {
-		ctx := &implContext{
-			root:       []string{"/\x00"},
-			logLevel:   "warn",
-			gitHubUser: "kyoh86",
+		ctx := &context.MockContext{
+			MRoot:       []string{"/\x00"},
+			MLogLevel:   "warn",
+			MGitHubUser: "kyoh86",
 		}
 		assert.Error(t, ValidateContext(ctx))
 	})
 	t.Run("invalid owner", func(t *testing.T) {
-		ctx := &implContext{
-			root:       []string{"/path/to/not/existing"},
-			logLevel:   "warn",
-			gitHubUser: "",
+		ctx := &context.MockContext{
+			MRoot:       []string{"/path/to/not/existing"},
+			MLogLevel:   "warn",
+			MGitHubUser: "",
 		}
 		assert.Error(t, ValidateContext(ctx))
 	})
 	t.Run("invalid loglevel", func(t *testing.T) {
-		ctx := &implContext{
-			root:       []string{"/path/to/not/existing"},
-			logLevel:   "invalid",
-			gitHubUser: "kyoh86",
+		ctx := &context.MockContext{
+			MRoot:       []string{"/path/to/not/existing"},
+			MLogLevel:   "invalid",
+			MGitHubUser: "kyoh86",
 		}
 		assert.Error(t, ValidateContext(ctx))
 	})
 	t.Run("valid context", func(t *testing.T) {
-		ctx := &implContext{
-			root:       []string{"/path/to/not/existing"},
-			logLevel:   "warn",
-			gitHubUser: "kyoh86",
+		ctx := &context.MockContext{
+			MRoot:       []string{"/path/to/not/existing"},
+			MLogLevel:   "warn",
+			MGitHubUser: "kyoh86",
 		}
 		assert.NoError(t, ValidateContext(ctx))
 	})

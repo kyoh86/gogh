@@ -8,6 +8,7 @@ import (
 // Context holds configurations and environments
 type Context interface {
 	context.Context
+	Stdin() io.Reader
 	Stdout() io.Writer
 	Stderr() io.Writer
 	GitHubUser() string

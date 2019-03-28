@@ -15,7 +15,7 @@ func Fork(ctx gogh.Context, update, withSSH, shallow, noRemote bool, remoteName 
 		return err
 	}
 	log.Printf("info: Forking a repository")
-	if err := hubFork(ctx, project, repo, noRemote, remoteName, organization); err != nil {
+	if err := hub().Fork(ctx, project, repo, noRemote, remoteName, organization); err != nil {
 		return err
 	}
 

@@ -31,6 +31,10 @@ type GitHubConfig struct {
 	Host  string `yaml:"host,omitempty" env:"GOGH_GITHUB_HOST"`
 }
 
+func (c *Config) Stdin() io.Reader {
+	return os.Stdin
+}
+
 func (c *Config) Stdout() io.Writer {
 	return os.Stdout
 }

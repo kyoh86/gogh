@@ -2,62 +2,32 @@ package command
 
 import (
 	"net/url"
-	"os"
-	"os/exec"
-	"path/filepath"
 
+	"github.com/kyoh86/gogh/command/internal"
 	"github.com/kyoh86/gogh/gogh"
 )
 
-func gitInit(
-	ctx gogh.Context,
-	bare bool,
-	template string,
-	separateGitDir string,
-	shared gogh.ProjectShared,
-	directory string,
-) error {
-	args := []string{"init"}
-	args = appendIf(args, "--bare", bare)
-	args = appendIfFilled(args, "--template", template)
-	args = appendIfFilled(args, "--separate-git-dir", separateGitDir)
-	args = appendIfFilled(args, "--shared", shared.String())
-	args = append(args, directory)
-	cmd := exec.Command("git", args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = ctx.Stdout()
-	cmd.Stderr = ctx.Stderr()
-	return execCommand(cmd)
+type gitClient interface {
+	Init(ctx gogh.Context, project *gogh.Project, bare bool, template, separateGitDir string, shared gogh.ProjectShared) error
+	Clone(ctx gogh.Context, project *gogh.Project, remote *url.URL, shallow bool) error
+	Update(ctx gogh.Context, project *gogh.Project) error
 }
 
-// gitClone git repository
-func gitClone(ctx gogh.Context, remote *url.URL, local string, shallow bool) error {
-	dir, _ := filepath.Split(local)
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
-		return err
-	}
-
-	args := []string{"clone"}
-	if shallow {
-		args = append(args, "--depth", "1")
-	}
-	args = append(args, remote.String(), local)
-
-	cmd := exec.Command("git", args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = ctx.Stdout()
-	cmd.Stderr = ctx.Stderr()
-	return execCommand(cmd)
+type mockGitClient struct {
 }
 
-// gitUpdate pulls changes from remote repository
-func gitUpdate(ctx gogh.Context, local string) error {
-	cmd := exec.Command("git", "pull", "--ff-only")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = ctx.Stdout()
-	cmd.Stderr = ctx.Stderr()
-	cmd.Dir = local
+func (i *mockGitClient) Init(ctx gogh.Context, project *gogh.Project, bare bool, template, separateGitDir string, shared gogh.ProjectShared) error {
+	return nil
+}
 
-	return execCommand(cmd)
+func (i *mockGitClient) Clone(ctx gogh.Context, project *gogh.Project, remote *url.URL, shallow bool) error {
+	return nil
+}
+
+func (i *mockGitClient) Update(ctx gogh.Context, project *gogh.Project) error { return nil }
+
+var defaultGitClient gitClient = &internal.GitClient{}
+
+func git() gitClient {
+	return defaultGitClient
 }
