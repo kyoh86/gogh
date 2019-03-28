@@ -21,6 +21,7 @@ func TestAccessor(t *testing.T) {
 		cfg.Log.Level = "trace"
 		cfg.Log.Date = TrueOption
 		cfg.Log.Time = FalseOption
+		cfg.Log.MicroSeconds = TrueOption
 		cfg.Log.LongFile = TrueOption
 		cfg.Log.ShortFile = TrueOption
 		cfg.Log.UTC = TrueOption
@@ -34,6 +35,7 @@ func TestAccessor(t *testing.T) {
 		assert.Equal(t, "trace", mustOption(Option("log.level")).Get(&cfg))
 		assert.Equal(t, "yes", mustOption(Option("log.date")).Get(&cfg))
 		assert.Equal(t, "no", mustOption(Option("log.time")).Get(&cfg))
+		assert.Equal(t, "yes", mustOption(Option("log.microseconds")).Get(&cfg))
 		assert.Equal(t, "yes", mustOption(Option("log.longfile")).Get(&cfg))
 		assert.Equal(t, "yes", mustOption(Option("log.shortfile")).Get(&cfg))
 		assert.Equal(t, "yes", mustOption(Option("log.utc")).Get(&cfg))
@@ -51,6 +53,7 @@ func TestAccessor(t *testing.T) {
 		assert.NoError(t, mustOption(Option("log.level")).Put(&cfg, "trace"))
 		assert.NoError(t, mustOption(Option("log.date")).Put(&cfg, "yes"))
 		assert.NoError(t, mustOption(Option("log.time")).Put(&cfg, "no"))
+		assert.NoError(t, mustOption(Option("log.microseconds")).Put(&cfg, "yes"))
 		assert.NoError(t, mustOption(Option("log.longfile")).Put(&cfg, "yes"))
 		assert.NoError(t, mustOption(Option("log.shortfile")).Put(&cfg, "yes"))
 		assert.NoError(t, mustOption(Option("log.utc")).Put(&cfg, "yes"))
@@ -64,6 +67,8 @@ func TestAccessor(t *testing.T) {
 		assert.True(t, cfg.LogDate())
 		assert.Equal(t, FalseOption, cfg.Log.Time)
 		assert.False(t, cfg.LogTime())
+		assert.Equal(t, TrueOption, cfg.Log.MicroSeconds)
+		assert.True(t, cfg.LogMicroSeconds())
 		assert.Equal(t, TrueOption, cfg.Log.LongFile)
 		assert.True(t, cfg.LogLongFile())
 		assert.Equal(t, TrueOption, cfg.Log.ShortFile)
@@ -86,6 +91,7 @@ func TestAccessor(t *testing.T) {
 		assert.EqualError(t, mustOption(Option("log.level")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("log.date")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("log.time")).Put(&cfg, ""), "empty value")
+		assert.EqualError(t, mustOption(Option("log.microseconds")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("log.longfile")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("log.shortfile")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("log.utc")).Put(&cfg, ""), "empty value")
@@ -95,6 +101,7 @@ func TestAccessor(t *testing.T) {
 		assert.Error(t, mustOption(Option("log.level")).Put(&cfg, "foobar"), "invalid log level")
 		assert.Error(t, mustOption(Option("log.date")).Put(&cfg, "invalid value"), "invalid value")
 		assert.Error(t, mustOption(Option("log.time")).Put(&cfg, "invalid value"), "invalid value")
+		assert.Error(t, mustOption(Option("log.microseconds")).Put(&cfg, "invalid value"), "invalid value")
 		assert.Error(t, mustOption(Option("log.longfile")).Put(&cfg, "invalid value"), "invalid value")
 		assert.Error(t, mustOption(Option("log.shortfile")).Put(&cfg, "invalid value"), "invalid value")
 		assert.Error(t, mustOption(Option("log.utc")).Put(&cfg, "invalid value"), "invalid value")
@@ -106,6 +113,7 @@ func TestAccessor(t *testing.T) {
 		assert.Equal(t, "", cfg.Log.Level)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.Date)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.Time)
+		assert.Equal(t, EmptyBoolOption, cfg.Log.MicroSeconds)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.LongFile)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.ShortFile)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.UTC)
@@ -120,6 +128,7 @@ func TestAccessor(t *testing.T) {
 		cfg.Log.Level = "trace"
 		cfg.Log.Date = TrueOption
 		cfg.Log.Time = FalseOption
+		cfg.Log.MicroSeconds = TrueOption
 		cfg.Log.LongFile = TrueOption
 		cfg.Log.ShortFile = TrueOption
 		cfg.Log.UTC = TrueOption
@@ -138,6 +147,7 @@ func TestAccessor(t *testing.T) {
 		assert.Equal(t, "", cfg.Log.Level)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.Date)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.Time)
+		assert.Equal(t, EmptyBoolOption, cfg.Log.MicroSeconds)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.LongFile)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.ShortFile)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.UTC)

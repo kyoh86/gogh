@@ -18,6 +18,7 @@ type Context interface {
 	LogFlags() int // log.Lxxx flags
 	LogDate() bool
 	LogTime() bool
+	LogMicroSeconds() bool
 	LogLongFile() bool
 	LogShortFile() bool
 	LogUTC() bool

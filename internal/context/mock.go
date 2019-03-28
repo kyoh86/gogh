@@ -7,20 +7,21 @@ import (
 
 type MockContext struct {
 	context.Context
-	MStdin        io.Reader
-	MStdout       io.Writer
-	MStderr       io.Writer
-	MGitHubUser   string
-	MGitHubToken  string
-	MGitHubHost   string
-	MLogLevel     string
-	MLogFlags     int
-	MLogDate      bool
-	MLogTime      bool
-	MLogLongFile  bool
-	MLogShortFile bool
-	MLogUTC       bool
-	MRoot         []string
+	MStdin           io.Reader
+	MStdout          io.Writer
+	MStderr          io.Writer
+	MGitHubUser      string
+	MGitHubToken     string
+	MGitHubHost      string
+	MLogLevel        string
+	MLogFlags        int
+	MLogDate         bool
+	MLogTime         bool
+	MLogMicroSeconds bool
+	MLogLongFile     bool
+	MLogShortFile    bool
+	MLogUTC          bool
+	MRoot            []string
 }
 
 func (c *MockContext) Stdin() io.Reader {
@@ -55,11 +56,12 @@ func (c *MockContext) LogFlags() int {
 	return c.MLogFlags
 }
 
-func (c *MockContext) LogDate() bool      { return c.MLogDate }
-func (c *MockContext) LogTime() bool      { return c.MLogTime }
-func (c *MockContext) LogLongFile() bool  { return c.MLogLongFile }
-func (c *MockContext) LogShortFile() bool { return c.MLogShortFile }
-func (c *MockContext) LogUTC() bool       { return c.MLogUTC }
+func (c *MockContext) LogDate() bool         { return c.MLogDate }
+func (c *MockContext) LogTime() bool         { return c.MLogTime }
+func (c *MockContext) LogMicroSeconds() bool { return c.MLogMicroSeconds }
+func (c *MockContext) LogLongFile() bool     { return c.MLogLongFile }
+func (c *MockContext) LogShortFile() bool    { return c.MLogShortFile }
+func (c *MockContext) LogUTC() bool          { return c.MLogUTC }
 
 func (c *MockContext) Root() []string {
 	return c.MRoot
