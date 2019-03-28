@@ -9,24 +9,24 @@ import (
 
 // Config holds configuration file values.
 type Config struct {
-	context.Context
-	Log    LogConfig         `yaml:"log"`
-	VRoot  StringArrayConfig `yaml:"root,omitempty" env:"GOGH_ROOT"`
-	GitHub GitHubConfig      `yaml:"github,omitempty"`
+	context.Context `yaml:"-"`
+	Log             LogConfig      `yaml:"log,omitempty"`
+	VRoot           PathListOption `yaml:"root,omitempty" env:"GOGH_ROOT"`
+	GitHub          GitHubConfig   `yaml:"github,omitempty"`
 }
 
 type LogConfig struct {
 	Level        string     `yaml:"level,omitempty" env:"GOGH_LOG_LEVEL"`
-	Date         BoolConfig `yaml:"date,omitempty" env:"GOGH_LOG_DATE"`                 // the date in the local time zone: 2009/01/23
-	Time         BoolConfig `yaml:"time,omitempty" env:"GOGH_LOG_TIME"`                 // the time in the local time zone: 01:23:23
-	MicroSeconds BoolConfig `yaml:"microseconds,omitempty" env:"GOGH_LOG_MICROSECONDS"` // microsecond resolution: 01:23:23.123123.  assumes Ltime.
-	LongFile     BoolConfig `yaml:"longfile,omitempty" env:"GOGH_LOG_LONGFILE"`         // full file name and line number: /a/b/c/d.go:23
-	ShortFile    BoolConfig `yaml:"shortfile,omitempty" env:"GOGH_LOG_SHORTFILE"`       // final file name element and line number: d.go:23. overrides Llongfile
-	UTC          BoolConfig `yaml:"utc,omitempty" env:"GOGH_LOG_UTC"`                   // if Ldate or Ltime is set, use UTC rather than the local time zone
+	Date         BoolOption `yaml:"date" env:"GOGH_LOG_DATE"`                 // the date in the local time zone: 2009/01/23
+	Time         BoolOption `yaml:"time" env:"GOGH_LOG_TIME"`                 // the time in the local time zone: 01:23:23
+	MicroSeconds BoolOption `yaml:"microseconds" env:"GOGH_LOG_MICROSECONDS"` // microsecond resolution: 01:23:23.123123.  assumes Ltime.
+	LongFile     BoolOption `yaml:"longfile" env:"GOGH_LOG_LONGFILE"`         // full file name and line number: /a/b/c/d.go:23
+	ShortFile    BoolOption `yaml:"shortfile" env:"GOGH_LOG_SHORTFILE"`       // final file name element and line number: d.go:23. overrides Llongfile
+	UTC          BoolOption `yaml:"utc" env:"GOGH_LOG_UTC"`                   // if Ldate or Ltime is set, use UTC rather than the local time zone
 }
 
 type GitHubConfig struct {
-	Token string `yaml:"token,omitempty" env:"GOGH_GITHUB_TOKEN"`
+	Token string `yaml:"-" env:"GOGH_GITHUB_TOKEN"`
 	User  string `yaml:"user,omitempty" env:"GOGH_GITHUB_USER"`
 	Host  string `yaml:"host,omitempty" env:"GOGH_GITHUB_HOST"`
 }
@@ -77,6 +77,12 @@ func (c *Config) LogFlags() int {
 	}
 	return f
 }
+
+func (c *Config) LogDate() bool      { return c.Log.Date.Bool() }
+func (c *Config) LogTime() bool      { return c.Log.Time.Bool() }
+func (c *Config) LogLongFile() bool  { return c.Log.LongFile.Bool() }
+func (c *Config) LogShortFile() bool { return c.Log.ShortFile.Bool() }
+func (c *Config) LogUTC() bool       { return c.Log.UTC.Bool() }
 
 func (c *Config) Root() []string {
 	return c.VRoot

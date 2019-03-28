@@ -1,22 +1,24 @@
 package config
 
-import "strings"
+import (
+	"path/filepath"
+)
 
-type StringArrayConfig []string
+type PathListOption []string
 
 // Decode implements the interface `envdecode.Decoder`
-func (c *StringArrayConfig) Decode(repl string) error {
-	*c = strings.Split(repl, ":")
+func (c *PathListOption) Decode(repl string) error {
+	*c = filepath.SplitList(repl)
 	return nil
 }
 
 // MarshalYAML implements the interface `yaml.Marshaler`
-func (c *StringArrayConfig) MarshalYAML() (interface{}, error) {
+func (c *PathListOption) MarshalYAML() (interface{}, error) {
 	return []string(*c), nil
 }
 
 // UnmarshalYAML implements the interface `yaml.Unmarshaler`
-func (c *StringArrayConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (c *PathListOption) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var parsed []string
 	if err := unmarshal(&parsed); err != nil {
 		return err

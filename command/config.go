@@ -4,41 +4,40 @@ import (
 	"fmt"
 
 	"github.com/kyoh86/gogh/config"
-	"github.com/kyoh86/gogh/gogh"
 )
 
-func ConfigGetAll(ctx gogh.Context) error {
-	cfg := config.DefaultConfigAccessor
-	for _, name := range cfg.OptionNames() {
-		acc, _ := cfg.Accessor(name) // ignore error: cfg.OptionNames covers all accessor
-		value := acc.Get(ctx)
+func ConfigGetAll(cfg *config.Config) error {
+	acc := config.DefaultAccessor
+	for _, name := range acc.OptionNames() {
+		opt, _ := acc.Option(name) // ignore error: acc.OptionNames covers all accessor
+		value := opt.Get(cfg)
 		fmt.Printf("%s = %s\n", name, value)
 	}
 	return nil
 }
 
-func ConfigGet(ctx gogh.Context, optionName string) error {
-	acc, err := config.DefaultConfigAccessor.Accessor(optionName)
+func ConfigGet(cfg *config.Config, optionName string) error {
+	opt, err := config.DefaultAccessor.Option(optionName)
 	if err != nil {
 		return err
 	}
-	value := acc.Get(ctx)
+	value := opt.Get(cfg)
 	fmt.Printf("%s = %s\n", optionName, value)
 	return nil
 }
 
-func ConfigSet(cfg *config.Config, optionName, optionValue string) error {
-	acc, err := config.DefaultConfigAccessor.Accessor(optionName)
+func ConfigPut(cfg *config.Config, optionName, optionValue string) error {
+	opt, err := config.DefaultAccessor.Option(optionName)
 	if err != nil {
 		return err
 	}
-	return acc.Set(cfg, optionValue)
+	return opt.Put(cfg, optionValue)
 }
 
 func ConfigUnset(cfg *config.Config, optionName string) error {
-	acc, err := config.DefaultConfigAccessor.Accessor(optionName)
+	opt, err := config.DefaultAccessor.Option(optionName)
 	if err != nil {
 		return err
 	}
-	return acc.Unset(cfg)
+	return opt.Unset(cfg)
 }

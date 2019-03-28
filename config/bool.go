@@ -1,53 +1,46 @@
 package config
 
-import "strconv"
-
-type BoolConfig struct {
-	filled bool
-	value  bool
-}
-
-var (
-	TrueConfig = BoolConfig{
-		filled: true,
-		value:  true,
-	}
-	FalseConfig = BoolConfig{
-		filled: true,
-		value:  false,
-	}
+import (
+	"errors"
+	"strings"
 )
 
-func (c BoolConfig) Bool() bool {
-	return c.filled && c.value
+type BoolOption string
+
+var (
+	TrueOption      = BoolOption("yes")
+	FalseOption     = BoolOption("no")
+	EmptyBoolOption = BoolOption("")
+)
+
+func (c BoolOption) String() string {
+	return string(c)
+}
+
+func (c BoolOption) Bool() bool {
+	return c == TrueOption
 }
 
 // Decode implements the interface `envdecode.Decoder`
-func (c *BoolConfig) Decode(repl string) error {
-	parsed, err := strconv.ParseBool(repl)
-	if err != nil {
-		return err
+func (c *BoolOption) Decode(repl string) error {
+	switch strings.ToLower(repl) {
+	case "yes", "no", "":
+		*c = BoolOption(repl)
+		return nil
 	}
-	c.filled = true
-	c.value = parsed
-	return nil
+	return errors.New("invalid type")
 }
 
 // MarshalYAML implements the interface `yaml.Marshaler`
-func (c *BoolConfig) MarshalYAML() (interface{}, error) {
-	if !c.filled {
-		return nil, nil
-	}
-	return c.value, nil
+func (c BoolOption) MarshalYAML() (interface{}, error) {
+	return string(c), nil
 }
 
 // UnmarshalYAML implements the interface `yaml.Unmarshaler`
-func (c *BoolConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var parsed bool
+func (c *BoolOption) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var parsed string
 	if err := unmarshal(&parsed); err != nil {
 		return err
 	}
-	c.filled = true
-	c.value = parsed
-	return nil
+	return c.Decode(parsed)
 }

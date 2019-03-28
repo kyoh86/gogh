@@ -55,9 +55,6 @@ func TestFormatter(t *testing.T) {
 		formatter.Add(project1)
 		formatter.Add(project2)
 		assert.Equal(t, 2, formatter.Len())
-		var buf bytes.Buffer
-		require.NoError(t, formatter.PrintAll(&buf, ":"))
-		assert.Equal(t, `/go/src/github.com/kyoh86/foo:/go/src/github.com/kyoh86/bar:`, buf.String())
 	})
 	t.Run("writer error by full path formatter", func(t *testing.T) {
 		project, err := parseProject(&implContext{gitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")

@@ -27,7 +27,7 @@ func main() {
 	for _, f := range []func(*kingpin.Application) (string, func() error){
 		configGetAll,
 		configGet,
-		configSet,
+		configPut,
 		configUnset,
 
 		get,
@@ -55,8 +55,8 @@ func main() {
 func configGetAll(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get-all", "get all options")
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.ConfigGetAll(ctx)
+	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
+		return command.ConfigGetAll(cfg)
 	})
 }
 
@@ -67,22 +67,22 @@ func configGet(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get", "get an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.ConfigGet(ctx, name)
+	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
+		return command.ConfigGet(cfg, name)
 	})
 }
 
-func configSet(app *kingpin.Application) (string, func() error) {
+func configPut(app *kingpin.Application) (string, func() error) {
 	var (
 		name  string
 		value string
 	)
-	cmd := app.GetCommand("config").Command("set", "set an option")
+	cmd := app.GetCommand("config").Command("put", "put an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 	cmd.Arg("value", "option value").Required().StringVar(&value)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(config *config.Config) error {
-		return command.ConfigSet(config, name, value)
+	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
+		return command.ConfigPut(cfg, name, value)
 	})
 }
 
@@ -93,8 +93,8 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("unset", "unset an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(config *config.Config) error {
-		return command.ConfigUnset(config, name)
+	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
+		return command.ConfigUnset(cfg, name)
 	})
 }
 

@@ -7,13 +7,19 @@ import (
 
 type implContext struct {
 	context.Context
-	stdout      io.Writer
-	stderr      io.Writer
-	gitHubUser  string
-	gitHubToken string
-	gitHubHost  string
-	logLevel    string
-	root        []string
+	stdout       io.Writer
+	stderr       io.Writer
+	gitHubUser   string
+	gitHubToken  string
+	gitHubHost   string
+	logLevel     string
+	logFlags     int
+	logDate      bool
+	logTime      bool
+	logLongFile  bool
+	logShortFile bool
+	logUTC       bool
+	root         []string
 }
 
 func (c *implContext) Stdout() io.Writer {
@@ -39,6 +45,16 @@ func (c *implContext) GitHubHost() string {
 func (c *implContext) LogLevel() string {
 	return c.logLevel
 }
+
+func (c *implContext) LogFlags() int {
+	return c.logFlags
+}
+
+func (c *implContext) LogDate() bool      { return c.logDate }
+func (c *implContext) LogTime() bool      { return c.logTime }
+func (c *implContext) LogLongFile() bool  { return c.logLongFile }
+func (c *implContext) LogShortFile() bool { return c.logShortFile }
+func (c *implContext) LogUTC() bool       { return c.logUTC }
 
 func (c *implContext) Root() []string {
 	return c.root

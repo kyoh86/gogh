@@ -2,19 +2,20 @@ package config
 
 import (
 	"errors"
+	"path/filepath"
 	"strings"
 
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/util"
 )
 
-type ConfigAccessor map[string]OptionAccessor
+type Accessor map[string]OptionAccessor
 
 var (
-	DefaultConfigAccessor = NewConfigAccessor()
+	DefaultAccessor = NewAccessor()
 )
 
-func (m ConfigAccessor) Accessor(optionName string) (*OptionAccessor, error) {
+func (m Accessor) Option(optionName string) (*OptionAccessor, error) {
 	a, ok := m[optionName]
 	if !ok {
 		return nil, InvalidOptionName
@@ -22,7 +23,7 @@ func (m ConfigAccessor) Accessor(optionName string) (*OptionAccessor, error) {
 	return &a, nil
 }
 
-func (m ConfigAccessor) OptionNames() []string {
+func (m Accessor) OptionNames() []string {
 	arr := make([]string, 0, len(m))
 	for o := range m {
 		arr = append(arr, o)
@@ -32,30 +33,34 @@ func (m ConfigAccessor) OptionNames() []string {
 
 type OptionAccessor struct {
 	optionName string
-	getter     func(ctx gogh.Context) string
-	setter     func(config *Config, value string) error
-	unsetter   func(config *Config) error
+	getter     func(cfg *Config) string
+	putter     func(cfg *Config, value string) error
+	unsetter   func(cfg *Config) error
 }
 
-func (a OptionAccessor) Get(ctx gogh.Context) string            { return a.getter(ctx) }
-func (a OptionAccessor) Set(config *Config, value string) error { return a.setter(config, value) }
-func (a OptionAccessor) Unset(config *Config) error             { return a.unsetter(config) }
+func (a OptionAccessor) Get(cfg *Config) string              { return a.getter(cfg) }
+func (a OptionAccessor) Put(cfg *Config, value string) error { return a.putter(cfg, value) }
+func (a OptionAccessor) Unset(cfg *Config) error             { return a.unsetter(cfg) }
 
 var (
 	EmptyValue           = errors.New("empty value")
 	RemoveFromMonoOption = errors.New("removing from mono option")
 	InvalidOptionName    = errors.New("invalid option name")
+	TokenMustNotSave     = errors.New("token must not save")
 )
 
-// TODO: generate
-
-func NewConfigAccessor() ConfigAccessor {
-	m := ConfigAccessor{}
+func NewAccessor() Accessor {
+	m := Accessor{}
 	for _, a := range []OptionAccessor{
 		GitHubUserOptionAccessor,
 		GitHubTokenOptionAccessor,
 		GitHubHostOptionAccessor,
 		LogLevelOptionAccessor,
+		LogDateOptionAccessor,
+		LogTimeOptionAccessor,
+		LogLongFileOptionAccessor,
+		LogShortFileOptionAccessor,
+		LogUTCOptionAccessor,
 		RootOptionAccessor,
 	} {
 		m[a.optionName] = a
@@ -66,100 +71,183 @@ func NewConfigAccessor() ConfigAccessor {
 var (
 	GitHubUserOptionAccessor = OptionAccessor{
 		optionName: "github.user",
-		getter: func(ctx gogh.Context) string {
-			return ctx.GitHubUser()
+		getter: func(cfg *Config) string {
+			return cfg.GitHubUser()
 		},
-		setter: func(config *Config, value string) error {
+		putter: func(cfg *Config, value string) error {
 			if value == "" {
 				return EmptyValue
 			}
 			if err := gogh.ValidateOwner(value); err != nil {
 				return err
 			}
-			config.GitHub.User = value
+			cfg.GitHub.User = value
 			return nil
 		},
-		unsetter: func(config *Config) error {
-			config.GitHub.User = ""
+		unsetter: func(cfg *Config) error {
+			cfg.GitHub.User = ""
 			return nil
 		},
 	}
 
 	GitHubTokenOptionAccessor = OptionAccessor{
 		optionName: "github.token",
-		getter: func(ctx gogh.Context) string {
-			return ctx.GitHubToken()
+		getter: func(cfg *Config) string {
+			return cfg.GitHubToken()
 		},
-		setter: func(config *Config, value string) error {
-			if value == "" {
-				return EmptyValue
-			}
-			config.GitHub.Token = value
-			return nil
+		putter: func(cfg *Config, value string) error {
+			return TokenMustNotSave
 		},
-		unsetter: func(config *Config) error {
-			config.GitHub.Token = ""
+		unsetter: func(cfg *Config) error {
+			cfg.GitHub.Token = ""
 			return nil
 		},
 	}
 
 	GitHubHostOptionAccessor = OptionAccessor{
 		optionName: "github.host",
-		getter: func(ctx gogh.Context) string {
-			return ctx.GitHubHost()
+		getter: func(cfg *Config) string {
+			return cfg.GitHubHost()
 		},
-		setter: func(config *Config, value string) error {
+		putter: func(cfg *Config, value string) error {
 			if value == "" {
 				return EmptyValue
 			}
-			config.GitHub.Host = value
+			cfg.GitHub.Host = value
 			return nil
 		},
-		unsetter: func(config *Config) error {
-			config.GitHub.Host = ""
+		unsetter: func(cfg *Config) error {
+			cfg.GitHub.Host = ""
 			return nil
 		},
 	}
 
 	LogLevelOptionAccessor = OptionAccessor{
 		optionName: "log.level",
-		getter: func(ctx gogh.Context) string {
-			return ctx.LogLevel()
+		getter: func(cfg *Config) string {
+			return cfg.LogLevel()
 		},
-		setter: func(config *Config, value string) error {
+		putter: func(cfg *Config, value string) error {
 			if value == "" {
 				return EmptyValue
 			}
 			if err := gogh.ValidateLogLevel(value); err != nil {
 				return err
 			}
-			config.Log.Level = value
+			cfg.Log.Level = value
 			return nil
 		},
-		unsetter: func(config *Config) error {
-			config.Log.Level = ""
+		unsetter: func(cfg *Config) error {
+			cfg.Log.Level = ""
+			return nil
+		},
+	}
+
+	LogDateOptionAccessor = OptionAccessor{
+		optionName: "log.date",
+		getter: func(cfg *Config) string {
+			return cfg.Log.Date.String()
+		},
+		putter: func(cfg *Config, value string) error {
+			if value == "" {
+				return EmptyValue
+			}
+			return cfg.Log.Date.Decode(value)
+		},
+		unsetter: func(cfg *Config) error {
+			cfg.Log.Date = EmptyBoolOption
+			return nil
+		},
+	}
+
+	LogTimeOptionAccessor = OptionAccessor{
+		optionName: "log.time",
+		getter: func(cfg *Config) string {
+			return cfg.Log.Time.String()
+		},
+		putter: func(cfg *Config, value string) error {
+			if value == "" {
+				return EmptyValue
+			}
+			return cfg.Log.Time.Decode(value)
+		},
+		unsetter: func(cfg *Config) error {
+			cfg.Log.Time = EmptyBoolOption
+			return nil
+		},
+	}
+
+	LogLongFileOptionAccessor = OptionAccessor{
+		optionName: "log.longfile",
+		getter: func(cfg *Config) string {
+			return cfg.Log.LongFile.String()
+		},
+		putter: func(cfg *Config, value string) error {
+			if value == "" {
+				return EmptyValue
+			}
+			return cfg.Log.LongFile.Decode(value)
+		},
+		unsetter: func(cfg *Config) error {
+			cfg.Log.LongFile = EmptyBoolOption
+			return nil
+		},
+	}
+
+	LogShortFileOptionAccessor = OptionAccessor{
+		optionName: "log.shortfile",
+		getter: func(cfg *Config) string {
+			return cfg.Log.ShortFile.String()
+		},
+		putter: func(cfg *Config, value string) error {
+			if value == "" {
+				return EmptyValue
+			}
+			return cfg.Log.ShortFile.Decode(value)
+		},
+		unsetter: func(cfg *Config) error {
+			cfg.Log.ShortFile = EmptyBoolOption
+			return nil
+		},
+	}
+
+	LogUTCOptionAccessor = OptionAccessor{
+		optionName: "log.utc",
+		getter: func(cfg *Config) string {
+			return cfg.Log.UTC.String()
+		},
+		putter: func(cfg *Config, value string) error {
+			if value == "" {
+				return EmptyValue
+			}
+			return cfg.Log.UTC.Decode(value)
+		},
+		unsetter: func(cfg *Config) error {
+			cfg.Log.UTC = EmptyBoolOption
 			return nil
 		},
 	}
 
 	RootOptionAccessor = OptionAccessor{
 		optionName: "root",
-		getter: func(ctx gogh.Context) string {
-			return strings.Join(ctx.Root(), "\n")
+		getter: func(cfg *Config) string {
+			return strings.Join(cfg.Root(), string(filepath.ListSeparator))
 		},
-		setter: func(config *Config, value string) error {
+		putter: func(cfg *Config, value string) error {
 			if value == "" {
 				return EmptyValue
 			}
-			path, err := gogh.ValidateRoot(value)
-			if err != nil {
+
+			list := filepath.SplitList(value)
+
+			if err := gogh.ValidateRoots(list); err != nil {
 				return err
 			}
-			config.VRoot = util.UniqueStringArray(append(config.VRoot, path))
+			cfg.VRoot = util.UniqueStringArray(append(cfg.VRoot, list...))
 			return nil
 		},
-		unsetter: func(config *Config) error {
-			config.VRoot = nil
+		unsetter: func(cfg *Config) error {
+			cfg.VRoot = nil
 			return nil
 		},
 	}

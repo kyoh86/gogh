@@ -31,6 +31,7 @@ func TestValidateRoots(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualError(t, ValidateRoots([]string{}), "no root", "fail when no path in root")
 	assert.NoError(t, ValidateRoots([]string{"/path/to/not/existing", tmp}))
+	assert.Error(t, ValidateRoots([]string{"\x00", tmp}))
 }
 
 func TestValidateContext(t *testing.T) {

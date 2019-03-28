@@ -15,6 +15,11 @@ type Context interface {
 	GitHubHost() string
 	LogLevel() string
 	LogFlags() int // log.Lxxx flags
+	LogDate() bool
+	LogTime() bool
+	LogLongFile() bool
+	LogShortFile() bool
+	LogUTC() bool
 	Root() []string
 	PrimaryRoot() string
 }
