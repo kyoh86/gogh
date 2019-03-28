@@ -48,6 +48,7 @@ func TestBoolOption(t *testing.T) {
 		assert.Equal(t, EmptyBoolOption, testValue.Bool)
 
 		assert.Error(t, yaml.Unmarshal([]byte(`bool: invalid`), &testValue))
+		assert.Error(t, yaml.Unmarshal([]byte("bool:\n- invalid"), &testValue))
 	})
 	t.Run("get from envar", func(t *testing.T) {
 		var testValue testStruct

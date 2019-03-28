@@ -93,6 +93,11 @@ func TestFindOrNewProject(t *testing.T) {
 		_, err := NewProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, `not supported host: "example.com"`)
 	})
+	t.Run("fail with invalid root", func(t *testing.T) {
+		ctx := implContext{root: []string{"/\x00"}, gitHubUser: "kyoh86", gitHubHost: "github.com"}
+		_, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		assert.Error(t, err)
+	})
 	t.Run("existing repository", func(t *testing.T) {
 		// Create same name repository
 		require.NoError(t, os.MkdirAll(filepath.Join(tmp, "github.com", "kyoh85", "gogh", ".git"), 0755))

@@ -35,12 +35,36 @@ func TestValidateRoots(t *testing.T) {
 }
 
 func TestValidateContext(t *testing.T) {
-	ctx := &implContext{
-		root:     []string{"/path/to/not/existing"},
-		logLevel: "warn",
-	}
-	ctx.gitHubUser = ""
-	assert.Error(t, ValidateContext(ctx), "fail when empty owner is given")
-	ctx.gitHubUser = "kyoh86"
-	assert.NoError(t, ValidateContext(ctx), "success")
+	t.Run("invalid root", func(t *testing.T) {
+		ctx := &implContext{
+			root:       []string{"/\x00"},
+			logLevel:   "warn",
+			gitHubUser: "kyoh86",
+		}
+		assert.Error(t, ValidateContext(ctx))
+	})
+	t.Run("invalid owner", func(t *testing.T) {
+		ctx := &implContext{
+			root:       []string{"/path/to/not/existing"},
+			logLevel:   "warn",
+			gitHubUser: "",
+		}
+		assert.Error(t, ValidateContext(ctx))
+	})
+	t.Run("invalid loglevel", func(t *testing.T) {
+		ctx := &implContext{
+			root:       []string{"/path/to/not/existing"},
+			logLevel:   "invalid",
+			gitHubUser: "kyoh86",
+		}
+		assert.Error(t, ValidateContext(ctx))
+	})
+	t.Run("valid context", func(t *testing.T) {
+		ctx := &implContext{
+			root:       []string{"/path/to/not/existing"},
+			logLevel:   "warn",
+			gitHubUser: "kyoh86",
+		}
+		assert.NoError(t, ValidateContext(ctx))
+	})
 }
