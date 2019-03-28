@@ -6,30 +6,15 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/gogh"
-	"github.com/kyoh86/gogh/internal/util"
+	"github.com/thoas/go-funk"
 )
-
-type Accessor map[string]OptionAccessor
 
 var (
-	DefaultAccessor = NewAccessor()
+	EmptyValue           = errors.New("empty value")
+	RemoveFromMonoOption = errors.New("removing from mono option")
+	InvalidOptionName    = errors.New("invalid option name")
+	TokenMustNotSave     = errors.New("token must not save")
 )
-
-func (m Accessor) Option(optionName string) (*OptionAccessor, error) {
-	a, ok := m[optionName]
-	if !ok {
-		return nil, InvalidOptionName
-	}
-	return &a, nil
-}
-
-func (m Accessor) OptionNames() []string {
-	arr := make([]string, 0, len(m))
-	for o := range m {
-		arr = append(arr, o)
-	}
-	return arr
-}
 
 type OptionAccessor struct {
 	optionName string
@@ -43,33 +28,48 @@ func (a OptionAccessor) Put(cfg *Config, value string) error { return a.putter(c
 func (a OptionAccessor) Unset(cfg *Config) error             { return a.unsetter(cfg) }
 
 var (
-	EmptyValue           = errors.New("empty value")
-	RemoveFromMonoOption = errors.New("removing from mono option")
-	InvalidOptionName    = errors.New("invalid option name")
-	TokenMustNotSave     = errors.New("token must not save")
+	configAccessor  map[string]OptionAccessor
+	optionNames     []string
+	optionAccessors = []OptionAccessor{
+		rootOptionAccessor,
+		gitHubHostOptionAccessor,
+		gitHubUserOptionAccessor,
+		gitHubTokenOptionAccessor,
+		logLevelOptionAccessor,
+		logDateOptionAccessor,
+		logTimeOptionAccessor,
+		logMicroSecondsOptionAccessor,
+		logLongFileOptionAccessor,
+		logShortFileOptionAccessor,
+		logUTCOptionAccessor,
+	}
 )
 
-func NewAccessor() Accessor {
-	m := Accessor{}
-	for _, a := range []OptionAccessor{
-		GitHubUserOptionAccessor,
-		GitHubTokenOptionAccessor,
-		GitHubHostOptionAccessor,
-		LogLevelOptionAccessor,
-		LogDateOptionAccessor,
-		LogTimeOptionAccessor,
-		LogLongFileOptionAccessor,
-		LogShortFileOptionAccessor,
-		LogUTCOptionAccessor,
-		RootOptionAccessor,
-	} {
+func init() {
+	m := map[string]OptionAccessor{}
+	n := make([]string, 0, len(optionAccessors))
+	for _, a := range optionAccessors {
+		n = append(n, a.optionName)
 		m[a.optionName] = a
 	}
-	return m
+	configAccessor = m
+	optionNames = n
+}
+
+func Option(optionName string) (*OptionAccessor, error) {
+	a, ok := configAccessor[optionName]
+	if !ok {
+		return nil, InvalidOptionName
+	}
+	return &a, nil
+}
+
+func OptionNames() []string {
+	return optionNames
 }
 
 var (
-	GitHubUserOptionAccessor = OptionAccessor{
+	gitHubUserOptionAccessor = OptionAccessor{
 		optionName: "github.user",
 		getter: func(cfg *Config) string {
 			return cfg.GitHubUser()
@@ -90,7 +90,7 @@ var (
 		},
 	}
 
-	GitHubTokenOptionAccessor = OptionAccessor{
+	gitHubTokenOptionAccessor = OptionAccessor{
 		optionName: "github.token",
 		getter: func(cfg *Config) string {
 			return cfg.GitHubToken()
@@ -104,7 +104,7 @@ var (
 		},
 	}
 
-	GitHubHostOptionAccessor = OptionAccessor{
+	gitHubHostOptionAccessor = OptionAccessor{
 		optionName: "github.host",
 		getter: func(cfg *Config) string {
 			return cfg.GitHubHost()
@@ -122,7 +122,7 @@ var (
 		},
 	}
 
-	LogLevelOptionAccessor = OptionAccessor{
+	logLevelOptionAccessor = OptionAccessor{
 		optionName: "log.level",
 		getter: func(cfg *Config) string {
 			return cfg.LogLevel()
@@ -143,7 +143,7 @@ var (
 		},
 	}
 
-	LogDateOptionAccessor = OptionAccessor{
+	logDateOptionAccessor = OptionAccessor{
 		optionName: "log.date",
 		getter: func(cfg *Config) string {
 			return cfg.Log.Date.String()
@@ -160,7 +160,7 @@ var (
 		},
 	}
 
-	LogTimeOptionAccessor = OptionAccessor{
+	logTimeOptionAccessor = OptionAccessor{
 		optionName: "log.time",
 		getter: func(cfg *Config) string {
 			return cfg.Log.Time.String()
@@ -177,7 +177,24 @@ var (
 		},
 	}
 
-	LogLongFileOptionAccessor = OptionAccessor{
+	logMicroSecondsOptionAccessor = OptionAccessor{
+		optionName: "log.microseconds",
+		getter: func(cfg *Config) string {
+			return cfg.Log.MicroSeconds.String()
+		},
+		putter: func(cfg *Config, value string) error {
+			if value == "" {
+				return EmptyValue
+			}
+			return cfg.Log.MicroSeconds.Decode(value)
+		},
+		unsetter: func(cfg *Config) error {
+			cfg.Log.MicroSeconds = EmptyBoolOption
+			return nil
+		},
+	}
+
+	logLongFileOptionAccessor = OptionAccessor{
 		optionName: "log.longfile",
 		getter: func(cfg *Config) string {
 			return cfg.Log.LongFile.String()
@@ -194,7 +211,7 @@ var (
 		},
 	}
 
-	LogShortFileOptionAccessor = OptionAccessor{
+	logShortFileOptionAccessor = OptionAccessor{
 		optionName: "log.shortfile",
 		getter: func(cfg *Config) string {
 			return cfg.Log.ShortFile.String()
@@ -211,7 +228,7 @@ var (
 		},
 	}
 
-	LogUTCOptionAccessor = OptionAccessor{
+	logUTCOptionAccessor = OptionAccessor{
 		optionName: "log.utc",
 		getter: func(cfg *Config) string {
 			return cfg.Log.UTC.String()
@@ -228,7 +245,7 @@ var (
 		},
 	}
 
-	RootOptionAccessor = OptionAccessor{
+	rootOptionAccessor = OptionAccessor{
 		optionName: "root",
 		getter: func(cfg *Config) string {
 			return strings.Join(cfg.Root(), string(filepath.ListSeparator))
@@ -243,7 +260,7 @@ var (
 			if err := gogh.ValidateRoots(list); err != nil {
 				return err
 			}
-			cfg.VRoot = util.UniqueStringArray(append(cfg.VRoot, list...))
+			cfg.VRoot = funk.UniqString(append(cfg.VRoot, list...))
 			return nil
 		},
 		unsetter: func(cfg *Config) error {
