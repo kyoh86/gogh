@@ -62,20 +62,16 @@ func findProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
 
 // FindOrNewProject will find a project (local repository) that matches exactly or create new one.
 func FindOrNewProject(ctx Context, repo *Repo) (*Project, error) {
-	switch p, err := FindProject(ctx, repo); err {
-	case ProjectNotFound:
-		// No repository found, returning new one
-		return NewProject(ctx, repo)
-	case nil:
-		return p, nil
-	default:
-		return nil, err
-	}
+	return findOrNewProject(ctx, repo, Walk)
 }
 
 // FindOrNewProjectInPrimary will find a project (local repository) that matches exactly or create new one.
 func FindOrNewProjectInPrimary(ctx Context, repo *Repo) (*Project, error) {
-	switch p, err := FindProjectInPrimary(ctx, repo); err {
+	return findOrNewProject(ctx, repo, WalkInPrimary)
+}
+
+func findOrNewProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
+	switch p, err := findProject(ctx, repo, walker); err {
 	case ProjectNotFound:
 		// No repository found, returning new one
 		return NewProject(ctx, repo)

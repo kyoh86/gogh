@@ -72,20 +72,43 @@ func TestParseProject(t *testing.T) {
 }
 
 func TestFindOrNewProject(t *testing.T) {
-	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+	tmp1, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := context.MockContext{MRoot: []string{tmp}, MGitHubUser: "kyoh86", MGitHubHost: "github.com"}
+	defer os.RemoveAll(tmp1)
+	tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmp2)
+	ctx := context.MockContext{MRoot: []string{tmp1, tmp2}, MGitHubUser: "kyoh86", MGitHubHost: "github.com"}
 
-	path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
+	path := filepath.Join(tmp1, "github.com", "kyoh86", "gogh")
 
 	t.Run("not existing repository", func(t *testing.T) {
 		p, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
 		assert.Equal(t, path, p.FullPath)
+		assert.False(t, p.Exists)
+		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
+	})
+	t.Run("not existing repository (in primary)", func(t *testing.T) {
+		// Create same name repository in other root
+		inOther := filepath.Join(tmp2, "github.com", "kyoh86", "gogh", ".git")
+		require.NoError(t, os.MkdirAll(inOther, 0755))
+		defer os.RemoveAll(inOther)
+		p, err := FindOrNewProjectInPrimary(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		require.NoError(t, err)
+		assert.Equal(t, path, p.FullPath)
+		assert.False(t, p.Exists)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 	})
 	t.Run("not existing repository with FindProject", func(t *testing.T) {
 		_, err := FindProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		assert.EqualError(t, err, "project not found")
+	})
+	t.Run("not existing repository with FindProjectInPrimary", func(t *testing.T) {
+		inOther := filepath.Join(tmp2, "github.com", "kyoh86", "gogh", ".git")
+		require.NoError(t, os.MkdirAll(inOther, 0755))
+		defer os.RemoveAll(inOther)
+		_, err := FindProjectInPrimary(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, "project not found")
 	})
 	t.Run("not supported host URL by FindProject", func(t *testing.T) {
@@ -107,9 +130,9 @@ func TestFindOrNewProject(t *testing.T) {
 	})
 	t.Run("existing repository", func(t *testing.T) {
 		// Create same name repository
-		require.NoError(t, os.MkdirAll(filepath.Join(tmp, "github.com", "kyoh85", "gogh", ".git"), 0755))
+		require.NoError(t, os.MkdirAll(filepath.Join(tmp1, "github.com", "kyoh85", "gogh", ".git"), 0755))
 		// Create different name repository
-		require.NoError(t, os.MkdirAll(filepath.Join(tmp, "github.com", "kyoh86", "foo", ".git"), 0755))
+		require.NoError(t, os.MkdirAll(filepath.Join(tmp1, "github.com", "kyoh86", "foo", ".git"), 0755))
 		// Create target repository
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
 		defer func() {
@@ -132,7 +155,7 @@ func TestFindOrNewProject(t *testing.T) {
 		t.Run("shortest pricese name (name only)", func(t *testing.T) {
 			p, err := FindOrNewProject(&ctx, parseURL(t, "foo"))
 			require.NoError(t, err)
-			assert.Equal(t, filepath.Join(tmp, "github.com", "kyoh86", "foo"), p.FullPath)
+			assert.Equal(t, filepath.Join(tmp1, "github.com", "kyoh86", "foo"), p.FullPath)
 			assert.Equal(t, []string{"foo", "kyoh86/foo", "github.com/kyoh86/foo"}, p.Subpaths())
 		})
 	})
