@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/alecthomas/assert"
 	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 

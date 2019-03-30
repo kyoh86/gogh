@@ -1,8 +1,10 @@
 package context
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"io/ioutil"
 )
 
 type MockContext struct {
@@ -25,15 +27,24 @@ type MockContext struct {
 }
 
 func (c *MockContext) Stdin() io.Reader {
-	return c.MStdin
+	if r := c.MStdin; r != nil {
+		return r
+	}
+	return &bytes.Buffer{}
 }
 
 func (c *MockContext) Stdout() io.Writer {
-	return c.MStdout
+	if w := c.MStdout; w != nil {
+		return w
+	}
+	return ioutil.Discard
 }
 
 func (c *MockContext) Stderr() io.Writer {
-	return c.MStderr
+	if w := c.MStderr; w != nil {
+		return w
+	}
+	return ioutil.Discard
 }
 
 func (c *MockContext) GitHubUser() string {

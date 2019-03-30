@@ -1,17 +1,17 @@
 package command
 
 import (
-	"bytes"
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/alecthomas/assert"
 	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/context"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,12 +20,10 @@ func TestEmpty(t *testing.T) {
 	defaultHubClient = &mockHubClient{}
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
+	defer os.RemoveAll(tmp)
 	ctx := &context.MockContext{
 		MRoot:       []string{tmp},
 		MGitHubHost: "github.com",
-		MStdin:      &bytes.Buffer{},
-		MStdout:     ioutil.Discard,
-		MStderr:     ioutil.Discard,
 	}
 
 	assert.NoError(t, Pipe(ctx, false, false, false, "echo", []string{"kyoh86/gogh"}))
@@ -51,6 +49,8 @@ func TestEmpty(t *testing.T) {
 	// assert.NoError(t, Repos(ctx, "", true, false, false, "", "", ""))
 	assert.NoError(t, Setup(ctx, "gogogh", "zsh"))
 	assert.NoError(t, List(ctx, gogh.ProjectListFormatShort, false, ""))
+	proj1 := filepath.Join(tmp, "github.com", "kyoh86", "gogh", ".git")
+	require.NoError(t, os.MkdirAll(proj1, 0755))
 	assert.NoError(t, Where(ctx, false, false, "gogh"))
 	assert.NoError(t, Root(ctx, false))
 }
