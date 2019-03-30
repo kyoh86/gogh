@@ -19,8 +19,6 @@ func Fork(ctx gogh.Context, update, withSSH, shallow, noRemote bool, remoteName 
 		return err
 	}
 
-	if _, err := fmt.Fprintln(ctx.Stdout(), project.RelPath); err != nil {
-		return err
-	}
+	fmt.Fprintln(ctx.Stdout(), project.RelPath)
 	return nil
 }
