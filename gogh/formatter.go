@@ -94,9 +94,7 @@ func (f *shortListFormatter) Len() int {
 
 func (f *shortListFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, f.shortName(project)+sep); err != nil {
-			return err
-		}
+		fmt.Fprint(w, f.shortName(project)+sep)
 	}
 	return nil
 }
@@ -129,9 +127,7 @@ type fullPathFormatter struct {
 
 func (f *fullPathFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, project.FullPath+sep); err != nil {
-			return err
-		}
+		fmt.Fprint(w, project.FullPath+sep)
 	}
 	return nil
 }
@@ -142,9 +138,7 @@ type urlFormatter struct {
 
 func (f *urlFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, "https://"+project.RelPath+sep); err != nil {
-			return err
-		}
+		fmt.Fprint(w, "https://"+project.RelPath+sep)
 	}
 	return nil
 }
@@ -155,9 +149,7 @@ type relPathFormatter struct {
 
 func (f *relPathFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, project.RelPath+sep); err != nil {
-			return err
-		}
+		fmt.Fprint(w, project.RelPath+sep)
 	}
 	return nil
 }
