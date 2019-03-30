@@ -2,11 +2,11 @@ package gogh
 
 import (
 	"bytes"
-	"errors"
 	"io/ioutil"
 	"testing"
 
 	"github.com/kyoh86/gogh/internal/context"
+	"github.com/kyoh86/gogh/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -43,7 +43,7 @@ func TestFormatter(t *testing.T) {
 		formatter, err := ProjectListFormatRelPath.Formatter()
 		require.NoError(t, err)
 		formatter.Add(project)
-		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
 	})
 
 	t.Run("full path formatter", func(t *testing.T) {
@@ -63,7 +63,7 @@ func TestFormatter(t *testing.T) {
 		formatter, err := ProjectListFormatFullPath.Formatter()
 		require.NoError(t, err)
 		formatter.Add(project)
-		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
 	})
 
 	t.Run("url formatter", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestFormatter(t *testing.T) {
 		formatter, err := ProjectListFormatURL.Formatter()
 		require.NoError(t, err)
 		formatter.Add(project)
-		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
 	})
 
 	t.Run("short formatter", func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestFormatter(t *testing.T) {
 		formatter, err := ProjectListFormatShort.Formatter()
 		require.NoError(t, err)
 		formatter.Add(project)
-		require.EqualError(t, formatter.PrintAll(&invalidWriter{}, ""), "invalid writer")
+		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
 	})
 
 	t.Run("invalid formatter", func(t *testing.T) {
@@ -129,11 +129,4 @@ func TestFormatter(t *testing.T) {
 		assert.Errorf(t, err, "%q is invalid project format", "dummy")
 	})
 
-}
-
-type invalidWriter struct {
-}
-
-func (w *invalidWriter) Write([]byte) (int, error) {
-	return 0, errors.New("invalid writer")
 }
