@@ -8,20 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func ExampleSetupForZsh() {
+func ExampleSetup() {
 	if err := command.Setup(&config.Config{}, "gogh-cd", "zsh"); err != nil {
+		panic(err)
+	}
+	if err := command.Setup(&config.Config{}, "gogh-cd", "bash"); err != nil {
 		panic(err)
 	}
 	// Output:
 	// function gogh-cd { cd $(gogh find $@) }
 	// eval "$(gogh --completion-script-zsh)"
-}
-
-func ExampleSetupForBash() {
-	if err := command.Setup(&config.Config{}, "gogh-cd", "bash"); err != nil {
-		panic(err)
-	}
-	// Output:
 	// function gogh-cd { cd $(gogh find $@) }
 	// eval "$(gogh --completion-script-bash)"
 }
