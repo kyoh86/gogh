@@ -8,6 +8,7 @@ import (
 // ProjectListFormatter holds project list to print them.
 type ProjectListFormatter interface {
 	Add(*Project)
+	Len() int
 	PrintAll(io.Writer, string) error
 }
 
@@ -87,6 +88,10 @@ func (f *shortListFormatter) Add(r *Project) {
 	f.list = append(f.list, r)
 }
 
+func (f *shortListFormatter) Len() int {
+	return len(f.list)
+}
+
 func (f *shortListFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
 		if _, err := fmt.Fprint(w, f.shortName(project)+sep); err != nil {
@@ -112,6 +117,10 @@ type simpleCollector struct {
 
 func (f *simpleCollector) Add(r *Project) {
 	f.list = append(f.list, r)
+}
+
+func (f *simpleCollector) Len() int {
+	return len(f.list)
 }
 
 type fullPathFormatter struct {

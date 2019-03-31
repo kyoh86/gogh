@@ -3,13 +3,14 @@ package gogh
 import (
 	"testing"
 
+	"github.com/kyoh86/gogh/internal/context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRepo(t *testing.T) {
 	t.Run("full HTTPS URL", func(t *testing.T) {
-		ctx := &implContext{}
+		ctx := &context.MockContext{}
 		spec, err := ParseRepo("https://github.com/kyoh86/pusheen-explorer")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
@@ -19,7 +20,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("scp like URL 1", func(t *testing.T) {
-		ctx := &implContext{}
+		ctx := &context.MockContext{}
 		spec, err := ParseRepo("git@github.com:kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
@@ -28,7 +29,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("scp like URL 2", func(t *testing.T) {
-		ctx := &implContext{}
+		ctx := &context.MockContext{}
 		spec, err := ParseRepo("git@github.com:/kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
@@ -37,7 +38,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("scp like URL 3", func(t *testing.T) {
-		ctx := &implContext{}
+		ctx := &context.MockContext{}
 		spec, err := ParseRepo("github.com:kyoh86/pusheen-explorer.git")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/pusheen-explorer", spec.FullName(ctx))
@@ -46,7 +47,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("owner/name spec", func(t *testing.T) {
-		ctx := &implContext{}
+		ctx := &context.MockContext{MGitHubHost: "github.com"}
 		spec, err := ParseRepo("kyoh86/gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", spec.FullName(ctx))
@@ -55,7 +56,7 @@ func TestRepo(t *testing.T) {
 	})
 
 	t.Run("name only spec", func(t *testing.T) {
-		ctx := &implContext{userName: "kyoh86"}
+		ctx := &context.MockContext{MGitHubUser: "kyoh86", MGitHubHost: "github.com"}
 		spec, err := ParseRepo("gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", spec.FullName(ctx))
@@ -146,29 +147,15 @@ func TestRepos(t *testing.T) {
 
 func TestCheckRepoHost(t *testing.T) {
 	t.Run("valid GitHub URL", func(t *testing.T) {
-		ctx := implContext{}
+		ctx := context.MockContext{MGitHubHost: "github.com"}
 		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://github.com/kyoh86/gogh")))
 	})
-	t.Run("valid GHE URL", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://example.com/kyoh86/gogh")))
-	})
 	t.Run("valid GitHub URL with trailing slashes", func(t *testing.T) {
-		ctx := implContext{}
+		ctx := context.MockContext{MGitHubHost: "github.com"}
 		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://github.com/kyoh86/gogh/")))
 	})
-	t.Run("valid GHE URL with trailing slashes", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
-		assert.NoError(t, CheckRepoHost(&ctx, parseURL(t, "https://example.com/kyoh86/gogh/")))
-	})
 	t.Run("not supported host URL", func(t *testing.T) {
-		ctx := implContext{
-			gheHosts: []string{"example.com"},
-		}
+		ctx := context.MockContext{MGitHubHost: "github.com"}
 		assert.EqualError(t, CheckRepoHost(&ctx, parseURL(t, "https://kyoh86.work/kyoh86/gogh")), `not supported host: "kyoh86.work"`)
 	})
 }
