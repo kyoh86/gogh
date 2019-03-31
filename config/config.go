@@ -31,6 +31,10 @@ type GitHubConfig struct {
 	Host  string `yaml:"host,omitempty" env:"GOGH_GITHUB_HOST"`
 }
 
+func (c *Config) Stdin() io.Reader {
+	return os.Stdin
+}
+
 func (c *Config) Stdout() io.Writer {
 	return os.Stdout
 }
@@ -78,11 +82,12 @@ func (c *Config) LogFlags() int {
 	return f
 }
 
-func (c *Config) LogDate() bool      { return c.Log.Date.Bool() }
-func (c *Config) LogTime() bool      { return c.Log.Time.Bool() }
-func (c *Config) LogLongFile() bool  { return c.Log.LongFile.Bool() }
-func (c *Config) LogShortFile() bool { return c.Log.ShortFile.Bool() }
-func (c *Config) LogUTC() bool       { return c.Log.UTC.Bool() }
+func (c *Config) LogDate() bool         { return c.Log.Date.Bool() }
+func (c *Config) LogTime() bool         { return c.Log.Time.Bool() }
+func (c *Config) LogMicroSeconds() bool { return c.Log.MicroSeconds.Bool() }
+func (c *Config) LogLongFile() bool     { return c.Log.LongFile.Bool() }
+func (c *Config) LogShortFile() bool    { return c.Log.ShortFile.Bool() }
+func (c *Config) LogUTC() bool          { return c.Log.UTC.Bool() }
 
 func (c *Config) Root() []string {
 	return c.VRoot

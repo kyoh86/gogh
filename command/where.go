@@ -11,9 +11,11 @@ import (
 func Where(ctx gogh.Context, primary bool, exact bool, query string) error {
 	log.Printf("info: Finding a repository by query %s", query)
 
-	var walk gogh.Walker = gogh.Walk
+	walk := gogh.Walk
+	finder := gogh.FindProject
 	if primary {
 		walk = gogh.WalkInPrimary
+		finder = gogh.FindProjectInPrimary
 	}
 
 	formatter := gogh.FullPathFormatter()
@@ -23,7 +25,7 @@ func Where(ctx gogh.Context, primary bool, exact bool, query string) error {
 		if err != nil {
 			return err
 		}
-		project, err := gogh.FindProject(ctx, repo)
+		project, err := finder(ctx, repo)
 		if err != nil {
 			return err
 		}
@@ -37,16 +39,20 @@ func Where(ctx gogh.Context, primary bool, exact bool, query string) error {
 		}
 	}
 
-	if formatter.Len() > 1 {
+	switch l := formatter.Len(); {
+	case l == 1:
+		if err := formatter.PrintAll(ctx.Stdout(), "\n"); err != nil {
+			return err
+		}
+	case l < 1:
+		log.Println("error: No repository is found")
+		return gogh.ProjectNotFound
+	default:
 		log.Println("error: Multiple repositories are found")
 		if err := formatter.PrintAll(ctx.Stderr(), "\n"); err != nil {
 			return err
 		}
 		return errors.New("try more precise name")
-	} else {
-		if err := formatter.PrintAll(ctx.Stdout(), "\n"); err != nil {
-			return err
-		}
 	}
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/joeshaw/envdecode"
-	"github.com/kyoh86/gogh/internal/util"
+	"github.com/thoas/go-funk"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -63,7 +63,7 @@ func DefaultConfig() *Config {
 		for _, gopath := range gopaths {
 			root = append(root, filepath.Join(gopath, "src"))
 		}
-		defaultConfig.VRoot = util.UniqueStringArray(root)
+		defaultConfig.VRoot = funk.UniqString(root)
 	})
 	return &defaultConfig
 }
@@ -73,7 +73,7 @@ func LoadConfig(r io.Reader) (config *Config, err error) {
 	if err := yaml.NewDecoder(r).Decode(config); err != nil {
 		return nil, err
 	}
-	config.VRoot = util.UniqueStringArray(config.VRoot)
+	config.VRoot = funk.UniqString(config.VRoot)
 	return
 }
 
@@ -87,6 +87,6 @@ func GetEnvarConfig() (config *Config, err error) {
 	if err == envdecode.ErrNoTargetFieldsAreSet {
 		err = nil
 	}
-	config.VRoot = util.UniqueStringArray(config.VRoot)
+	config.VRoot = funk.UniqString(config.VRoot)
 	return
 }

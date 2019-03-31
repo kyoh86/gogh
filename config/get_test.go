@@ -28,6 +28,7 @@ func TestDefaultConfig(t *testing.T) {
 	assert.NotEmpty(t, cfg.PrimaryRoot())
 	assert.Equal(t, os.Stderr, cfg.Stderr())
 	assert.Equal(t, os.Stdout, cfg.Stdout())
+	assert.Equal(t, os.Stdin, cfg.Stdin())
 }
 
 func TestLoadConfig(t *testing.T) {
