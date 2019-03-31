@@ -57,19 +57,19 @@ brew install gogh
 
 ## CONFIGURATIONS
 
-It's possible to change targets by a preference **TOML file**.
+It's possible to change targets by a preference **YAML file**.
 If you don't set `--config` flag or `GOGH_CONFIG` environment variable,
-`gogh` loads configurations from `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/config.toml`
+`gogh` loads configurations from `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/config.yaml`
 
 Each of propoerties are able to be overwritten by environment variables.
 
-### (REQUIRED) GitHubUser
+### (REQUIRED) `github.user`
 
 A name of your GitHub user (i.e. `kyoh86`).
 
 If an environment variable `GOGH_GITHUB_USER` is set, its value is used instead.
 
-### Root
+### `root`
 
 The paths to directory under which cloned repositories are placed.
 See [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below. Default: `~/go/src`.
@@ -80,23 +80,30 @@ You may want to specify `$GOPATH/src` as a secondary root.
 
 If an environment variable `GOGH_ROOT` is set, its value is used instead.
 
-### LogLevel
+### `log.level`
 
 The level to output logs (debug, info, warn, error or panic). Default: `warn`.
 
 If an environment variable `GOGH_LOG_LEVEL` is set, its value is used instead.
 
-### GitHubToken
+### `github.token`
 
 The token to connect GitHub API.
 
 If an environment variable `GOGH_GITHUB_TOKEN` is set, its value is used instead.
 
-### GitHubHost
+### `github.host`
 
 The host name to connect to GitHub. Default: `github.com`.
 
 If an environment variable `GOGH_GITHUB_HOST` is set, its value is used instead.
+
+### `log.(date|time|microseconds|longfile|shortfile|utc)`
+
+It can be customized that what log prints with message. Default: `log.time` is "yes", others are "no".
+`"yes"` means that its optional property should be printed.
+
+If an environment variable `GOGH_LOG_(DATE|TIME|MICROSECONDS|LONGFILE|SHORTFILE|UTC)` is set, its value is used instead.
 
 ## COMMANDS
 
@@ -173,7 +180,23 @@ Show a list of repositories for a user.
 
 ### `root`
 
-Prints repositories' root (i.e. `gogh.root`). Without `--all` option, the primary one is shown.
+Print repositories' root (i.e. `config get root`). Without `--all` option, the primary one is shown.
+
+### `config get-all`
+
+Print all configuration options value.
+
+### `config get`
+
+Print one configuration option value.
+
+### `config put`
+
+Set or add one configuration option.
+
+### `config unset`
+
+Unset one configuration option.
 
 ## ENVIRONMENT VARIABLES
 
@@ -182,7 +205,7 @@ Some environment variables are used for flags.
 ### GOGH_CONFIG
 
 You can set it instead of `--config` flag (configuration file path).
-Default:  `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/config.toml`.
+Default:  `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/config.yaml`.
 
 ### GOGH_FLAG_ROOT_ALL
 
