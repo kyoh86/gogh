@@ -27,6 +27,15 @@ var (
 
 // FindProject will find a project (local repository) that matches exactly.
 func FindProject(ctx Context, repo *Repo) (*Project, error) {
+	return findProject(ctx, repo, Walk)
+}
+
+// FindProjectInPrimary will find a project (local repository) that matches exactly.
+func FindProjectInPrimary(ctx Context, repo *Repo) (*Project, error) {
+	return findProject(ctx, repo, WalkInPrimary)
+}
+
+func findProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
 	if err := CheckRepoHost(ctx, repo); err != nil {
 		return nil, err
 	}
@@ -34,7 +43,7 @@ func FindProject(ctx Context, repo *Repo) (*Project, error) {
 	var project *Project
 
 	// Find existing repository first
-	if err := Walk(ctx, func(p *Project) error {
+	if err := walker(ctx, func(p *Project) error {
 		if p.RelPath == relPath {
 			project = p
 			return filepath.SkipDir
@@ -53,7 +62,16 @@ func FindProject(ctx Context, repo *Repo) (*Project, error) {
 
 // FindOrNewProject will find a project (local repository) that matches exactly or create new one.
 func FindOrNewProject(ctx Context, repo *Repo) (*Project, error) {
-	switch p, err := FindProject(ctx, repo); err {
+	return findOrNewProject(ctx, repo, Walk)
+}
+
+// FindOrNewProjectInPrimary will find a project (local repository) that matches exactly or create new one.
+func FindOrNewProjectInPrimary(ctx Context, repo *Repo) (*Project, error) {
+	return findOrNewProject(ctx, repo, WalkInPrimary)
+}
+
+func findOrNewProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
+	switch p, err := findProject(ctx, repo, walker); err {
 	case ProjectNotFound:
 		// No repository found, returning new one
 		return NewProject(ctx, repo)
@@ -161,7 +179,7 @@ func parseProject(ctx Context, root string, fullPath string) (*Project, error) {
 	if len(pathParts) != 3 {
 		return nil, errors.New("not supported project path")
 	}
-	if err := ValidateHost(ctx, pathParts[0]); err != nil {
+	if err := SupportedHost(ctx, pathParts[0]); err != nil {
 		return nil, err
 	}
 	if err := ValidateOwner(pathParts[1]); err != nil {
@@ -185,7 +203,7 @@ func WalkInPrimary(ctx Context, callback WalkFunc) error {
 
 // Walk thorugh projects (local repositories) in gogh.root directories
 func Walk(ctx Context, callback WalkFunc) error {
-	for _, root := range ctx.Roots() {
+	for _, root := range ctx.Root() {
 		if err := walkInPath(ctx, root, callback); err != nil {
 			return err
 		}

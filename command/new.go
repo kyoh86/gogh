@@ -39,11 +39,11 @@ func New(
 
 	// git init
 	log.Println("info: Initializing a repository")
-	if err := gitInit(ctx, bare, template, separateGitDir, shared, project.FullPath); err != nil {
+	if err := git().Init(ctx, project, bare, template, separateGitDir, shared); err != nil {
 		return err
 	}
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	return hubCreate(ctx, private, description, homepage, browse, clipboard, repo, project.FullPath)
+	return hub().Create(ctx, project, repo, description, homepage, private, browse, clipboard)
 }

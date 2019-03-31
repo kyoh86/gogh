@@ -44,7 +44,7 @@ func Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibil
 	}
 	// If the context has no authentication token, specifies context user name for "me".
 	if user == "" && !authenticated(ctx) {
-		user = ctx.UserName()
+		user = ctx.GitHubUser()
 	}
 
 	opts := &github.RepositoryListOptions{

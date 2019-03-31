@@ -26,17 +26,17 @@ You can also list projects (local repositories) (`gogh list`), find a project (`
 ## SYNOPSIS
 
 ```
-gogh get [--update,u] [--ssh] [--shallow] [(<repository URL> | <user>/<project> | <project>)...]
-gogh bulk-get [--update,u] [--ssh] [--shallow]
-gogh pipe-get [--update,u] [--ssh] [--shallow] <command> <command-args>...
-gogh fork [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
-gogh new [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
-gogh list [--format,f=short|full|relative|url] [--primary,p] [<query>]
-gogh dump [--primary,p] [<query>]
-gogh find (<project>)
-gogh where [--primary,p] [<query>]
-gogh repo [--user=<USER>] [--own] [--collaborate] [--member] [--visibility=<VISIBILITY>] [--sort=<SORT>] [--direction=<DIRECTION>]
-gogh root [--all]
+gogh [--config=<CONFIG>] get [--update,u] [--ssh] [--shallow] [(<repository URL> | <user>/<project> | <project>)...]
+gogh [--config=<CONFIG>] bulk-get [--update,u] [--ssh] [--shallow]
+gogh [--config=<CONFIG>] pipe-get [--update,u] [--ssh] [--shallow] <command> <command-args>...
+gogh [--config=<CONFIG>] fork [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
+gogh [--config=<CONFIG>] new [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
+gogh [--config=<CONFIG>] list [--format,f=short|full|relative|url] [--primary,p] [<query>]
+gogh [--config=<CONFIG>] dump [--primary,p] [<query>]
+gogh [--config=<CONFIG>] find (<project>)
+gogh [--config=<CONFIG>] where [--primary,p] [<query>]
+gogh [--config=<CONFIG>] repo [--user=<USER>] [--own] [--collaborate] [--member] [--visibility=<VISIBILITY>] [--sort=<SORT>] [--direction=<DIRECTION>]
+gogh [--config=<CONFIG>] root [--all]
 ```
 
 ## INSTALLATION
@@ -54,6 +54,49 @@ brew tap kyoh86/tap
 brew update
 brew install gogh
 ```
+
+## CONFIGURATIONS
+
+It's possible to change targets by a preference **TOML file**.
+If you don't set `--config` flag or `GOGH_CONFIG` environment variable,
+`gogh` loads configurations from `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/config.toml`
+
+Each of propoerties are able to be overwritten by environment variables.
+
+### (REQUIRED) GitHubUser
+
+A name of your GitHub user (i.e. `kyoh86`).
+
+If an environment variable `GOGH_GITHUB_USER` is set, its value is used instead.
+
+### Root
+
+The paths to directory under which cloned repositories are placed.
+See [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below. Default: `~/go/src`.
+
+This property can have multiple values.
+If so, the first one becomes primary one i.e. new repository clones are always created under it.
+You may want to specify `$GOPATH/src` as a secondary root.
+
+If an environment variable `GOGH_ROOT` is set, its value is used instead.
+
+### LogLevel
+
+The level to output logs (debug, info, warn, error or panic). Default: `warn`.
+
+If an environment variable `GOGH_LOG_LEVEL` is set, its value is used instead.
+
+### GitHubToken
+
+The token to connect GitHub API.
+
+If an environment variable `GOGH_GITHUB_TOKEN` is set, its value is used instead.
+
+### GitHubHost
+
+The host name to connect to GitHub. Default: `github.com`.
+
+If an environment variable `GOGH_GITHUB_HOST` is set, its value is used instead.
 
 ## COMMANDS
 
@@ -134,42 +177,16 @@ Prints repositories' root (i.e. `gogh.root`). Without `--all` option, the primar
 
 ## ENVIRONMENT VARIABLES
 
-### GOGH_ROOT
+Some environment variables are used for flags.
 
-The paths to directory under which cloned repositories are placed.
-See [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below. Defaults to `~/go/src`.
+### GOGH_CONFIG
 
-This variable can have multiple values.
-If so, the first one becomes primary one i.e. new repository clones are always created under it.
-You may want to specify `$GOPATH/src` as a secondary root (environment variables should be expanded.)
-
-### GOGH_GITHUB_USER
-
-A name of your GitHub user (i.e. `kyoh86`).
-If it is not set, gogh uses `GITHUB_USER` envar or OS user name from envar (`USERNAME` in windows, `USER` in others) instead.
-
-### GOGH_LOG_LEVEL
-
-The level to output logs (debug, info, warn, error or panic). Default: warn
-
-### GOGH_GHE_HOST
-
-Hostnames of your GitHub Enterprise installation.
-This variable can have multiple values that separated with spaces.
-
-### GOGH_GITHUB_TOKEN
-
-The token to connect GitHub API.
-If it is not set, gogh uses `GITHUB_TOKEN` envar instead.
-
-### GOGH_GITHUB_HOST
-
-The host to connect GitHub on default.
-If it is not set, gogh uses `GITHUB_HOST` envar or `github.com` instead.
+You can set it instead of `--config` flag (configuration file path).
+Default:  `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/config.toml`.
 
 ### GOGH_FLAG_ROOT_ALL
 
-We can set it truely value and `gogh root` shows all of the roots like `gogh root --all`.
+You can set it truely value and `gogh root` shows all of the roots like `gogh root --all`.
 If we want show only primary root, call `gogh root --no-all`.
 
 e.g.

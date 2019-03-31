@@ -3,7 +3,6 @@ package command
 import (
 	"bufio"
 	"io"
-	"os"
 	"os/exec"
 
 	"github.com/kyoh86/gogh/gogh"
@@ -33,7 +32,7 @@ func Pipe(ctx gogh.Context, update, withSSH, shallow bool, command string, comma
 
 // Bulk get repositories specified in stdin.
 func Bulk(ctx gogh.Context, update, withSSH, shallow bool) error {
-	return bulkFromReader(ctx, os.Stdin, update, withSSH, shallow)
+	return bulkFromReader(ctx, ctx.Stdin(), update, withSSH, shallow)
 }
 
 // bulkFromReader bulk get repositories specified in reader.
