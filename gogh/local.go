@@ -214,7 +214,7 @@ func Walk(ctx Context, callback WalkFunc) error {
 // Query searches projects (local repositories) with specified walker
 func Query(ctx Context, query string, walk Walker, callback WalkFunc) error {
 	return walk(ctx, func(p *Project) error {
-		if query != "" && !strings.Contains(p.RelPath, query) {
+		if query != "" && query != p.FullPath && !strings.Contains(p.RelPath, query) {
 			return nil
 		}
 
