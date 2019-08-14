@@ -28,7 +28,7 @@ jobs:
     docker:
       - image: golang
     environment:
-      USER: kyoh86
+      GOGH_GITHUB_USER: kyoh86
       SHELL: bash
     steps:
       - checkout
@@ -41,6 +41,12 @@ jobs:
       - run:
           name: install
           command: go install ./...
+      - run:
+          name: which gogh
+          command: which gogh
+      - run:
+          name: get configures
+          command: gogh config get-all
       - run:
           name: run get
           command: gogh get kyoh86/gogh
