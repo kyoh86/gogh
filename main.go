@@ -53,7 +53,7 @@ func main() {
 }
 
 func configGetAll(app *kingpin.Application) (string, func() error) {
-	cmd := app.GetCommand("config").Command("get-all", "get all options")
+	cmd := app.GetCommand("config").Command("get-all", "get all options").Alias("list").Alias("ls")
 
 	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
 		return command.ConfigGetAll(cfg)
@@ -77,7 +77,7 @@ func configPut(app *kingpin.Application) (string, func() error) {
 		name  string
 		value string
 	)
-	cmd := app.GetCommand("config").Command("put", "put an option")
+	cmd := app.GetCommand("config").Command("put", "put an option").Alias("set")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 	cmd.Arg("value", "option value").Required().StringVar(&value)
 
@@ -90,7 +90,7 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 	var (
 		name string
 	)
-	cmd := app.GetCommand("config").Command("unset", "unset an option")
+	cmd := app.GetCommand("config").Command("unset", "unset an option").Alias("rm")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
 	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
