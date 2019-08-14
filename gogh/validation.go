@@ -1,12 +1,12 @@
 package gogh
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
 
 	"github.com/comail/colog"
+	"github.com/pkg/errors"
 )
 
 var invalidNameRegexp = regexp.MustCompile(`[^\w\-\.]`)
@@ -68,13 +68,13 @@ func ValidateLogLevel(level string) error {
 
 func ValidateContext(ctx Context) error {
 	if err := ValidateRoots(ctx.Root()); err != nil {
-		return err
+		return errors.Wrap(err, "invalid roots in the context; set a valid path by 'gogh config put root <Project root path>'")
 	}
 	if err := ValidateOwner(ctx.GitHubUser()); err != nil {
-		return err
+		return errors.Wrap(err, "invalid GitHub user in the context; set a valid name by 'gogh config put github.user <GitHub user name>'")
 	}
 	if err := ValidateLogLevel(ctx.LogLevel()); err != nil {
-		return err
+		return errors.Wrap(err, "invalid log level in the context; set a valid log-level by 'gogh config put log.level <debug|info|warn|error>' or unset by 'gogh config unset log.level'")
 	}
 	return nil
 }
