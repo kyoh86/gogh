@@ -16,7 +16,7 @@ require (
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/pkg/errors v0.8.0
+	github.com/pkg/errors v0.8.1
 	github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709
 	github.com/thoas/go-funk v0.0.0-20190328084834-b6996520715f
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
