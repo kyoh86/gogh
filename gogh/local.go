@@ -39,12 +39,11 @@ func findProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
 	if err := CheckRepoHost(ctx, repo); err != nil {
 		return nil, err
 	}
-	relPath := repo.RelPath(ctx)
 	var project *Project
 
 	// Find existing repository first
 	if err := walker(ctx, func(p *Project) error {
-		if p.RelPath == relPath {
+		if repo.Match(p) {
 			project = p
 			return filepath.SkipDir
 		}

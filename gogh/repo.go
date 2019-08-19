@@ -160,6 +160,17 @@ func (r *Repo) URL(ctx Context, ssh bool) *url.URL {
 	}
 }
 
+// Match with project.
+func (r *Repo) Match(p *Project) bool {
+	if r.host != "" && r.host != p.PathParts[0] {
+		return false
+	}
+	if r.owner != "" && r.owner != p.PathParts[1] {
+		return false
+	}
+	return r.name == p.PathParts[2]
+}
+
 // RelPath get relative path from root directory
 func (r *Repo) RelPath(ctx Context) string {
 	return filepath.Join(r.Host(ctx), r.Owner(ctx), r.Name(ctx))

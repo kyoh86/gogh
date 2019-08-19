@@ -24,6 +24,8 @@ func TestWhere(t *testing.T) {
 	require.NoError(t, os.MkdirAll(proj1, 0755))
 	proj2 := filepath.Join(root2, "github.com", "kyoh86", "gogh", ".git")
 	require.NoError(t, os.MkdirAll(proj2, 0755))
+	proj3 := filepath.Join(root2, "github.com", "kyoh85", "test", ".git")
+	require.NoError(t, os.MkdirAll(proj3, 0755))
 
 	assert.EqualError(t, Where(&context.MockContext{
 		MRoot:       []string{root1, root2},
@@ -61,6 +63,12 @@ func TestWhere(t *testing.T) {
 		MGitHubHost: "github.com",
 		MGitHubUser: "kyoh86",
 	}, false, true, "gogh"))
+
+	assert.NoError(t, Where(&context.MockContext{
+		MRoot:       []string{root1, root2},
+		MGitHubHost: "github.com",
+		MGitHubUser: "kyoh86",
+	}, false, true, "test"))
 
 	assert.NoError(t, Where(&context.MockContext{
 		MRoot:       []string{root1, root2},
