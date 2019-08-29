@@ -42,6 +42,7 @@ func main() {
 		list,
 		dump,
 		find,
+		remove,
 		root,
 		setup,
 
@@ -262,6 +263,19 @@ func dump(app *kingpin.Application) (string, func() error) {
 	})
 }
 
+func remove(app *kingpin.Application) (string, func() error) {
+	var (
+		primary bool
+		query   string
+	)
+	cmd := app.Command("delete", "Delete projects").Alias("remove").Alias("rm")
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Arg("query", "Project name query").StringVar(&query)
+
+	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
+		return command.Delete(ctx, primary, query)
+	})
+}
 func find(app *kingpin.Application) (string, func() error) {
 	var (
 		primary bool
