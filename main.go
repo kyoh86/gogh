@@ -224,31 +224,35 @@ func where(app *kingpin.Application) (string, func() error) {
 
 func list(app *kingpin.Application) (string, func() error) {
 	var (
-		format  string
-		primary bool
-		query   string
+		format   string
+		primary  bool
+		isPublic bool
+		query    string
 	)
 	cmd := app.Command("list", "List projects (local repositories)").Alias("ls")
 	cmd.Flag("format", "Format of each repository").Short('f').Default(gogh.ProjectListFormatRelPath.String()).EnumVar(&format, gogh.ProjectListFormats()...)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Flag("public", "Only projects which are referred to public repositories").BoolVar(&isPublic)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.List(ctx, gogh.ProjectListFormat(format), primary, query)
+		return command.List(ctx, gogh.ProjectListFormat(format), primary, isPublic, query)
 	})
 }
 
 func dump(app *kingpin.Application) (string, func() error) {
 	var (
-		primary bool
-		query   string
+		primary  bool
+		isPublic bool
+		query    string
 	)
 	cmd := app.Command("dump", "Dump list of projects (local repositories)")
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Flag("public", "Only projects which are referred to public repositories").BoolVar(&isPublic)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.List(ctx, gogh.ProjectListFormatURL, primary, query)
+		return command.List(ctx, gogh.ProjectListFormatURL, primary, isPublic, query)
 	})
 }
 

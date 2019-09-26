@@ -5,7 +5,7 @@ import (
 )
 
 // List local projects
-func List(ctx gogh.Context, format gogh.ProjectListFormat, primary bool, query string) error {
+func List(ctx gogh.Context, format gogh.ProjectListFormat, primary bool, isPublic bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
@@ -17,6 +17,19 @@ func List(ctx gogh.Context, format gogh.ProjectListFormat, primary bool, query s
 	}
 
 	if err := gogh.Query(ctx, query, walk, func(p *gogh.Project) error {
+		if isPublic {
+			repo, err := gogh.ParseProject(p)
+			if err != nil {
+				return err
+			}
+			pub, err := repo.IsPublic(ctx)
+			if err != nil {
+				return err
+			}
+			if !pub {
+				return nil
+			}
+		}
 		formatter.Add(p)
 		return nil
 	}); err != nil {

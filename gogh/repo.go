@@ -2,8 +2,8 @@ package gogh
 
 import (
 	"fmt"
-	"net/url"
 	"net/http"
+	"net/url"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -25,6 +25,18 @@ type Repo struct {
 	forceQuery bool   // append a query ('?') even if RawQuery is empty
 	rawQuery   string // encoded query values, without '?'
 	fragment   string // fragment for references, without '#'
+}
+
+// ParseProject parses a repo-name for a repository in the GitHub
+func ParseProject(p *Project) (*Repo, error) {
+	repo := new(Repo)
+	if err := repo.Set(p.Subpaths()[1]); err != nil {
+		if err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	return repo, nil
 }
 
 // ParseRepo parses a repo-name for a repository in the GitHub

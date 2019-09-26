@@ -26,6 +26,7 @@ func ExampleList() {
 	},
 		gogh.ProjectListFormatURL,
 		true,
+		false,
 		"",
 	); err != nil {
 		panic(err)
@@ -48,6 +49,7 @@ func TestList(t *testing.T) {
 	},
 		gogh.ProjectListFormat("invalid format"),
 		false,
+		false,
 		"",
 	), "invalid format")
 
@@ -56,6 +58,7 @@ func TestList(t *testing.T) {
 		GitHub: config.GitHubConfig{Host: "example.com"},
 	},
 		gogh.ProjectListFormatURL,
+		false,
 		false,
 		"",
 	), "invalid root")
