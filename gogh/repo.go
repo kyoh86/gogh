@@ -31,9 +31,6 @@ type Repo struct {
 func ParseProject(p *Project) (*Repo, error) {
 	repo := new(Repo)
 	if err := repo.Set(p.Subpaths()[1]); err != nil {
-		if err != nil {
-			return nil, err
-		}
 		return nil, err
 	}
 	return repo, nil

@@ -2,16 +2,18 @@ module github.com/kyoh86/gogh
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/alecthomas/kingpin v0.0.0-20190313214811-7613e5d4efd9
+	github.com/alecthomas/kingpin v2.2.6+incompatible
 	github.com/atotto/clipboard v0.1.2 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/github/hub v2.10.0+incompatible
 	github.com/google/go-github/v24 v24.0.1
 	github.com/joeshaw/envdecode v0.0.0-20180312135643-c9e015854467
 	github.com/karrick/godirwalk v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kyoh86/git-vertag v0.1.0 // indirect
 	github.com/kyoh86/xdg v1.0.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
