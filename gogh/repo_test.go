@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRepo(t *testing.T) {
+func TestRepoParse(t *testing.T) {
 	t.Run("full HTTPS URL", func(t *testing.T) {
 		ctx := &context.MockContext{}
 		spec, err := ParseRepo("https://github.com/kyoh86/pusheen-explorer")
@@ -157,5 +157,27 @@ func TestCheckRepoHost(t *testing.T) {
 	t.Run("not supported host URL", func(t *testing.T) {
 		ctx := context.MockContext{MGitHubHost: "github.com"}
 		assert.EqualError(t, CheckRepoHost(&ctx, parseURL(t, "https://kyoh86.work/kyoh86/gogh")), `not supported host: "kyoh86.work"`)
+	})
+}
+
+func TestRepoIsPublic(t *testing.T) {
+	t.Run("public repo", func(t *testing.T) {
+		r, err := ParseRepo("kyoh86/gogh")
+		require.NoError(t, err)
+
+		ctx := context.MockContext{MGitHubHost: "github.com", MGitHubUser: "kyoh86"}
+		is, err := r.IsPublic(&ctx)
+		require.NoError(t, err)
+		assert.True(t, is)
+	})
+
+	t.Run("private repo", func(t *testing.T) {
+		r, err := ParseRepo("kyoh86/unknown")
+		require.NoError(t, err)
+
+		ctx := context.MockContext{MGitHubHost: "github.com", MGitHubUser: "kyoh86"}
+		is, err := r.IsPublic(&ctx)
+		require.NoError(t, err)
+		assert.False(t, is)
 	})
 }

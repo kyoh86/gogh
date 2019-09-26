@@ -23,3 +23,5 @@ require (
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6 // indirect
 	gopkg.in/yaml.v2 v2.2.1
 )
+
+go 1.13
