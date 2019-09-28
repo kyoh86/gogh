@@ -90,9 +90,13 @@ func (c *Config) LogShortFile() bool    { return c.Log.ShortFile.Bool() }
 func (c *Config) LogUTC() bool          { return c.Log.UTC.Bool() }
 
 func (c *Config) Root() []string {
-	return c.VRoot
+	ret := make([]string, 0, len(c.VRoot))
+	for _, p := range c.VRoot {
+		ret = append(ret, expandPath(p))
+	}
+	return ret
 }
 
 func (c *Config) PrimaryRoot() string {
-	return c.VRoot[0]
+	return expandPath(c.VRoot[0])
 }
