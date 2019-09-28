@@ -15,6 +15,11 @@ func TestExpandPath(t *testing.T) {
 	require.NoError(t, err)
 	expHome := user.HomeDir
 
+	t.Run("empty to empty", func(t *testing.T) {
+		act := expandPath("")
+		assert.Equal(t, "", act)
+	})
+
 	t.Run("success to expand `~` to homedir", func(t *testing.T) {
 		act := expandPath("~")
 		assert.Equal(t, expHome, act)
