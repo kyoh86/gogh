@@ -3,6 +3,8 @@ module github.com/kyoh86/gogh
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/alecthomas/kingpin v2.2.6+incompatible
+	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
+	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/atotto/clipboard v0.1.2 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
@@ -13,7 +15,6 @@ require (
 	github.com/karrick/godirwalk v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/kyoh86/git-vertag v0.1.0 // indirect
 	github.com/kyoh86/xdg v1.0.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect

@@ -15,5 +15,5 @@ test: lint
 install: test
 	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT)" ./...
 
-man: test
+man:
 	go run main.go --help-man > gogh.1

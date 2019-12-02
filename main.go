@@ -13,6 +13,7 @@ import (
 	"github.com/kyoh86/gogh/internal/mainutil"
 )
 
+// nolint
 var (
 	version = "snapshot"
 	commit  = "snapshot"
