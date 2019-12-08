@@ -162,6 +162,7 @@ func TestCheckRepoHost(t *testing.T) {
 
 func TestRepoIsPublic(t *testing.T) {
 	t.Run("public repo", func(t *testing.T) {
+		t.Skip("this test requires network connection...")
 		r, err := ParseRepo("kyoh86/gogh")
 		require.NoError(t, err)
 
@@ -172,6 +173,7 @@ func TestRepoIsPublic(t *testing.T) {
 	})
 
 	t.Run("private repo", func(t *testing.T) {
+		t.Skip("this test requires network connection...")
 		r, err := ParseRepo("kyoh86/unknown")
 		require.NoError(t, err)
 

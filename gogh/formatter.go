@@ -10,52 +10,14 @@ type ProjectListFormatter interface {
 	Add(*Project)
 	Len() int
 	PrintAll(io.Writer, string) error
-}
-
-// ProjectListFormat specifies how gogh prints a project.
-type ProjectListFormat string
-
-// ProjectListFormat choices.
-const (
-	ProjectListFormatShort    = ProjectListFormat("short")
-	ProjectListFormatFullPath = ProjectListFormat("full")
-	ProjectListFormatURL      = ProjectListFormat("url")
-	ProjectListFormatRelPath  = ProjectListFormat("relative")
-)
-
-func (f ProjectListFormat) String() string {
-	return string(f)
-}
-
-// ProjectListFormats shows all of ProjectListFormat constants.
-func ProjectListFormats() []string {
-	return []string{
-		ProjectListFormatShort.String(),
-		ProjectListFormatFullPath.String(),
-		ProjectListFormatURL.String(),
-		ProjectListFormatRelPath.String(),
-	}
-}
-
-// Formatter will get a formatter to print list.
-func (f ProjectListFormat) Formatter() (ProjectListFormatter, error) {
-	switch f {
-	case ProjectListFormatRelPath:
-		return RelPathFormatter(), nil
-	case ProjectListFormatFullPath:
-		return FullPathFormatter(), nil
-	case ProjectListFormatURL:
-		return URLFormatter(), nil
-	case ProjectListFormatShort:
-		return ShortFormatter(), nil
-	}
-	return nil, fmt.Errorf("%q is invalid project format", f)
+	format(io.Writer, *Project) error
 }
 
 // ShortFormatter prints each project as short as possible.
 func ShortFormatter() ProjectListFormatter {
 	return &shortListFormatter{
-		dups: map[string]bool{},
+		dups:            map[string]bool{},
+		simpleCollector: &simpleCollector{},
 	}
 }
 
@@ -77,7 +39,7 @@ func RelPathFormatter() ProjectListFormatter {
 type shortListFormatter struct {
 	// mark duplicated subpath
 	dups map[string]bool
-	list []*Project
+	*simpleCollector
 }
 
 func (f *shortListFormatter) Add(r *Project) {
@@ -85,7 +47,7 @@ func (f *shortListFormatter) Add(r *Project) {
 		// (false, not ok) -> (false, ok) -> (true, ok) -> (true, ok) and so on
 		_, f.dups[p] = f.dups[p]
 	}
-	f.list = append(f.list, r)
+	f.simpleCollector.Add(r)
 }
 
 func (f *shortListFormatter) Len() int {
@@ -94,11 +56,19 @@ func (f *shortListFormatter) Len() int {
 
 func (f *shortListFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, f.shortName(project)+sep); err != nil {
+		if err := f.format(w, project); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprint(w, sep); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (f *shortListFormatter) format(w io.Writer, project *Project) error {
+	_, err := fmt.Fprint(w, f.shortName(project))
+	return err
 }
 
 func (f *shortListFormatter) shortName(r *Project) string {
@@ -129,11 +99,19 @@ type fullPathFormatter struct {
 
 func (f *fullPathFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, project.FullPath+sep); err != nil {
+		if err := f.format(w, project); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprint(w, sep); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (f *fullPathFormatter) format(w io.Writer, project *Project) error {
+	_, err := fmt.Fprint(w, project.FullPath)
+	return err
 }
 
 type urlFormatter struct {
@@ -142,11 +120,19 @@ type urlFormatter struct {
 
 func (f *urlFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, "https://"+project.RelPath+sep); err != nil {
+		if err := f.format(w, project); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprint(w, sep); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (f *urlFormatter) format(w io.Writer, project *Project) error {
+	_, err := fmt.Fprint(w, "https://"+project.RelPath)
+	return err
 }
 
 type relPathFormatter struct {
@@ -155,9 +141,17 @@ type relPathFormatter struct {
 
 func (f *relPathFormatter) PrintAll(w io.Writer, sep string) error {
 	for _, project := range f.list {
-		if _, err := fmt.Fprint(w, project.RelPath+sep); err != nil {
+		if err := f.format(w, project); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprint(w, sep); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (f *relPathFormatter) format(w io.Writer, project *Project) error {
+	_, err := fmt.Fprint(w, project.RelPath)
+	return err
 }

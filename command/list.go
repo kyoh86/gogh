@@ -5,15 +5,10 @@ import (
 )
 
 // List local projects
-func List(ctx gogh.Context, format gogh.ProjectListFormat, primary bool, isPublic bool, query string) error {
+func List(ctx gogh.Context, formatter gogh.ProjectListFormatter, primary bool, isPublic bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
-	}
-
-	formatter, err := format.Formatter()
-	if err != nil {
-		return err
 	}
 
 	if err := gogh.Query(ctx, query, walk, func(p *gogh.Project) error {

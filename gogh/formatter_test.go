@@ -15,8 +15,12 @@ func TestFormatter(t *testing.T) {
 	t.Run("dry run formatters", func(t *testing.T) {
 		project, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/gogh")
 		require.NoError(t, err)
-		for _, f := range ProjectListFormats() {
-			formatter, err := ProjectListFormat(f).Formatter()
+		for _, formatter := range []ProjectListFormatter{
+			ShortFormatter(),
+			URLFormatter(),
+			FullPathFormatter(),
+			RelPathFormatter(),
+		} {
 			require.NoError(t, err)
 			formatter.Add(project)
 			require.NoError(t, formatter.PrintAll(ioutil.Discard, "\n"))
@@ -28,7 +32,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, err)
 		project2, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatRelPath.Formatter()
+		formatter := RelPathFormatter()
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)
@@ -40,7 +44,7 @@ func TestFormatter(t *testing.T) {
 	t.Run("writer error by rel path formatter", func(t *testing.T) {
 		project, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatRelPath.Formatter()
+		formatter := RelPathFormatter()
 		require.NoError(t, err)
 		formatter.Add(project)
 		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
@@ -51,7 +55,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, err)
 		project2, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatFullPath.Formatter()
+		formatter := FullPathFormatter()
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)
@@ -60,7 +64,7 @@ func TestFormatter(t *testing.T) {
 	t.Run("writer error by full path formatter", func(t *testing.T) {
 		project, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatFullPath.Formatter()
+		formatter := FullPathFormatter()
 		require.NoError(t, err)
 		formatter.Add(project)
 		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
@@ -71,7 +75,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, err)
 		project2, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatURL.Formatter()
+		formatter := URLFormatter()
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)
@@ -83,7 +87,7 @@ func TestFormatter(t *testing.T) {
 	t.Run("writer error by url formatter", func(t *testing.T) {
 		project, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatURL.Formatter()
+		formatter := URLFormatter()
 		require.NoError(t, err)
 		formatter.Add(project)
 		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
@@ -102,7 +106,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, err)
 		project6, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/foo", "/foo/github.com/kyoh86/baz")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatShort.Formatter()
+		formatter := ShortFormatter()
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)
@@ -118,15 +122,10 @@ func TestFormatter(t *testing.T) {
 	t.Run("writer error by short formatter", func(t *testing.T) {
 		project, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		formatter, err := ProjectListFormatShort.Formatter()
+		formatter := ShortFormatter()
 		require.NoError(t, err)
 		formatter.Add(project)
 		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
-	})
-
-	t.Run("invalid formatter", func(t *testing.T) {
-		_, err := ProjectListFormat("dummy").Formatter()
-		assert.Errorf(t, err, "%q is invalid project format", "dummy")
 	})
 
 }

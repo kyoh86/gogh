@@ -39,7 +39,7 @@ func TestEmpty(t *testing.T) {
 	}))
 	assert.NoError(t, Get(ctx, false, false, false, mustRepo("kyoh86/gogh")))
 	assert.NoError(t, Fork(ctx, false, false, false, false, "", "", mustRepo("kyoh86/gogh")))
-	assert.NoError(t, List(ctx, gogh.ProjectListFormatShort, false, false, ""))
+	assert.NoError(t, List(ctx, gogh.ShortFormatter(), false, false, ""))
 	proj1 := filepath.Join(tmp, "github.com", "kyoh86", "gogh", ".git")
 	require.NoError(t, os.MkdirAll(proj1, 0755))
 	assert.NoError(t, Root(ctx, false))

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func ExampleList() {
+func ExampleList_url() {
 	tmp, _ := ioutil.TempDir(os.TempDir(), "gogh-test")
 	defer os.RemoveAll(tmp)
 	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "kyoh86", "gogh", ".git"), 0755)
@@ -24,7 +24,7 @@ func ExampleList() {
 		VRoot:  []string{tmp},
 		GitHub: config.GitHubConfig{Host: "example.com"},
 	},
-		gogh.ProjectListFormatURL,
+		gogh.URLFormatter(),
 		true,
 		false,
 		"",
@@ -36,6 +36,33 @@ func ExampleList() {
 	// https://example.com/owner/name
 }
 
+func ExampleList_custom() {
+	tmp, _ := ioutil.TempDir(os.TempDir(), "gogh-test")
+	defer os.RemoveAll(tmp)
+	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "kyoh86", "gogh", ".git"), 0755)
+	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "owner", "name", ".git"), 0755)
+	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "owner", "empty"), 0755)
+
+	fmter, err := gogh.CustomFormatter("{{short .}};;{{relative .}}")
+	if err != nil {
+		panic(err)
+	}
+	if err := command.List(&config.Config{
+		VRoot:  []string{tmp},
+		GitHub: config.GitHubConfig{Host: "example.com"},
+	},
+		fmter,
+		true,
+		false,
+		"",
+	); err != nil {
+		panic(err)
+	}
+	// Unordered output:
+	// gogh;;example.com/kyoh86/gogh
+	// name;;example.com/owner/name
+}
+
 func TestList(t *testing.T) {
 	tmp, _ := ioutil.TempDir(os.TempDir(), "gogh-test")
 	defer os.RemoveAll(tmp)
@@ -44,20 +71,10 @@ func TestList(t *testing.T) {
 	require.NoError(t, os.MkdirAll(filepath.Join(tmp, "example.com", "owner", "empty"), 0755))
 
 	assert.Error(t, command.List(&config.Config{
-		VRoot:  []string{tmp},
-		GitHub: config.GitHubConfig{Host: "example.com"},
-	},
-		gogh.ProjectListFormat("invalid format"),
-		false,
-		false,
-		"",
-	), "invalid format")
-
-	assert.Error(t, command.List(&config.Config{
 		VRoot:  []string{tmp, "/\x00"},
 		GitHub: config.GitHubConfig{Host: "example.com"},
 	},
-		gogh.ProjectListFormatURL,
+		gogh.URLFormatter(),
 		false,
 		false,
 		"",
