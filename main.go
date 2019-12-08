@@ -21,6 +21,8 @@ var (
 )
 
 func main() {
+	log.SetOutput(os.Stderr)
+
 	app := kingpin.New("gogh", "GO GitHub project manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
 	app.Command("config", "Get and set options")
 
@@ -105,11 +107,16 @@ func get(app *kingpin.Application) (string, func() error) {
 		withSSH   bool
 		shallow   bool
 		repoNames gogh.Repos
+		cd        bool
+		// unused: it is dummy to accept option.
+		//         its function defined in init.*sh in the /sh/src
+		//         if we want to use gogh get --cd,
 	)
 	cmd := app.Command("get", "Clone/sync with a remote repository")
 	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd.Flag("cd", "Jump to the local project").BoolVar(&cd)
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoNames)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
@@ -283,15 +290,19 @@ func root(app *kingpin.Application) (string, func() error) {
 
 func setup(app *kingpin.Application) (string, func() error) {
 	var (
-		cdFuncName string
-		shell      string
+		shell string
 	)
-	cmd := app.Command("setup", "Generate shell script to setup gogh").Hidden()
-	cmd.Flag("cd-function-name", "Name of the function to define").Default("gogogh").Hidden().StringVar(&cdFuncName)
+	cmd := app.Command("setup", `Generate shell script to setup gogh
+
+If you want to use "gogh cd", "gogh get --cd" and autocompletions for gogh,
+
+set up gogh in your shell-rc file (".bashrc" / ".zshrc") like below.
+
+eval "$(gogh setup)"`).Hidden()
 	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Setup(ctx, cdFuncName, shell)
+		return command.Setup(ctx, "", shell)
 	})
 }
 

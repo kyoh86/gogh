@@ -9,12 +9,14 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/deadcheat/goblet v1.3.1
 	github.com/github/hub v2.10.0+incompatible
 	github.com/google/go-github/v24 v24.0.1
 	github.com/joeshaw/envdecode v0.0.0-20180312135643-c9e015854467
 	github.com/karrick/godirwalk v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kyoh86/richgo v0.3.3 // indirect
 	github.com/kyoh86/xdg v1.0.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect

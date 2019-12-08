@@ -247,19 +247,22 @@ Local repositories are placed under `gogh.root` with named github.com/*user*/*re
 
 To be enabled shell extentions (for zsh / bash), set up gogh in your shell-rc file (`.bashrc` / `.zshrc`).
 
-* `gogogh` command
+* `gogo cd` command
   * shorthand for `cd $(gogh find <project name>)`
+* `gogo get --cd` option
 * auto-completions
 
 ```
 eval "$(gogh setup)"
 ```
 
-If you want to rename `gogogh` command, specify `--cd-function-name=<NAME>` like below.
+If you have not set `SHELL` envar right, tell your shell explicitly.
 
 ```
-eval "$(gogh setup --cd-function-name=foobar)"
+eval "$(gogh setup --shell bash)"
 ```
+
+NOTE: Now gogh supports `bash` or `zsh` only.
 
 # DEFERENCES TO `ghq`
 
