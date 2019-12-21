@@ -82,7 +82,7 @@ func TestRepoParse(t *testing.T) {
 		assert.Nil(t, r)
 	})
 
-	t.Run("fail when owner name contains invalid charactor", func(t *testing.T) {
+	t.Run("fail when owner name contains invalid character", func(t *testing.T) {
 		r, err := ParseRepo("kyoh_86/test")
 		assert.NotNil(t, err)
 		assert.Nil(t, r)
@@ -100,7 +100,7 @@ func TestRepoParse(t *testing.T) {
 		assert.Nil(t, r)
 	})
 
-	t.Run("fail when project name contains invalid charactor", func(t *testing.T) {
+	t.Run("fail when project name contains invalid character", func(t *testing.T) {
 		r, err := ParseRepo("kyoh86/foo,bar")
 		assert.NotNil(t, err)
 		assert.Nil(t, r)
@@ -129,7 +129,6 @@ func TestRepoParse(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Nil(t, r)
 	})
-
 }
 
 func TestRepos(t *testing.T) {

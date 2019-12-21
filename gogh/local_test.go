@@ -63,12 +63,11 @@ func TestParseProject(t *testing.T) {
 		assert.Nil(t, r)
 	})
 
-	t.Run("expect to fail to parse project name that contains invalid charactor", func(t *testing.T) {
+	t.Run("expect to fail to parse project name that contains invalid character", func(t *testing.T) {
 		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/kyoh86/foo,bar"))
 		assert.NotNil(t, err)
 		assert.Nil(t, r)
 	})
-
 }
 
 func TestFindOrNewProject(t *testing.T) {

@@ -8,6 +8,12 @@ import (
 )
 
 func TestAccessor(t *testing.T) {
+	const (
+		dummyToken = "token1"
+		dummyHost  = "hostx1"
+		dummyUser  = "kyoh86"
+		dummyLevel = "trace"
+	)
 	t.Run("getting", func(t *testing.T) {
 		mustOption := func(acc *OptionAccessor, err error) *OptionAccessor {
 			t.Helper()
@@ -15,10 +21,10 @@ func TestAccessor(t *testing.T) {
 			return acc
 		}
 		var cfg Config
-		cfg.GitHub.Token = "token1"
-		cfg.GitHub.Host = "hostx1"
-		cfg.GitHub.User = "kyoh86"
-		cfg.Log.Level = "trace"
+		cfg.GitHub.Token = dummyToken
+		cfg.GitHub.Host = dummyHost
+		cfg.GitHub.User = dummyUser
+		cfg.Log.Level = dummyLevel
 		cfg.Log.Date = TrueOption
 		cfg.Log.Time = FalseOption
 		cfg.Log.MicroSeconds = TrueOption
@@ -29,10 +35,10 @@ func TestAccessor(t *testing.T) {
 
 		_, err := Option("invalid name")
 		assert.EqualError(t, err, "invalid option name")
-		assert.Equal(t, "token1", mustOption(Option("github.token")).Get(&cfg))
-		assert.Equal(t, "hostx1", mustOption(Option("github.host")).Get(&cfg))
-		assert.Equal(t, "kyoh86", mustOption(Option("github.user")).Get(&cfg))
-		assert.Equal(t, "trace", mustOption(Option("log.level")).Get(&cfg))
+		assert.Equal(t, dummyToken, mustOption(Option("github.token")).Get(&cfg))
+		assert.Equal(t, dummyHost, mustOption(Option("github.host")).Get(&cfg))
+		assert.Equal(t, dummyUser, mustOption(Option("github.user")).Get(&cfg))
+		assert.Equal(t, dummyLevel, mustOption(Option("log.level")).Get(&cfg))
 		assert.Equal(t, "yes", mustOption(Option("log.date")).Get(&cfg))
 		assert.Equal(t, "no", mustOption(Option("log.time")).Get(&cfg))
 		assert.Equal(t, "yes", mustOption(Option("log.microseconds")).Get(&cfg))
@@ -48,9 +54,9 @@ func TestAccessor(t *testing.T) {
 			return acc
 		}
 		var cfg Config
-		assert.NoError(t, mustOption(Option("github.host")).Put(&cfg, "hostx1"))
-		assert.NoError(t, mustOption(Option("github.user")).Put(&cfg, "kyoh86"))
-		assert.NoError(t, mustOption(Option("log.level")).Put(&cfg, "trace"))
+		assert.NoError(t, mustOption(Option("github.host")).Put(&cfg, dummyHost))
+		assert.NoError(t, mustOption(Option("github.user")).Put(&cfg, dummyUser))
+		assert.NoError(t, mustOption(Option("log.level")).Put(&cfg, dummyLevel))
 		assert.NoError(t, mustOption(Option("log.date")).Put(&cfg, "yes"))
 		assert.NoError(t, mustOption(Option("log.time")).Put(&cfg, "no"))
 		assert.NoError(t, mustOption(Option("log.microseconds")).Put(&cfg, "yes"))
@@ -60,9 +66,9 @@ func TestAccessor(t *testing.T) {
 		assert.NoError(t, mustOption(Option("root")).Put(&cfg, "/foo:/bar"))
 
 		assert.Equal(t, "", cfg.GitHub.Token)
-		assert.Equal(t, "hostx1", cfg.GitHub.Host)
-		assert.Equal(t, "kyoh86", cfg.GitHub.User)
-		assert.Equal(t, "trace", cfg.Log.Level)
+		assert.Equal(t, dummyHost, cfg.GitHub.Host)
+		assert.Equal(t, dummyUser, cfg.GitHub.User)
+		assert.Equal(t, dummyLevel, cfg.Log.Level)
 		assert.Equal(t, TrueOption, cfg.Log.Date)
 		assert.True(t, cfg.LogDate())
 		assert.Equal(t, FalseOption, cfg.Log.Time)
@@ -84,7 +90,7 @@ func TestAccessor(t *testing.T) {
 			return acc
 		}
 		var cfg Config
-		assert.EqualError(t, mustOption(Option("github.token")).Put(&cfg, "token1"), "token must not save")
+		assert.EqualError(t, mustOption(Option("github.token")).Put(&cfg, dummyToken), "token must not save")
 
 		assert.EqualError(t, mustOption(Option("github.host")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("github.user")).Put(&cfg, ""), "empty value")
@@ -118,14 +124,14 @@ func TestAccessor(t *testing.T) {
 		assert.Equal(t, EmptyBoolOption, cfg.Log.ShortFile)
 		assert.Equal(t, EmptyBoolOption, cfg.Log.UTC)
 		assert.Empty(t, cfg.VRoot)
-
 	})
+
 	t.Run("unsetting", func(t *testing.T) {
 		var cfg Config
-		cfg.GitHub.Token = "token1"
-		cfg.GitHub.Host = "hostx1"
-		cfg.GitHub.User = "kyoh86"
-		cfg.Log.Level = "trace"
+		cfg.GitHub.Token = dummyToken
+		cfg.GitHub.Host = dummyHost
+		cfg.GitHub.User = dummyUser
+		cfg.Log.Level = dummyLevel
 		cfg.Log.Date = TrueOption
 		cfg.Log.Time = FalseOption
 		cfg.Log.MicroSeconds = TrueOption

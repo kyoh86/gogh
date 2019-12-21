@@ -28,7 +28,7 @@ func New(
 		return err
 	}
 	if project.Exists {
-		return gogh.ProjectAlreadyExists
+		return gogh.ErrProjectAlreadyExists
 	}
 
 	// mkdir

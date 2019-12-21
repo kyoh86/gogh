@@ -94,5 +94,4 @@ func TestWhere(t *testing.T) {
 		MGitHubHost: "github.com",
 		MGitHubUser: "kyoh86",
 	}, false, false, "gogh"), "stat /\x00: invalid argument")
-
 }

@@ -1,4 +1,27 @@
 linters:
   enable:
-    - unparam
+    - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godox
+    - gofmt
+    - goimports
+    - golint
+    - maligned
+    - misspell
+    - nakedret
+    - prealloc
     - scopelint
+    - stylecheck
+    - unconvert
+    - unparam
+    - whitespace
+linters-settings:
+  gocritic:
+    disabled-checks:
+      - elseif

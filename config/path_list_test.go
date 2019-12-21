@@ -13,7 +13,6 @@ import (
 )
 
 func TestPathListOption(t *testing.T) {
-
 	type testStruct struct {
 		PathList PathListOption `env:"PATH_LIST" yaml:"paths,omitempty"`
 	}

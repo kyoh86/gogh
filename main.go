@@ -58,9 +58,7 @@ func main() {
 func configGetAll(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get-all", "get all options").Alias("list").Alias("ls")
 
-	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
-		return command.ConfigGetAll(cfg)
-	})
+	return mainutil.WrapConfigurableCommand(cmd, command.ConfigGetAll)
 }
 
 func configGet(app *kingpin.Application) (string, func() error) {

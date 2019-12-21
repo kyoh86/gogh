@@ -46,7 +46,7 @@ func Where(ctx gogh.Context, primary bool, exact bool, query string) error {
 		}
 	case l < 1:
 		log.Println("error: No repository is found")
-		return gogh.ProjectNotFound
+		return gogh.ErrProjectNotFound
 	default:
 		log.Println("error: Multiple repositories are found")
 		if err := formatter.PrintAll(ctx.Stderr(), "\n"); err != nil {

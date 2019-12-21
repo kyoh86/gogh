@@ -21,7 +21,7 @@ func TestValidateName(t *testing.T) {
 func TestValidateOwner(t *testing.T) {
 	expect := "owner name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen"
 	assert.EqualError(t, ValidateOwner(""), expect, "fail when empty owner is given")
-	assert.EqualError(t, ValidateOwner("kyoh_86"), expect, "fail when owner name contains invalid charactor")
+	assert.EqualError(t, ValidateOwner("kyoh_86"), expect, "fail when owner name contains invalid character")
 	assert.EqualError(t, ValidateOwner("-kyoh86"), expect, "fail when owner name starts with hyphen")
 	assert.EqualError(t, ValidateOwner("kyoh86-"), expect, "fail when owner name ends with hyphen")
 	assert.NoError(t, ValidateOwner("kyoh86"), "success")

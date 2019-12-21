@@ -173,10 +173,11 @@ func (r *Repo) URL(ctx Context, ssh bool) *url.URL {
 // Check if a GitHub repo is public (we can access the repo without token or auth)
 func (r *Repo) IsPublic(ctx Context) (bool, error) {
 	url := r.URL(ctx, false)
-	res, err := http.Get(url.String())
+	res, err := http.Head(url.String())
 	if err != nil {
 		return false, err
 	}
+	defer res.Body.Close()
 	switch res.StatusCode {
 	case http.StatusOK:
 		return true, nil

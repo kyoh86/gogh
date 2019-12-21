@@ -119,6 +119,7 @@ func TestFormatter(t *testing.T) {
 		require.NoError(t, formatter.PrintAll(&buf, ":"))
 		assert.Equal(t, `foo:github.com/kyoh86/bar:kyoh87/bar:example.com/kyoh86/bar:/go/src/github.com/kyoh86/baz:/foo/github.com/kyoh86/baz:`, buf.String())
 	})
+
 	t.Run("writer error by short formatter", func(t *testing.T) {
 		project, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
@@ -127,5 +128,4 @@ func TestFormatter(t *testing.T) {
 		formatter.Add(project)
 		require.EqualError(t, formatter.PrintAll(testutil.DefaultErrorWriter, ""), "error writer")
 	})
-
 }

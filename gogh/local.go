@@ -19,10 +19,10 @@ type Project struct {
 }
 
 var (
-	// ProjectNotFound is the error will be raised when a project is not found.
-	ProjectNotFound = errors.New("project not found")
-	// ProjectNotFound is the error will be raised when a project already exists.
-	ProjectAlreadyExists = errors.New("project already exists")
+	// ErrProjectNotFound is the error will be raised when a project is not found.
+	ErrProjectNotFound = errors.New("project not found")
+	// ErrProjectAlreadyExists is the error will be raised when a project already exists.
+	ErrProjectAlreadyExists = errors.New("project already exists")
 )
 
 // FindProject will find a project (local repository) that matches exactly.
@@ -56,7 +56,7 @@ func findProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
 		return project, nil
 	}
 
-	return nil, ProjectNotFound
+	return nil, ErrProjectNotFound
 }
 
 // FindOrNewProject will find a project (local repository) that matches exactly or create new one.
@@ -71,7 +71,7 @@ func FindOrNewProjectInPrimary(ctx Context, repo *Repo) (*Project, error) {
 
 func findOrNewProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
 	switch p, err := findProject(ctx, repo, walker); err {
-	case ProjectNotFound:
+	case ErrProjectNotFound:
 		// No repository found, returning new one
 		return NewProject(ctx, repo)
 	case nil:

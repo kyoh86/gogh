@@ -10,10 +10,9 @@ import (
 )
 
 var (
-	EmptyValue           = errors.New("empty value")
-	RemoveFromMonoOption = errors.New("removing from mono option")
-	InvalidOptionName    = errors.New("invalid option name")
-	TokenMustNotSave     = errors.New("token must not save")
+	ErrEmptyValue        = errors.New("empty value")
+	ErrInvalidOptionName = errors.New("invalid option name")
+	ErrTokenMustNotSave  = errors.New("token must not save")
 )
 
 type OptionAccessor struct {
@@ -59,7 +58,7 @@ func init() {
 func Option(optionName string) (*OptionAccessor, error) {
 	a, ok := configAccessor[optionName]
 	if !ok {
-		return nil, InvalidOptionName
+		return nil, ErrInvalidOptionName
 	}
 	return &a, nil
 }
@@ -76,7 +75,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			if err := gogh.ValidateOwner(value); err != nil {
 				return err
@@ -96,7 +95,7 @@ var (
 			return cfg.GitHubToken()
 		},
 		putter: func(cfg *Config, value string) error {
-			return TokenMustNotSave
+			return ErrTokenMustNotSave
 		},
 		unsetter: func(cfg *Config) error {
 			cfg.GitHub.Token = ""
@@ -111,7 +110,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			cfg.GitHub.Host = value
 			return nil
@@ -129,7 +128,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			if err := gogh.ValidateLogLevel(value); err != nil {
 				return err
@@ -150,7 +149,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			return cfg.Log.Date.Decode(value)
 		},
@@ -167,7 +166,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			return cfg.Log.Time.Decode(value)
 		},
@@ -184,7 +183,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			return cfg.Log.MicroSeconds.Decode(value)
 		},
@@ -201,7 +200,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			return cfg.Log.LongFile.Decode(value)
 		},
@@ -218,7 +217,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			return cfg.Log.ShortFile.Decode(value)
 		},
@@ -235,7 +234,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 			return cfg.Log.UTC.Decode(value)
 		},
@@ -252,7 +251,7 @@ var (
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
-				return EmptyValue
+				return ErrEmptyValue
 			}
 
 			list := filepath.SplitList(value)
