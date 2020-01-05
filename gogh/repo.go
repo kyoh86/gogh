@@ -46,12 +46,12 @@ func ParseRepo(rawRepo string) (*Repo, error) {
 }
 
 // CheckRepoHost that repo is in supported host
-func CheckRepoHost(ctx Context, repo *Repo) error {
+func CheckRepoHost(ctx GitHubContext, repo *Repo) error {
 	return SupportedHost(ctx, repo.Host(ctx))
 }
 
 // SupportedHost that repo is in supported host
-func SupportedHost(ctx Context, host string) error {
+func SupportedHost(ctx GitHubContext, host string) error {
 	if host == ctx.GitHubHost() {
 		return nil
 	}
@@ -122,12 +122,12 @@ func (r *Repo) Set(rawRepo string) error {
 }
 
 // Scheme returns scheme of the repository
-func (r *Repo) Scheme(_ Context) string {
+func (r *Repo) Scheme(_ GitHubContext) string {
 	return r.scheme
 }
 
 // Host returns host of the repository
-func (r *Repo) Host(ctx Context) string {
+func (r *Repo) Host(ctx GitHubContext) string {
 	if r.host == "" {
 		return ctx.GitHubHost()
 	}
@@ -135,7 +135,7 @@ func (r *Repo) Host(ctx Context) string {
 }
 
 // Owner returns a user name of an owner of the repository
-func (r *Repo) Owner(ctx Context) string {
+func (r *Repo) Owner(ctx GitHubContext) string {
 	if r.owner == "" {
 		return ctx.GitHubUser()
 	}
@@ -143,17 +143,17 @@ func (r *Repo) Owner(ctx Context) string {
 }
 
 // Name returns a name of the repository
-func (r *Repo) Name(_ Context) string {
+func (r *Repo) Name(_ GitHubContext) string {
 	return r.name
 }
 
 // FullName returns a repository identifier that is formed like {Owner/Name}
-func (r *Repo) FullName(ctx Context) string {
+func (r *Repo) FullName(ctx GitHubContext) string {
 	return path.Join(r.Owner(ctx), r.Name(ctx))
 }
 
 // URL will get a URL for a repository
-func (r *Repo) URL(ctx Context, ssh bool) *url.URL {
+func (r *Repo) URL(ctx GitHubContext, ssh bool) *url.URL {
 	if ssh {
 		return &url.URL{
 			Scheme: "ssh",
@@ -171,7 +171,7 @@ func (r *Repo) URL(ctx Context, ssh bool) *url.URL {
 }
 
 // Check if a GitHub repo is public (we can access the repo without token or auth)
-func (r *Repo) IsPublic(ctx Context) (bool, error) {
+func (r *Repo) IsPublic(ctx GitHubContext) (bool, error) {
 	url := r.URL(ctx, false)
 	res, err := http.Head(url.String())
 	if err != nil {
@@ -200,7 +200,7 @@ func (r *Repo) Match(p *Project) bool {
 }
 
 // RelPath get relative path from root directory
-func (r *Repo) RelPath(ctx Context) string {
+func (r *Repo) RelPath(ctx GitHubContext) string {
 	return filepath.Join(r.Host(ctx), r.Owner(ctx), r.Name(ctx))
 }
 
