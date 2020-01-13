@@ -17,6 +17,7 @@ require (
 	github.com/karrick/godirwalk v1.13.4
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kyoh86/ask v0.0.1
 	github.com/kyoh86/xdg v1.0.0
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
