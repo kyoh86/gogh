@@ -2,9 +2,10 @@ package command
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/kyoh86/ask"
 	"github.com/kyoh86/gogh/gogh"
-	"os"
 )
 
 // Delete local projects
@@ -41,5 +42,4 @@ func Delete(ctx gogh.Context, primary bool, query string) error {
 		}
 	}
 	return nil
-
 }
