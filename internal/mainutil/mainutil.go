@@ -50,7 +50,7 @@ func currentConfig(configFile string) (*config.Config, *config.Config, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	cfg := config.MergeConfig(config.DefaultConfig(), fileCfg, envarConfig)
+	cfg := config.MergeConfig(config.DefaultConfig(), fileCfg, config.LoadKeyring(), envarConfig)
 	if err := gogh.ValidateContext(cfg); err != nil {
 		return nil, nil, err
 	}
