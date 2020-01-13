@@ -26,15 +26,15 @@ func ExampleConfigGetAll() {
 		panic(err)
 	}
 	// Unordered output:
-	// root = /foo:/bar
-	// github.host = hostx1
-	// github.user = kyoh86
-	// github.token = *****
-	// log.level = trace
-	// log.date = yes
-	// log.time = no
-	// log.microseconds = yes
-	// log.longfile = yes
-	// log.shortfile = yes
-	// log.utc = yes
+	// root: /foo:/bar
+	// github.host: hostx1
+	// github.user: kyoh86
+	// github.token: *****
+	// log.level: trace
+	// log.date: yes
+	// log.time: no
+	// log.microseconds: yes
+	// log.longfile: yes
+	// log.shortfile: yes
+	// log.utc: yes
 }
