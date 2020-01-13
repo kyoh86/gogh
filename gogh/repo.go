@@ -1,6 +1,7 @@
 package gogh
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -8,8 +9,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Repo specifies a repository in the GitHub

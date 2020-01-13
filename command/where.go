@@ -1,10 +1,10 @@
 package command
 
 import (
+	"errors"
 	"log"
 
 	"github.com/kyoh86/gogh/gogh"
-	"github.com/pkg/errors"
 )
 
 // Where is a local project

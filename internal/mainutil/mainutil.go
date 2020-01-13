@@ -1,6 +1,7 @@
 package mainutil
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
@@ -23,15 +24,19 @@ func initLog(ctx gogh.Context) error {
 	if err != nil {
 		return err
 	}
-	colog.Register()
-	colog.SetOutput(ctx.Stderr())
-	colog.SetFlags(ctx.LogFlags())
 	colog.SetMinLevel(lvl)
 	colog.SetDefaultLevel(colog.LError)
+	colog.SetFormatter(&colog.StdFormatter{
+		Flag:        ctx.LogFlags(),
+		HeaderPlain: plainLabels,
+		HeaderColor: colorLabels,
+	})
+	colog.SetOutput(ctx.Stderr())
+	colog.Register()
 	return nil
 }
 
-func currentConfig(configFile string, validate bool) (*config.Config, *config.Config, error) {
+func currentConfig(configFile string) (*config.Config, *config.Config, error) {
 	var savedConfig *config.Config
 	file, err := os.Open(configFile)
 	switch {
@@ -53,11 +58,12 @@ func currentConfig(configFile string, validate bool) (*config.Config, *config.Co
 		return nil, nil, err
 	}
 	cfg := config.MergeConfig(config.DefaultConfig(), savedConfig, envarConfig)
-	if !validate {
-		return savedConfig, cfg, nil
-	}
-	if err := gogh.ValidateContext(cfg); err != nil {
+	if err := initLog(cfg); err != nil {
 		return nil, nil, err
+	}
+
+	if err := gogh.ValidateContext(cfg); err != nil {
+		log.Printf("warn: invalid config: %v", err)
 	}
 	return savedConfig, cfg, nil
 }
@@ -66,14 +72,11 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Context) error) (string, fu
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() error {
-		_, cfg, err := currentConfig(configFile, true)
+		_, cfg, err := currentConfig(configFile)
 		if err != nil {
 			return err
 		}
 
-		if err := initLog(cfg); err != nil {
-			return err
-		}
 		return f(cfg)
 	}
 }
@@ -82,12 +85,8 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*config.Config) erro
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() error {
-		savedConfig, cfg, err := currentConfig(configFile, false)
+		savedConfig, _, err := currentConfig(configFile)
 		if err != nil {
-			return err
-		}
-
-		if err := initLog(cfg); err != nil {
 			return err
 		}
 

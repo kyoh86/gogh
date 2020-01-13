@@ -1,12 +1,14 @@
 package gogh
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 
 	"github.com/comail/colog"
-	"github.com/pkg/errors"
+	"go.uber.org/multierr"
 )
 
 var invalidNameRegexp = regexp.MustCompile(`[^\w\-\.]`)
@@ -67,14 +69,15 @@ func ValidateLogLevel(level string) error {
 }
 
 func ValidateContext(ctx Context) error {
+	var validationError error
 	if err := ValidateRoots(ctx.Root()); err != nil {
-		return errors.Wrap(err, "invalid roots in the context; set a valid path by 'gogh config put root <Project root path>'")
+		validationError = multierr.Append(validationError, fmt.Errorf("invalid roots: %w", err))
 	}
 	if err := ValidateOwner(ctx.GitHubUser()); err != nil {
-		return errors.Wrap(err, "invalid GitHub user in the context; set a valid name by 'gogh config put github.user <GitHub user name>'")
+		validationError = multierr.Append(validationError, fmt.Errorf("invalid GitHub user: %w", err))
 	}
 	if err := ValidateLogLevel(ctx.LogLevel()); err != nil {
-		return errors.Wrap(err, "invalid log level in the context; set a valid log-level by 'gogh config put log.level <debug|info|warn|error>' or unset by 'gogh config unset log.level'")
+		validationError = multierr.Append(validationError, fmt.Errorf("invalid log level: %w", err))
 	}
-	return nil
+	return validationError
 }
