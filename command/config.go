@@ -10,7 +10,7 @@ func ConfigGetAll(cfg *config.Config) error {
 	for _, name := range config.OptionNames() {
 		opt, _ := config.Option(name) // ignore error: config.OptionNames covers all accessor
 		value := opt.Get(cfg)
-		fmt.Printf("%s = %s\n", name, value)
+		fmt.Printf("%s: %s\n", name, value)
 	}
 	return nil
 }
