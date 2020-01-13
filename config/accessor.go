@@ -7,7 +7,7 @@ import (
 
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/thoas/go-funk"
-"github.com/zalando/go-keyring"
+	"github.com/zalando/go-keyring"
 )
 
 var (
