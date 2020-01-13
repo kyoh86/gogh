@@ -35,7 +35,7 @@ func TestAccessor(t *testing.T) {
 
 		_, err := Option("invalid name")
 		assert.EqualError(t, err, "invalid option name")
-		assert.Equal(t, dummyToken, mustOption(Option("github.token")).Get(&cfg))
+		assert.Equal(t, "*****", mustOption(Option("github.token")).Get(&cfg))
 		assert.Equal(t, dummyHost, mustOption(Option("github.host")).Get(&cfg))
 		assert.Equal(t, dummyUser, mustOption(Option("github.user")).Get(&cfg))
 		assert.Equal(t, dummyLevel, mustOption(Option("log.level")).Get(&cfg))
@@ -90,8 +90,7 @@ func TestAccessor(t *testing.T) {
 			return acc
 		}
 		var cfg Config
-		assert.EqualError(t, mustOption(Option("github.token")).Put(&cfg, dummyToken), "token must not save")
-
+		assert.EqualError(t, mustOption(Option("github.token")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("github.host")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("github.user")).Put(&cfg, ""), "empty value")
 		assert.EqualError(t, mustOption(Option("log.level")).Put(&cfg, ""), "empty value")
@@ -143,11 +142,13 @@ func TestAccessor(t *testing.T) {
 		_, err := Option("invalid name")
 		assert.EqualError(t, err, "invalid option name")
 		for _, name := range OptionNames() {
+			if name == gitHubTokenOptionAccessor.optionName {
+				continue
+			}
 			acc, err := Option(name)
 			require.NoError(t, err)
 			assert.NoError(t, acc.Unset(&cfg), name)
 		}
-		assert.Equal(t, "", cfg.GitHub.Token)
 		assert.Equal(t, "", cfg.GitHub.Host)
 		assert.Equal(t, "", cfg.GitHub.User)
 		assert.Equal(t, "", cfg.Log.Level)

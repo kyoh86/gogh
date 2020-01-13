@@ -7,12 +7,12 @@ import (
 
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/thoas/go-funk"
+"github.com/zalando/go-keyring"
 )
 
 var (
 	ErrEmptyValue        = errors.New("empty value")
 	ErrInvalidOptionName = errors.New("invalid option name")
-	ErrTokenMustNotSave  = errors.New("token must not save")
 )
 
 type OptionAccessor struct {
@@ -92,14 +92,19 @@ var (
 	gitHubTokenOptionAccessor = OptionAccessor{
 		optionName: "github.token",
 		getter: func(cfg *Config) string {
-			return cfg.GitHubToken()
+			if cfg.GitHubToken() == "" {
+				return ""
+			}
+			return "*****"
 		},
 		putter: func(cfg *Config, value string) error {
-			return ErrTokenMustNotSave
+			if value == "" {
+				return ErrEmptyValue
+			}
+			return keyring.Set(keyGoghServiceName, keyGoghGitHubToken, value)
 		},
 		unsetter: func(cfg *Config) error {
-			cfg.GitHub.Token = ""
-			return nil
+			return keyring.Delete(keyGoghServiceName, keyGoghGitHubToken)
 		},
 	}
 

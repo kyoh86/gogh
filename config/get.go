@@ -4,11 +4,13 @@ import (
 	"context"
 	"go/build"
 	"io"
+	"log"
 	"path/filepath"
 	"sync"
 
 	"github.com/joeshaw/envdecode"
 	"github.com/thoas/go-funk"
+	"github.com/zalando/go-keyring"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -37,6 +39,8 @@ var (
 		envGoghGitHubHost,
 		envGoghRoot,
 	}
+	keyGoghServiceName = "gogh.kyoh86.dev"
+	keyGoghGitHubToken = "github-token"
 )
 
 const (
@@ -77,6 +81,16 @@ func LoadConfig(r io.Reader) (config *Config, err error) {
 	}
 	config.VRoot = funk.UniqString(config.VRoot)
 	return
+}
+
+func LoadKeyring() *Config {
+	token, err := keyring.Get(keyGoghServiceName, keyGoghGitHubToken)
+	if err != nil {
+		log.Printf("info: there's no token in %s::%s (%v)", keyGoghServiceName, keyGoghGitHubToken, err)
+		return &Config{}
+	}
+
+	return &Config{GitHub: GitHubConfig{Token: token}}
 }
 
 func SaveConfig(w io.Writer, config *Config) error {
