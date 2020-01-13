@@ -12,21 +12,22 @@ require (
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v24 v24.0.1
 	github.com/joeshaw/envdecode v0.0.0-20190604014844-d6d9849fcc2c
-	github.com/karrick/godirwalk v1.13.4
+	github.com/karrick/godirwalk v1.14.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/kyoh86/ask v0.0.1
-	github.com/kyoh86/xdg v1.0.0
+	github.com/kyoh86/ask v0.0.7
+	github.com/kyoh86/xdg v1.2.0
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/thoas/go-funk v0.5.0
 	github.com/zalando/go-keyring v0.0.0-20200106095630-91fe8abcd771
 	go.uber.org/multierr v1.4.0
-	golang.org/x/crypto v0.0.0-20191219195013-becbf705a915 // indirect
+	golang.org/x/crypto v0.0.0-20200109152110-61a87790db17 // indirect
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
-	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6
-	golang.org/x/sys v0.0.0-20191220220014-0732a990476f // indirect
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
