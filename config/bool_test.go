@@ -9,7 +9,7 @@ import (
 	"github.com/joeshaw/envdecode"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 func TestBoolOption(t *testing.T) {
@@ -27,11 +27,11 @@ func TestBoolOption(t *testing.T) {
 
 		buf.Reset()
 		require.NoError(t, yaml.NewEncoder(&buf).Encode(testStruct{Bool: FalseOption}))
-		assert.Equal(t, `bool: "no"`, strings.TrimSpace(buf.String()))
+		assert.Equal(t, `bool: no`, strings.TrimSpace(buf.String()))
 
 		buf.Reset()
 		require.NoError(t, yaml.NewEncoder(&buf).Encode(testStruct{Bool: TrueOption}))
-		assert.Equal(t, `bool: "yes"`, strings.TrimSpace(buf.String()))
+		assert.Equal(t, `bool: yes`, strings.TrimSpace(buf.String()))
 	})
 	t.Run("decode from YAML", func(t *testing.T) {
 		var testValue testStruct

@@ -41,12 +41,12 @@ root:
 
 log:
   level: trace
-  date: "yes"
-  time: "yes"
+  date: yes
+  time: yes
   microseconds: yes
-  longfile: "yes"
-  shortfile: "yes"
-  utc: "yes"
+  longfile: yes
+  shortfile: yes
+  utc: yes
 
 github:
   token: tokenx1
@@ -97,12 +97,12 @@ func TestSaveConfig(t *testing.T) {
 		assert.Contains(t, output, "- /bar")
 		assert.Contains(t, output, "log:")
 		assert.Contains(t, output, "  level: trace")
-		assert.Contains(t, output, `  date: "yes"`)
-		assert.Contains(t, output, `  time: "no"`)
-		assert.Contains(t, output, `  microseconds: "yes"`)
-		assert.Contains(t, output, `  longfile: "yes"`)
-		assert.Contains(t, output, `  shortfile: "yes"`)
-		assert.Contains(t, output, `  utc: "yes"`)
+		assert.Contains(t, output, `  date: yes`)
+		assert.Contains(t, output, `  time: no`)
+		assert.Contains(t, output, `  microseconds: yes`)
+		assert.Contains(t, output, `  longfile: yes`)
+		assert.Contains(t, output, `  shortfile: yes`)
+		assert.Contains(t, output, `  utc: yes`)
 		assert.Contains(t, output, "github:")
 		assert.NotContains(t, output, "tokenx1")
 		assert.Contains(t, output, "  user: kyoh86")

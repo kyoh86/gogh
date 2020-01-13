@@ -9,7 +9,7 @@ import (
 	"github.com/joeshaw/envdecode"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 func TestPathListOption(t *testing.T) {
@@ -28,7 +28,7 @@ func TestPathListOption(t *testing.T) {
 
 		buf.Reset()
 		require.NoError(t, yaml.NewEncoder(&buf).Encode(testStruct{PathList: PathListOption{"/foo", "/bar"}}))
-		assert.Equal(t, "paths:\n- /foo\n- /bar", strings.TrimSpace(buf.String()))
+		assert.Equal(t, "paths:\n  - /foo\n  - /bar", strings.TrimSpace(buf.String()))
 	})
 	t.Run("decode from YAML", func(t *testing.T) {
 		var testValue testStruct

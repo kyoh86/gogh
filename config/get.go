@@ -11,7 +11,7 @@ import (
 	"github.com/joeshaw/envdecode"
 	"github.com/thoas/go-funk"
 	"github.com/zalando/go-keyring"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 var (
