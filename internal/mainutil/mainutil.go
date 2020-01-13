@@ -31,7 +31,7 @@ func initLog(ctx gogh.Context) error {
 	return nil
 }
 
-func currentConfig(configFile string) (*config.Config, *config.Config, error) {
+func currentConfig(configFile string, validate bool) (*config.Config, *config.Config, error) {
 	var fileCfg *config.Config
 	file, err := os.Open(configFile)
 	switch {
@@ -51,6 +51,9 @@ func currentConfig(configFile string) (*config.Config, *config.Config, error) {
 		return nil, nil, err
 	}
 	cfg := config.MergeConfig(config.DefaultConfig(), fileCfg, config.LoadKeyring(), envarConfig)
+	if !validate {
+		return fileCfg, cfg, nil
+	}
 	if err := gogh.ValidateContext(cfg); err != nil {
 		return nil, nil, err
 	}
@@ -61,7 +64,7 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Context) error) (string, fu
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() error {
-		_, cfg, err := currentConfig(configFile)
+		_, cfg, err := currentConfig(configFile, true)
 		if err != nil {
 			return err
 		}
@@ -77,7 +80,7 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*config.Config) erro
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() error {
-		fileCfg, cfg, err := currentConfig(configFile)
+		fileCfg, cfg, err := currentConfig(configFile, false)
 		if err != nil {
 			return err
 		}
