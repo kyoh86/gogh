@@ -33,6 +33,7 @@ func Get(ctx gogh.Context, update, withSSH, shallow bool, repo *gogh.Repo) error
 			return err
 		}
 		fmt.Println(project.FullPath)
+		return nil
 	}
 	if update {
 		log.Println("info: Update", project.FullPath)
