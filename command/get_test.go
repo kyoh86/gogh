@@ -14,7 +14,6 @@ import (
 
 func TestGet(t *testing.T) {
 	defaultGitClient = &mockGitClient{}
-	defaultHubClient = &mockHubClient{}
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmp)

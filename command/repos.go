@@ -14,7 +14,7 @@ func Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibil
 		return err
 	}
 	for _, repo := range repos {
-		fmt.Println(repo)
+		fmt.Fprintln(ctx.Stdout(), repo)
 	}
 	return nil
 }

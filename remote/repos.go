@@ -1,6 +1,8 @@
 package remote
 
 import (
+	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/google/go-github/v24/github"
@@ -74,4 +76,86 @@ func Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibil
 		}
 	}
 	return list, nil
+}
+
+func Fork(
+	ctx gogh.Context,
+	repo *gogh.Repo,
+	organization string,
+) (result *gogh.Repo, retErr error) {
+	client, err := NewClient(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("creating new client: %w", err)
+	}
+
+	/*
+		Build GitHub requests.
+		See: https://developer.github.com/v3/repos/forks/#parameters-1
+			- organization string
+				Optional parameter to specify the organization name if forking into an organization.
+	*/
+	// If the context has no authentication token, specifies context user name for "me".
+	if organization == "" && !authenticated(ctx) {
+		organization = ctx.GitHubUser()
+	}
+
+	opts := &github.RepositoryCreateForkOptions{
+		Organization: organization,
+	}
+
+	newRepo, _, err := client.Repositories.CreateFork(ctx, repo.Owner(ctx), repo.Name(ctx), opts)
+	if newRepo != nil {
+		result, retErr = gogh.ParseRepo(newRepo.GetHTMLURL())
+	}
+	if err != nil {
+		retErr = fmt.Errorf("creating fork: %w", err)
+	}
+	return
+}
+
+// repository will be created under that org. If the empty string is
+// specified, it will be created for the authenticated user.
+func Create(
+	ctx gogh.Context,
+	repo *gogh.Repo,
+	description string,
+	homepage *url.URL,
+	private bool,
+) (newRepo *github.Repository, retErr error) {
+	client, err := NewClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build request parameters.
+	// See: https://developer.github.com/v3/repos/#create
+	// Parameters
+	// - name	string
+	//		Required. The name of the repository.
+	// - description	string
+	//		A short description of the repository.
+	// - homepage	string
+	//		A URL with more information about the repository.
+	// - private	boolean
+	//		Either true to create a private repository or false to create a public one. Creating private repositories requires a paid GitHub account. Default: false
+	// - visibility	string
+	//		Can be public or private. If your organization is associated with an enterprise account using GitHub Enterprise Cloud, visibility can also be internal. For more information, see "Creating an internal repository" in the GitHub Help documentation.
+	//		The visibility parameter overrides the private parameter when you use both parameters with the nebula-preview preview header.
+	name := repo.Name(ctx)
+	newRepo = &github.Repository{
+		Name:        &name,
+		Description: &description,
+		Private:     &private,
+	}
+	if homepage != nil {
+		page := homepage.String()
+		newRepo.Homepage = &page
+	}
+
+	owner := repo.ExplicitOwner(ctx)
+	if owner == ctx.GitHubUser() {
+		owner = ""
+	}
+	newRepo, _, err = client.Repositories.Create(ctx, owner, newRepo)
+	return newRepo, err
 }

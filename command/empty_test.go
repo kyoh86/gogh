@@ -15,7 +15,6 @@ import (
 
 func TestEmpty(t *testing.T) {
 	defaultGitClient = &mockGitClient{}
-	defaultHubClient = &mockHubClient{}
 	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(tmp)
@@ -38,7 +37,6 @@ func TestEmpty(t *testing.T) {
 		*mustRepo("kyoh86/vim-gogh"),
 	}))
 	assert.NoError(t, Get(ctx, false, false, false, mustRepo("kyoh86/gogh")))
-	assert.NoError(t, Fork(ctx, false, false, false, false, "", "", mustRepo("kyoh86/gogh")))
 	assert.NoError(t, List(ctx, gogh.ShortFormatter(), false, false, ""))
 	proj1 := filepath.Join(tmp, "github.com", "kyoh86", "gogh", ".git")
 	require.NoError(t, os.MkdirAll(proj1, 0755))

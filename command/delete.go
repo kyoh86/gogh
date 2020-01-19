@@ -24,10 +24,10 @@ func Delete(ctx gogh.Context, primary bool, query string) error {
 	}
 
 	if len(projects) == 0 {
-		fmt.Println("Any projects did not matched for", query)
+		fmt.Fprintln(ctx.Stdout(), "Any projects did not matched for", query)
 		return nil
 	}
-	fmt.Println("Deleting projects. Please confirm them and answer by [y/n]")
+	fmt.Fprintln(ctx.Stdout(), "Deleting projects. Please confirm them and answer by [y/n]")
 
 	for _, p := range projects {
 		fmt.Print(p.FullPath)

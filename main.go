@@ -164,8 +164,6 @@ func fork(app *kingpin.Application) (string, func() error) {
 		update       bool
 		withSSH      bool
 		shallow      bool
-		noRemote     bool
-		remoteName   string
 		organization string
 		repo         gogh.Repo
 	)
@@ -173,13 +171,11 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
-	cmd.Flag("no-remote", "Skip adding a git remote for the fork").BoolVar(&noRemote)
-	cmd.Flag("remote-name", "Set the name for the new git remote").PlaceHolder("REMOTE").StringVar(&remoteName)
 	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, &repo)
+		return command.Fork(ctx, update, withSSH, shallow, organization, &repo)
 	})
 }
 
@@ -188,8 +184,6 @@ func create(app *kingpin.Application) (string, func() error) {
 		private        bool
 		description    string
 		homepage       *url.URL
-		browse         bool
-		clip           bool
 		bare           bool
 		template       string
 		separateGitDir string
@@ -200,8 +194,6 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("private", "Create a private repository").BoolVar(&private)
 	cmd.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&description)
 	cmd.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&homepage)
-	cmd.Flag("browse", "Open the new repository in a web browser").Short('o').BoolVar(&browse)
-	cmd.Flag("copy", "Put the URL of the new repository to clipboard instead of printing it").Short('c').BoolVar(&clip)
 	cmd.Flag("bare", "Create a bare repository. If GIT_DIR environment is not set, it is set to the current working directory").BoolVar(&bare)
 	cmd.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&template)
 	cmd.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&separateGitDir)
@@ -209,7 +201,7 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, &repo)
+		return command.New(ctx, private, description, homepage, bare, template, separateGitDir, shared, &repo)
 	})
 }
 

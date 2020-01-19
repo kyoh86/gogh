@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/kyoh86/gogh/gogh"
+	"github.com/kyoh86/gogh/remote"
 )
 
 // New creates a local project and a remote repository.
@@ -14,8 +15,6 @@ func New(
 	private bool,
 	description string,
 	homepage *url.URL,
-	browse bool,
-	clipboard bool,
 	bare bool,
 	template string,
 	separateGitDir string,
@@ -45,5 +44,9 @@ func New(
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	return hub().Create(ctx, project, repo, description, homepage, private, browse, clipboard)
+	if _, err := remote.Create(ctx, repo, description, homepage, private); err != nil {
+		return err
+	}
+
+	return nil
 }
