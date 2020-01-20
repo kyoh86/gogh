@@ -110,7 +110,7 @@ func Fork(
 	if err != nil {
 		retErr = fmt.Errorf("creating fork: %w", err)
 	}
-	return
+	return result, retErr
 }
 
 // repository will be created under that org. If the empty string is
