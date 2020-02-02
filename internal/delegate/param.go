@@ -1,4 +1,4 @@
-package internal
+package delegate
 
 func appendIf(array []string, flag string, value bool) []string {
 	if value {

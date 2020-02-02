@@ -8,10 +8,10 @@ import (
 )
 
 // GetAll clonse or updates remote repositories.
-func GetAll(ctx gogh.Context, update, withSSH, shallow bool, repos gogh.Repos) error {
+func GetAll(ctx gogh.Context, gitClient *GitClient, update, withSSH, shallow bool, repos gogh.Repos) error {
 	for _, repo := range repos {
 		repo := repo
-		if err := Get(ctx, update, withSSH, shallow, &repo); err != nil {
+		if err := Get(ctx, gitClient, update, withSSH, shallow, &repo); err != nil {
 			return err
 		}
 	}
@@ -21,7 +21,7 @@ func GetAll(ctx gogh.Context, update, withSSH, shallow bool, repos gogh.Repos) e
 // Get clones or updates a remote repository.
 // If update is true, updates the locally cloned repository. Otherwise does nothing.
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
-func Get(ctx gogh.Context, update, withSSH, shallow bool, repo *gogh.Repo) error {
+func Get(ctx gogh.Context, gitClient *GitClient, update, withSSH, shallow bool, repo *gogh.Repo) error {
 	repoURL := repo.URL(ctx, withSSH)
 	project, err := gogh.FindOrNewProject(ctx, repo)
 	if err != nil {
@@ -29,7 +29,7 @@ func Get(ctx gogh.Context, update, withSSH, shallow bool, repo *gogh.Repo) error
 	}
 	if !project.Exists {
 		log.Println("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
-		if err := git().Clone(ctx, project, repoURL, shallow); err != nil {
+		if err := gitClient.Clone(ctx, project, repoURL, shallow); err != nil {
 			return err
 		}
 		fmt.Fprintln(ctx.Stdout(), project.FullPath)
@@ -37,7 +37,7 @@ func Get(ctx gogh.Context, update, withSSH, shallow bool, repo *gogh.Repo) error
 	}
 	if update {
 		log.Println("info: Update", project.FullPath)
-		if err := git().Update(ctx, project); err != nil {
+		if err := gitClient.Update(ctx, project); err != nil {
 			return err
 		}
 		fmt.Fprintln(ctx.Stdout(), project.FullPath)

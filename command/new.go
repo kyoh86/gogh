@@ -6,12 +6,13 @@ import (
 	"os"
 
 	"github.com/kyoh86/gogh/gogh"
-	"github.com/kyoh86/gogh/remote"
 )
 
 // New creates a local project and a remote repository.
 func New(
 	ctx gogh.Context,
+	gitClient *GitClient,
+	hubClient *HubClient,
 	private bool,
 	description string,
 	homepage *url.URL,
@@ -38,13 +39,13 @@ func New(
 
 	// git init
 	log.Println("info: Initializing a repository")
-	if err := git().Init(ctx, project, bare, template, separateGitDir, shared); err != nil {
+	if err := gitClient.Init(ctx, project, bare, template, separateGitDir, shared); err != nil {
 		return err
 	}
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	if _, err := remote.Create(ctx, repo, description, homepage, private); err != nil {
+	if _, err := hubClient.Create(ctx, repo, description, homepage, private); err != nil {
 		return err
 	}
 

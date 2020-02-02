@@ -1,13 +1,44 @@
-package remote
+package hub
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/google/go-github/v24/github"
 	"github.com/kyoh86/gogh/gogh"
+	"golang.org/x/oauth2"
 )
+
+// New builds GitHub Client with GitHub API token that is configured.
+func New(ctx gogh.Context) (*HubClient, error) {
+	if host := ctx.GitHubHost(); host != "" && host != "github.com" {
+		url := fmt.Sprintf("https://%s/api/v3", host)
+		client, err := github.NewEnterpriseClient(url, url, oauth2Client(ctx))
+		if err != nil {
+			return nil, err
+		}
+		return &HubClient{client}, nil
+	}
+	return &HubClient{github.NewClient(oauth2Client(ctx))}, nil
+}
+
+func authenticated(ctx gogh.Context) bool {
+	return ctx.GitHubToken() != ""
+}
+
+func oauth2Client(ctx gogh.Context) *http.Client {
+	if !authenticated(ctx) {
+		return nil
+	}
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: ctx.GitHubToken()})
+	return oauth2.NewClient(ctx, ts)
+}
+
+type HubClient struct {
+	client *github.Client
+}
 
 // Repos will get a list of repositories for a user.
 // Parameters:
@@ -20,12 +51,7 @@ import (
 //   * direction:   Can be one of asc or desc default. Default means asc when using full_name, otherwise desc
 // Returns:
 //   List of the url for repoisitories
-func Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
-	client, err := NewClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func (i *HubClient) Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
 	/*
 		Build GitHub requests.
 		See: https://developer.github.com/v3/repos/#parameters
@@ -65,7 +91,7 @@ func Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibil
 	for page := 1; page <= last; page++ {
 		opts.ListOptions.Page = page
 
-		repos, res, err := client.Repositories.List(ctx, user, opts)
+		repos, res, err := i.client.Repositories.List(ctx, user, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -78,16 +104,12 @@ func Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibil
 	return list, nil
 }
 
-func Fork(
+// Fork will fork a repository for yours (or for the organization).
+func (i *HubClient) Fork(
 	ctx gogh.Context,
 	repo *gogh.Repo,
 	organization string,
 ) (result *gogh.Repo, retErr error) {
-	client, err := NewClient(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("creating new client: %w", err)
-	}
-
 	/*
 		Build GitHub requests.
 		See: https://developer.github.com/v3/repos/forks/#parameters-1
@@ -103,7 +125,7 @@ func Fork(
 		Organization: organization,
 	}
 
-	newRepo, _, err := client.Repositories.CreateFork(ctx, repo.Owner(ctx), repo.Name(ctx), opts)
+	newRepo, _, err := i.client.Repositories.CreateFork(ctx, repo.Owner(ctx), repo.Name(ctx), opts)
 	if newRepo != nil {
 		result, retErr = gogh.ParseRepo(newRepo.GetHTMLURL())
 	}
@@ -113,20 +135,14 @@ func Fork(
 	return result, retErr
 }
 
-// repository will be created under that org. If the empty string is
-// specified, it will be created for the authenticated user.
-func Create(
+// Create new repository.
+func (i *HubClient) Create(
 	ctx gogh.Context,
 	repo *gogh.Repo,
 	description string,
 	homepage *url.URL,
 	private bool,
 ) (newRepo *github.Repository, retErr error) {
-	client, err := NewClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	// Build request parameters.
 	// See: https://developer.github.com/v3/repos/#create
 	// Parameters
@@ -156,6 +172,6 @@ func Create(
 	if owner == ctx.GitHubUser() {
 		owner = ""
 	}
-	newRepo, _, err = client.Repositories.Create(ctx, owner, newRepo)
+	newRepo, _, err := i.client.Repositories.Create(ctx, owner, newRepo)
 	return newRepo, err
 }
