@@ -12,16 +12,16 @@ import (
 )
 
 // New builds GitHub Client with GitHub API token that is configured.
-func New(ctx gogh.Context) (*HubClient, error) {
+func New(ctx gogh.Context) (*Client, error) {
 	if host := ctx.GitHubHost(); host != "" && host != "github.com" {
 		url := fmt.Sprintf("https://%s/api/v3", host)
 		client, err := github.NewEnterpriseClient(url, url, oauth2Client(ctx))
 		if err != nil {
 			return nil, err
 		}
-		return &HubClient{client}, nil
+		return &Client{client}, nil
 	}
-	return &HubClient{github.NewClient(oauth2Client(ctx))}, nil
+	return &Client{github.NewClient(oauth2Client(ctx))}, nil
 }
 
 func authenticated(ctx gogh.Context) bool {
@@ -36,7 +36,7 @@ func oauth2Client(ctx gogh.Context) *http.Client {
 	return oauth2.NewClient(ctx, ts)
 }
 
-type HubClient struct {
+type Client struct {
 	client *github.Client
 }
 
@@ -51,7 +51,7 @@ type HubClient struct {
 //   * direction:   Can be one of asc or desc default. Default means asc when using full_name, otherwise desc
 // Returns:
 //   List of the url for repoisitories
-func (i *HubClient) Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
+func (i *Client) Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
 	/*
 		Build GitHub requests.
 		See: https://developer.github.com/v3/repos/#parameters
@@ -105,7 +105,7 @@ func (i *HubClient) Repos(ctx gogh.Context, user string, own, collaborate, membe
 }
 
 // Fork will fork a repository for yours (or for the organization).
-func (i *HubClient) Fork(
+func (i *Client) Fork(
 	ctx gogh.Context,
 	repo *gogh.Repo,
 	organization string,
@@ -136,7 +136,7 @@ func (i *HubClient) Fork(
 }
 
 // Create new repository.
-func (i *HubClient) Create(
+func (i *Client) Create(
 	ctx gogh.Context,
 	repo *gogh.Repo,
 	description string,

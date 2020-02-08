@@ -14,7 +14,7 @@ import (
 	"github.com/kyoh86/gogh/internal/delegate"
 )
 
-type GitClient struct {
+type Client struct {
 	For struct {
 		Stdout io.Writer
 		Stderr io.Writer
@@ -22,7 +22,7 @@ type GitClient struct {
 	}
 }
 
-func (c *GitClient) command(args ...string) *exec.Cmd {
+func (c *Client) command(args ...string) *exec.Cmd {
 	cmd := exec.Command("git", args...)
 	cmd.Stdin = c.For.Stdin
 	cmd.Stdout = c.For.Stdout
@@ -30,7 +30,7 @@ func (c *GitClient) command(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func (c *GitClient) Init(
+func (c *Client) Init(
 	directory string,
 	bare bool,
 	template string,
@@ -46,7 +46,7 @@ func (c *GitClient) Init(
 	return delegate.ExecCommand(c.command(args...))
 }
 
-func (c *GitClient) Clone(local string, remote *url.URL, shallow bool) error {
+func (c *Client) Clone(local string, remote *url.URL, shallow bool) error {
 	dir, _ := filepath.Split(local)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -63,14 +63,14 @@ func (c *GitClient) Clone(local string, remote *url.URL, shallow bool) error {
 	return delegate.ExecCommand(cmd)
 }
 
-func (c *GitClient) Update(local string) error {
+func (c *Client) Update(local string) error {
 	cmd := c.command("pull", "--ff-only")
 	cmd.Dir = local
 
 	return delegate.ExecCommand(cmd)
 }
 
-func (c *GitClient) GetRemotes(local string) (map[string]*url.URL, error) {
+func (c *Client) GetRemotes(local string) (map[string]*url.URL, error) {
 	cmd := c.command("remote", "-v")
 
 	var stdout, stderr bytes.Buffer
@@ -98,7 +98,7 @@ func (c *GitClient) GetRemotes(local string) (map[string]*url.URL, error) {
 	return remotes, nil
 }
 
-func (c *GitClient) GetRemote(local string, name string) (*url.URL, error) {
+func (c *Client) GetRemote(local string, name string) (*url.URL, error) {
 	cmd := c.command("remote", "get-url", name)
 
 	var stdout, stderr bytes.Buffer
@@ -112,21 +112,21 @@ func (c *GitClient) GetRemote(local string, name string) (*url.URL, error) {
 	return url.Parse(strings.TrimSpace(stdout.String()))
 }
 
-func (c *GitClient) RemoveRemote(local string, name string) error {
+func (c *Client) RemoveRemote(local string, name string) error {
 	cmd := c.command("remote", "remove", name)
 	cmd.Dir = local
 
 	return delegate.ExecCommand(cmd)
 }
 
-func (c *GitClient) RenameRemote(local string, oldName, newName string) error {
+func (c *Client) RenameRemote(local string, oldName, newName string) error {
 	cmd := c.command("remote", "rename", oldName, newName)
 	cmd.Dir = local
 
 	return delegate.ExecCommand(cmd)
 }
 
-func (c *GitClient) AddRemote(local string, name string, url *url.URL) error {
+func (c *Client) AddRemote(local string, name string, url *url.URL) error {
 	cmd := c.command("remote", "add", name, url.String())
 	cmd.Dir = local
 
