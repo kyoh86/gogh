@@ -24,12 +24,16 @@ func TestNew(t *testing.T) {
 
 		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
-		private := false
-		description := "description"
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
-		bare := false
-		template := "template"
-		separateGitDir := "separeteGitDir"
+
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
+
 		shared := command.RepoShared("false")
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		assert.EqualError(t, command.New(
@@ -52,13 +56,15 @@ func TestNew(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
 
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
 		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		private := false
-		description := "description"
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
-		bare := false
-		template := "template"
-		separateGitDir := "separeteGitDir"
 		shared := command.RepoShared("false")
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		localErr := errors.New("local error")
@@ -83,13 +89,15 @@ func TestNew(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
 
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
 		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		private := false
-		description := "description"
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
-		bare := false
-		template := "template"
-		separateGitDir := "separeteGitDir"
 		shared := command.RepoShared("false")
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		remoteErr := errors.New("remote error")
