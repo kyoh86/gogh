@@ -11,15 +11,15 @@ import (
 // New creates a local project and a remote repository.
 func New(
 	ctx gogh.Context,
-	gitClient *GitClient,
-	hubClient *HubClient,
+	gitClient GitClient,
+	hubClient HubClient,
 	private bool,
 	description string,
 	homepage *url.URL,
 	bare bool,
 	template string,
 	separateGitDir string,
-	shared gogh.ProjectShared,
+	shared RepoShared,
 	repo *gogh.Repo,
 ) error {
 	log.Printf("info: Creating new project and a remote repository %s", repo)
@@ -39,7 +39,7 @@ func New(
 
 	// git init
 	log.Println("info: Initializing a repository")
-	if err := gitClient.Init(ctx, project, bare, template, separateGitDir, shared); err != nil {
+	if err := gitClient.Init(project.FullPath, bare, template, separateGitDir, shared.String()); err != nil {
 		return err
 	}
 
@@ -48,6 +48,7 @@ func New(
 	if _, err := hubClient.Create(ctx, repo, description, homepage, private); err != nil {
 		return err
 	}
+	// UNDONE: setup remote
 
 	return nil
 }

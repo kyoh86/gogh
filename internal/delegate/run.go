@@ -7,28 +7,28 @@ import (
 	"strings"
 )
 
-// commandRunner will run a command
-var commandRunner = func(cmd *exec.Cmd) error {
+// CommandRunner will run a command
+var CommandRunner = func(cmd *exec.Cmd) error {
 	return cmd.Run()
 }
 
-func execCommand(cmd *exec.Cmd) error {
+func ExecCommand(cmd *exec.Cmd) error {
 	log.Println("debug: Calling", cmd.Args[0], strings.Join(cmd.Args[1:], " "))
 
-	err := commandRunner(cmd)
+	err := CommandRunner(cmd)
 	if err != nil {
-		return &execError{cmd, err}
+		return &ExecError{cmd, err}
 	}
 
 	return nil
 }
 
-// execError holds command and its result
-type execError struct {
+// ExecError holds command and its result
+type ExecError struct {
 	Command   *exec.Cmd
 	ExecError error
 }
 
-func (e *execError) Error() string {
+func (e *ExecError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Command.Path, e.ExecError)
 }

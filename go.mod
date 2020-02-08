@@ -7,13 +7,13 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
 	github.com/deadcheat/goblet v1.3.1
-	github.com/github/hub v2.11.2+incompatible // indirect
+	github.com/github/hub v2.11.2+incompatible
+	github.com/golang/mock v1.4.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v24 v24.0.1
 	github.com/joeshaw/envdecode v0.0.0-20190604014844-d6d9849fcc2c
 	github.com/karrick/godirwalk v1.14.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/koron-go/srcdom v0.0.0-20200201015838-bebf9d8fb68d // indirect
 	github.com/kyoh86/ask v0.0.7
 	github.com/kyoh86/xdg v1.2.0
 	github.com/mattn/go-colorable v0.1.4 // indirect
