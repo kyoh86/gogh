@@ -118,4 +118,75 @@ func TestNew(t *testing.T) {
 		), remoteErr.Error())
 		assert.DirExists(t, local)
 	})
+
+	t.Run("AddRemoteError", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.tearDown(t)
+
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
+		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
+		shared := command.RepoShared("false")
+		repo := mustParseRepo(t, "kyoh86/gogh")
+		addRemoteErr := errors.New("remote error")
+		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
+		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, nil)
+		u, _ := url.Parse("https://github.com/kyoh86/gogh")
+		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(addRemoteErr)
+		assert.EqualError(t, command.New(
+			svc.ctx,
+			svc.gitClient,
+			svc.hubClient,
+			private,
+			description,
+			homepage,
+			bare,
+			template,
+			separateGitDir,
+			shared,
+			repo,
+		), addRemoteErr.Error())
+		assert.DirExists(t, local)
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.tearDown(t)
+
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
+		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
+		shared := command.RepoShared("false")
+		repo := mustParseRepo(t, "kyoh86/gogh")
+		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
+		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, nil)
+		u, _ := url.Parse("https://github.com/kyoh86/gogh")
+		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(nil)
+		assert.NoError(t, command.New(
+			svc.ctx,
+			svc.gitClient,
+			svc.hubClient,
+			private,
+			description,
+			homepage,
+			bare,
+			template,
+			separateGitDir,
+			shared,
+			repo,
+		))
+		assert.DirExists(t, local)
+	})
 }
