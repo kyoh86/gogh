@@ -12,7 +12,7 @@ func InitLog(ctx gogh.Context) {
 	if rawLevel != "" {
 		lvl, err := colog.ParseLevel(rawLevel)
 		if err != nil {
-			defer log.Println("warn: could not parse level %s", rawLevel)
+			defer log.Printf("warn: could not parse level %q", rawLevel)
 		}
 		colog.SetMinLevel(lvl)
 	}
