@@ -19,7 +19,7 @@ func Setup(ctx gogh.Context, _, shell string) error {
 		return err
 	}
 	_, shellName := filepath.Split(shell)
-	assetName := "/src/init." + shellName
+	assetName := "/init." + shellName
 	file, err := staticFs.Open(assetName)
 	if err != nil {
 		if os.IsNotExist(err) {
