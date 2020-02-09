@@ -210,9 +210,7 @@ func TestNew(t *testing.T) {
 		shared := command.RepoShared("false")
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		localErr := errors.New("local error")
-		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(func(local string) (map[string]*url.URL, error) {
-			return gitClient.GetRemotes(local)
-		})
+		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Do(func(
 			directory string,
 			bare bool,
@@ -248,9 +246,7 @@ func TestNew(t *testing.T) {
 		})
 		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, nil)
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
-		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(func(local string, name string, url *url.URL) error {
-			return gitClient.AddRemote(local, name, url)
-		})
+		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
 			svc.ctx,
 			svc.gitClient,
@@ -285,9 +281,7 @@ func TestNew(t *testing.T) {
 		shared := command.RepoShared("false")
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		createErr := errors.New("create error")
-		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(func(local string) (map[string]*url.URL, error) {
-			return gitClient.GetRemotes(local)
-		})
+		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Do(func(
 			directory string,
 			bare bool,
@@ -324,13 +318,7 @@ func TestNew(t *testing.T) {
 		})
 		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, nil)
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
-		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(func(
-			local string,
-			name string,
-			url *url.URL,
-		) error {
-			return gitClient.AddRemote(local, name, url)
-		})
+		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
 			svc.ctx,
 			svc.gitClient,
@@ -398,9 +386,7 @@ func TestNew(t *testing.T) {
 		), addRemoteErr.Error())
 		assert.DirExists(t, local)
 
-		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(func(local string) (map[string]*url.URL, error) {
-			return gitClient.GetRemotes(local)
-		})
+		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Do(func(
 			directory string,
 			bare bool,
