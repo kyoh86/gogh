@@ -79,7 +79,6 @@ func checkProjectRemote(ctx gogh.Context, gitClient GitClient, project *gogh.Pro
 		if remote == nil {
 			return false, nil
 		}
-		println(remote.String())
 		if remote.String() == repo.URL(ctx, false).String() {
 			return true, nil
 		}
