@@ -37,6 +37,7 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 			return err
 		}
 	}
+	log.Printf("info: Updating a remotes")
 	remotes, err := gitClient.GetRemotes(project.FullPath)
 	if err != nil {
 		return err

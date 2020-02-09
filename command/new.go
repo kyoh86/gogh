@@ -48,7 +48,11 @@ func New(
 	if _, err := hubClient.Create(ctx, repo, description, homepage, private); err != nil {
 		return err
 	}
-	// UNDONE: setup remote
+
+	// git remote add origin
+	if err := gitClient.AddRemote(project.FullPath, "origin", repo.URL(ctx, false)); err != nil {
+		return err
+	}
 
 	return nil
 }
