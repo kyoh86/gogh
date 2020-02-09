@@ -126,7 +126,7 @@ func get(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoNames)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.GetAll(ctx, &git.Client{}, update, withSSH, shallow, repoNames)
+		return command.GetAll(ctx, git.New(ctx), update, withSSH, shallow, repoNames)
 	})
 }
 
@@ -142,7 +142,7 @@ func bulk(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Bulk(ctx, &git.Client{}, update, withSSH, shallow)
+		return command.Bulk(ctx, git.New(ctx), update, withSSH, shallow)
 	})
 }
 
@@ -162,7 +162,7 @@ func pipe(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&srcCmdArgs)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Pipe(ctx, &git.Client{}, update, withSSH, shallow, srcCmd, srcCmdArgs)
+		return command.Pipe(ctx, git.New(ctx), update, withSSH, shallow, srcCmd, srcCmdArgs)
 	})
 }
 
@@ -182,7 +182,11 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Fork(ctx, &git.Client{}, new(hub.Client), update, withSSH, shallow, organization, &repo)
+		hubClient, err := hub.New(ctx)
+		if err != nil {
+			return err
+		}
+		return command.Fork(ctx, git.New(ctx), hubClient, update, withSSH, shallow, organization, &repo)
 	})
 }
 
@@ -208,7 +212,11 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.New(ctx, &git.Client{}, new(hub.Client), private, description, homepage, bare, template, separateGitDir, shared, &repo)
+		hubClient, err := hub.New(ctx)
+		if err != nil {
+			return err
+		}
+		return command.New(ctx, git.New(ctx), hubClient, private, description, homepage, bare, template, separateGitDir, shared, &repo)
 	})
 }
 
@@ -337,6 +345,10 @@ func repos(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Repos(ctx, new(hub.Client), user, own, collaborate, member, visibility, sort, direction)
+		hubClient, err := hub.New(ctx)
+		if err != nil {
+			return err
+		}
+		return command.Repos(ctx, hubClient, user, own, collaborate, member, visibility, sort, direction)
 	})
 }

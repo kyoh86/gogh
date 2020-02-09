@@ -11,8 +11,23 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/delegate"
 )
+
+func New(ctx gogh.IOContext) *Client {
+	return &Client{
+		For: struct {
+			Stdout io.Writer
+			Stderr io.Writer
+			Stdin  io.Reader
+		}{
+			ctx.Stdout(),
+			ctx.Stderr(),
+			ctx.Stdin(),
+		},
+	}
+}
 
 type Client struct {
 	For struct {
