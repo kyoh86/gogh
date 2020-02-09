@@ -19,9 +19,11 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		update := false
-		withSSH := false
-		shallow := false
+		const (
+			update  = false
+			withSSH = false
+			shallow = false
+		)
 		cloneErr := errors.New("clone error")
 
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
@@ -39,11 +41,13 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		withSSH := false
-		shallow := false
+		const (
+			update  = true
+			withSSH = false
+			shallow = false
+		)
 		updateErr := errors.New("update error")
 
-		update := true
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(updateErr)
@@ -59,10 +63,12 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		update := false
-		withSSH := false
-		shallow := false
-		organization := ""
+		const (
+			update       = false
+			withSSH      = false
+			shallow      = false
+			organization = ""
+		)
 		forkErr := errors.New("fork error")
 
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
@@ -80,12 +86,14 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		withSSH := false
-		shallow := false
-		organization := "kyoh86-tryouts"
+		const (
+			update       = true
+			withSSH      = false
+			shallow      = false
+			organization = "kyoh86-tryouts"
+		)
 		getRemotesErr := errors.New("update error")
 
-		update := true
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
@@ -104,12 +112,14 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		withSSH := false
-		shallow := false
-		organization := "kyoh86-tryouts"
+		const (
+			update       = true
+			withSSH      = false
+			shallow      = false
+			organization = "kyoh86-tryouts"
+		)
 		removeRemoteErr := errors.New("update error")
 
-		update := true
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
@@ -134,12 +144,14 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		withSSH := false
-		shallow := false
-		organization := "kyoh86-tryouts"
+		const (
+			update       = true
+			withSSH      = false
+			shallow      = false
+			organization = "kyoh86-tryouts"
+		)
 		addRemoteErr := errors.New("update error")
 
-		update := true
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
@@ -168,10 +180,12 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		withSSH := false
-		shallow := false
-		update := false
-		organization := "kyoh86-tryouts"
+		const (
+			update       = false
+			withSSH      = false
+			shallow      = false
+			organization = "kyoh86-tryouts"
+		)
 
 		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
@@ -201,11 +215,12 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		withSSH := false
-		shallow := false
-		organization := "kyoh86-tryouts"
-
-		update := false
+		const (
+			update       = false
+			withSSH      = false
+			shallow      = false
+			organization = "kyoh86-tryouts"
+		)
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
@@ -234,11 +249,12 @@ func TestFork(t *testing.T) {
 		defer svc.tearDown(t)
 		repo := mustParseRepo(t, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
-		withSSH := false
-		shallow := false
-		organization := "kyoh86-tryouts"
-
-		update := true
+		const (
+			update       = true
+			withSSH      = false
+			shallow      = false
+			organization = "kyoh86-tryouts"
+		)
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
@@ -258,5 +274,4 @@ func TestFork(t *testing.T) {
 			command.Fork(svc.ctx, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 		)
 	})
-
 }

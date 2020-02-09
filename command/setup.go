@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kyoh86/gogh/gogh"
-	_ "github.com/kyoh86/gogh/sh"
+	_ "github.com/kyoh86/gogh/sh" //nolint
 	"github.com/rakyll/statik/fs"
 )
 
