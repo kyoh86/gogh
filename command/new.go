@@ -29,8 +29,11 @@ func New(
 	if err != nil {
 		return err
 	}
-	if project.Exists {
-		return gogh.ErrProjectAlreadyExists
+
+	log.Printf("info: Checking existing project")
+	remote, err := checkProjectRemote(ctx, gitClient, project, repo)
+	if err != nil {
+		return err
 	}
 
 	// mkdir
@@ -45,6 +48,10 @@ func New(
 		return err
 	}
 
+	if remote {
+		return nil
+	}
+
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
 	if _, err := hubClient.Create(ctx, repo, description, homepage, private); err != nil {
@@ -57,4 +64,28 @@ func New(
 	}
 
 	return nil
+}
+
+func checkProjectRemote(ctx gogh.Context, gitClient GitClient, project *gogh.Project, repo *gogh.Repo) (bool, error) {
+	if !project.Exists {
+		return false, nil
+	}
+	remotes, err := gitClient.GetRemotes(project.FullPath)
+	if err != nil {
+		return false, err
+	}
+	if len(remotes) > 0 {
+		remote := remotes["origin"]
+		if remote == nil {
+			return false, nil
+		}
+		if remote.String() == repo.URL(ctx, false).String() {
+			return true, nil
+		}
+		if remote.String() == repo.URL(ctx, true).String() {
+			return true, nil
+		}
+		return true, gogh.ErrProjectAlreadyExists
+	}
+	return false, nil
 }

@@ -56,7 +56,7 @@ func (c *Client) Init(
 	args = delegate.AppendIf(args, "--bare", bare)
 	args = delegate.AppendIfFilled(args, "--template", template)
 	args = delegate.AppendIfFilled(args, "--separate-git-dir", separateGitDir)
-	args = delegate.AppendIfFilled(args, "--shared", shared)
+	args = delegate.AppendPairedIfFilled(args, "--shared", shared)
 	args = append(args, directory)
 	return delegate.ExecCommand(c.command(args...))
 }

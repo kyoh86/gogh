@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/context"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +16,7 @@ type testService struct {
 	gitClient *MockGitClient
 	hubClient *MockHubClient
 	root      string
-	ctx       gogh.Context
+	ctx       *context.MockContext
 }
 
 func (s testService) tearDown(t *testing.T) {
