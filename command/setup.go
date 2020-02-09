@@ -3,25 +3,31 @@ package command
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 
 	"github.com/kyoh86/gogh/gogh"
-	"github.com/kyoh86/gogh/sh"
+	_ "github.com/kyoh86/gogh/sh"
+	"github.com/rakyll/statik/fs"
 )
 
 // Setup shells in shell scipt
 // Usage: eval "$(gogh setup)"
 func Setup(ctx gogh.Context, _, shell string) error {
-	_ = sh.Assets
-	_, shellName := filepath.Split(shell)
-	assetName := "/src/init." + shellName
-	if !sh.Assets.Exists(assetName) {
-		return fmt.Errorf("unsupported shell %q", shell)
-	}
-	file, err := sh.Assets.Open(assetName)
+	staticFs, err := fs.New()
 	if err != nil {
 		return err
 	}
+	_, shellName := filepath.Split(shell)
+	assetName := "/src/init." + shellName
+	file, err := staticFs.Open(assetName)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("unsupported shell %q", shell)
+		}
+		return err
+	}
+	defer file.Close()
 	_, err = io.Copy(ctx.Stdout(), file)
 	return err
 }

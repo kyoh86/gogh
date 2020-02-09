@@ -6,7 +6,7 @@ package command_test
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	github "github.com/google/go-github/v24/github"
+	github "github.com/google/go-github/v29/github"
 	gogh "github.com/kyoh86/gogh/gogh"
 	url "net/url"
 	reflect "reflect"

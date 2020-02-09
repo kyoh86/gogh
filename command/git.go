@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-// GitClient is an interface generated for "github.com/kyoh86/gogh/internal/git.GitClient".
+// GitClient is an interface generated for "github.com/kyoh86/gogh/internal/git.Client".
 type GitClient interface {
 	AddRemote(string, string, *url.URL) error
 	Clone(string, *url.URL, bool) error

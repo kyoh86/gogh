@@ -3,12 +3,12 @@
 package command
 
 import (
-	"github.com/google/go-github/v24/github"
+	"github.com/google/go-github/v29/github"
 	"github.com/kyoh86/gogh/gogh"
 	"net/url"
 )
 
-// HubClient is an interface generated for "github.com/kyoh86/gogh/internal/hub.HubClient".
+// HubClient is an interface generated for "github.com/kyoh86/gogh/internal/hub.Client".
 type HubClient interface {
 	Create(gogh.Context, *gogh.Repo, string, *url.URL, bool) (*github.Repository, error)
 	Fork(gogh.Context, *gogh.Repo, string) (*gogh.Repo, error)
