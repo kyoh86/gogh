@@ -13,3 +13,10 @@ func AppendIfFilled(array []string, flag, value string) []string {
 	}
 	return append(array, flag, value)
 }
+
+func AppendPairedIfFilled(array []string, flag, value string) []string {
+	if value == "" {
+		return array
+	}
+	return append(array, flag+"="+value)
+}
