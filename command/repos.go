@@ -8,9 +8,7 @@ import (
 
 // Repos will show a list of repositories for a user.
 func Repos(ctx gogh.Context, hubClient HubClient, user string, own, collaborate, member bool, visibility, sort, direction string) error {
-	if err := InitLog(ctx); err != nil {
-		return err
-	}
+	InitLog(ctx)
 
 	repos, err := hubClient.Repos(ctx, user, own, collaborate, member, visibility, sort, direction)
 	if err != nil {

@@ -1,16 +1,18 @@
 package command
 
 import (
+	"log"
+
 	"github.com/comail/colog"
 	"github.com/kyoh86/gogh/gogh"
 )
 
-func InitLog(ctx gogh.Context) error {
+func InitLog(ctx gogh.Context) {
 	rawLevel := ctx.LogLevel()
 	if rawLevel != "" {
 		lvl, err := colog.ParseLevel(rawLevel)
 		if err != nil {
-			return err
+			defer log.Println("warn: could not parse level %s", rawLevel)
 		}
 		colog.SetMinLevel(lvl)
 	}
@@ -22,7 +24,6 @@ func InitLog(ctx gogh.Context) error {
 	})
 	colog.SetOutput(ctx.Stderr())
 	colog.Register()
-	return nil
 }
 
 var plainLabels = colog.LevelMap{

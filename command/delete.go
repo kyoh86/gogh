@@ -10,9 +10,7 @@ import (
 
 // Delete local projects
 func Delete(ctx gogh.Context, primary bool, query string) error {
-	if err := InitLog(ctx); err != nil {
-		return err
-	}
+	InitLog(ctx)
 
 	var walk gogh.Walker = gogh.Walk
 	if primary {
