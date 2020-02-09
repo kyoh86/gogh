@@ -84,4 +84,6 @@ func ExampleSetup_bash() {
 
 func TestSetup(t *testing.T) {
 	assert.EqualError(t, command.Setup(&config.Config{}, "gogh-cd", "invalid"), "unsupported shell \"invalid\"")
+	assert.NoError(t, command.Setup(&config.Config{}, "gogh-cd", "zsh"))
+	assert.NoError(t, command.Setup(&config.Config{}, "gogh-cd", "bash"))
 }
