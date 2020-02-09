@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kingpin"
-	"github.com/comail/colog"
 	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/xdg"
@@ -17,23 +16,6 @@ func setConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
 		Default(filepath.Join(xdg.ConfigHome(), "gogh", "config.yaml")).
 		Envar("GOGH_CONFIG").
 		StringVar(configFile)
-}
-
-func initLog(ctx gogh.Context) error {
-	lvl, err := colog.ParseLevel(ctx.LogLevel())
-	if err != nil {
-		return err
-	}
-	colog.SetMinLevel(lvl)
-	colog.SetDefaultLevel(colog.LError)
-	colog.SetFormatter(&colog.StdFormatter{
-		Flag:        ctx.LogFlags(),
-		HeaderPlain: plainLabels,
-		HeaderColor: colorLabels,
-	})
-	colog.SetOutput(ctx.Stderr())
-	colog.Register()
-	return nil
 }
 
 func currentConfig(configFile string) (*config.Config, *config.Config, error) {
@@ -58,10 +40,6 @@ func currentConfig(configFile string) (*config.Config, *config.Config, error) {
 		return nil, nil, err
 	}
 	cfg := config.MergeConfig(config.DefaultConfig(), savedConfig, envarConfig)
-	if err := initLog(cfg); err != nil {
-		return nil, nil, err
-	}
-
 	if err := gogh.ValidateContext(cfg); err != nil {
 		log.Printf("warn: invalid config: %v", err)
 	}

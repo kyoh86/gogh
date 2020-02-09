@@ -1,14 +1,15 @@
-package gogh
+package command_test
 
 import (
 	"testing"
 
+	"github.com/kyoh86/gogh/command"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRepoShared(t *testing.T) {
 	t.Run("valid shareds", func(t *testing.T) {
-		var shared ProjectShared
+		var shared command.RepoShared
 		assert.NoError(t, shared.Set("false"))
 		assert.Equal(t, "false", shared.String())
 		assert.NoError(t, shared.Set("true"))
@@ -29,12 +30,12 @@ func TestRepoShared(t *testing.T) {
 		assert.Equal(t, "777", shared.String())
 	})
 	t.Run("invalid shared", func(t *testing.T) {
-		var shared ProjectShared
+		var shared command.RepoShared
 		assert.NotNil(t, shared.Set("gogh"))
 		assert.NotNil(t, shared.Set("800"))
 	})
 	t.Run("invalid shared (triple term)", func(t *testing.T) {
-		var shared ProjectShared
+		var shared command.RepoShared
 		assert.NotNil(t, shared.Set("github.com/kyoh86/gogh"))
 	})
 }

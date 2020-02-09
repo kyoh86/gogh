@@ -1,60 +1,192 @@
-package command
+package command_test
 
 import (
-	"io/ioutil"
+	"errors"
 	"net/url"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/gogh"
-	"github.com/kyoh86/gogh/internal/context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
-	defaultGitClient = &mockGitClient{}
-	defaultHubClient = &mockHubClient{}
-	root, err := ioutil.TempDir(os.TempDir(), "gogh-test")
-	require.NoError(t, err)
-	defer os.RemoveAll(root)
+	// success cases:
+	// pattern: with owner (success)
+	// pattern: without owner (success)
+	t.Run("ProjectExists", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.tearDown(t)
 
-	ctx := &context.MockContext{
-		MRoot:       []string{root},
-		MGitHubHost: "github.com",
-	}
+		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh", ".git")
+		require.NoError(t, os.MkdirAll(local, os.ModePerm))
+		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 
-	mustRepo := func(name string) *gogh.Repo {
-		t.Helper()
-		repo, err := gogh.ParseRepo(name)
-		require.NoError(t, err)
-		return repo
-	}
-	assert.NoError(t, New(
-		ctx,
-		false,
-		"",
-		&url.URL{},
-		false,
-		false,
-		false,
-		"",
-		"",
-		gogh.ProjectShared("false"),
-		mustRepo("kyoh86/gogh"),
-	))
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
 
-	assert.EqualError(t, New(
-		ctx,
-		false,
-		"",
-		&url.URL{},
-		false,
-		false,
-		false,
-		"",
-		"",
-		gogh.ProjectShared("false"),
-		mustRepo("kyoh86/gogh"),
-	), "project already exists")
+		shared := command.RepoShared("false")
+		repo := mustParseRepo(t, "kyoh86/gogh")
+		assert.EqualError(t, command.New(
+			svc.ctx,
+			svc.gitClient,
+			svc.hubClient,
+			private,
+			description,
+			homepage,
+			bare,
+			template,
+			separateGitDir,
+			shared,
+			repo,
+		), gogh.ErrProjectAlreadyExists.Error())
+		assert.DirExists(t, local)
+	})
+
+	t.Run("LocalError", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.tearDown(t)
+
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
+		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
+		shared := command.RepoShared("false")
+		repo := mustParseRepo(t, "kyoh86/gogh")
+		localErr := errors.New("local error")
+		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(localErr)
+		assert.EqualError(t, command.New(
+			svc.ctx,
+			svc.gitClient,
+			svc.hubClient,
+			private,
+			description,
+			homepage,
+			bare,
+			template,
+			separateGitDir,
+			shared,
+			repo,
+		), localErr.Error())
+		assert.DirExists(t, local)
+	})
+
+	t.Run("RemoteError", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.tearDown(t)
+
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
+		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
+		shared := command.RepoShared("false")
+		repo := mustParseRepo(t, "kyoh86/gogh")
+		remoteErr := errors.New("remote error")
+		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
+		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, remoteErr)
+		assert.EqualError(t, command.New(
+			svc.ctx,
+			svc.gitClient,
+			svc.hubClient,
+			private,
+			description,
+			homepage,
+			bare,
+			template,
+			separateGitDir,
+			shared,
+			repo,
+		), remoteErr.Error())
+		assert.DirExists(t, local)
+	})
+
+	t.Run("AddRemoteError", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.tearDown(t)
+
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
+		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
+		shared := command.RepoShared("false")
+		repo := mustParseRepo(t, "kyoh86/gogh")
+		addRemoteErr := errors.New("remote error")
+		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
+		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, nil)
+		u, _ := url.Parse("https://github.com/kyoh86/gogh")
+		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(addRemoteErr)
+		assert.EqualError(t, command.New(
+			svc.ctx,
+			svc.gitClient,
+			svc.hubClient,
+			private,
+			description,
+			homepage,
+			bare,
+			template,
+			separateGitDir,
+			shared,
+			repo,
+		), addRemoteErr.Error())
+		assert.DirExists(t, local)
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.tearDown(t)
+
+		const (
+			private        = false
+			description    = "description"
+			bare           = false
+			template       = "template"
+			separateGitDir = "separeteGitDir"
+		)
+		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
+		shared := command.RepoShared("false")
+		repo := mustParseRepo(t, "kyoh86/gogh")
+		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
+		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, nil)
+		u, _ := url.Parse("https://github.com/kyoh86/gogh")
+		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(nil)
+		assert.NoError(t, command.New(
+			svc.ctx,
+			svc.gitClient,
+			svc.hubClient,
+			private,
+			description,
+			homepage,
+			bare,
+			template,
+			separateGitDir,
+			shared,
+			repo,
+		))
+		assert.DirExists(t, local)
+	})
 }

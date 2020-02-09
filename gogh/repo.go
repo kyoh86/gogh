@@ -133,6 +133,11 @@ func (r *Repo) Host(ctx GitHubContext) string {
 	return r.host
 }
 
+// ExplicitOwner returns a user name of an explicit owner of the repository
+func (r *Repo) ExplicitOwner(_ GitHubContext) string {
+	return r.owner
+}
+
 // Owner returns a user name of an owner of the repository
 func (r *Repo) Owner(ctx GitHubContext) string {
 	if r.owner == "" {

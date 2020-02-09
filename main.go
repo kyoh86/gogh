@@ -7,9 +7,12 @@ import (
 	"os"
 
 	"github.com/alecthomas/kingpin"
+	"github.com/comail/colog"
 	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
+	"github.com/kyoh86/gogh/internal/git"
+	"github.com/kyoh86/gogh/internal/hub"
 	"github.com/kyoh86/gogh/internal/mainutil"
 )
 
@@ -21,7 +24,11 @@ var (
 )
 
 func main() {
-	log.SetOutput(os.Stderr)
+	// init logs)
+	colog.SetMinLevel(colog.LWarning)
+	colog.SetDefaultLevel(colog.LError)
+	colog.SetOutput(os.Stderr)
+	colog.Register()
 
 	app := kingpin.New("gogh", "GO GitHub project manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
 	app.Command("config", "Get and set options")
@@ -119,7 +126,7 @@ func get(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoNames)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.GetAll(ctx, update, withSSH, shallow, repoNames)
+		return command.GetAll(ctx, &git.Client{}, update, withSSH, shallow, repoNames)
 	})
 }
 
@@ -135,7 +142,7 @@ func bulk(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Bulk(ctx, update, withSSH, shallow)
+		return command.Bulk(ctx, &git.Client{}, update, withSSH, shallow)
 	})
 }
 
@@ -155,7 +162,7 @@ func pipe(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&srcCmdArgs)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Pipe(ctx, update, withSSH, shallow, srcCmd, srcCmdArgs)
+		return command.Pipe(ctx, &git.Client{}, update, withSSH, shallow, srcCmd, srcCmdArgs)
 	})
 }
 
@@ -164,8 +171,6 @@ func fork(app *kingpin.Application) (string, func() error) {
 		update       bool
 		withSSH      bool
 		shallow      bool
-		noRemote     bool
-		remoteName   string
 		organization string
 		repo         gogh.Repo
 	)
@@ -173,13 +178,11 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
-	cmd.Flag("no-remote", "Skip adding a git remote for the fork").BoolVar(&noRemote)
-	cmd.Flag("remote-name", "Set the name for the new git remote").PlaceHolder("REMOTE").StringVar(&remoteName)
 	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Fork(ctx, update, withSSH, shallow, noRemote, remoteName, organization, &repo)
+		return command.Fork(ctx, &git.Client{}, new(hub.Client), update, withSSH, shallow, organization, &repo)
 	})
 }
 
@@ -188,20 +191,16 @@ func create(app *kingpin.Application) (string, func() error) {
 		private        bool
 		description    string
 		homepage       *url.URL
-		browse         bool
-		clip           bool
 		bare           bool
 		template       string
 		separateGitDir string
-		shared         gogh.ProjectShared
+		shared         command.RepoShared
 		repo           gogh.Repo
 	)
 	cmd := app.Command("new", "Create a local project and a remote repository.").Alias("create")
 	cmd.Flag("private", "Create a private repository").BoolVar(&private)
 	cmd.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&description)
 	cmd.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&homepage)
-	cmd.Flag("browse", "Open the new repository in a web browser").Short('o').BoolVar(&browse)
-	cmd.Flag("copy", "Put the URL of the new repository to clipboard instead of printing it").Short('c').BoolVar(&clip)
 	cmd.Flag("bare", "Create a bare repository. If GIT_DIR environment is not set, it is set to the current working directory").BoolVar(&bare)
 	cmd.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&template)
 	cmd.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&separateGitDir)
@@ -209,7 +208,7 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repo)
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.New(ctx, private, description, homepage, browse, clip, bare, template, separateGitDir, shared, &repo)
+		return command.New(ctx, &git.Client{}, new(hub.Client), private, description, homepage, bare, template, separateGitDir, shared, &repo)
 	})
 }
 
@@ -338,6 +337,6 @@ func repos(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
 
 	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Repos(ctx, user, own, collaborate, member, visibility, sort, direction)
+		return command.Repos(ctx, new(hub.Client), user, own, collaborate, member, visibility, sort, direction)
 	})
 }

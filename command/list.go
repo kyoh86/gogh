@@ -6,6 +6,8 @@ import (
 
 // List local projects
 func List(ctx gogh.Context, formatter gogh.ProjectListFormatter, primary bool, isPublic bool, query string) error {
+	InitLog(ctx)
+
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
