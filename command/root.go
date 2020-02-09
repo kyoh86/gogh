@@ -9,6 +9,10 @@ import (
 
 // Root prints a gogh.root
 func Root(ctx gogh.Context, all bool) error {
+	if err := InitLog(ctx); err != nil {
+		return err
+	}
+
 	if !all {
 		fmt.Fprintln(ctx.Stdout(), ctx.PrimaryRoot())
 		return nil

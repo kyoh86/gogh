@@ -9,6 +9,10 @@ import (
 
 // Where is a local project
 func Where(ctx gogh.Context, primary bool, exact bool, query string) error {
+	if err := InitLog(ctx); err != nil {
+		return err
+	}
+
 	log.Printf("info: Finding a repository by query %s", query)
 
 	walk := gogh.Walk

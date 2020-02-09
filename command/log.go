@@ -1,8 +1,29 @@
-package mainutil
+package command
 
 import (
 	"github.com/comail/colog"
+	"github.com/kyoh86/gogh/gogh"
 )
+
+func InitLog(ctx gogh.Context) error {
+	rawLevel := ctx.LogLevel()
+	if rawLevel != "" {
+		lvl, err := colog.ParseLevel(rawLevel)
+		if err != nil {
+			return err
+		}
+		colog.SetMinLevel(lvl)
+	}
+	colog.SetDefaultLevel(colog.LError)
+	colog.SetFormatter(&colog.StdFormatter{
+		Flag:        ctx.LogFlags(),
+		HeaderPlain: plainLabels,
+		HeaderColor: colorLabels,
+	})
+	colog.SetOutput(ctx.Stderr())
+	colog.Register()
+	return nil
+}
 
 var plainLabels = colog.LevelMap{
 	colog.LTrace:   []byte("[ trace ] "),

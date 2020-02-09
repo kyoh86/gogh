@@ -14,6 +14,10 @@ import (
 // Setup shells in shell scipt
 // Usage: eval "$(gogh setup)"
 func Setup(ctx gogh.Context, _, shell string) error {
+	if err := InitLog(ctx); err != nil {
+		return err
+	}
+
 	staticFs, err := fs.New()
 	if err != nil {
 		return err

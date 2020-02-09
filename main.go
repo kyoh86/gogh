@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/alecthomas/kingpin"
+	"github.com/comail/colog"
 	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
@@ -23,7 +24,11 @@ var (
 )
 
 func main() {
-	log.SetOutput(os.Stderr)
+	// init logs)
+	colog.SetMinLevel(colog.LWarning)
+	colog.SetDefaultLevel(colog.LError)
+	colog.SetOutput(os.Stderr)
+	colog.Register()
 
 	app := kingpin.New("gogh", "GO GitHub project manager").Version(fmt.Sprintf("%s-%s (%s)", version, commit, date)).Author("kyoh86")
 	app.Command("config", "Get and set options")

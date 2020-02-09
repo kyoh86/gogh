@@ -10,6 +10,10 @@ import (
 
 // Delete local projects
 func Delete(ctx gogh.Context, primary bool, query string) error {
+	if err := InitLog(ctx); err != nil {
+		return err
+	}
+
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
@@ -24,14 +28,13 @@ func Delete(ctx gogh.Context, primary bool, query string) error {
 	}
 
 	if len(projects) == 0 {
-		fmt.Fprintln(ctx.Stdout(), "Any projects did not matched for", query)
-		return nil
+		return fmt.Errorf("any projects did not matched for %q", query)
 	}
-	fmt.Fprintln(ctx.Stdout(), "Deleting projects. Please confirm them and answer by [y/n]")
 
+	fmt.Fprintln(ctx.Stdout(), "Deleting projects. Please confirm them and answer by [y/n]")
 	for _, p := range projects {
 		fmt.Print(p.FullPath)
-		yes, err := ask.YesNo()
+		yes, err := ask.Limit(5).Reader(ctx.Stdin()).YesNo()
 		if err != nil {
 			return err
 		}
