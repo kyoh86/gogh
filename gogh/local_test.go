@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/kyoh86/gogh/internal/context"
@@ -251,8 +252,11 @@ func TestList_Symlink(t *testing.T) {
 	err = os.Symlink(symDir, filepath.Join(root, "github.com", "gogh"))
 	require.NoError(t, err)
 
+	var lock sync.Mutex
 	paths := []string{}
 	require.NoError(t, Walk(ctx, func(p *Project) error {
+		lock.Lock()
+		defer lock.Unlock()
 		paths = append(paths, p.RelPath)
 		return nil
 	}))
@@ -282,89 +286,110 @@ func TestQuery(t *testing.T) {
 	}))
 
 	t.Run("NameOnly", func(t *testing.T) {
-		expect := map[string]struct{}{
-			path1: {},
-			path2: {},
-			path5: {},
-		}
+		var expect sync.Map
+		expect.Store(path1, struct{}{})
+		expect.Store(path2, struct{}{})
+		expect.Store(path5, struct{}{})
 		assert.NoError(t, Query(&ctx, "gogh", Walk, func(p *Project) error {
-			assert.Contains(t, expect, p.FullPath)
-			delete(expect, p.FullPath)
+			_, ok := expect.Load(p.FullPath)
+			assert.True(t, ok, p.FullPath)
+			expect.Delete(p.FullPath)
 			return nil
 		}))
-		assert.Empty(t, expect)
+		expect.Range(func(key interface{}, value interface{}) bool {
+			assert.Failf(t, "not found by walking", "%#v is not found by walking", key)
+			return true
+		})
 	})
 	t.Run("PartialName", func(t *testing.T) {
-		expect := map[string]struct{}{
-			path1: {},
-			path2: {},
-			path5: {},
-		}
+		var expect sync.Map
+		expect.Store(path1, struct{}{})
+		expect.Store(path2, struct{}{})
+		expect.Store(path5, struct{}{})
 		assert.NoError(t, Query(&ctx, "gog", Walk, func(p *Project) error {
-			assert.Contains(t, expect, p.FullPath)
-			delete(expect, p.FullPath)
+			_, ok := expect.Load(p.FullPath)
+			assert.True(t, ok, p.FullPath)
+			expect.Delete(p.FullPath)
 			return nil
 		}))
-		assert.Empty(t, expect)
+		expect.Range(func(key interface{}, value interface{}) bool {
+			assert.Failf(t, "not found by walking", "%#v is not found by walking", key)
+			return true
+		})
 	})
 	t.Run("OwnerAndName", func(t *testing.T) {
-		expect := map[string]struct{}{
-			path1: {},
-			path5: {},
-		}
+		var expect sync.Map
+		expect.Store(path1, struct{}{})
+		expect.Store(path5, struct{}{})
 		assert.NoError(t, Query(&ctx, "kyoh86/gogh", Walk, func(p *Project) error {
-			assert.Contains(t, expect, p.FullPath)
-			delete(expect, p.FullPath)
+			_, ok := expect.Load(p.FullPath)
+			assert.True(t, ok, p.FullPath)
+			expect.Delete(p.FullPath)
 			return nil
 		}))
-		assert.Empty(t, expect)
+		expect.Range(func(key interface{}, value interface{}) bool {
+			assert.Failf(t, "not found by walking", "%#v is not found by walking", key)
+			return true
+		})
 	})
 	t.Run("PartialOwnerAndName", func(t *testing.T) {
-		expect := map[string]struct{}{
-			path1: {},
-			path5: {},
-		}
+		var expect sync.Map
+		expect.Store(path1, struct{}{})
+		expect.Store(path5, struct{}{})
 		assert.NoError(t, Query(&ctx, "yoh86/gog", Walk, func(p *Project) error {
-			assert.Contains(t, expect, p.FullPath)
-			delete(expect, p.FullPath)
+			_, ok := expect.Load(p.FullPath)
+			assert.True(t, ok, p.FullPath)
+			expect.Delete(p.FullPath)
 			return nil
 		}))
-		assert.Empty(t, expect)
+		expect.Range(func(key interface{}, value interface{}) bool {
+			assert.Failf(t, "not found by walking", "%#v is not found by walking", key)
+			return true
+		})
 	})
 	t.Run("FullRepoName", func(t *testing.T) {
-		expect := map[string]struct{}{
-			path1: {},
-			path5: {},
-		}
+		var expect sync.Map
+		expect.Store(path1, struct{}{})
+		expect.Store(path5, struct{}{})
 		assert.NoError(t, Query(&ctx, "github.com/kyoh86/gogh", Walk, func(p *Project) error {
-			assert.Contains(t, expect, p.FullPath)
-			delete(expect, p.FullPath)
+			_, ok := expect.Load(p.FullPath)
+			assert.True(t, ok, p.FullPath)
+			expect.Delete(p.FullPath)
 			return nil
 		}))
-		assert.Empty(t, expect)
+		expect.Range(func(key interface{}, value interface{}) bool {
+			assert.Failf(t, "not found by walking", "%#v is not found by walking", key)
+			return true
+		})
 	})
 	t.Run("PartialFullRepoName", func(t *testing.T) {
-		expect := map[string]struct{}{
-			path1: {},
-			path5: {},
-		}
+		var expect sync.Map
+		expect.Store(path1, struct{}{})
+		expect.Store(path5, struct{}{})
 		assert.NoError(t, Query(&ctx, "ithub.com/kyoh86/gog", Walk, func(p *Project) error {
-			assert.Contains(t, expect, p.FullPath)
-			delete(expect, p.FullPath)
+			_, ok := expect.Load(p.FullPath)
+			assert.True(t, ok, p.FullPath)
+			expect.Delete(p.FullPath)
 			return nil
 		}))
-		assert.Empty(t, expect)
+		expect.Range(func(key interface{}, value interface{}) bool {
+			assert.Failf(t, "not found by walking", "%#v is not found by walking", key)
+			return true
+		})
 	})
 	t.Run("WalkInPrimary", func(t *testing.T) {
-		expect := map[string]struct{}{
-			path1: {},
-			path2: {},
-		}
+		var expect sync.Map
+		expect.Store(path1, struct{}{})
+		expect.Store(path2, struct{}{})
 		assert.NoError(t, Query(&ctx, "gogh", WalkInPrimary, func(p *Project) error {
-			assert.Contains(t, expect, p.FullPath)
-			delete(expect, p.FullPath)
+			_, ok := expect.Load(p.FullPath)
+			assert.True(t, ok, p.FullPath)
+			expect.Delete(p.FullPath)
 			return nil
 		}))
-		assert.Empty(t, expect)
+		expect.Range(func(key interface{}, value interface{}) bool {
+			assert.Failf(t, "not found by walking", "%#v is not found by walking", key)
+			return true
+		})
 	})
 }

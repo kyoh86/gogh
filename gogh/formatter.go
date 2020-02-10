@@ -3,6 +3,7 @@ package gogh
 import (
 	"fmt"
 	"io"
+	"sync"
 )
 
 // ProjectListFormatter holds project list to print them.
@@ -37,12 +38,15 @@ func RelPathFormatter() ProjectListFormatter {
 }
 
 type shortListFormatter struct {
+	lock sync.Mutex
 	// mark duplicated subpath
 	dups map[string]bool
 	*simpleCollector
 }
 
 func (f *shortListFormatter) Add(r *Project) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	for _, p := range r.Subpaths() {
 		// (false, not ok) -> (false, ok) -> (true, ok) -> (true, ok) and so on
 		_, f.dups[p] = f.dups[p]
@@ -82,10 +86,13 @@ func (f *shortListFormatter) shortName(r *Project) string {
 }
 
 type simpleCollector struct {
+	lock sync.Mutex
 	list []*Project
 }
 
 func (f *simpleCollector) Add(r *Project) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	f.list = append(f.list, r)
 }
 
