@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"go/build"
 	"io"
 	"log"
@@ -50,7 +49,6 @@ const (
 )
 
 var defaultConfig = Config{
-	Context: context.Background(),
 	Log: LogConfig{
 		Level: DefaultLogLevel,
 		Time:  TrueOption,

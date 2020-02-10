@@ -5,15 +5,17 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 )
 
 // Config holds configuration file values.
 type Config struct {
-	context.Context `yaml:"-"`
-	Log             LogConfig      `yaml:"log,omitempty"`
-	VRoot           PathListOption `yaml:"root,omitempty" env:"GOGH_ROOT"`
-	GitHub          GitHubConfig   `yaml:"github,omitempty"`
+	Log    LogConfig      `yaml:"log,omitempty"`
+	VRoot  PathListOption `yaml:"root,omitempty" env:"GOGH_ROOT"`
+	GitHub GitHubConfig   `yaml:"github,omitempty"`
 }
+
+var _ context.Context = (*Config)(nil)
 
 type LogConfig struct {
 	Level        string     `yaml:"level,omitempty" env:"GOGH_LOG_LEVEL"`
@@ -29,6 +31,30 @@ type GitHubConfig struct {
 	Token string `yaml:"-" env:"GOGH_GITHUB_TOKEN"`
 	User  string `yaml:"user,omitempty" env:"GOGH_GITHUB_USER"`
 	Host  string `yaml:"host,omitempty" env:"GOGH_GITHUB_HOST"`
+}
+
+// Deadline : empty context.Context
+func (*Config) Deadline() (deadline time.Time, ok bool) {
+	return
+}
+
+// Done : empty context.Context
+func (*Config) Done() <-chan struct{} {
+	return nil
+}
+
+// Err : empty context.Context
+func (*Config) Err() error {
+	return nil
+}
+
+// Value : empty context.Context
+func (*Config) Value(key interface{}) interface{} {
+	return nil
+}
+
+func (*Config) String() string {
+	return "gogh/config.Config"
 }
 
 func (c *Config) Stdin() io.Reader {

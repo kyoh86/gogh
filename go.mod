@@ -13,6 +13,7 @@ require (
 	github.com/kyoh86/ask v0.0.7
 	github.com/kyoh86/xdg v1.2.0
 	github.com/rakyll/statik v0.1.6
+	github.com/saracen/walker v0.0.0-20191201085201-324a081bae7e
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/thoas/go-funk v0.5.0
