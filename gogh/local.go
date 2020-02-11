@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/karrick/godirwalk"
+	"github.com/saracen/walker"
 )
 
 // Project repository specifier
@@ -150,22 +150,18 @@ func walkInPath(ctx Context, root string, callback WalkFunc) error {
 		return nil
 	}
 
-	return godirwalk.Walk(root, &godirwalk.Options{
-		Callback: func(path string, _ *godirwalk.Dirent) error {
-			if !isVcsDir(path) {
-				return nil
-			}
-			p, err := parseProject(ctx, root, path)
-			if err != nil {
-				return nil
-			}
-			if err := callback(p); err != nil {
-				return err
-			}
-			return filepath.SkipDir
-		},
-		FollowSymbolicLinks: true,
-		Unsorted:            true, // (optional) set true for faster yet non-deterministic enumeration (see godoc)
+	return walker.WalkWithContext(ctx, root, func(path string, fi os.FileInfo) error {
+		if !isVcsDir(path) {
+			return nil
+		}
+		p, err := parseProject(ctx, root, path)
+		if err != nil {
+			return nil
+		}
+		if err := callback(p); err != nil {
+			return err
+		}
+		return filepath.SkipDir
 	})
 }
 

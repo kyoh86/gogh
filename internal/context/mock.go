@@ -5,10 +5,10 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
+	"time"
 )
 
 type MockContext struct {
-	context.Context
 	MStdin           io.Reader
 	MStdout          io.Writer
 	MStderr          io.Writer
@@ -24,6 +24,32 @@ type MockContext struct {
 	MLogShortFile    bool
 	MLogUTC          bool
 	MRoot            []string
+}
+
+var _ context.Context = &MockContext{}
+
+// Deadline : empty context.Context
+func (*MockContext) Deadline() (deadline time.Time, ok bool) {
+	return
+}
+
+// Done : empty context.Context
+func (*MockContext) Done() <-chan struct{} {
+	return nil
+}
+
+// Err : empty context.Context
+func (*MockContext) Err() error {
+	return nil
+}
+
+// Value : empty context.Context
+func (*MockContext) Value(key interface{}) interface{} {
+	return nil
+}
+
+func (*MockContext) String() string {
+	return "gogh/internal/context.MockContext"
 }
 
 func (c *MockContext) Stdin() io.Reader {
