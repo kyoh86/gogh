@@ -13,25 +13,25 @@ import (
 func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, withSSH, shallow bool, organization string, repo *gogh.Repo) error {
 	InitLog(ctx)
 
-	log.Printf("info: Finding a repository")
+	log.Print("info: Finding a repository")
 	project, err := gogh.FindOrNewProject(ctx, repo)
 	if err != nil {
 		return err
 	}
-	log.Printf("info: Getting a repository")
+	log.Print("info: Getting a repository")
 	if !project.Exists {
 		repoURL := repo.URL(ctx, withSSH)
-		log.Println("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
+		log.Print("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
 		if err := gitClient.Clone(project.FullPath, repoURL, shallow); err != nil {
 			return err
 		}
 	} else if update {
-		log.Println("info: Update", project.FullPath)
+		log.Print("info: Update", project.FullPath)
 		if err := gitClient.Update(project.FullPath); err != nil {
 			return err
 		}
 	}
-	log.Printf("info: Forking a repository")
+	log.Print("info: Forking a repository")
 	newRepo, err := hubClient.Fork(ctx, repo, organization)
 	if err != nil {
 		var accepted *github.AcceptedError
@@ -39,24 +39,43 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 			return err
 		}
 	}
-	log.Printf("info: Updating a remotes")
+	log.Print("info: Getting remotes")
 	remotes, err := gitClient.GetRemotes(project.FullPath)
 	if err != nil {
 		return err
 	}
+
+	log.Print("info: Removing old remotes")
+	owner := repo.Owner(ctx)
+	me := newRepo.Owner(ctx)
 	for name := range remotes {
-		if name == newRepo.Owner(ctx) || name == repo.Owner(ctx) || name == "origin" {
+		if name == me || name == owner || name == "origin" {
 			if err := gitClient.RemoveRemote(project.FullPath, name); err != nil {
 				return err
 			}
 		}
 	}
-	if err := gitClient.AddRemote(project.FullPath, repo.Owner(ctx), repo.URL(ctx, withSSH)); err != nil {
+
+	log.Print("info: Creating new remotes")
+	if err := gitClient.AddRemote(project.FullPath, owner, repo.URL(ctx, withSSH)); err != nil {
 		return err
 	}
-	if err := gitClient.AddRemote(project.FullPath, newRepo.Owner(ctx), newRepo.URL(ctx, withSSH)); err != nil {
+	if err := gitClient.AddRemote(project.FullPath, me, newRepo.URL(ctx, withSSH)); err != nil {
 		return err
 	}
-	fmt.Fprintln(ctx.Stdout(), project.FullPath)
+
+	log.Print("info: Fetching new remotes")
+	if err := gitClient.Fetch(project.FullPath); err != nil {
+		return err
+	}
+
+	log.Printf("info: Setting upstream to %q", me)
+	branch, err := gitClient.GetCurrentBranch(project.FullPath)
+	if err != nil {
+		return err
+	}
+	if err := gitClient.SetUpstreamTo(project.FullPath, me+"/"+branch); err != nil {
+		return err
+	}
 	return nil
 }
