@@ -168,10 +168,10 @@ func (i *Client) Create(
 		newRepo.Homepage = &page
 	}
 
-	owner := repo.ExplicitOwner(ctx)
-	if owner == ctx.GitHubUser() {
-		owner = ""
+	organization := repo.ExplicitOwner(ctx)
+	if organization == ctx.GitHubUser() {
+		organization = ""
 	}
-	newRepo, _, err := i.client.Repositories.Create(ctx, owner, newRepo)
+	newRepo, _, err := i.client.Repositories.Create(ctx, organization, newRepo)
 	return newRepo, err
 }

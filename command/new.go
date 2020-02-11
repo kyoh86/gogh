@@ -54,12 +54,17 @@ func New(
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	if _, err := hubClient.Create(ctx, repo, description, homepage, private); err != nil {
+	newRepo, err := hubClient.Create(ctx, repo, description, homepage, private)
+	if err != nil {
 		return err
 	}
 
 	// git remote add origin
-	if err := gitClient.AddRemote(project.FullPath, "origin", repo.URL(ctx, false)); err != nil {
+	url, err := url.Parse(newRepo.GetHTMLURL())
+	if err != nil {
+		return err
+	}
+	if err := gitClient.AddRemote(project.FullPath, "origin", url); err != nil {
 		return err
 	}
 
