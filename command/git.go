@@ -10,10 +10,13 @@ import (
 type GitClient interface {
 	AddRemote(string, string, *url.URL) error
 	Clone(string, *url.URL, bool) error
+	Fetch(string) error
+	GetCurrentBranch(string) (string, error)
 	GetRemote(string, string) (*url.URL, error)
 	GetRemotes(string) (map[string]*url.URL, error)
 	Init(string, bool, string, string, string) error
 	RemoveRemote(string, string) error
 	RenameRemote(string, string, string) error
+	SetUpstreamTo(string, string) error
 	Update(string) error
 }

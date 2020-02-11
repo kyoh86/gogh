@@ -61,6 +61,35 @@ func (mr *MockGitClientMockRecorder) Clone(arg0, arg1, arg2 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockGitClient)(nil).Clone), arg0, arg1, arg2)
 }
 
+// Fetch mocks base method
+func (m *MockGitClient) Fetch(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Fetch", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Fetch indicates an expected call of Fetch
+func (mr *MockGitClientMockRecorder) Fetch(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockGitClient)(nil).Fetch), arg0)
+}
+
+// GetCurrentBranch mocks base method
+func (m *MockGitClient) GetCurrentBranch(arg0 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurrentBranch", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCurrentBranch indicates an expected call of GetCurrentBranch
+func (mr *MockGitClientMockRecorder) GetCurrentBranch(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentBranch", reflect.TypeOf((*MockGitClient)(nil).GetCurrentBranch), arg0)
+}
+
 // GetRemote mocks base method
 func (m *MockGitClient) GetRemote(arg0, arg1 string) (*url.URL, error) {
 	m.ctrl.T.Helper()
@@ -131,6 +160,20 @@ func (m *MockGitClient) RenameRemote(arg0, arg1, arg2 string) error {
 func (mr *MockGitClientMockRecorder) RenameRemote(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenameRemote", reflect.TypeOf((*MockGitClient)(nil).RenameRemote), arg0, arg1, arg2)
+}
+
+// SetUpstreamTo mocks base method
+func (m *MockGitClient) SetUpstreamTo(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetUpstreamTo", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetUpstreamTo indicates an expected call of SetUpstreamTo
+func (mr *MockGitClientMockRecorder) SetUpstreamTo(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUpstreamTo", reflect.TypeOf((*MockGitClient)(nil).SetUpstreamTo), arg0, arg1)
 }
 
 // Update mocks base method

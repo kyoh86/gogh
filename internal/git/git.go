@@ -147,3 +147,32 @@ func (c *Client) AddRemote(local string, name string, url *url.URL) error {
 
 	return delegate.ExecCommand(cmd)
 }
+
+func (c *Client) Fetch(local string) error {
+	cmd := c.command("fetch", "--all")
+	cmd.Dir = local
+
+	return delegate.ExecCommand(cmd)
+}
+
+func (c *Client) GetCurrentBranch(local string) (string, error) {
+	cmd := c.command("branch", "--show-current")
+	cmd.Dir = local
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	cmd.Dir = local
+
+	if err := delegate.ExecCommand(cmd); err != nil {
+		return "", fmt.Errorf("%s: %w", stderr.String(), err)
+	}
+	return strings.TrimSpace(stdout.String()), nil
+}
+
+func (c *Client) SetUpstreamTo(local string, upstream string) error {
+	cmd := c.command("branch", "--set-upstream-to", upstream)
+	cmd.Dir = local
+
+	return delegate.ExecCommand(cmd)
+}
