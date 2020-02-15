@@ -7,8 +7,6 @@ import (
 )
 
 func ConfigGetAll(cfg *config.Config) error {
-	InitLog(cfg)
-
 	for _, name := range config.OptionNames() {
 		opt, _ := config.Option(name) // ignore error: config.OptionNames covers all accessor
 		value := opt.Get(cfg)
@@ -18,8 +16,6 @@ func ConfigGetAll(cfg *config.Config) error {
 }
 
 func ConfigGet(cfg *config.Config, optionName string) error {
-	InitLog(cfg)
-
 	opt, err := config.Option(optionName)
 	if err != nil {
 		return err
@@ -30,8 +26,6 @@ func ConfigGet(cfg *config.Config, optionName string) error {
 }
 
 func ConfigPut(cfg *config.Config, optionName, optionValue string) error {
-	InitLog(cfg)
-
 	opt, err := config.Option(optionName)
 	if err != nil {
 		return err
@@ -40,8 +34,6 @@ func ConfigPut(cfg *config.Config, optionName, optionValue string) error {
 }
 
 func ConfigUnset(cfg *config.Config, optionName string) error {
-	InitLog(cfg)
-
 	opt, err := config.Option(optionName)
 	if err != nil {
 		return err

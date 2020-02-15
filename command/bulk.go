@@ -11,13 +11,7 @@ import (
 
 // Pipe handles like `gogh pipe github-list-starred kyoh86` calling `github-list-starred kyoh86` and bulk its output
 func Pipe(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, command string, commandArgs []string) (retErr error) {
-	InitLog(ctx)
-
 	cmd := exec.Command(command, commandArgs...)
-	if ctx, ok := ctx.(gogh.IOContext); ok {
-		cmd.Stderr = ctx.Stderr()
-	}
-
 	in, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -37,12 +31,7 @@ func Pipe(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, 
 
 // Bulk get repositories specified in stdin.
 func Bulk(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool) error {
-	InitLog(ctx)
-	var stdin io.Reader = os.Stdin
-	if ctx, ok := ctx.(gogh.IOContext); ok {
-		stdin = ctx.Stdin()
-	}
-	return bulkFromReader(ctx, gitClient, stdin, update, withSSH, shallow)
+	return bulkFromReader(ctx, gitClient, os.Stdin, update, withSSH, shallow)
 }
 
 // bulkFromReader bulk get repositories specified in reader.

@@ -196,7 +196,7 @@ func TestNew(t *testing.T) {
 	t.Run("LocalErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
-		gitClient := git.New(svc.ctx)
+		gitClient := new(git.Client)
 
 		const (
 			private        = false
@@ -251,7 +251,7 @@ func TestNew(t *testing.T) {
 	t.Run("CreateErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
-		gitClient := git.New(svc.ctx)
+		gitClient := new(git.Client)
 
 		const (
 			private        = false
@@ -307,7 +307,7 @@ func TestNew(t *testing.T) {
 	t.Run("AddRemoteErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
-		gitClient := git.New(svc.ctx)
+		gitClient := new(git.Client)
 
 		const (
 			private        = false
@@ -368,7 +368,7 @@ func TestNew(t *testing.T) {
 	t.Run("SSHRemoteSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
-		gitClient := git.New(svc.ctx)
+		gitClient := new(git.Client)
 
 		const (
 			private        = false
@@ -407,7 +407,7 @@ func TestNew(t *testing.T) {
 	t.Run("NamedRemoteSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
-		gitClient := git.New(svc.ctx)
+		gitClient := new(git.Client)
 
 		const (
 			private        = false
@@ -462,7 +462,7 @@ func TestNew(t *testing.T) {
 	t.Run("Duplicated", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
-		gitClient := git.New(svc.ctx)
+		gitClient := new(git.Client)
 
 		const (
 			private        = false
@@ -514,7 +514,7 @@ func TestNew(t *testing.T) {
 	t.Run("AlreadyExists", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.tearDown(t)
-		gitClient := git.New(svc.ctx)
+		gitClient := new(git.Client)
 
 		const (
 			private        = false

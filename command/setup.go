@@ -14,8 +14,6 @@ import (
 // Setup shells in shell scipt
 // Usage: eval "$(gogh setup)"
 func Setup(ctx gogh.Context, _, shell string) error {
-	InitLog(ctx)
-
 	staticFs, err := fs.New()
 	if err != nil {
 		return err
@@ -30,10 +28,6 @@ func Setup(ctx gogh.Context, _, shell string) error {
 		return err
 	}
 	defer file.Close()
-	var stdout io.Writer = os.Stdout
-	if ctx, ok := ctx.(gogh.IOContext); ok {
-		stdout = ctx.Stdout()
-	}
-	_, err = io.Copy(stdout, file)
+	_, err = io.Copy(os.Stdout, file)
 	return err
 }

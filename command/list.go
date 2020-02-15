@@ -1,7 +1,6 @@
 package command
 
 import (
-	"io"
 	"os"
 
 	"github.com/kyoh86/gogh/gogh"
@@ -9,8 +8,6 @@ import (
 
 // List local projects
 func List(ctx gogh.Context, formatter gogh.ProjectListFormatter, primary bool, isPublic bool, query string) error {
-	InitLog(ctx)
-
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
@@ -36,9 +33,5 @@ func List(ctx gogh.Context, formatter gogh.ProjectListFormatter, primary bool, i
 		return err
 	}
 
-	var stdout io.Writer = os.Stdout
-	if ctx, ok := ctx.(gogh.IOContext); ok {
-		stdout = ctx.Stdout()
-	}
-	return formatter.PrintAll(stdout, "\n")
+	return formatter.PrintAll(os.Stdout, "\n")
 }

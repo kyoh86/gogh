@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
@@ -9,6 +10,12 @@ import (
 	incontext "github.com/kyoh86/gogh/internal/context"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMain(m *testing.M) {
+	log.SetOutput(ioutil.Discard)
+	code := m.Run()
+	os.Exit(code)
+}
 
 type testService struct {
 	gitCtrl   *gomock.Controller

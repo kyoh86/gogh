@@ -4,44 +4,20 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/delegate"
 )
 
-func New(ctx gogh.IOContext) *Client {
-	return &Client{
-		For: struct {
-			Stdout io.Writer
-			Stderr io.Writer
-			Stdin  io.Reader
-		}{
-			ctx.Stdout(),
-			ctx.Stderr(),
-			ctx.Stdin(),
-		},
-	}
-}
-
 type Client struct {
-	For struct {
-		Stdout io.Writer
-		Stderr io.Writer
-		Stdin  io.Reader
-	}
 }
 
 func (c *Client) command(args ...string) *exec.Cmd {
 	cmd := exec.Command("git", args...)
-	cmd.Stdin = c.For.Stdin
-	cmd.Stdout = c.For.Stdout
-	cmd.Stderr = c.For.Stderr
 	return cmd
 }
 

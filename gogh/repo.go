@@ -49,7 +49,7 @@ func CheckRepoHost(ctx GitHubContext, repo *Repo) error {
 	return SupportedHost(ctx, repo.Host(ctx))
 }
 
-// SupportedHost that repo is in supported host
+// SupportedHost checks that a host is supported
 func SupportedHost(ctx GitHubContext, host string) error {
 	if host == ctx.GitHubHost() {
 		return nil

@@ -5,13 +5,13 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/context"
+	"github.com/kyoh86/gogh/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -50,7 +50,9 @@ func TestEmpty(t *testing.T) {
 		update := false
 		withSSH := false
 
-		ctx.MStdin = strings.NewReader(`kyoh86/gogh`)
+		teardown := testutil.Stubin(t, []byte(`kyoh86/gogh`))
+		defer teardown()
+
 		gitClient.EXPECT().Clone(local, remote, shallow).Return(nil)
 		assert.NoError(t, command.Bulk(ctx, gitClient, update, withSSH, shallow))
 	})

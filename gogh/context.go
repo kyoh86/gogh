@@ -2,7 +2,6 @@ package gogh
 
 import (
 	"context"
-	"io"
 )
 
 // Context holds configurations and environments
@@ -13,13 +12,6 @@ type Context interface {
 	GitHubContext
 
 	context.Context
-}
-
-// IOContext holds configurations and environments for I/O.
-type IOContext interface {
-	Stdin() io.Reader
-	Stdout() io.Writer
-	Stderr() io.Writer
 }
 
 // GitHubContext holds configurations and environments for GitHub access.

@@ -22,8 +22,6 @@ func New(
 	shared RepoShared,
 	repo *gogh.Repo,
 ) error {
-	InitLog(ctx)
-
 	log.Printf("info: Creating new project and a remote repository %s", repo)
 	project, err := gogh.FindOrNewProject(ctx, repo)
 	if err != nil {

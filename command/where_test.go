@@ -8,7 +8,6 @@ import (
 
 	"github.com/kyoh86/gogh/command"
 	"github.com/kyoh86/gogh/internal/context"
-	"github.com/kyoh86/gogh/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,13 +32,6 @@ func TestWhere(t *testing.T) {
 		MGitHubHost: "github.com",
 		MGitHubUser: "kyoh86",
 	}, false, false, "gogh"), "try more precise name")
-
-	assert.EqualError(t, command.Where(&context.MockContext{
-		MStderr:     testutil.DefaultErrorWriter,
-		MRoot:       []string{root1, root2},
-		MGitHubHost: "github.com",
-		MGitHubUser: "kyoh86",
-	}, false, false, "gogh"), "error writer")
 
 	assert.EqualError(t, command.Where(&context.MockContext{
 		MRoot:       []string{root1, root2},
@@ -76,13 +68,6 @@ func TestWhere(t *testing.T) {
 		MGitHubHost: "github.com",
 		MGitHubUser: "kyoh86",
 	}, true, true, "vim-gogh"))
-
-	assert.EqualError(t, command.Where(&context.MockContext{
-		MStdout:     testutil.DefaultErrorWriter,
-		MRoot:       []string{root1, root2},
-		MGitHubHost: "github.com",
-		MGitHubUser: "kyoh86",
-	}, true, true, "vim-gogh"), "error writer")
 
 	assert.EqualError(t, command.Where(&context.MockContext{
 		MRoot:       []string{root1, root2},

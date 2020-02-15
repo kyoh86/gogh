@@ -1,21 +1,15 @@
 package context
 
 import (
-	"bytes"
 	"context"
-	"io"
-	"io/ioutil"
 	"time"
 )
 
 type MockContext struct {
-	MStdin           io.Reader
-	MStdout          io.Writer
-	MStderr          io.Writer
-	MGitHubUser      string
-	MGitHubToken     string
-	MGitHubHost      string
-	MRoot            []string
+	MGitHubUser  string
+	MGitHubToken string
+	MGitHubHost  string
+	MRoot        []string
 }
 
 var _ context.Context = &MockContext{}
@@ -42,27 +36,6 @@ func (*MockContext) Value(key interface{}) interface{} {
 
 func (*MockContext) String() string {
 	return "gogh/internal/context.MockContext"
-}
-
-func (c *MockContext) Stdin() io.Reader {
-	if r := c.MStdin; r != nil {
-		return r
-	}
-	return &bytes.Buffer{}
-}
-
-func (c *MockContext) Stdout() io.Writer {
-	if w := c.MStdout; w != nil {
-		return w
-	}
-	return ioutil.Discard
-}
-
-func (c *MockContext) Stderr() io.Writer {
-	if w := c.MStderr; w != nil {
-		return w
-	}
-	return ioutil.Discard
 }
 
 func (c *MockContext) GitHubUser() string {
