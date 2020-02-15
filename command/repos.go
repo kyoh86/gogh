@@ -2,6 +2,8 @@ package command
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/kyoh86/gogh/gogh"
 )
@@ -14,8 +16,12 @@ func Repos(ctx gogh.Context, hubClient HubClient, user string, own, collaborate,
 	if err != nil {
 		return err
 	}
+	var stdout io.Writer = os.Stdout
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		stdout = ctx.Stdout()
+	}
 	for _, repo := range repos {
-		fmt.Fprintln(ctx.Stdout(), repo)
+		fmt.Fprintln(stdout, repo)
 	}
 	return nil
 }

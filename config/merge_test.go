@@ -34,8 +34,6 @@ func TestMergeConfig(t *testing.T) {
 		assert.Equal(t, "kyoh87", cfg.GitHubUser())
 		assert.Equal(t, []string{"/baz", "/bux"}, cfg.Root())
 		assert.Equal(t, "/baz", cfg.PrimaryRoot())
-		assert.Equal(t, os.Stderr, cfg.Stderr())
-		assert.Equal(t, os.Stdout, cfg.Stdout())
 	})
 
 	t.Run("no overwritten config", func(t *testing.T) {
@@ -50,8 +48,6 @@ func TestMergeConfig(t *testing.T) {
 		assert.Equal(t, "kyoh86", cfg.GitHubUser())
 		assert.Equal(t, []string{"/foo", "/bar"}, cfg.Root())
 		assert.Equal(t, "/foo", cfg.PrimaryRoot())
-		assert.Equal(t, os.Stderr, cfg.Stderr())
-		assert.Equal(t, os.Stdout, cfg.Stdout())
 	})
 
 	resetEnv(t)

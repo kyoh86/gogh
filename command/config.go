@@ -25,7 +25,7 @@ func ConfigGet(cfg *config.Config, optionName string) error {
 		return err
 	}
 	value := opt.Get(cfg)
-	fmt.Fprintln(cfg.Stdout(), value)
+	fmt.Println(value)
 	return nil
 }
 

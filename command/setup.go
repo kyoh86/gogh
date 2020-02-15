@@ -30,6 +30,10 @@ func Setup(ctx gogh.Context, _, shell string) error {
 		return err
 	}
 	defer file.Close()
-	_, err = io.Copy(ctx.Stdout(), file)
+	var stdout io.Writer = os.Stdout
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		stdout = ctx.Stdout()
+	}
+	_, err = io.Copy(stdout, file)
 	return err
 }

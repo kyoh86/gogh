@@ -3,6 +3,7 @@ package command
 import (
 	"bufio"
 	"io"
+	"os"
 	"os/exec"
 
 	"github.com/kyoh86/gogh/gogh"
@@ -13,7 +14,9 @@ func Pipe(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, 
 	InitLog(ctx)
 
 	cmd := exec.Command(command, commandArgs...)
-	cmd.Stderr = ctx.Stderr()
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		cmd.Stderr = ctx.Stderr()
+	}
 
 	in, err := cmd.StdoutPipe()
 	if err != nil {
@@ -35,8 +38,11 @@ func Pipe(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, 
 // Bulk get repositories specified in stdin.
 func Bulk(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool) error {
 	InitLog(ctx)
-
-	return bulkFromReader(ctx, gitClient, ctx.Stdin(), update, withSSH, shallow)
+	var stdin io.Reader = os.Stdin
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		stdin = ctx.Stdin()
+	}
+	return bulkFromReader(ctx, gitClient, stdin, update, withSSH, shallow)
 }
 
 // bulkFromReader bulk get repositories specified in reader.

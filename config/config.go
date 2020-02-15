@@ -2,8 +2,6 @@ package config
 
 import (
 	"context"
-	"io"
-	"os"
 	"time"
 )
 
@@ -43,18 +41,6 @@ func (*Config) Value(key interface{}) interface{} {
 
 func (*Config) String() string {
 	return "gogh/config.Config"
-}
-
-func (c *Config) Stdin() io.Reader {
-	return os.Stdin
-}
-
-func (c *Config) Stdout() io.Writer {
-	return os.Stdout
-}
-
-func (c *Config) Stderr() io.Writer {
-	return os.Stderr
 }
 
 func (c *Config) GitHubUser() string {

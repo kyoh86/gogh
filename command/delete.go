@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/kyoh86/ask"
@@ -29,10 +30,16 @@ func Delete(ctx gogh.Context, primary bool, query string) error {
 		return fmt.Errorf("any projects did not matched for %q", query)
 	}
 
-	fmt.Fprintln(ctx.Stdout(), "Deleting projects. Please confirm them and answer by [y/n]")
+	var stdout io.Writer = os.Stdout
+	var stdin io.Reader = os.Stdin
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		stdout = ctx.Stdout()
+		stdin = ctx.Stdin()
+	}
+	fmt.Fprintln(stdout, "Deleting projects. Please confirm them and answer by [y/n]")
 	for _, p := range projects {
 		fmt.Print(p.FullPath)
-		yes, err := ask.Limit(5).Reader(ctx.Stdin()).YesNo()
+		yes, err := ask.Limit(5).Reader(stdin).YesNo()
 		if err != nil {
 			return err
 		}

@@ -2,7 +2,9 @@ package command
 
 import (
 	"errors"
+	"io"
 	"log"
+	"os"
 
 	"github.com/kyoh86/gogh/gogh"
 )
@@ -41,9 +43,15 @@ func Where(ctx gogh.Context, primary bool, exact bool, query string) error {
 		}
 	}
 
+	var stdout io.Writer = os.Stdout
+	var stderr io.Writer = os.Stderr
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		stdout = ctx.Stdout()
+		stderr = ctx.Stderr()
+	}
 	switch l := formatter.Len(); {
 	case l == 1:
-		if err := formatter.PrintAll(ctx.Stdout(), "\n"); err != nil {
+		if err := formatter.PrintAll(stdout, "\n"); err != nil {
 			return err
 		}
 	case l < 1:
@@ -51,7 +59,7 @@ func Where(ctx gogh.Context, primary bool, exact bool, query string) error {
 		return gogh.ErrProjectNotFound
 	default:
 		log.Println("error: Multiple repositories are found")
-		if err := formatter.PrintAll(ctx.Stderr(), "\n"); err != nil {
+		if err := formatter.PrintAll(stderr, "\n"); err != nil {
 			return err
 		}
 		return errors.New("try more precise name")

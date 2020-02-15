@@ -11,7 +11,6 @@ type Context interface {
 	PrimaryRoot() string
 
 	GitHubContext
-	IOContext
 
 	context.Context
 }

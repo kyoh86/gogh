@@ -2,7 +2,9 @@ package command
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"github.com/kyoh86/gogh/gogh"
 )
@@ -31,12 +33,16 @@ func Get(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, r
 	if err != nil {
 		return err
 	}
+	var stdout io.Writer = os.Stdout
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		stdout = ctx.Stdout()
+	}
 	if !project.Exists {
 		log.Println("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
 		if err := gitClient.Clone(project.FullPath, repoURL, shallow); err != nil {
 			return err
 		}
-		fmt.Fprintln(ctx.Stdout(), project.FullPath)
+		fmt.Fprintln(stdout, project.FullPath)
 		return nil
 	}
 	if update {
@@ -44,7 +50,7 @@ func Get(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, r
 		if err := gitClient.Update(project.FullPath); err != nil {
 			return err
 		}
-		fmt.Fprintln(ctx.Stdout(), project.FullPath)
+		fmt.Fprintln(stdout, project.FullPath)
 	}
 	log.Println("warn: Exists", project.FullPath)
 	return nil

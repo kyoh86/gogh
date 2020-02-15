@@ -1,6 +1,9 @@
 package command
 
 import (
+	"io"
+	"os"
+
 	"github.com/kyoh86/gogh/gogh"
 )
 
@@ -33,5 +36,9 @@ func List(ctx gogh.Context, formatter gogh.ProjectListFormatter, primary bool, i
 		return err
 	}
 
-	return formatter.PrintAll(ctx.Stdout(), "\n")
+	var stdout io.Writer = os.Stdout
+	if ctx, ok := ctx.(gogh.IOContext); ok {
+		stdout = ctx.Stdout()
+	}
+	return formatter.PrintAll(stdout, "\n")
 }

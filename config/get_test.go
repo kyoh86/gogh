@@ -24,9 +24,6 @@ func TestDefaultConfig(t *testing.T) {
 	assert.Equal(t, "", cfg.GitHubUser())
 	assert.NotEmpty(t, cfg.Root())
 	assert.NotEmpty(t, cfg.PrimaryRoot())
-	assert.Equal(t, os.Stderr, cfg.Stderr())
-	assert.Equal(t, os.Stdout, cfg.Stdout())
-	assert.Equal(t, os.Stdin, cfg.Stdin())
 }
 
 func TestLoadConfig(t *testing.T) {
@@ -49,8 +46,6 @@ github:
 		assert.Equal(t, "kyoh86", cfg.GitHubUser())
 		assert.Equal(t, []string{"/foo", "/bar"}, cfg.Root())
 		assert.Equal(t, "/foo", cfg.PrimaryRoot())
-		assert.Equal(t, os.Stderr, cfg.Stderr())
-		assert.Equal(t, os.Stdout, cfg.Stdout())
 	})
 	t.Run("invalid format", func(t *testing.T) {
 		resetEnv(t)
@@ -96,6 +91,4 @@ func TestGetEnvarConfig(t *testing.T) {
 	assert.Equal(t, "kyoh86", cfg.GitHubUser())
 	assert.Equal(t, []string{"/foo", "/bar"}, cfg.Root(), "expects roots are not duplicated")
 	assert.Equal(t, "/foo", cfg.PrimaryRoot())
-	assert.Equal(t, os.Stderr, cfg.Stderr())
-	assert.Equal(t, os.Stdout, cfg.Stdout())
 }
