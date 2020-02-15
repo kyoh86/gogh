@@ -14,25 +14,11 @@ import (
 )
 
 var (
-	envGoghLogLevel        = "GOGH_LOG_LEVEL"
-	envGoghLogDate         = "GOGH_LOG_DATE"
-	envGoghLogTime         = "GOGH_LOG_TIME"
-	envGoghLogMicroSeconds = "GOGH_LOG_MICROSECONDS"
-	envGoghLogLongFile     = "GOGH_LOG_LONGFILE"
-	envGoghLogShortFile    = "GOGH_LOG_SHORTFILE"
-	envGoghLogUTC          = "GOGH_LOG_UTC"
 	envGoghGitHubUser      = "GOGH_GITHUB_USER"
 	envGoghGitHubToken     = "GOGH_GITHUB_TOKEN"
 	envGoghGitHubHost      = "GOGH_GITHUB_HOST"
 	envGoghRoot            = "GOGH_ROOT"
 	envNames               = []string{
-		envGoghLogLevel,
-		envGoghLogDate,
-		envGoghLogTime,
-		envGoghLogMicroSeconds,
-		envGoghLogLongFile,
-		envGoghLogShortFile,
-		envGoghLogUTC,
 		envGoghGitHubUser,
 		envGoghGitHubToken,
 		envGoghGitHubHost,
@@ -45,14 +31,9 @@ var (
 const (
 	// DefaultHost is the default host of the GitHub
 	DefaultHost     = "github.com"
-	DefaultLogLevel = "warn"
 )
 
 var defaultConfig = Config{
-	Log: LogConfig{
-		Level: DefaultLogLevel,
-		Time:  TrueOption,
-	},
 	GitHub: GitHubConfig{
 		Host: DefaultHost,
 	},

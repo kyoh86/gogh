@@ -12,15 +12,6 @@ func ExampleConfigGetAll() {
 			Host:  "hostx1",
 			User:  "kyoh86",
 		},
-		Log: config.LogConfig{
-			Level:        "trace",
-			Date:         config.TrueOption,
-			Time:         config.FalseOption,
-			MicroSeconds: config.TrueOption,
-			LongFile:     config.TrueOption,
-			ShortFile:    config.TrueOption,
-			UTC:          config.TrueOption,
-		},
 		VRoot: []string{"/foo", "/bar"},
 	}); err != nil {
 		panic(err)
@@ -30,11 +21,4 @@ func ExampleConfigGetAll() {
 	// github.host: hostx1
 	// github.user: kyoh86
 	// github.token: *****
-	// log.level: trace
-	// log.date: yes
-	// log.time: no
-	// log.microseconds: yes
-	// log.longfile: yes
-	// log.shortfile: yes
-	// log.utc: yes
 }
