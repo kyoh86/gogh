@@ -82,10 +82,10 @@ func checkProjectRemote(ctx gogh.Context, gitClient GitClient, project *gogh.Pro
 		if remote == nil {
 			return false, nil
 		}
-		if remote.String() == repo.URL(ctx, false).String() {
+		if remote.String() == repo.URL(false).String() {
 			return true, nil
 		}
-		if remote.String() == repo.URL(ctx, true).String() {
+		if remote.String() == repo.URL(true).String() {
 			return true, nil
 		}
 		return true, gogh.ErrProjectAlreadyExists

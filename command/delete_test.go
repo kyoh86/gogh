@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/internal/context"
 	"github.com/kyoh86/gogh/internal/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,14 +29,17 @@ func TestDelete(t *testing.T) {
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
 	t.Run("delete proj2 explicitly", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.teardown(t)
 		teardown := testutil.Stubin(t, []byte("y\n"))
 		defer teardown()
 
-		assert.NoError(t, command.Delete(&context.MockContext{
-			MRoot:       []string{root1, root2},
-			MGitHubHost: "github.com",
-			MGitHubUser: "kyoh86",
-		}, false, "gogh-test-2"))
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+		svc.ctx.EXPECT().Done().AnyTimes()
+
+		assert.NoError(t, command.Delete(svc.ctx, false, "gogh-test-2"))
 		var err error
 		_, err = os.Stat(proj1)
 		assert.NoError(t, err)
@@ -49,14 +51,17 @@ func TestDelete(t *testing.T) {
 	})
 
 	t.Run("delete proj3 with fuzzy", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.teardown(t)
 		teardown := testutil.Stubin(t, []byte("y\n"))
 		defer teardown()
 
-		assert.NoError(t, command.Delete(&context.MockContext{
-			MRoot:       []string{root1, root2},
-			MGitHubHost: "github.com",
-			MGitHubUser: "kyoh86",
-		}, false, "3"))
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+		svc.ctx.EXPECT().Done().AnyTimes()
+
+		assert.NoError(t, command.Delete(svc.ctx, false, "3"))
 		var err error
 		_, err = os.Stat(proj1)
 		assert.NoError(t, err)
@@ -68,14 +73,18 @@ func TestDelete(t *testing.T) {
 	})
 
 	t.Run("delete proj1 in primary", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.teardown(t)
 		teardown := testutil.Stubin(t, []byte("y\n"))
 		defer teardown()
 
-		assert.NoError(t, command.Delete(&context.MockContext{
-			MRoot:       []string{root1, root2},
-			MGitHubHost: "github.com",
-			MGitHubUser: "kyoh86",
-		}, true, "test"))
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(root1)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+		svc.ctx.EXPECT().Done().AnyTimes()
+
+		assert.NoError(t, command.Delete(svc.ctx, true, "test"))
 		var err error
 		_, err = os.Stat(proj1)
 		assert.True(t, os.IsNotExist(err))
@@ -87,11 +96,15 @@ func TestDelete(t *testing.T) {
 	})
 
 	t.Run("did not match", func(t *testing.T) {
-		assert.EqualError(t, command.Delete(&context.MockContext{
-			MRoot:       []string{root1, root2},
-			MGitHubHost: "github.com",
-			MGitHubUser: "kyoh86",
-		}, true, "foobar"), "any projects did not matched for \"foobar\"")
+		svc := initTest(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(root1)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+		svc.ctx.EXPECT().Done().AnyTimes()
+
+		assert.EqualError(t, command.Delete(svc.ctx, true, "foobar"), "any projects did not matched for \"foobar\"")
 		var err error
 		_, err = os.Stat(proj1)
 		assert.NoError(t, err)

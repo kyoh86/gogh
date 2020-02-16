@@ -125,9 +125,9 @@ func (i *Client) Fork(
 		Organization: organization,
 	}
 
-	newRepo, _, err := i.client.Repositories.CreateFork(ctx, repo.Owner(ctx), repo.Name(ctx), opts)
+	newRepo, _, err := i.client.Repositories.CreateFork(ctx, repo.Owner(), repo.Name(), opts)
 	if newRepo != nil {
-		result, retErr = gogh.ParseRepo(newRepo.GetHTMLURL())
+		result, retErr = gogh.ParseRepo(ctx, newRepo.GetHTMLURL())
 	}
 	if err != nil {
 		retErr = fmt.Errorf("creating fork: %w", err)
@@ -157,7 +157,7 @@ func (i *Client) Create(
 	// - visibility	string
 	//		Can be public or private. If your organization is associated with an enterprise account using GitHub Enterprise Cloud, visibility can also be internal. For more information, see "Creating an internal repository" in the GitHub Help documentation.
 	//		The visibility parameter overrides the private parameter when you use both parameters with the nebula-preview preview header.
-	name := repo.Name(ctx)
+	name := repo.Name()
 	newRepo = &github.Repository{
 		Name:        &name,
 		Description: &description,
@@ -168,7 +168,7 @@ func (i *Client) Create(
 		newRepo.Homepage = &page
 	}
 
-	organization := repo.ExplicitOwner(ctx)
+	organization := repo.Owner()
 	if organization == ctx.GitHubUser() {
 		organization = ""
 	}

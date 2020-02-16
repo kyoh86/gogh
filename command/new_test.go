@@ -18,7 +18,11 @@ import (
 func TestNew(t *testing.T) {
 	t.Run("GetRemoteError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 
 		const (
 			private        = false
@@ -32,7 +36,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(localGit, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		getRemotesErr := errors.New("get remote error")
 		svc.gitClient.EXPECT().GetRemotes(local).Return(nil, getRemotesErr)
 		assert.EqualError(t, command.New(
@@ -53,7 +57,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("LocalError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 
 		const (
 			private        = false
@@ -66,7 +74,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		initErr := errors.New("init error")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(initErr)
 		assert.EqualError(t, command.New(
@@ -87,7 +95,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("CreateErr", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 
 		const (
 			private        = false
@@ -100,7 +112,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		createErr := errors.New("remote error")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
 		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, createErr)
@@ -122,7 +134,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("AddRemoteError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 
 		const (
 			private        = false
@@ -135,7 +151,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		addRemoteErr := errors.New("add remote error")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
@@ -159,7 +175,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 
 		const (
 			private        = false
@@ -172,7 +192,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
 		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
@@ -195,7 +215,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("LocalErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 		gitClient := new(git.Client)
 
 		const (
@@ -209,7 +233,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		localErr := errors.New("local error")
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Do(gitClient.Init).Return(localErr)
@@ -250,7 +274,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("CreateErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 		gitClient := new(git.Client)
 
 		const (
@@ -264,7 +292,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		createErr := errors.New("create error")
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
@@ -306,7 +334,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("AddRemoteErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 		gitClient := new(git.Client)
 
 		const (
@@ -320,7 +352,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		addRemoteErr := errors.New("add remote error")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
@@ -367,7 +399,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("SSHRemoteSuccess", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 		gitClient := new(git.Client)
 
 		const (
@@ -381,10 +417,9 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared.String()))
-		u := repo.URL(svc.ctx, true)
-		require.NoError(t, gitClient.AddRemote(local, "origin", u))
+		require.NoError(t, gitClient.AddRemote(local, "origin", repo.URL(true)))
 
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
@@ -406,7 +441,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("NamedRemoteSuccess", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 		gitClient := new(git.Client)
 
 		const (
@@ -420,9 +459,9 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared.String()))
-		u := repo.URL(svc.ctx, false)
+		u := repo.URL(false)
 		require.NoError(t, gitClient.AddRemote(local, "kyoh86", u))
 
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
@@ -461,7 +500,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("Duplicated", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 		gitClient := new(git.Client)
 
 		const (
@@ -475,7 +518,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
 		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
@@ -513,7 +556,11 @@ func TestNew(t *testing.T) {
 
 	t.Run("AlreadyExists", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
 		gitClient := new(git.Client)
 
 		const (
@@ -527,7 +574,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared.String()))
 		u, _ := url.Parse("https://github.com/kyoh86/dummy")
 		require.NoError(t, gitClient.AddRemote(local, "origin", u))

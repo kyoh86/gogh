@@ -36,10 +36,10 @@ func Bulk(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool) 
 
 // bulkFromReader bulk get repositories specified in reader.
 func bulkFromReader(ctx gogh.Context, gitClient GitClient, in io.Reader, update, withSSH, shallow bool) error {
-	var repos gogh.Repos
+	var specs gogh.RepoSpecs
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
-		if err := repos.Set(scanner.Text()); err != nil {
+		if err := specs.Set(scanner.Text()); err != nil {
 			return err
 		}
 	}
@@ -47,5 +47,9 @@ func bulkFromReader(ctx gogh.Context, gitClient GitClient, in io.Reader, update,
 		return err
 	}
 
+	repos, err := specs.Validate(ctx)
+	if err != nil {
+		return err
+	}
 	return GetAll(ctx, gitClient, update, withSSH, shallow, repos)
 }

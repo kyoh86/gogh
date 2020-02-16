@@ -16,8 +16,13 @@ import (
 func TestFork(t *testing.T) {
 	t.Run("CloneError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update  = false
@@ -38,8 +43,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("UpdateError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update  = true
@@ -60,8 +69,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("ForkError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
@@ -83,8 +96,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("GetRemotesError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
@@ -97,7 +114,7 @@ func TestFork(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(nil, getRemotesErr)
 		assert.EqualError(
@@ -109,8 +126,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("RemoveRemoteError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
@@ -123,7 +144,7 @@ func TestFork(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
@@ -141,8 +162,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("AddRemoteError1", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
@@ -155,7 +180,7 @@ func TestFork(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
@@ -177,8 +202,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("AddRemoteError2", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
@@ -191,7 +220,7 @@ func TestFork(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
@@ -215,8 +244,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("FetchError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
@@ -229,7 +262,7 @@ func TestFork(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
@@ -254,8 +287,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("GetBranchError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
@@ -265,7 +302,7 @@ func TestFork(t *testing.T) {
 		)
 		getBranchErr := errors.New("get branch error")
 
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Clone(path, u, shallow).Return(nil)
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
@@ -293,8 +330,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("SetUpstreamError", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
@@ -304,7 +345,7 @@ func TestFork(t *testing.T) {
 		)
 		setUpstreamErr := errors.New("set upstream error")
 
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Clone(path, u, shallow).Return(nil)
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
@@ -333,8 +374,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("Clone", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
@@ -343,7 +388,7 @@ func TestFork(t *testing.T) {
 			organization = "kyoh86-tryouts"
 		)
 
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Clone(path, u, shallow).Return(nil)
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
@@ -371,8 +416,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("WithoutUpdate", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
@@ -382,7 +431,7 @@ func TestFork(t *testing.T) {
 		)
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
@@ -408,8 +457,12 @@ func TestFork(t *testing.T) {
 
 	t.Run("WithUpdate", func(t *testing.T) {
 		svc := initTest(t)
-		defer svc.tearDown(t)
-		repo := mustParseRepo(t, "kyoh86/gogh")
+		defer svc.teardown(t)
+		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
+		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
+		svc.ctx.EXPECT().Done().AnyTimes()
+		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
@@ -420,7 +473,7 @@ func TestFork(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
-		newRepo := mustParseRepo(t, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ctx, "kyoh86-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(svc.ctx, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin": nil,

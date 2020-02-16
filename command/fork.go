@@ -18,7 +18,7 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 	}
 	log.Print("info: Getting a repository")
 	if !project.Exists {
-		repoURL := repo.URL(ctx, withSSH)
+		repoURL := repo.URL(withSSH)
 		log.Print("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
 		if err := gitClient.Clone(project.FullPath, repoURL, shallow); err != nil {
 			return err
@@ -44,8 +44,8 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 	}
 
 	log.Print("info: Removing old remotes")
-	owner := repo.Owner(ctx)
-	me := newRepo.Owner(ctx)
+	owner := repo.Owner()
+	me := newRepo.Owner()
 	for name := range remotes {
 		if name == me || name == owner || name == "origin" {
 			if err := gitClient.RemoveRemote(project.FullPath, name); err != nil {
@@ -55,10 +55,10 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 	}
 
 	log.Print("info: Creating new remotes")
-	if err := gitClient.AddRemote(project.FullPath, owner, repo.URL(ctx, withSSH)); err != nil {
+	if err := gitClient.AddRemote(project.FullPath, owner, repo.URL(withSSH)); err != nil {
 		return err
 	}
-	if err := gitClient.AddRemote(project.FullPath, me, newRepo.URL(ctx, withSSH)); err != nil {
+	if err := gitClient.AddRemote(project.FullPath, me, newRepo.URL(withSSH)); err != nil {
 		return err
 	}
 

@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	incontext "github.com/kyoh86/gogh/internal/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,10 +22,10 @@ type testService struct {
 	gitClient *MockGitClient
 	hubClient *MockHubClient
 	root      string
-	ctx       *incontext.MockContext
+	ctx       *MockContext
 }
 
-func (s testService) tearDown(t *testing.T) {
+func (s testService) teardown(t *testing.T) {
 	t.Helper()
 	s.gitCtrl.Finish()
 	s.hubCtrl.Finish()
@@ -37,15 +36,13 @@ func initTest(t *testing.T) *testService {
 	t.Helper()
 	gitCtrl := gomock.NewController(t)
 	hubCtrl := gomock.NewController(t)
+	ctxCtrl := gomock.NewController(t)
 	gitClient := NewMockGitClient(gitCtrl)
 	hubClient := NewMockHubClient(hubCtrl)
+	ctxMock := NewMockContext(ctxCtrl)
 
 	root, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)
-	ctx := &incontext.MockContext{
-		MRoot:       []string{root},
-		MGitHubHost: "github.com",
-	}
 
 	return &testService{
 		gitCtrl:   gitCtrl,
@@ -53,6 +50,6 @@ func initTest(t *testing.T) *testService {
 		gitClient: gitClient,
 		hubClient: hubClient,
 		root:      root,
-		ctx:       ctx,
+		ctx:       ctxMock,
 	}
 }

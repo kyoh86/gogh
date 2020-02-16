@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,9 +37,6 @@ func FindProjectInPrimary(ctx Context, repo *Repo) (*Project, error) {
 }
 
 func findProject(ctx Context, repo *Repo, walker Walker) (*Project, error) {
-	if err := CheckRepoHost(ctx, repo); err != nil {
-		return nil, err
-	}
 	var project *Project
 
 	// Find existing repository first
@@ -83,15 +81,12 @@ func findOrNewProject(ctx Context, repo *Repo, walker Walker) (*Project, error) 
 
 // NewProject creates a project (local repository)
 func NewProject(ctx Context, repo *Repo) (*Project, error) {
-	if err := CheckRepoHost(ctx, repo); err != nil {
-		return nil, err
-	}
-	relPath := repo.RelPath(ctx)
+	relPath := repo.RelPath()
 	fullPath := filepath.Join(ctx.PrimaryRoot(), relPath)
 	return &Project{
 		FullPath:  fullPath,
 		RelPath:   relPath,
-		PathParts: []string{repo.Host(ctx), repo.Owner(ctx), repo.Name(ctx)},
+		PathParts: []string{repo.host, repo.owner, repo.name},
 		Exists:    isVcsDir(fullPath),
 	}, nil
 }
@@ -154,7 +149,7 @@ func walkInPath(ctx Context, root string, callback WalkFunc) error {
 		if !isVcsDir(path) {
 			return nil
 		}
-		p, err := parseProject(ctx, root, path)
+		p, err := ParseProject(ctx, root, path)
 		if err != nil {
 			return nil
 		}
@@ -165,7 +160,7 @@ func walkInPath(ctx Context, root string, callback WalkFunc) error {
 	})
 }
 
-func parseProject(ctx Context, root string, fullPath string) (*Project, error) {
+func ParseProject(ctx Context, root string, fullPath string) (*Project, error) {
 	rel, err := filepath.Rel(root, fullPath)
 	if err != nil {
 		return nil, err
@@ -174,8 +169,8 @@ func parseProject(ctx Context, root string, fullPath string) (*Project, error) {
 	if len(pathParts) != 3 {
 		return nil, errors.New("not supported project path")
 	}
-	if err := SupportedHost(ctx, pathParts[0]); err != nil {
-		return nil, err
+	if ctx.GitHubHost() != pathParts[0] {
+		return nil, fmt.Errorf("not supported project host %q", pathParts[0])
 	}
 	if err := ValidateOwner(pathParts[1]); err != nil {
 		return nil, err

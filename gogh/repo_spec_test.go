@@ -9,14 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mustParseRepo(t *testing.T, ctx gogh.Context, name string) *gogh.Repo {
-	t.Helper()
-	repo, err := gogh.ParseRepo(ctx, name)
-	require.NoError(t, err)
-	return repo
-}
-
-func TestRepoParse(t *testing.T) {
+func TestRepoSpec(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := NewMockContext(ctrl)
@@ -24,47 +17,39 @@ func TestRepoParse(t *testing.T) {
 	ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
 
 	t.Run("full HTTPS URL", func(t *testing.T) {
-		repo, err := gogh.ParseRepo(ctx, "https://github.com/kyoh86/pusheen-explorer")
-		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/pusheen-explorer", repo.FullName())
-		assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", repo.String())
-		assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", repo.URL(false).String())
-		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer", repo.URL(true).String())
+		spec := new(gogh.RepoSpec)
+		require.NoError(t, spec.Set("https://github.com/kyoh86/pusheen-explorer"))
+		assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", spec.String())
 	})
 
 	t.Run("scp like URL 1", func(t *testing.T) {
-		repo, err := gogh.ParseRepo(ctx, "git@github.com:kyoh86/pusheen-explorer.git")
-		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/pusheen-explorer", repo.FullName())
-		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer", repo.String())
+		spec := new(gogh.RepoSpec)
+		require.NoError(t, spec.Set("git@github.com:kyoh86/pusheen-explorer.git"))
+		assert.Equal(t, "git@github.com:kyoh86/pusheen-explorer.git", spec.String())
 	})
 
 	t.Run("scp like URL 2", func(t *testing.T) {
-		repo, err := gogh.ParseRepo(ctx, "git@github.com:/kyoh86/pusheen-explorer.git")
-		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/pusheen-explorer", repo.FullName())
-		assert.Equal(t, "ssh://git@github.com/kyoh86/pusheen-explorer", repo.String())
+		spec := new(gogh.RepoSpec)
+		require.NoError(t, spec.Set("git@github.com:/kyoh86/pusheen-explorer.git"))
+		assert.Equal(t, "git@github.com:/kyoh86/pusheen-explorer.git", spec.String())
 	})
 
 	t.Run("scp like URL 3", func(t *testing.T) {
-		repo, err := gogh.ParseRepo(ctx, "github.com:kyoh86/pusheen-explorer.git")
-		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/pusheen-explorer", repo.FullName())
-		assert.Equal(t, "ssh://github.com/kyoh86/pusheen-explorer", repo.String())
+		spec := new(gogh.RepoSpec)
+		require.NoError(t, spec.Set("github.com:kyoh86/pusheen-explorer.git"))
+		assert.Equal(t, "github.com:kyoh86/pusheen-explorer.git", spec.String())
 	})
 
-	t.Run("owner/name repo", func(t *testing.T) {
-		repo, err := gogh.ParseRepo(ctx, "kyoh86/gogh")
-		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/gogh", repo.FullName())
-		assert.Equal(t, "https://github.com/kyoh86/gogh", repo.String())
+	t.Run("owner/name spec", func(t *testing.T) {
+		spec := new(gogh.RepoSpec)
+		require.NoError(t, spec.Set("kyoh86/gogh"))
+		assert.Equal(t, "kyoh86/gogh", spec.String())
 	})
 
-	t.Run("name only repo", func(t *testing.T) {
-		repo, err := gogh.ParseRepo(ctx, "gogh")
-		require.NoError(t, err)
-		assert.Equal(t, "kyoh86/gogh", repo.FullName())
-		assert.Equal(t, "https://github.com/kyoh86/gogh", repo.String())
+	t.Run("name only spec", func(t *testing.T) {
+		spec := new(gogh.RepoSpec)
+		require.NoError(t, spec.Set("gogh"))
+		assert.Equal(t, "gogh", spec.String())
 	})
 
 	t.Run("fail when invalid url given", func(t *testing.T) {

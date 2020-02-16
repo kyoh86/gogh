@@ -26,7 +26,6 @@ func ExampleList_url() {
 	},
 		gogh.URLFormatter(),
 		true,
-		false,
 		"",
 	); err != nil {
 		panic(err)
@@ -53,7 +52,6 @@ func ExampleList_custom() {
 	},
 		fmter,
 		true,
-		false,
 		"",
 	); err != nil {
 		panic(err)
@@ -75,7 +73,6 @@ func TestList(t *testing.T) {
 		GitHub: config.GitHubConfig{Host: "example.com"},
 	},
 		gogh.URLFormatter(),
-		false,
 		false,
 		"",
 	), "invalid root")

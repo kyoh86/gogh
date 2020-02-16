@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWhere(t *testing.T) {
+func TestFind(t *testing.T) {
 	root1, err := ioutil.TempDir(os.TempDir(), "gogh-test1")
 	require.NoError(t, err)
 	defer os.RemoveAll(root1)
@@ -37,7 +37,11 @@ func TestWhere(t *testing.T) {
 	ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
 	ctx.EXPECT().Done().AnyTimes()
 
-	assert.EqualError(t, command.Where(ctx, false, "gogh"), "try more precise name")
-	assert.EqualError(t, command.Where(ctx, false, "noone"), "project not found")
-	assert.NoError(t, command.Where(ctx, true, "gogh"))
+	assert.EqualError(t, command.Find(ctx, true, mustParseRepo(t, ctx, "gogh")), "project not found")
+
+	assert.NoError(t, command.Find(ctx, false, mustParseRepo(t, ctx, "gogh")))
+
+	assert.NoError(t, command.Find(ctx, false, mustParseRepo(t, ctx, "kyoh85/test")))
+
+	assert.NoError(t, command.Find(ctx, true, mustParseRepo(t, ctx, "vim-gogh")))
 }

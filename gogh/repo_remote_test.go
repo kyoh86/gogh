@@ -1,11 +1,10 @@
 // +build remote_test
 
-package gogh
+package gogh_test
 
 import (
 	"testing"
 
-	"github.com/kyoh86/gogh/internal/context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
