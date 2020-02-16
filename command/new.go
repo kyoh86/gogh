@@ -29,7 +29,7 @@ func New(
 	}
 
 	log.Printf("info: Checking existing project")
-	remote, err := checkProjectRemote(ctx, gitClient, project, repo)
+	remote, err := checkProjectRemote(gitClient, project, repo)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func New(
 	return nil
 }
 
-func checkProjectRemote(ctx gogh.Context, gitClient GitClient, project *gogh.Project, repo *gogh.Repo) (bool, error) {
+func checkProjectRemote(gitClient GitClient, project *gogh.Project, repo *gogh.Repo) (bool, error) {
 	if !project.Exists {
 		return false, nil
 	}
