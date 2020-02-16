@@ -20,7 +20,6 @@ func TestEmpty(t *testing.T) {
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		remote, _ := url.Parse("https://github.com/kyoh86/gogh")
@@ -38,7 +37,6 @@ func TestEmpty(t *testing.T) {
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		remote, _ := url.Parse("https://github.com/kyoh86/gogh")
@@ -59,7 +57,6 @@ func TestEmpty(t *testing.T) {
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		local1 := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		remote1, _ := url.Parse("https://github.com/kyoh86/gogh")
@@ -83,7 +80,6 @@ func TestEmpty(t *testing.T) {
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		remote, _ := url.Parse("https://github.com/kyoh86/gogh")
@@ -101,7 +97,6 @@ func TestEmpty(t *testing.T) {
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		proj1 := filepath.Join(svc.root, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(proj1, 0755))
@@ -110,7 +105,6 @@ func TestEmpty(t *testing.T) {
 	t.Run("Root", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		assert.NoError(t, command.Root(svc.ctx, false))

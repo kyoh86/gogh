@@ -18,7 +18,6 @@ func TestGet(t *testing.T) {
 	svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 	svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 	svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-	svc.ctx.EXPECT().Done().AnyTimes()
 	gitCtrl := gomock.NewController(t)
 
 	// Assert that expected methods is invoked.

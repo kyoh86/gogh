@@ -20,7 +20,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
@@ -47,7 +46,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -73,7 +71,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -100,7 +97,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -130,7 +126,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -166,7 +161,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -206,7 +200,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -248,7 +241,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -291,7 +283,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -334,7 +325,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -378,7 +368,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -420,7 +409,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (
@@ -461,7 +449,6 @@ func TestFork(t *testing.T) {
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().Done().AnyTimes()
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
 		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
 		const (

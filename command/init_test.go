@@ -40,6 +40,7 @@ func initTest(t *testing.T) *testService {
 	gitClient := NewMockGitClient(gitCtrl)
 	hubClient := NewMockHubClient(hubCtrl)
 	ctxMock := NewMockContext(ctxCtrl)
+	ctxMock.EXPECT().Done().AnyTimes()
 
 	root, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 	require.NoError(t, err)

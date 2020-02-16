@@ -37,7 +37,6 @@ func TestDelete(t *testing.T) {
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		assert.NoError(t, command.Delete(svc.ctx, false, "gogh-test-2"))
 		var err error
@@ -59,7 +58,6 @@ func TestDelete(t *testing.T) {
 		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		assert.NoError(t, command.Delete(svc.ctx, false, "3"))
 		var err error
@@ -82,7 +80,6 @@ func TestDelete(t *testing.T) {
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(root1)
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		assert.NoError(t, command.Delete(svc.ctx, true, "test"))
 		var err error
@@ -102,7 +99,6 @@ func TestDelete(t *testing.T) {
 		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(root1)
 		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 		svc.ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
-		svc.ctx.EXPECT().Done().AnyTimes()
 
 		assert.EqualError(t, command.Delete(svc.ctx, true, "foobar"), "any projects did not matched for \"foobar\"")
 		var err error
