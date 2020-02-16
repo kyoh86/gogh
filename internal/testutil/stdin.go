@@ -15,7 +15,6 @@ func Stubin(t *testing.T, value []byte) func() {
 	_, err = inw.Write(value)
 	require.NoError(t, err)
 	require.NoError(t, inw.Close())
-	inr.Seek(0, 0)
 	os.Stdin = inr
 	return func() { os.Stdin = orgStdin }
 }

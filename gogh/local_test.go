@@ -161,8 +161,8 @@ func TestWalk(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			ctx := NewMockContext(ctrl)
-			ctx.EXPECT().Root().AnyTimes().Return([]string{filepath.Join(tmp, "foo")})
-			ctx.EXPECT().PrimaryRoot().AnyTimes().Return(filepath.Join(tmp, "foo"))
+			ctx.EXPECT().Root().AnyTimes().Return([]string{tmp, filepath.Join(tmp, "foo")})
+			ctx.EXPECT().PrimaryRoot().AnyTimes().Return(tmp)
 			ctx.EXPECT().Done().AnyTimes()
 
 			require.NoError(t, gogh.Walk(ctx, neverCalled(t)))

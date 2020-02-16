@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	envGoghGitHubUser      = "GOGH_GITHUB_USER"
-	envGoghGitHubToken     = "GOGH_GITHUB_TOKEN"
-	envGoghGitHubHost      = "GOGH_GITHUB_HOST"
-	envGoghRoot            = "GOGH_ROOT"
-	envNames               = []string{
+	envGoghGitHubUser  = "GOGH_GITHUB_USER"
+	envGoghGitHubToken = "GOGH_GITHUB_TOKEN"
+	envGoghGitHubHost  = "GOGH_GITHUB_HOST"
+	envGoghRoot        = "GOGH_ROOT"
+	envNames           = []string{
 		envGoghGitHubUser,
 		envGoghGitHubToken,
 		envGoghGitHubHost,
@@ -30,7 +30,7 @@ var (
 
 const (
 	// DefaultHost is the default host of the GitHub
-	DefaultHost     = "github.com"
+	DefaultHost = "github.com"
 )
 
 var defaultConfig = Config{
