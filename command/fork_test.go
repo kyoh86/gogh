@@ -17,12 +17,9 @@ func TestFork(t *testing.T) {
 	t.Run("CloneError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update  = false
 			withSSH = false
@@ -43,11 +40,8 @@ func TestFork(t *testing.T) {
 	t.Run("UpdateError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update  = true
 			withSSH = false
@@ -68,11 +62,8 @@ func TestFork(t *testing.T) {
 	t.Run("ForkError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
 			withSSH      = false
@@ -94,11 +85,8 @@ func TestFork(t *testing.T) {
 	t.Run("GetRemotesError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
 			withSSH      = false
@@ -123,11 +111,8 @@ func TestFork(t *testing.T) {
 	t.Run("RemoveRemoteError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
 			withSSH      = false
@@ -158,11 +143,8 @@ func TestFork(t *testing.T) {
 	t.Run("AddRemoteError1", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
 			withSSH      = false
@@ -197,11 +179,8 @@ func TestFork(t *testing.T) {
 	t.Run("AddRemoteError2", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
 			withSSH      = false
@@ -238,11 +217,8 @@ func TestFork(t *testing.T) {
 	t.Run("FetchError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
 			withSSH      = false
@@ -280,11 +256,8 @@ func TestFork(t *testing.T) {
 	t.Run("GetBranchError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
 			withSSH      = false
@@ -322,11 +295,8 @@ func TestFork(t *testing.T) {
 	t.Run("SetUpstreamError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
 			withSSH      = false
@@ -365,11 +335,8 @@ func TestFork(t *testing.T) {
 	t.Run("Clone", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
 			withSSH      = false
@@ -406,11 +373,8 @@ func TestFork(t *testing.T) {
 	t.Run("WithoutUpdate", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = false
 			withSSH      = false
@@ -446,11 +410,8 @@ func TestFork(t *testing.T) {
 	t.Run("WithUpdate", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		repo := mustParseRepo(t, svc.ctx, "kyoh86/gogh")
-		path := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		const (
 			update       = true
 			withSSH      = false

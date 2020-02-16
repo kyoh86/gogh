@@ -19,9 +19,6 @@ func TestNew(t *testing.T) {
 	t.Run("GetRemoteError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		const (
 			private        = false
@@ -30,7 +27,7 @@ func TestNew(t *testing.T) {
 			template       = "template"
 			separateGitDir = "separeteGitDir"
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		localGit := filepath.Join(local, ".git")
 		require.NoError(t, os.MkdirAll(localGit, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
@@ -57,9 +54,6 @@ func TestNew(t *testing.T) {
 	t.Run("LocalError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		const (
 			private        = false
@@ -68,7 +62,7 @@ func TestNew(t *testing.T) {
 			template       = "template"
 			separateGitDir = "separeteGitDir"
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -94,9 +88,6 @@ func TestNew(t *testing.T) {
 	t.Run("CreateErr", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		const (
 			private        = false
@@ -105,7 +96,7 @@ func TestNew(t *testing.T) {
 			template       = "template"
 			separateGitDir = "separeteGitDir"
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -132,9 +123,6 @@ func TestNew(t *testing.T) {
 	t.Run("AddRemoteError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		const (
 			private        = false
@@ -143,7 +131,7 @@ func TestNew(t *testing.T) {
 			template       = "template"
 			separateGitDir = "separeteGitDir"
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -172,9 +160,6 @@ func TestNew(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		const (
 			private        = false
@@ -183,7 +168,7 @@ func TestNew(t *testing.T) {
 			template       = "template"
 			separateGitDir = "separeteGitDir"
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -211,9 +196,6 @@ func TestNew(t *testing.T) {
 	t.Run("LocalErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		gitClient := new(git.Client)
 
 		const (
@@ -223,7 +205,7 @@ func TestNew(t *testing.T) {
 			template       = ""
 			separateGitDir = ""
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -269,9 +251,6 @@ func TestNew(t *testing.T) {
 	t.Run("CreateErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		gitClient := new(git.Client)
 
 		const (
@@ -281,7 +260,7 @@ func TestNew(t *testing.T) {
 			template       = ""
 			separateGitDir = ""
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -328,9 +307,6 @@ func TestNew(t *testing.T) {
 	t.Run("AddRemoteErrorAndSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		gitClient := new(git.Client)
 
 		const (
@@ -340,7 +316,7 @@ func TestNew(t *testing.T) {
 			template       = ""
 			separateGitDir = ""
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -392,9 +368,6 @@ func TestNew(t *testing.T) {
 	t.Run("SSHRemoteSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		gitClient := new(git.Client)
 
 		const (
@@ -404,7 +377,7 @@ func TestNew(t *testing.T) {
 			template       = ""
 			separateGitDir = ""
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -433,9 +406,6 @@ func TestNew(t *testing.T) {
 	t.Run("NamedRemoteSuccess", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		gitClient := new(git.Client)
 
 		const (
@@ -445,7 +415,7 @@ func TestNew(t *testing.T) {
 			template       = ""
 			separateGitDir = ""
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -491,9 +461,6 @@ func TestNew(t *testing.T) {
 	t.Run("Duplicated", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		gitClient := new(git.Client)
 
 		const (
@@ -503,7 +470,7 @@ func TestNew(t *testing.T) {
 			template       = ""
 			separateGitDir = ""
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
@@ -546,9 +513,6 @@ func TestNew(t *testing.T) {
 	t.Run("AlreadyExists", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 		gitClient := new(git.Client)
 
 		const (
@@ -558,7 +522,7 @@ func TestNew(t *testing.T) {
 			template       = ""
 			separateGitDir = ""
 		)
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")

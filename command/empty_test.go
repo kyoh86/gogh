@@ -17,11 +17,8 @@ func TestEmpty(t *testing.T) {
 	t.Run("Pipe", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		remote, _ := url.Parse("https://github.com/kyoh86/gogh")
 		shallow := false
 		update := false
@@ -34,11 +31,8 @@ func TestEmpty(t *testing.T) {
 	t.Run("Bulk", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		remote, _ := url.Parse("https://github.com/kyoh86/gogh")
 		shallow := false
 		update := false
@@ -54,13 +48,10 @@ func TestEmpty(t *testing.T) {
 	t.Run("GetAll", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 
-		local1 := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local1 := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		remote1, _ := url.Parse("https://github.com/kyoh86/gogh")
-		local2 := filepath.Join(svc.root, "github.com", "kyoh86", "vim-gogh")
+		local2 := filepath.Join(svc.root1, "github.com", "kyoh86", "vim-gogh")
 		remote2, _ := url.Parse("https://github.com/kyoh86/vim-gogh")
 		shallow := false
 		update := false
@@ -77,11 +68,8 @@ func TestEmpty(t *testing.T) {
 	t.Run("Get", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 
-		local := filepath.Join(svc.root, "github.com", "kyoh86", "gogh")
+		local := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 		remote, _ := url.Parse("https://github.com/kyoh86/gogh")
 		shallow := false
 		update := false
@@ -94,18 +82,14 @@ func TestEmpty(t *testing.T) {
 	t.Run("List", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().Root().AnyTimes().Return([]string{svc.root})
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
-		svc.ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
 
-		proj1 := filepath.Join(svc.root, "github.com", "kyoh86", "gogh", ".git")
+		proj1 := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(proj1, 0755))
 		assert.NoError(t, command.List(svc.ctx, gogh.ShortFormatter(), false, ""))
 	})
 	t.Run("Root", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
-		svc.ctx.EXPECT().PrimaryRoot().AnyTimes().Return(svc.root)
 
 		assert.NoError(t, command.Root(svc.ctx, false))
 	})
