@@ -1,8 +1,6 @@
 package gogh
 
 import (
-	"fmt"
-	"net/http"
 	"net/url"
 	"path"
 	"path/filepath"
@@ -64,24 +62,6 @@ func (r *Repo) URL(ssh bool) *url.URL {
 
 func (r Repo) String() string {
 	return r.URL(false).String()
-}
-
-// Check if a GitHub repo is public (we can access the repo without token or auth)
-func (r *Repo) IsPublic() (bool, error) {
-	url := r.URL(false)
-	res, err := http.Head(url.String())
-	if err != nil {
-		return false, err
-	}
-	defer res.Body.Close()
-	switch res.StatusCode {
-	case http.StatusOK:
-		return true, nil
-	case http.StatusNotFound:
-		return false, nil
-	default:
-		return false, fmt.Errorf("invalid status code: %d", res.StatusCode)
-	}
 }
 
 // Match with project.
