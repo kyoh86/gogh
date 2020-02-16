@@ -1,43 +1,27 @@
 package command_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/kyoh86/gogh/command"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestWhere(t *testing.T) {
-	root1, err := ioutil.TempDir(os.TempDir(), "gogh-test1")
-	require.NoError(t, err)
-	defer os.RemoveAll(root1)
-	root2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
-	require.NoError(t, err)
-	defer os.RemoveAll(root2)
+	svc := initTest(t)
+	defer svc.teardown(t)
 
-	proj1 := filepath.Join(root1, "github.com", "kyoh86", "vim-gogh", ".git")
+	proj1 := filepath.Join(svc.root1, "github.com", "kyoh86", "vim-gogh", ".git")
 	require.NoError(t, os.MkdirAll(proj1, 0755))
-	proj2 := filepath.Join(root2, "github.com", "kyoh86", "gogh", ".git")
+	proj2 := filepath.Join(svc.root2, "github.com", "kyoh86", "gogh", ".git")
 	require.NoError(t, os.MkdirAll(proj2, 0755))
-	proj3 := filepath.Join(root2, "github.com", "kyoh85", "test", ".git")
+	proj3 := filepath.Join(svc.root2, "github.com", "kyoh85", "test", ".git")
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	ctx := NewMockContext(ctrl)
-
-	ctx.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
-	ctx.EXPECT().PrimaryRoot().AnyTimes().Return(root1)
-	ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-	ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
-	ctx.EXPECT().Done().AnyTimes()
-
-	assert.EqualError(t, command.Where(ctx, false, "gogh"), "try more precise name")
-	assert.EqualError(t, command.Where(ctx, false, "noone"), "project not found")
-	assert.NoError(t, command.Where(ctx, true, "gogh"))
+	assert.EqualError(t, command.Where(svc.ctx, false, "gogh"), "try more precise name")
+	assert.EqualError(t, command.Where(svc.ctx, false, "noone"), "project not found")
+	assert.NoError(t, command.Where(svc.ctx, true, "gogh"))
 }
