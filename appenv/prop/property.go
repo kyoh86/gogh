@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/kyoh86/gogh/appenv/internal"
 	"github.com/kyoh86/gogh/appenv/types"
 	"github.com/stoewer/go-strcase"
 )
@@ -15,35 +16,18 @@ type Accessor interface {
 	Unset()
 }
 
-//TODO: Property to internal
-type Property struct {
-	PkgPath    string
-	Name       string
-	CamelName  string
-	SnakeName  string
-	KebabName  string
-	DottedName string
-
-	StoreFile    bool
-	StoreEnvar   bool
-	StoreKeyring bool
-
-	ValueEmpty interface{}
-	ValueType  string
-}
-
-type Store func(d *Property)
+type Store func(d *internal.Property)
 
 // NOTE: StoreXXX must not be merged to the Value.
 // They can be expand for other storages, but that is NOT
 // realistic to implement all of them in all of properties.
 
-func File() Store    { return func(d *Property) { d.StoreFile = true } }
-func Envar() Store   { return func(d *Property) { d.StoreEnvar = true } }
-func Keyring() Store { return func(d *Property) { d.StoreKeyring = true } }
+func File() Store    { return func(d *internal.Property) { d.StoreFile = true } }
+func Envar() Store   { return func(d *internal.Property) { d.StoreEnvar = true } }
+func Keyring() Store { return func(d *internal.Property) { d.StoreKeyring = true } }
 
-func Prop(value types.Value, s Store, stores ...Store) (d *Property) {
-	d = new(Property)
+func Prop(value types.Value, s Store, stores ...Store) (d *internal.Property) {
+	d = new(internal.Property)
 	typ := reflect.ValueOf(value).Type()
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
