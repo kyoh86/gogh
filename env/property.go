@@ -1,21 +1,18 @@
-package config
+package env
 
 import (
 	"go/build"
 	"path/filepath"
 	"strings"
 
-	"github.com/kyoh86/gogh/config2/types"
+	"github.com/kyoh86/gogh/env/props"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/thoas/go-funk"
 )
 
 type GithubToken struct {
-	types.StringPropertyBase
+	props.StringPropertyBase
 }
-
-func (p *GithubToken) StoreKeyring() {}
-func (p *GithubToken) StoreEnvar()   {}
 
 func (p *GithubToken) Mask(value string) string {
 	if value == "" {
@@ -25,7 +22,7 @@ func (p *GithubToken) Mask(value string) string {
 }
 
 type GithubHost struct {
-	types.StringPropertyBase
+	props.StringPropertyBase
 }
 
 const (
@@ -33,25 +30,17 @@ const (
 	DefaultHost = "github.com"
 )
 
-func (*GithubHost) StoreConfigFile() {}
-func (*GithubHost) StoreEnvar()      {}
-
 func (*GithubHost) Default() interface{} {
 	return DefaultHost
 }
 
 type GithubUser struct {
-	types.StringPropertyBase
+	props.StringPropertyBase
 }
-
-func (*GithubUser) StoreCacheFile() {}
 
 type Roots struct {
 	value []string
 }
-
-func (*Roots) StoreConfigFile() {}
-func (*Roots) StoreEnvar()      {}
 
 func (p *Roots) Value() interface{} {
 	return p.value
@@ -63,6 +52,21 @@ func (*Roots) Default() interface{} {
 		root = append(root, filepath.Join(gopath, "src"))
 	}
 	return funk.UniqString(root)
+}
+
+// MarshalYAML implements the interface `yaml.Marshaler`
+func (p *Roots) MarshalYAML() (interface{}, error) {
+	return p.value, nil
+}
+
+// UnmarshalYAML implements the interface `yaml.Unmarshaler`
+func (p *Roots) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var parsed []string
+	if err := unmarshal(&parsed); err != nil {
+		return err
+	}
+	p.value = parsed
+	return nil
 }
 
 func (p *Roots) MarshalText() (text []byte, err error) {
