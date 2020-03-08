@@ -74,6 +74,7 @@ func (g *Generator) doMerge(file *jen.File, properties []*internal.Property) {
 	- make the "Merge", LoadFile, SaveFile, LoadKeyring, SaveKeyring and GetEnvar function private
 	- create new interface Config (like "Merged").
 	- create new "Preference() Accessor" and "Get() Config" function.
+	- create "Save" method on Accessor
 	*/
 	file.Func().Id("Merge").ParamsFunc(func(mergeParams *jen.Group) {
 		if g.storeFile {
