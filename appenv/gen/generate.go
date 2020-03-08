@@ -14,8 +14,6 @@ import (
 type Generator struct {
 	PackageName        string
 	DefaultEnvarPrefix string
-	// TODO: make it DefaultServiceName ( with making ServiceName option can be accepted in LoadKeyring / SaveKeyring )
-	ServiceName string
 
 	name string
 
