@@ -46,6 +46,7 @@ func (g *Generator) init() error {
 	g.storeFile = false
 	g.storeKeyring = false
 	g.storeEnvar = false
+	g.EnvarPrefix = strcase.UpperSnakeCase(g.EnvarPrefix)
 
 	return nil
 }
@@ -309,7 +310,7 @@ func (g *Generator) doEnvar(file *jen.File, properties []*prop.Property) {
 				envarFields.Id(p.Name).
 					Op("*").Qual(p.Type.PkgPath(), p.Name)
 
-				envarName := strcase.UpperSnakeCase(g.EnvarPrefix) + p.SnakeName
+				envarName := g.EnvarPrefix + p.SnakeName
 				loadEnvarCodes.Block(jen.List(jen.Id("v")).Op(":=").Qual("os", "Getenv").
 					Call(jen.Lit(envarName)),
 					jen.If(jen.Id("v").Op("==").Lit("")).Block(
