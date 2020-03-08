@@ -13,16 +13,16 @@ type Accessor struct {
 }
 
 func (a *Accessor) Names() []string {
-	return []string{"roots", "github-host", "github-token"}
+	return []string{"roots", "github.host", "github.token"}
 }
 
 func (a *Accessor) Property(name string) (prop.Accessor, error) {
 	switch name {
 	case "roots":
 		return &rootsAccessor{parent: a}, nil
-	case "github-host":
+	case "github.host":
 		return &githubHostAccessor{parent: a}, nil
-	case "github-token":
+	case "github.token":
 		return &githubTokenAccessor{parent: a}, nil
 	}
 	return nil, fmt.Errorf("invalid propertye name %q", name)
