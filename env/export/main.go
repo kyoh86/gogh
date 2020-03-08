@@ -14,7 +14,7 @@ import (
 
 func main() {
 	gen := &gen.Generator{
-		DefaultEnvarPrefix: "GOGH_",
+		EnvarPrefix: "GOGH_",
 	}
 
 	if err := gen.Do(
