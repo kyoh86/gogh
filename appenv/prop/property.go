@@ -1,19 +1,12 @@
 package prop
 
 import (
-	"encoding"
 	"fmt"
 	"reflect"
 
+	"github.com/kyoh86/gogh/appenv/types"
 	"github.com/stoewer/go-strcase"
 )
-
-type Value interface {
-	Value() interface{}
-	Default() interface{}
-	encoding.TextMarshaler
-	encoding.TextUnmarshaler
-}
 
 type Accessor interface {
 	Get() (string, error)
@@ -47,7 +40,7 @@ func StoreFile() Store    { return func(d *Property) { d.StoreFile = true } }
 func StoreEnvar() Store   { return func(d *Property) { d.StoreEnvar = true } }
 func StoreKeyring() Store { return func(d *Property) { d.StoreKeyring = true } }
 
-func Prop(value Value, s Store, stores ...Store) (d *Property) {
+func Prop(value types.Value, s Store, stores ...Store) (d *Property) {
 	d = new(Property)
 	d.Type = reflect.ValueOf(value).Type()
 	for d.Type.Kind() == reflect.Ptr {
@@ -75,28 +68,3 @@ type Mask interface {
 	// Mask secure value.
 	Mask(value string) string
 }
-
-type StringPropertyBase struct {
-	value string
-}
-
-func (o *StringPropertyBase) Value() interface{} {
-	return o.value
-}
-
-func (o *StringPropertyBase) MarshalText() (text []byte, err error) {
-	return []byte(o.value), nil
-}
-
-func (o *StringPropertyBase) UnmarshalText(text []byte) error {
-	o.value = string(text)
-	return nil
-}
-
-func (o *StringPropertyBase) Default() interface{} {
-	return ""
-}
-
-var _ Value = (*StringPropertyBase)(nil)
-var _ encoding.TextMarshaler = (*StringPropertyBase)(nil)
-var _ encoding.TextUnmarshaler = (*StringPropertyBase)(nil)
