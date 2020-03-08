@@ -7,17 +7,30 @@ import (
 	"os"
 )
 
+type envarOption struct {
+	envarPrefix string
+}
+
+type GetEnvarOption func(*envarOption)
+
+func GetEnvarPrefix(prefix string) GetEnvarOption {
+	return func(o *envarOption) {
+		o.envarPrefix = prefix
+	}
+}
+
 type Envar struct {
 	Roots       *Roots
 	GithubHost  *GithubHost
 	GithubToken *GithubToken
 }
 
-func GetEnvar() (envar Envar, err error) {
+func GetEnvar(opt ...GetEnvarOption) (envar Envar, err error) {
+	o := envarOption{envarPrefix: "GOGH_"}
 	{
-		v := os.Getenv("GOGH_ROOTS")
+		v := os.Getenv(o.envarPrefix + "ROOTS")
 		if v == "" {
-			log.Printf("info: there's no envar GOGH_ROOTS (%v)", err)
+			log.Printf("info: there's no envar %sROOTS (%v)", o.envarPrefix, err)
 		} else {
 			var value Roots
 			if err = value.UnmarshalText([]byte(v)); err != nil {
@@ -27,9 +40,9 @@ func GetEnvar() (envar Envar, err error) {
 		}
 	}
 	{
-		v := os.Getenv("GOGH_GITHUB_HOST")
+		v := os.Getenv(o.envarPrefix + "GITHUB_HOST")
 		if v == "" {
-			log.Printf("info: there's no envar GOGH_GITHUB_HOST (%v)", err)
+			log.Printf("info: there's no envar %sGITHUB_HOST (%v)", o.envarPrefix, err)
 		} else {
 			var value GithubHost
 			if err = value.UnmarshalText([]byte(v)); err != nil {
@@ -39,9 +52,9 @@ func GetEnvar() (envar Envar, err error) {
 		}
 	}
 	{
-		v := os.Getenv("GOGH_GITHUB_TOKEN")
+		v := os.Getenv(o.envarPrefix + "GITHUB_TOKEN")
 		if v == "" {
-			log.Printf("info: there's no envar GOGH_GITHUB_TOKEN (%v)", err)
+			log.Printf("info: there's no envar %sGITHUB_TOKEN (%v)", o.envarPrefix, err)
 		} else {
 			var value GithubToken
 			if err = value.UnmarshalText([]byte(v)); err != nil {

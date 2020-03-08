@@ -12,9 +12,8 @@ import (
 )
 
 type Generator struct {
-	PackageName string
-	// TODO: make it DefaultEnvarPrefix ( with making EnvarPrefix option can be accepted in GetEnvar )
-	EnvarPrefix string
+	PackageName        string
+	DefaultEnvarPrefix string
 	// TODO: make it DefaultServiceName ( with making ServiceName option can be accepted in LoadKeyring / SaveKeyring )
 	ServiceName string
 
@@ -48,7 +47,7 @@ func (g *Generator) init() error {
 	g.storeFile = false
 	g.storeKeyring = false
 	g.storeEnvar = false
-	g.EnvarPrefix = strcase.UpperSnakeCase(g.EnvarPrefix)
+	g.DefaultEnvarPrefix = strcase.UpperSnakeCase(g.DefaultEnvarPrefix)
 
 	return nil
 }
@@ -312,20 +311,30 @@ func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*
 }
 
 func (g *Generator) doEnvar(file *jen.File, properties []*internal.Property) {
+	file.Type().Id("envarOption").Struct(
+		jen.Id("envarPrefix").String(),
+	).Line()
+	file.Type().Id("GetEnvarOption").Func().Params(jen.Id("*envarOption")).Line()
+	file.Func().Id("GetEnvarPrefix").Params(jen.Id("prefix").String()).Id("GetEnvarOption").Block(
+		jen.Return(jen.Func().Params(jen.Id("o").Id("*envarOption")).Block(
+			jen.Id("o").Dot("envarPrefix").Op("=").Id("prefix"),
+		)),
+	).Line()
 	file.Type().Id("Envar").StructFunc(func(envarFields *jen.Group) {
-		file.Func().Id("GetEnvar").Params().Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
+		file.Func().Id("GetEnvar").Params(jen.Id("opt").Id("...GetEnvarOption")).Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(getEnvarCodes *jen.Group) {
+			getEnvarCodes.Id("o").Op(":=").Id("envarOption").Values(jen.Dict{
+				jen.Id("envarPrefix"): jen.Lit(g.DefaultEnvarPrefix),
+			})
 			for _, p := range properties {
 				if !p.StoreEnvar {
 					continue
 				}
-				envarFields.Id(p.Name).
-					Op("*").Qual(p.PkgPath, p.Name)
+				envarFields.Id(p.Name).Op("*").Qual(p.PkgPath, p.Name)
 
-				envarName := g.EnvarPrefix + p.SnakeName
-				loadEnvarCodes.Block(jen.List(jen.Id("v")).Op(":=").Qual("os", "Getenv").
-					Call(jen.Lit(envarName)),
+				getEnvarCodes.Block(jen.List(jen.Id("v")).Op(":=").Qual("os", "Getenv").
+					Call(jen.Id("o").Dot("envarPrefix").Op("+").Lit(p.SnakeName)),
 					jen.If(jen.Id("v").Op("==").Lit("")).Block(
-						jen.Qual("log", "Printf").Call(jen.Lit("info: there's no envar "+envarName+" (%v)"), jen.Err()),
+						jen.Qual("log", "Printf").Call(jen.Lit("info: there's no envar %s"+p.SnakeName+" (%v)"), jen.Id("o").Dot("envarPrefix"), jen.Err()),
 					).Else().Block(
 						jen.Var().Id("value").Qual(p.PkgPath, p.Name),
 						jen.If(
@@ -338,7 +347,7 @@ func (g *Generator) doEnvar(file *jen.File, properties []*internal.Property) {
 					),
 				)
 			}
-			loadEnvarCodes.Return()
+			getEnvarCodes.Return()
 		}).Line()
 	}).Line()
 }
