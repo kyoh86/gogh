@@ -129,11 +129,11 @@ func (g *Generator) doAccess(file *jen.File, properties []*prop.Property) {
 				jen.Switch(jen.Id("name")).BlockFunc(func(propSwitch *jen.Group) {
 					for _, p := range properties {
 						// Add property name
-						namesList.Lit(p.KebabName) // UNDONE: dot separated
+						namesList.Lit(p.DottedName)
 
 						// Add property case
-						propSwitch.Case(jen.Lit(p.KebabName)). // UNDONE: dot separated
-											Block(jen.Return(jen.Id("&"+p.CamelName+"Accessor").Values(jen.Dict{
+						propSwitch.Case(jen.Lit(p.DottedName)).
+							Block(jen.Return(jen.Id("&"+p.CamelName+"Accessor").Values(jen.Dict{
 								jen.Id("parent"): jen.Id("a"),
 							}), jen.Nil()))
 

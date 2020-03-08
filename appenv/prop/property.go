@@ -3,6 +3,7 @@ package prop
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/kyoh86/gogh/appenv/types"
 	"github.com/stoewer/go-strcase"
@@ -15,11 +16,12 @@ type Accessor interface {
 }
 
 type Property struct {
-	Type      reflect.Type
-	Name      string
-	CamelName string
-	SnakeName string
-	KebabName string
+	Type       reflect.Type
+	Name       string
+	CamelName  string
+	SnakeName  string
+	KebabName  string
+	DottedName string
 
 	StoreFile    bool
 	StoreEnvar   bool
@@ -61,6 +63,7 @@ func Prop(value types.Value, s Store, stores ...Store) (d *Property) {
 	d.CamelName = strcase.LowerCamelCase(d.Name)
 	d.SnakeName = strcase.UpperSnakeCase(d.Name)
 	d.KebabName = strcase.KebabCase(d.Name)
+	d.DottedName = strings.ReplaceAll(d.KebabName, "-", ".")
 	return
 }
 
