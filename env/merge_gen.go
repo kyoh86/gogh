@@ -2,18 +2,18 @@
 
 package env
 
-func Merge(envar Envar, cache Cache, keyring Keyring, config Config) (merged Merged) {
+func Merge(envar Envar, keyring Keyring, file File) (merged Merged) {
 	merged.roots = new(Roots).Default().([]string)
-	if config.Roots != nil {
-		merged.roots = config.Roots.Value().([]string)
+	if file.Roots != nil {
+		merged.roots = file.Roots.Value().([]string)
 	}
 	if envar.Roots != nil {
 		merged.roots = envar.Roots.Value().([]string)
 	}
 
 	merged.githubHost = new(GithubHost).Default().(string)
-	if config.GithubHost != nil {
-		merged.githubHost = config.GithubHost.Value().(string)
+	if file.GithubHost != nil {
+		merged.githubHost = file.GithubHost.Value().(string)
 	}
 	if envar.GithubHost != nil {
 		merged.githubHost = envar.GithubHost.Value().(string)
@@ -27,11 +27,6 @@ func Merge(envar Envar, cache Cache, keyring Keyring, config Config) (merged Mer
 		merged.githubToken = envar.GithubToken.Value().(string)
 	}
 
-	merged.githubUser = new(GithubUser).Default().(string)
-	if cache.GithubUser != nil {
-		merged.githubUser = cache.GithubUser.Value().(string)
-	}
-
 	return
 }
 
@@ -39,7 +34,6 @@ type Merged struct {
 	roots       []string
 	githubHost  string
 	githubToken string
-	githubUser  string
 }
 
 func (m *Merged) Roots() []string {
@@ -52,8 +46,4 @@ func (m *Merged) GithubHost() string {
 
 func (m *Merged) GithubToken() string {
 	return m.githubToken
-}
-
-func (m *Merged) GithubUser() string {
-	return m.githubUser
 }

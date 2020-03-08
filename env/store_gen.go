@@ -10,30 +10,17 @@ import (
 	"os"
 )
 
-type Config struct {
+type File struct {
 	Roots      *Roots      `yaml:"roots,omitempty"`
 	GithubHost *GithubHost `yaml:"githubHost,omitempty"`
 }
 
-func SaveConfig(w io.Writer, config *Config) error {
-	return yaml.NewEncoder(w).Encode(config)
+func SaveFile(w io.Writer, file *File) error {
+	return yaml.NewEncoder(w).Encode(file)
 }
 
-func LoadConfig(r io.Reader) (config Config, err error) {
-	err = yaml.NewDecoder(r).Decode(&config)
-	return
-}
-
-type Cache struct {
-	GithubUser *GithubUser `yaml:"githubUser,omitempty"`
-}
-
-func SaveCache(w io.Writer, cache *Cache) error {
-	return yaml.NewEncoder(w).Encode(cache)
-}
-
-func LoadCache(r io.Reader) (cache Cache, err error) {
-	err = yaml.NewDecoder(r).Decode(&cache)
+func LoadFile(r io.Reader) (file File, err error) {
+	err = yaml.NewDecoder(r).Decode(&file)
 	return
 }
 

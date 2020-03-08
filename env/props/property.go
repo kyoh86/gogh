@@ -22,8 +22,7 @@ type Property struct {
 	SnakeName string
 	KebabName string
 
-	StoreConfig  bool
-	StoreCache   bool
+	StoreFile    bool
 	StoreEnvar   bool
 	StoreKeyring bool
 
@@ -38,8 +37,7 @@ type Store func(d *Property)
 // They can be expand for other storages, but that is NOT
 // realistic to implement all of them in all of properties.
 
-func StoreConfig() Store  { return func(d *Property) { d.StoreConfig = true } }
-func StoreCache() Store   { return func(d *Property) { d.StoreCache = true } }
+func StoreFile() Store    { return func(d *Property) { d.StoreFile = true } }
 func StoreEnvar() Store   { return func(d *Property) { d.StoreEnvar = true } }
 func StoreKeyring() Store { return func(d *Property) { d.StoreKeyring = true } }
 

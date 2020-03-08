@@ -18,9 +18,8 @@ type Generator struct {
 
 	name string
 
-	storeConfig  bool
+	storeFile    bool
 	storeKeyring bool
-	storeCache   bool
 	storeEnvar   bool
 }
 
@@ -30,7 +29,7 @@ const (
 )
 
 func (g *Generator) init() error {
-	g.name = "config.generator"
+	g.name = "env.generator"
 	if _, file, _, ok := runtime.Caller(2); ok {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -43,9 +42,8 @@ func (g *Generator) init() error {
 		g.name = rel
 	}
 
-	g.storeConfig = false
+	g.storeFile = false
 	g.storeKeyring = false
-	g.storeCache = false
 	g.storeEnvar = false
 
 	return nil
@@ -64,9 +62,8 @@ func (g *Generator) createFile(packagePath string) *jen.File {
 
 func (g *Generator) parseProps(properties []*props.Property) {
 	for _, p := range properties {
-		g.storeConfig = g.storeConfig || p.StoreConfig
+		g.storeFile = g.storeFile || p.StoreFile
 		g.storeKeyring = g.storeKeyring || p.StoreKeyring
-		g.storeCache = g.storeCache || p.StoreCache
 		g.storeEnvar = g.storeEnvar || p.StoreEnvar
 	}
 }
@@ -76,14 +73,11 @@ func (g *Generator) doMerge(file *jen.File, properties []*props.Property) {
 		if g.storeEnvar {
 			mergeParams.Id("envar").Id("Envar")
 		}
-		if g.storeCache {
-			mergeParams.Id("cache").Id("Cache")
-		}
 		if g.storeKeyring {
 			mergeParams.Id("keyring").Id("Keyring")
 		}
-		if g.storeConfig {
-			mergeParams.Id("config").Id("Config")
+		if g.storeFile {
+			mergeParams.Id("file").Id("File")
 		}
 	}).Params(jen.Id("merged").Id("Merged")).BlockFunc(func(mergeCodes *jen.Group) {
 		file.Type().Id("Merged").StructFunc(func(mergedFields *jen.Group) {
@@ -95,14 +89,11 @@ func (g *Generator) doMerge(file *jen.File, properties []*props.Property) {
 				).Line()
 
 				mergeCodes.Id("merged").Dot(p.CamelName).Op("=").New(jen.Id(p.Name)).Dot("Default").Call().Assert(jen.Id(p.ValueTypeID))
-				if p.StoreConfig {
-					g.tryMerge(mergeCodes, "config", p)
+				if p.StoreFile {
+					g.tryMerge(mergeCodes, "file", p)
 				}
 				if p.StoreKeyring {
 					g.tryMerge(mergeCodes, "keyring", p)
-				}
-				if p.StoreCache {
-					g.tryMerge(mergeCodes, "cache", p)
 				}
 				if p.StoreEnvar {
 					g.tryMerge(mergeCodes, "envar", p)
@@ -120,90 +111,45 @@ func (g *Generator) tryMerge(mergeCodes *jen.Group, srcName string, p *props.Pro
 	)
 }
 
-func (g *Generator) doConfig(file *jen.File, properties []*props.Property) {
-	file.Type().Id("Config").StructFunc(func(configFields *jen.Group) {
+func (g *Generator) doFile(file *jen.File, properties []*props.Property) {
+	file.Type().Id("File").StructFunc(func(fileFields *jen.Group) {
 		for _, p := range properties {
-			if !p.StoreConfig {
+			if !p.StoreFile {
 				continue
 			}
-			configFields.Id(p.Name).
+			fileFields.Id(p.Name).
 				Qual(p.Type.PkgPath(), "*"+p.Name).
 				Tag(map[string]string{"yaml": p.CamelName + ",omitempty"})
 		}
 	})
 	file.Line()
 
-	file.Func().Id("SaveConfig").
+	file.Func().Id("SaveFile").
 		Params(
 			jen.Id("w").Qual("io", "Writer"),
-			jen.Id("config").Id("*Config"),
+			jen.Id("file").Id("*File"),
 		).
 		Add(jen.Id("error")).
 		Block(
 			jen.Return(
 				jen.Qual("gopkg.in/yaml.v3", "NewEncoder").Call(jen.Id("w")).
 					Op(".").
-					Id("Encode").Call(jen.Id("config")),
+					Id("Encode").Call(jen.Id("file")),
 			),
 		)
 	file.Line()
-	file.Func().Id("LoadConfig").
+	file.Func().Id("LoadFile").
 		Params(
 			jen.Id("r").Qual("io", "Reader"),
 		).
 		Params(
-			jen.Id("config").Id("Config"),
+			jen.Id("file").Id("File"),
 			jen.Err().Id("error"),
 		).
 		Block(
 			jen.Err().Op("=").Qual("gopkg.in/yaml.v3", "NewDecoder").Call(jen.Id("r")).
 				Op(".").
-				Id("Decode").Call(jen.Op("&").Id("config")),
-			jen.Return(),
-		)
-	file.Line()
-}
-
-func (g *Generator) doCache(file *jen.File, properties []*props.Property) {
-	file.Type().Id("Cache").StructFunc(func(cacheFields *jen.Group) {
-		for _, p := range properties {
-			if !p.StoreCache {
-				continue
-			}
-			cacheFields.Id(p.Name).
-				Qual(p.Type.PkgPath(), "*"+p.Name).
-				Tag(map[string]string{"yaml": p.CamelName + ",omitempty"})
-		}
-	})
-	file.Line()
-
-	file.Func().Id("SaveCache").
-		Params(
-			jen.Id("w").Qual("io", "Writer"),
-			jen.Id("cache").Id("*Cache"),
-		).
-		Add(jen.Id("error")).
-		Block(
-			jen.Return(
-				jen.Qual("gopkg.in/yaml.v3", "NewEncoder").Call(jen.Id("w")).
-					Op(".").
-					Id("Encode").Call(jen.Id("cache")),
-			),
-		)
-	file.Line()
-
-	file.Func().Id("LoadCache").
-		Params(
-			jen.Id("r").Qual("io", "Reader"),
-		).
-		Params(
-			jen.Id("cache").Id("Cache"),
-			jen.Err().Id("error"),
-		).
-		Block(
-			jen.Err().Op("=").Qual("gopkg.in/yaml.v3", "NewDecoder").Call(jen.Id("r")).
-				Op(".").
-				Id("Decode").Call(jen.Op("&").Id("cache")),
+				Id("Decode").Call(jen.Op("&").Id("file")),
 			jen.Return(),
 		)
 	file.Line()
@@ -300,11 +246,8 @@ func (g *Generator) Do(packagePath, outDir string, properties ...*props.Property
 	storeFile.ImportAlias(pkgYAML, "yaml")
 	storeFile.ImportAlias(pkgKeyring, "keyring")
 
-	if g.storeConfig {
-		g.doConfig(storeFile, properties)
-	}
-	if g.storeCache {
-		g.doCache(storeFile, properties)
+	if g.storeFile {
+		g.doFile(storeFile, properties)
 	}
 	if g.storeEnvar {
 		g.doEnvar(storeFile, properties)

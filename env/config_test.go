@@ -10,40 +10,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfig(t *testing.T) {
+func TestEnv(t *testing.T) {
 	// NOTE: these tests include for generators.
 	// So it should not be payed attension for coverage.
-	t.Run("emptyConfig", func(t *testing.T) {
-		config, err := env.LoadConfig(strings.NewReader("{}"))
+	t.Run("emptyFile", func(t *testing.T) {
+		file, err := env.LoadFile(strings.NewReader("{}"))
 		require.NoError(t, err)
-		assert.Nil(t, config.GithubHost)
-		assert.Nil(t, config.Roots)
+		assert.Nil(t, file.GithubHost)
+		assert.Nil(t, file.Roots)
 	})
 
-	t.Run("filledConfig", func(t *testing.T) {
-		configRaw := `
+	t.Run("filledFile", func(t *testing.T) {
+		fileRaw := `
 githubHost: example.com
 roots:
   - foo
   - bar`
-		config, err := env.LoadConfig(strings.NewReader(configRaw))
+		file, err := env.LoadFile(strings.NewReader(fileRaw))
 		require.NoError(t, err)
-		assert.Equal(t, "example.com", config.GithubHost.Value())
-		assert.EqualValues(t, []string{"foo", "bar"}, config.Roots.Value())
-	})
-
-	t.Run("emptyCache", func(t *testing.T) {
-		cache, err := env.LoadCache(strings.NewReader("{}"))
-		require.NoError(t, err)
-		assert.Nil(t, cache.GithubUser)
-	})
-
-	t.Run("filledCache", func(t *testing.T) {
-		cacheRaw := `
-githubUser: kyoh86`
-		cache, err := env.LoadCache(strings.NewReader(cacheRaw))
-		require.NoError(t, err)
-		assert.Equal(t, "kyoh86", cache.GithubUser.Value())
+		assert.Equal(t, "example.com", file.GithubHost.Value())
+		assert.EqualValues(t, []string{"foo", "bar"}, file.Roots.Value())
 	})
 
 	t.Run("emptyEnvar", func(t *testing.T) {
@@ -71,7 +57,7 @@ githubUser: kyoh86`
 	})
 
 	t.Run("mergeEmpty", func(t *testing.T) {
-		merged := env.Merge(env.Envar{}, env.Cache{}, env.Keyring{}, env.Config{})
+		merged := env.Merge(env.Envar{}, env.Keyring{}, env.File{})
 		assert.Empty(t, merged.GithubToken())
 		assert.Equal(t, "github.com", merged.GithubHost())
 		assert.NotEmpty(t, merged.Roots())
@@ -79,12 +65,12 @@ githubUser: kyoh86`
 	})
 
 	t.Run("mergeOverride", func(t *testing.T) {
-		configRaw := `
+		fileRaw := `
 githubHost: host1
 roots:
   - root1a
   - root1b`
-		config, err := env.LoadConfig(strings.NewReader(configRaw))
+		file, err := env.LoadFile(strings.NewReader(fileRaw))
 		require.NoError(t, err)
 
 		os.Setenv("GOGH_GITHUB_TOKEN", "dummy-token")
@@ -93,7 +79,7 @@ roots:
 		envar, err := env.LoadEnvar()
 		require.NoError(t, err)
 
-		merged := env.Merge(envar, env.Cache{}, env.Keyring{}, config)
+		merged := env.Merge(envar, env.Keyring{}, file)
 		assert.Equal(t, "dummy-token", merged.GithubToken())
 		assert.Equal(t, "host2", merged.GithubHost())
 		assert.EqualValues(t, []string{"root2a"}, merged.Roots())
