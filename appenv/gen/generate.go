@@ -13,7 +13,9 @@ import (
 
 type Generator struct {
 	PackageName string
+	// TODO: make it DefaultEnvarPrefix ( with making EnvarPrefix option can be accepted in GetEnvar )
 	EnvarPrefix string
+	// TODO: make it DefaultServiceName ( with making ServiceName option can be accepted in LoadKeyring / SaveKeyring )
 	ServiceName string
 
 	name string
@@ -71,6 +73,11 @@ func (g *Generator) parseProps(properties []*prop.Property) {
 }
 
 func (g *Generator) doMerge(file *jen.File, properties []*prop.Property) {
+	/* TODO:
+	- make the "Merge", LoadFile, SaveFile, LoadKeyring, SaveKeyring and GetEnvar function private
+	- create new interface Config (like "Merged").
+	- create new "Preference() Accessor" and "Get() Config" function.
+	*/
 	file.Func().Id("Merge").ParamsFunc(func(mergeParams *jen.Group) {
 		if g.storeFile {
 			mergeParams.Id("file").Id("File")
@@ -302,7 +309,7 @@ func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*
 
 func (g *Generator) doEnvar(file *jen.File, properties []*prop.Property) {
 	file.Type().Id("Envar").StructFunc(func(envarFields *jen.Group) {
-		file.Func().Id("LoadEnvar").Params().Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
+		file.Func().Id("GetEnvar").Params().Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
 			for _, p := range properties {
 				if !p.StoreEnvar {
 					continue

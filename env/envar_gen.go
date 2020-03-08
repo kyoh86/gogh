@@ -13,7 +13,7 @@ type Envar struct {
 	GithubToken *GithubToken
 }
 
-func LoadEnvar() (envar Envar, err error) {
+func GetEnvar() (envar Envar, err error) {
 	{
 		v := os.Getenv("GOGH_ROOTS")
 		if v == "" {
