@@ -15,8 +15,9 @@ type Accessor interface {
 	Unset()
 }
 
+//TODO: Property to internal
 type Property struct {
-	Type       reflect.Type
+	PkgPath    string
 	Name       string
 	CamelName  string
 	SnakeName  string
@@ -27,9 +28,8 @@ type Property struct {
 	StoreEnvar   bool
 	StoreKeyring bool
 
-	ValueType   reflect.Type
-	ValueEmpty  interface{}
-	ValueTypeID string
+	ValueEmpty interface{}
+	ValueType  string
 }
 
 type Store func(d *Property)
@@ -38,22 +38,23 @@ type Store func(d *Property)
 // They can be expand for other storages, but that is NOT
 // realistic to implement all of them in all of properties.
 
-func StoreFile() Store    { return func(d *Property) { d.StoreFile = true } }
-func StoreEnvar() Store   { return func(d *Property) { d.StoreEnvar = true } }
-func StoreKeyring() Store { return func(d *Property) { d.StoreKeyring = true } }
+func File() Store    { return func(d *Property) { d.StoreFile = true } }
+func Envar() Store   { return func(d *Property) { d.StoreEnvar = true } }
+func Keyring() Store { return func(d *Property) { d.StoreKeyring = true } }
 
 func Prop(value types.Value, s Store, stores ...Store) (d *Property) {
 	d = new(Property)
-	d.Type = reflect.ValueOf(value).Type()
-	for d.Type.Kind() == reflect.Ptr {
-		d.Type = d.Type.Elem()
+	typ := reflect.ValueOf(value).Type()
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
 	}
 
-	d.Name = d.Type.Name()
+	d.PkgPath = typ.PkgPath()
+	d.Name = typ.Name()
 
-	d.ValueType = reflect.ValueOf(value.Value()).Type()
-	d.ValueEmpty = reflect.Zero(d.ValueType).Interface()
-	d.ValueTypeID = fmt.Sprintf("%T", d.ValueEmpty)
+	valueType := reflect.ValueOf(value.Value()).Type()
+	d.ValueEmpty = reflect.Zero(valueType).Interface()
+	d.ValueType = fmt.Sprintf("%T", d.ValueEmpty)
 
 	s(d)
 	for _, s := range stores {

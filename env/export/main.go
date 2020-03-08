@@ -20,9 +20,9 @@ func main() {
 	if err := gen.Do(
 		"github.com/kyoh86/gogh/env",
 		"../",
-		prop.Prop(new(env.Roots), prop.StoreFile(), prop.StoreEnvar()),
-		prop.Prop(new(env.GithubHost), prop.StoreFile(), prop.StoreEnvar()),
-		prop.Prop(new(env.GithubToken), prop.StoreKeyring(), prop.StoreEnvar()),
+		prop.Prop(new(env.Roots), prop.File(), prop.Envar()),
+		prop.Prop(new(env.GithubHost), prop.File(), prop.Envar()),
+		prop.Prop(new(env.GithubToken), prop.Keyring(), prop.Envar()),
 	); err != nil {
 		log.Fatal(err)
 	}

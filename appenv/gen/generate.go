@@ -84,13 +84,13 @@ func (g *Generator) doMerge(file *jen.File, properties []*prop.Property) {
 	}).Params(jen.Id("merged").Id("Merged")).BlockFunc(func(mergeCodes *jen.Group) {
 		file.Type().Id("Merged").StructFunc(func(mergedFields *jen.Group) {
 			for _, p := range properties {
-				mergedFields.Id(p.CamelName).Id(p.ValueTypeID)
+				mergedFields.Id(p.CamelName).Id(p.ValueType)
 
-				file.Func().Params(jen.Id("m").Id("*Merged")).Id(p.Name).Params().Id(p.ValueTypeID).Block(
+				file.Func().Params(jen.Id("m").Id("*Merged")).Id(p.Name).Params().Id(p.ValueType).Block(
 					jen.Return(jen.Id("m").Dot(p.CamelName)),
 				).Line()
 
-				mergeCodes.Id("merged").Dot(p.CamelName).Op("=").New(jen.Qual(p.Type.PkgPath(), p.Name)).Dot("Default").Call().Assert(jen.Id(p.ValueTypeID))
+				mergeCodes.Id("merged").Dot(p.CamelName).Op("=").New(jen.Qual(p.PkgPath, p.Name)).Dot("Default").Call().Assert(jen.Id(p.ValueType))
 				if p.StoreFile {
 					g.tryMerge(mergeCodes, "file", p)
 				}
@@ -109,7 +109,7 @@ func (g *Generator) doMerge(file *jen.File, properties []*prop.Property) {
 
 func (g *Generator) tryMerge(mergeCodes *jen.Group, srcName string, p *prop.Property) {
 	mergeCodes.If(jen.Id(srcName).Dot(p.Name).Op("!=").Nil()).Block(
-		jen.Id("merged").Dot(p.CamelName).Op("=").Id(srcName).Dot(p.Name).Dot("Value").Call().Assert(jen.Id(p.ValueTypeID)),
+		jen.Id("merged").Dot(p.CamelName).Op("=").Id(srcName).Dot(p.Name).Dot("Value").Call().Assert(jen.Id(p.ValueType)),
 	)
 }
 
@@ -195,7 +195,7 @@ func (g *Generator) trySet(setCodes *jen.Group, srcName string, p *prop.Property
 	setCodes.Block(
 		jen.Id("p").Op(":=").Id("a").Dot("parent").Dot(srcName).Dot(p.Name),
 		jen.If(jen.Id("p").Op("==").Nil()).Block(
-			jen.Id("p").Op("=").New(jen.Qual(p.Type.PkgPath(), p.Name)),
+			jen.Id("p").Op("=").New(jen.Qual(p.PkgPath, p.Name)),
 		),
 		jen.If(
 			jen.Err().Op(":=").Id("p").Dot("UnmarshalText").Call(jen.Id("[]byte").Call(jen.Id("value"))),
@@ -218,7 +218,7 @@ func (g *Generator) doFile(file *jen.File, properties []*prop.Property) {
 				continue
 			}
 			fileFields.Id(p.Name).
-				Op("*").Qual(p.Type.PkgPath(), p.Name).
+				Op("*").Qual(p.PkgPath, p.Name).
 				Tag(map[string]string{"yaml": p.CamelName + ",omitempty"})
 		}
 	})
@@ -264,11 +264,11 @@ func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*
 						continue
 					}
 					keyringFields.Id(p.Name).
-						Op("*").Qual(p.Type.PkgPath(), p.Name)
+						Op("*").Qual(p.PkgPath, p.Name)
 					loadKeyringCodes.Block(jen.List(jen.Id("v"), jen.Err()).Op(":=").Qual(pkgKeyring, "Get").
 						Call(jen.Lit(packagePath), jen.Lit(p.KebabName)),
 						jen.If(jen.Err().Op("==").Nil()).Block(
-							jen.Var().Id("value").Qual(p.Type.PkgPath(), p.Name),
+							jen.Var().Id("value").Qual(p.PkgPath, p.Name),
 							jen.If(
 								jen.Err().Op("=").Id("value").Dot("UnmarshalText").Call(jen.Index().Byte().Parens(jen.Id("v"))),
 								jen.Err().Op("!=").Nil(),
@@ -308,7 +308,7 @@ func (g *Generator) doEnvar(file *jen.File, properties []*prop.Property) {
 					continue
 				}
 				envarFields.Id(p.Name).
-					Op("*").Qual(p.Type.PkgPath(), p.Name)
+					Op("*").Qual(p.PkgPath, p.Name)
 
 				envarName := g.EnvarPrefix + p.SnakeName
 				loadEnvarCodes.Block(jen.List(jen.Id("v")).Op(":=").Qual("os", "Getenv").
@@ -316,7 +316,7 @@ func (g *Generator) doEnvar(file *jen.File, properties []*prop.Property) {
 					jen.If(jen.Id("v").Op("==").Lit("")).Block(
 						jen.Qual("log", "Printf").Call(jen.Lit("info: there's no envar "+envarName+" (%v)"), jen.Err()),
 					).Else().Block(
-						jen.Var().Id("value").Qual(p.Type.PkgPath(), p.Name),
+						jen.Var().Id("value").Qual(p.PkgPath, p.Name),
 						jen.If(
 							jen.Err().Op("=").Id("value").Dot("UnmarshalText").Call(jen.Index().Byte().Parens(jen.Id("v"))),
 							jen.Err().Op("!=").Nil(),
