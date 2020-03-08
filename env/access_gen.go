@@ -4,7 +4,7 @@ package env
 
 import (
 	"fmt"
-	props "github.com/kyoh86/gogh/env/props"
+	prop "github.com/kyoh86/gogh/appenv/prop"
 )
 
 type Accessor struct {
@@ -16,7 +16,7 @@ func (a *Accessor) Names() []string {
 	return []string{"roots", "github-host", "github-token"}
 }
 
-func (a *Accessor) Property(name string) (props.Accessor, error) {
+func (a *Accessor) Property(name string) (prop.Accessor, error) {
 	switch name {
 	case "roots":
 		return &rootsAccessor{parent: a}, nil

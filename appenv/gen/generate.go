@@ -1,4 +1,4 @@
-package generate
+package gen
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/kyoh86/gogh/env/props"
+	"github.com/kyoh86/gogh/appenv/prop"
 	strcase "github.com/stoewer/go-strcase"
 )
 
@@ -26,7 +26,7 @@ type Generator struct {
 const (
 	pkgYAML    = "gopkg.in/yaml.v3"
 	pkgKeyring = "github.com/zalando/go-keyring"
-	pkgProps   = "github.com/kyoh86/gogh/env/props"
+	pkgProps   = "github.com/kyoh86/gogh/appenv/prop"
 )
 
 func (g *Generator) init() error {
@@ -61,7 +61,7 @@ func (g *Generator) createFile(packagePath string) *jen.File {
 	return file
 }
 
-func (g *Generator) parseProps(properties []*props.Property) {
+func (g *Generator) parseProps(properties []*prop.Property) {
 	for _, p := range properties {
 		g.storeFile = g.storeFile || p.StoreFile
 		g.storeKeyring = g.storeKeyring || p.StoreKeyring
@@ -69,7 +69,7 @@ func (g *Generator) parseProps(properties []*props.Property) {
 	}
 }
 
-func (g *Generator) doMerge(file *jen.File, properties []*props.Property) {
+func (g *Generator) doMerge(file *jen.File, properties []*prop.Property) {
 	file.Func().Id("Merge").ParamsFunc(func(mergeParams *jen.Group) {
 		if g.storeFile {
 			mergeParams.Id("file").Id("File")
@@ -106,13 +106,13 @@ func (g *Generator) doMerge(file *jen.File, properties []*props.Property) {
 	})
 }
 
-func (g *Generator) tryMerge(mergeCodes *jen.Group, srcName string, p *props.Property) {
+func (g *Generator) tryMerge(mergeCodes *jen.Group, srcName string, p *prop.Property) {
 	mergeCodes.If(jen.Id(srcName).Dot(p.Name).Op("!=").Nil()).Block(
 		jen.Id("merged").Dot(p.CamelName).Op("=").Id(srcName).Dot(p.Name).Dot("Value").Call().Assert(jen.Id(p.ValueTypeID)),
 	)
 }
 
-func (g *Generator) doAccess(file *jen.File, properties []*props.Property) {
+func (g *Generator) doAccess(file *jen.File, properties []*prop.Property) {
 	file.Type().Id("Accessor").StructFunc(func(accessorFields *jen.Group) {
 		if g.storeFile {
 			accessorFields.Id("file").Id("File")
@@ -180,7 +180,7 @@ func (g *Generator) doAccess(file *jen.File, properties []*props.Property) {
 	).Line()
 }
 
-func (g *Generator) tryGet(getCodes *jen.Group, srcName string, p *props.Property) {
+func (g *Generator) tryGet(getCodes *jen.Group, srcName string, p *prop.Property) {
 	getCodes.Block(
 		jen.Id("p").Op(":=").Id("a").Dot("parent").Dot(srcName).Dot(p.Name),
 		jen.If(jen.Id("p").Op("!=").Nil()).Block(
@@ -190,7 +190,7 @@ func (g *Generator) tryGet(getCodes *jen.Group, srcName string, p *props.Propert
 	)
 }
 
-func (g *Generator) trySet(setCodes *jen.Group, srcName string, p *props.Property) {
+func (g *Generator) trySet(setCodes *jen.Group, srcName string, p *prop.Property) {
 	setCodes.Block(
 		jen.Id("p").Op(":=").Id("a").Dot("parent").Dot(srcName).Dot(p.Name),
 		jen.If(jen.Id("p").Op("==").Nil()).Block(
@@ -206,11 +206,11 @@ func (g *Generator) trySet(setCodes *jen.Group, srcName string, p *props.Propert
 	)
 }
 
-func (g *Generator) tryUnset(unsetCodes *jen.Group, srcName string, p *props.Property) {
+func (g *Generator) tryUnset(unsetCodes *jen.Group, srcName string, p *prop.Property) {
 	unsetCodes.Id("a").Dot("parent").Dot(srcName).Dot(p.Name).Op("=").Nil()
 }
 
-func (g *Generator) doFile(file *jen.File, properties []*props.Property) {
+func (g *Generator) doFile(file *jen.File, properties []*prop.Property) {
 	file.Type().Id("File").StructFunc(func(fileFields *jen.Group) {
 		for _, p := range properties {
 			if !p.StoreFile {
@@ -254,7 +254,7 @@ func (g *Generator) doFile(file *jen.File, properties []*props.Property) {
 	file.Line()
 }
 
-func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*props.Property) {
+func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*prop.Property) {
 	file.Type().Id("Keyring").StructFunc(func(keyringFields *jen.Group) {
 		file.Func().Id("LoadKeyring").Params().Params(jen.Id("key").Id("Keyring"), jen.Err().Id("error")).BlockFunc(func(loadKeyringCodes *jen.Group) {
 			file.Func().Id("SaveKeyring").Params(jen.Id("key").Id("Keyring")).Params(jen.Err().Id("error")).BlockFunc(func(saveKeyringCodes *jen.Group) {
@@ -299,7 +299,7 @@ func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*
 	})
 }
 
-func (g *Generator) doEnvar(file *jen.File, properties []*props.Property) {
+func (g *Generator) doEnvar(file *jen.File, properties []*prop.Property) {
 	file.Type().Id("Envar").StructFunc(func(envarFields *jen.Group) {
 		file.Func().Id("LoadEnvar").Params().Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
 			for _, p := range properties {
@@ -331,7 +331,7 @@ func (g *Generator) doEnvar(file *jen.File, properties []*props.Property) {
 	}).Line()
 }
 
-func (g *Generator) Do(packagePath, outDir string, properties ...*props.Property) error {
+func (g *Generator) Do(packagePath, outDir string, properties ...*prop.Property) error {
 	if err := g.init(); err != nil {
 		return err
 	}

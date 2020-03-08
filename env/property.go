@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kyoh86/gogh/env/props"
+	"github.com/kyoh86/gogh/appenv/prop"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/thoas/go-funk"
 )
 
 type GithubToken struct {
-	props.StringPropertyBase
+	prop.StringPropertyBase
 }
 
 func (p *GithubToken) Mask(value string) string {
@@ -22,7 +22,7 @@ func (p *GithubToken) Mask(value string) string {
 }
 
 type GithubHost struct {
-	props.StringPropertyBase
+	prop.StringPropertyBase
 }
 
 const (
@@ -35,7 +35,7 @@ func (*GithubHost) Default() interface{} {
 }
 
 type GithubUser struct {
-	props.StringPropertyBase
+	prop.StringPropertyBase
 }
 
 type Roots struct {
