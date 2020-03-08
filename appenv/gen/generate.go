@@ -89,7 +89,7 @@ func (g *Generator) doMerge(file *jen.File, properties []*prop.Property) {
 					jen.Return(jen.Id("m").Dot(p.CamelName)),
 				).Line()
 
-				mergeCodes.Id("merged").Dot(p.CamelName).Op("=").New(jen.Id(p.Name)).Dot("Default").Call().Assert(jen.Id(p.ValueTypeID))
+				mergeCodes.Id("merged").Dot(p.CamelName).Op("=").New(jen.Qual(p.Type.PkgPath(), p.Name)).Dot("Default").Call().Assert(jen.Id(p.ValueTypeID))
 				if p.StoreFile {
 					g.tryMerge(mergeCodes, "file", p)
 				}
@@ -217,7 +217,7 @@ func (g *Generator) doFile(file *jen.File, properties []*prop.Property) {
 				continue
 			}
 			fileFields.Id(p.Name).
-				Qual(p.Type.PkgPath(), "*"+p.Name).
+				Op("*").Qual(p.Type.PkgPath(), p.Name).
 				Tag(map[string]string{"yaml": p.CamelName + ",omitempty"})
 		}
 	})
@@ -263,7 +263,7 @@ func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*
 						continue
 					}
 					keyringFields.Id(p.Name).
-						Qual(p.Type.PkgPath(), "*"+p.Name)
+						Op("*").Qual(p.Type.PkgPath(), p.Name)
 					loadKeyringCodes.Block(jen.List(jen.Id("v"), jen.Err()).Op(":=").Qual(pkgKeyring, "Get").
 						Call(jen.Lit(packagePath), jen.Lit(p.KebabName)),
 						jen.If(jen.Err().Op("==").Nil()).Block(
@@ -307,7 +307,7 @@ func (g *Generator) doEnvar(file *jen.File, properties []*prop.Property) {
 					continue
 				}
 				envarFields.Id(p.Name).
-					Qual(p.Type.PkgPath(), "*"+p.Name)
+					Op("*").Qual(p.Type.PkgPath(), p.Name)
 
 				envarName := strcase.UpperSnakeCase(g.EnvarPrefix) + p.SnakeName
 				loadEnvarCodes.Block(jen.List(jen.Id("v")).Op(":=").Qual("os", "Getenv").
