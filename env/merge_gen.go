@@ -2,7 +2,7 @@
 
 package env
 
-func Merge(envar Envar, keyring Keyring, file File) (merged Merged) {
+func Merge(file File, keyring Keyring, envar Envar) (merged Merged) {
 	merged.roots = new(Roots).Default().([]string)
 	if file.Roots != nil {
 		merged.roots = file.Roots.Value().([]string)

@@ -57,7 +57,7 @@ roots:
 	})
 
 	t.Run("mergeEmpty", func(t *testing.T) {
-		merged := env.Merge(env.Envar{}, env.Keyring{}, env.File{})
+		merged := env.Merge(env.File{}, env.Keyring{}, env.Envar{})
 		assert.Empty(t, merged.GithubToken())
 		assert.Equal(t, "github.com", merged.GithubHost())
 		assert.NotEmpty(t, merged.Roots())
@@ -79,7 +79,7 @@ roots:
 		envar, err := env.LoadEnvar()
 		require.NoError(t, err)
 
-		merged := env.Merge(envar, env.Keyring{}, file)
+		merged := env.Merge(file, env.Keyring{}, envar)
 		assert.Equal(t, "dummy-token", merged.GithubToken())
 		assert.Equal(t, "host2", merged.GithubHost())
 		assert.EqualValues(t, []string{"root2a"}, merged.Roots())

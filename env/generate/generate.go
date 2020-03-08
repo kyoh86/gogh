@@ -26,6 +26,7 @@ type Generator struct {
 const (
 	pkgYAML    = "gopkg.in/yaml.v3"
 	pkgKeyring = "github.com/zalando/go-keyring"
+	pkgProps   = "github.com/kyoh86/gogh/env/props"
 )
 
 func (g *Generator) init() error {
@@ -70,14 +71,14 @@ func (g *Generator) parseProps(properties []*props.Property) {
 
 func (g *Generator) doMerge(file *jen.File, properties []*props.Property) {
 	file.Func().Id("Merge").ParamsFunc(func(mergeParams *jen.Group) {
-		if g.storeEnvar {
-			mergeParams.Id("envar").Id("Envar")
+		if g.storeFile {
+			mergeParams.Id("file").Id("File")
 		}
 		if g.storeKeyring {
 			mergeParams.Id("keyring").Id("Keyring")
 		}
-		if g.storeFile {
-			mergeParams.Id("file").Id("File")
+		if g.storeEnvar {
+			mergeParams.Id("envar").Id("Envar")
 		}
 	}).Params(jen.Id("merged").Id("Merged")).BlockFunc(func(mergeCodes *jen.Group) {
 		file.Type().Id("Merged").StructFunc(func(mergedFields *jen.Group) {
@@ -109,6 +110,104 @@ func (g *Generator) tryMerge(mergeCodes *jen.Group, srcName string, p *props.Pro
 	mergeCodes.If(jen.Id(srcName).Dot(p.Name).Op("!=").Nil()).Block(
 		jen.Id("merged").Dot(p.CamelName).Op("=").Id(srcName).Dot(p.Name).Dot("Value").Call().Assert(jen.Id(p.ValueTypeID)),
 	)
+}
+
+func (g *Generator) doAccess(file *jen.File, properties []*props.Property) {
+	file.Type().Id("Accessor").StructFunc(func(accessorFields *jen.Group) {
+		if g.storeFile {
+			accessorFields.Id("file").Id("File")
+		}
+		if g.storeKeyring {
+			accessorFields.Id("keyring").Id("Keyring")
+		}
+	})
+
+	file.Func().Params(jen.Id("a").Id("*Accessor")).Id("Names").Call().Params(jen.Index().String()).Block(
+		jen.Return().Index().String().ValuesFunc(func(namesList *jen.Group) {
+			file.Func().Params(jen.Id("a").Id("*Accessor")).Id("Property").Params(jen.Id("name").String()).Params(jen.Qual(pkgProps, "Accessor"), jen.Id("error")).Block(
+				jen.Switch(jen.Id("name")).BlockFunc(func(propSwitch *jen.Group) {
+					for _, p := range properties {
+						// Add property name
+						namesList.Lit(p.KebabName) // UNDONE: dot separated
+
+						// Add property case
+						propSwitch.Case(jen.Lit(p.KebabName)). // UNDONE: dot separated
+											Block(jen.Return(jen.Id("&"+p.CamelName+"Accessor").Values(jen.Dict{
+								jen.Id("parent"): jen.Id("a"),
+							}), jen.Nil()))
+
+						// Build Poperty Accessor
+						file.Type().Id(p.CamelName + "Accessor").Struct(
+							jen.Id("parent").Id("*Accessor"),
+						)
+
+						// Implement "Get" Func
+						file.Func().Params(jen.Id("a").Id("*"+p.CamelName+"Accessor")).Id("Get").Params().Params(jen.String(), jen.Id("error")).BlockFunc(func(getCodes *jen.Group) {
+							if p.StoreFile {
+								g.tryGet(getCodes, "file", p)
+							}
+							if p.StoreKeyring {
+								g.tryGet(getCodes, "keyring", p)
+							}
+							getCodes.Return(jen.Lit(""), jen.Nil())
+						}).Line()
+
+						// Implement "Set" Func
+						file.Func().Params(jen.Id("a").Id("*" + p.CamelName + "Accessor")).Id("Set").Params(jen.Id("value").String()).Params(jen.Id("error")).BlockFunc(func(setCodes *jen.Group) {
+							if p.StoreFile {
+								g.trySet(setCodes, "file", p)
+							}
+							if p.StoreKeyring {
+								g.trySet(setCodes, "keyring", p)
+							}
+							setCodes.Return(jen.Nil())
+						}).Line()
+
+						// Implement "Unset" Func
+						file.Func().Params(jen.Id("a").Id("*" + p.CamelName + "Accessor")).Id("Unset").Params().BlockFunc(func(unsetCodes *jen.Group) {
+							if p.StoreFile {
+								g.tryUnset(unsetCodes, "file", p)
+							}
+							if p.StoreKeyring {
+								g.tryUnset(unsetCodes, "keyring", p)
+							}
+						}).Line()
+					}
+				}),
+				jen.Return(jen.Nil(), jen.Qual("fmt", "Errorf").Call(jen.Lit("invalid propertye name %q"), jen.Id("name"))),
+			)
+		}),
+	).Line()
+}
+
+func (g *Generator) tryGet(getCodes *jen.Group, srcName string, p *props.Property) {
+	getCodes.Block(
+		jen.Id("p").Op(":=").Id("a").Dot("parent").Dot(srcName).Dot(p.Name),
+		jen.If(jen.Id("p").Op("!=").Nil()).Block(
+			jen.List(jen.Id("text"), jen.Err()).Op(":=").Id("p").Dot("MarshalText").Call(),
+			jen.Return(jen.String().Call(jen.Id("text")), jen.Err()),
+		),
+	)
+}
+
+func (g *Generator) trySet(setCodes *jen.Group, srcName string, p *props.Property) {
+	setCodes.Block(
+		jen.Id("p").Op(":=").Id("a").Dot("parent").Dot(srcName).Dot(p.Name),
+		jen.If(jen.Id("p").Op("==").Nil()).Block(
+			jen.Id("p").Op("=").New(jen.Qual(p.Type.PkgPath(), p.Name)),
+		),
+		jen.If(
+			jen.Err().Op(":=").Id("p").Dot("UnmarshalText").Call(jen.Id("[]byte").Call(jen.Id("value"))),
+			jen.Err().Op("!=").Nil(),
+		).Block(
+			jen.Return(jen.Err()),
+		),
+		jen.Id("a").Dot("parent").Dot(srcName).Dot(p.Name).Op("=").Id("p"),
+	)
+}
+
+func (g *Generator) tryUnset(unsetCodes *jen.Group, srcName string, p *props.Property) {
+	unsetCodes.Id("a").Dot("parent").Dot(srcName).Dot(p.Name).Op("=").Nil()
 }
 
 func (g *Generator) doFile(file *jen.File, properties []*props.Property) {
@@ -153,38 +252,6 @@ func (g *Generator) doFile(file *jen.File, properties []*props.Property) {
 			jen.Return(),
 		)
 	file.Line()
-}
-
-func (g *Generator) doEnvar(file *jen.File, properties []*props.Property) {
-	file.Type().Id("Envar").StructFunc(func(envarFields *jen.Group) {
-		file.Func().Id("LoadEnvar").Params().Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
-			for _, p := range properties {
-				if !p.StoreEnvar {
-					continue
-				}
-				envarFields.Id(p.Name).
-					Qual(p.Type.PkgPath(), "*"+p.Name)
-
-				envarName := strcase.UpperSnakeCase(g.EnvarPrefix) + p.SnakeName
-				loadEnvarCodes.Block(jen.List(jen.Id("v")).Op(":=").Qual("os", "Getenv").
-					Call(jen.Lit(envarName)),
-					jen.If(jen.Id("v").Op("==").Lit("")).Block(
-						jen.Qual("log", "Printf").Call(jen.Lit("info: there's no envar "+envarName+" (%v)"), jen.Err()),
-					).Else().Block(
-						jen.Var().Id("value").Qual(p.Type.PkgPath(), p.Name),
-						jen.If(
-							jen.Err().Op("=").Id("value").Dot("UnmarshalText").Call(jen.Index().Byte().Parens(jen.Id("v"))),
-							jen.Err().Op("!=").Nil(),
-						).Block(
-							jen.Return(jen.Id("envar"), jen.Err()),
-						),
-						jen.Id("envar").Dot(p.Name).Op("=").Id("&value"),
-					),
-				)
-			}
-			loadEnvarCodes.Return()
-		}).Line()
-	}).Line()
 }
 
 func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*props.Property) {
@@ -232,39 +299,87 @@ func (g *Generator) doKeyring(file *jen.File, packagePath string, properties []*
 	})
 }
 
+func (g *Generator) doEnvar(file *jen.File, properties []*props.Property) {
+	file.Type().Id("Envar").StructFunc(func(envarFields *jen.Group) {
+		file.Func().Id("LoadEnvar").Params().Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
+			for _, p := range properties {
+				if !p.StoreEnvar {
+					continue
+				}
+				envarFields.Id(p.Name).
+					Qual(p.Type.PkgPath(), "*"+p.Name)
+
+				envarName := strcase.UpperSnakeCase(g.EnvarPrefix) + p.SnakeName
+				loadEnvarCodes.Block(jen.List(jen.Id("v")).Op(":=").Qual("os", "Getenv").
+					Call(jen.Lit(envarName)),
+					jen.If(jen.Id("v").Op("==").Lit("")).Block(
+						jen.Qual("log", "Printf").Call(jen.Lit("info: there's no envar "+envarName+" (%v)"), jen.Err()),
+					).Else().Block(
+						jen.Var().Id("value").Qual(p.Type.PkgPath(), p.Name),
+						jen.If(
+							jen.Err().Op("=").Id("value").Dot("UnmarshalText").Call(jen.Index().Byte().Parens(jen.Id("v"))),
+							jen.Err().Op("!=").Nil(),
+						).Block(
+							jen.Return(jen.Id("envar"), jen.Err()),
+						),
+						jen.Id("envar").Dot(p.Name).Op("=").Id("&value"),
+					),
+				)
+			}
+			loadEnvarCodes.Return()
+		}).Line()
+	}).Line()
+}
+
 func (g *Generator) Do(packagePath, outDir string, properties ...*props.Property) error {
 	if err := g.init(); err != nil {
 		return err
-	}
-
-	g.parseProps(properties)
-	mergeFile := g.createFile(packagePath)
-
-	g.doMerge(mergeFile, properties)
-
-	storeFile := g.createFile(packagePath)
-	storeFile.ImportAlias(pkgYAML, "yaml")
-	storeFile.ImportAlias(pkgKeyring, "keyring")
-
-	if g.storeFile {
-		g.doFile(storeFile, properties)
-	}
-	if g.storeEnvar {
-		g.doEnvar(storeFile, properties)
-	}
-	if g.storeKeyring {
-		g.doKeyring(storeFile, packagePath, properties)
 	}
 
 	full, err := filepath.Abs(outDir)
 	if err != nil {
 		return err
 	}
-	if err := storeFile.Save(filepath.Join(full, "store_gen.go")); err != nil {
-		return err
-	}
+
+	g.parseProps(properties)
+
+	mergeFile := g.createFile(packagePath)
+	g.doMerge(mergeFile, properties)
 	if err := mergeFile.Save(filepath.Join(full, "merge_gen.go")); err != nil {
 		return err
 	}
+
+	accessFile := g.createFile(packagePath)
+	g.doAccess(accessFile, properties)
+	if err := accessFile.Save(filepath.Join(full, "access_gen.go")); err != nil {
+		return err
+	}
+
+	if g.storeFile {
+		fileFile := g.createFile(packagePath)
+		fileFile.ImportAlias(pkgYAML, "yaml")
+		g.doFile(fileFile, properties)
+		if err := fileFile.Save(filepath.Join(full, "file_gen.go")); err != nil {
+			return err
+		}
+	}
+
+	if g.storeKeyring {
+		keyringFile := g.createFile(packagePath)
+		keyringFile.ImportAlias(pkgKeyring, "keyring")
+		g.doKeyring(keyringFile, packagePath, properties)
+		if err := keyringFile.Save(filepath.Join(full, "keyring_gen.go")); err != nil {
+			return err
+		}
+	}
+
+	if g.storeEnvar {
+		envarFile := g.createFile(packagePath)
+		g.doEnvar(envarFile, properties)
+		if err := envarFile.Save(filepath.Join(full, "envar_gen.go")); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

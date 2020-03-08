@@ -15,6 +15,12 @@ type Value interface {
 	encoding.TextUnmarshaler
 }
 
+type Accessor interface {
+	Get() (string, error)
+	Set(value string) error
+	Unset()
+}
+
 type Property struct {
 	Type      reflect.Type
 	Name      string
