@@ -44,15 +44,11 @@ func Prop(value types.Value, s Store, stores ...Store) (d *internal.Property) {
 	for _, s := range stores {
 		s(d)
 	}
+	_, d.Mask = value.(types.Mask)
 
 	d.CamelName = strcase.LowerCamelCase(d.Name)
 	d.SnakeName = strcase.UpperSnakeCase(d.Name)
 	d.KebabName = strcase.KebabCase(d.Name)
 	d.DottedName = strings.ReplaceAll(d.KebabName, "-", ".")
 	return
-}
-
-type Mask interface {
-	// Mask secure value.
-	Mask(value string) string
 }

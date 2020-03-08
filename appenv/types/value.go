@@ -10,3 +10,8 @@ type Value interface {
 	encoding.TextMarshaler
 	encoding.TextUnmarshaler
 }
+
+type Mask interface {
+	// Mask secure value.
+	Mask(value string) string
+}

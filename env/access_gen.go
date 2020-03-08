@@ -103,7 +103,7 @@ func (a *githubTokenAccessor) Get() (string, error) {
 		p := a.parent.keyring.GithubToken
 		if p != nil {
 			text, err := p.MarshalText()
-			return string(text), err
+			return p.Mask(string(text)), err
 		}
 	}
 	return "", nil

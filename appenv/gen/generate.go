@@ -191,10 +191,14 @@ func (g *Generator) doAccess(file *jen.File, properties []*internal.Property) {
 func (g *Generator) tryGet(getCodes *jen.Group, srcName string, p *internal.Property) {
 	getCodes.Block(
 		jen.Id("p").Op(":=").Id("a").Dot("parent").Dot(srcName).Dot(p.Name),
-		jen.If(jen.Id("p").Op("!=").Nil()).Block(
-			jen.List(jen.Id("text"), jen.Err()).Op(":=").Id("p").Dot("MarshalText").Call(),
-			jen.Return(jen.String().Call(jen.Id("text")), jen.Err()),
-		),
+		jen.If(jen.Id("p").Op("!=").Nil()).BlockFunc(func(ifBlock *jen.Group) {
+			ifBlock.List(jen.Id("text"), jen.Err()).Op(":=").Id("p").Dot("MarshalText").Call()
+			if p.Mask {
+				ifBlock.Return(jen.Id("p").Dot("Mask").Call(jen.String().Call(jen.Id("text"))), jen.Err())
+			} else {
+				ifBlock.Return(jen.String().Call(jen.Id("text")), jen.Err())
+			}
+		}),
 	)
 }
 
