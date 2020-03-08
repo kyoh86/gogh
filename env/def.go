@@ -45,6 +45,7 @@ type Roots struct {
 func (p *Roots) Value() interface{} {
 	return p.value
 }
+
 func (*Roots) Default() interface{} {
 	gopaths := filepath.SplitList(build.Default.GOPATH)
 	root := make([]string, 0, len(gopaths))
