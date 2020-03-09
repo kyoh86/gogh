@@ -15,3 +15,9 @@ type Mask interface {
 	// Mask secure value.
 	Mask(value string) string
 }
+
+type Accessor interface {
+	Get() (string, error)
+	Set(value string) error
+	Unset()
+}

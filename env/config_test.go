@@ -33,7 +33,7 @@ roots:
 	})
 
 	t.Run("emptyEnvar", func(t *testing.T) {
-		envar, err := env.GetEnvar()
+		envar, err := env.GetEnvar("GOGH_")
 		require.NoError(t, err)
 		assert.Nil(t, envar.GithubHost)
 		assert.Nil(t, envar.Roots)
@@ -43,7 +43,7 @@ roots:
 		os.Setenv("GOGH_GITHUB_TOKEN", "dummy-token")
 		os.Setenv("GOGH_GITHUB_HOST", "example.com")
 		os.Setenv("GOGH_ROOTS", "foo:bar")
-		envar, err := env.GetEnvar()
+		envar, err := env.GetEnvar("GOGH_")
 		require.NoError(t, err)
 		if assert.NotNil(t, envar.GithubToken) {
 			assert.Equal(t, "dummy-token", envar.GithubToken.Value())
@@ -76,7 +76,7 @@ roots:
 		os.Setenv("GOGH_GITHUB_TOKEN", "dummy-token")
 		os.Setenv("GOGH_GITHUB_HOST", "host2")
 		os.Setenv("GOGH_ROOTS", "root2a")
-		envar, err := env.GetEnvar()
+		envar, err := env.GetEnvar("GOGH_")
 		require.NoError(t, err)
 
 		merged := env.Merge(file, env.Keyring{}, envar)

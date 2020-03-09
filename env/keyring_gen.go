@@ -11,9 +11,9 @@ type Keyring struct {
 	GithubToken *GithubToken
 }
 
-func LoadKeyring() (key Keyring, err error) {
+func LoadKeyring(serviceName string) (key Keyring, err error) {
 	{
-		v, err := keyring.Get("github.com/kyoh86/gogh/env", "github-token")
+		v, err := keyring.Get(serviceName, "github-token")
 		if err == nil {
 			var value GithubToken
 			if err = value.UnmarshalText([]byte(v)); err != nil {
@@ -21,19 +21,19 @@ func LoadKeyring() (key Keyring, err error) {
 			}
 			key.GithubToken = &value
 		} else {
-			log.Printf("info: there's no secret in github-token@github.com/kyoh86/gogh/env (%v)", err)
+			log.Printf("info: there's no secret in github-token@%s (%v)", serviceName, err)
 		}
 	}
 	return
 }
 
-func SaveKeyring(key Keyring) (err error) {
+func SaveKeyring(serviceName string, key Keyring) (err error) {
 	{
 		buf, err := key.GithubToken.MarshalText()
 		if err != nil {
 			return err
 		}
-		if err := keyring.Set("github.com/kyoh86/gogh/env", "github-token", string(buf)); err != nil {
+		if err := keyring.Set(serviceName, "github-token", string(buf)); err != nil {
 			return err
 		}
 	}

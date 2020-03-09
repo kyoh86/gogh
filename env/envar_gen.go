@@ -3,6 +3,7 @@
 package env
 
 import (
+	gostrcase "github.com/stoewer/go-strcase"
 	"log"
 	"os"
 )
@@ -13,11 +14,12 @@ type Envar struct {
 	GithubToken *GithubToken
 }
 
-func GetEnvar() (envar Envar, err error) {
+func GetEnvar(prefix string) (envar Envar, err error) {
+	prefix = gostrcase.UpperSnakeCase(prefix)
 	{
-		v := os.Getenv("GOGH_ROOTS")
+		v := os.Getenv(prefix + "ROOTS")
 		if v == "" {
-			log.Printf("info: there's no envar GOGH_ROOTS (%v)", err)
+			log.Printf("info: there's no envar %sROOTS (%v)", prefix, err)
 		} else {
 			var value Roots
 			if err = value.UnmarshalText([]byte(v)); err != nil {
@@ -27,9 +29,9 @@ func GetEnvar() (envar Envar, err error) {
 		}
 	}
 	{
-		v := os.Getenv("GOGH_GITHUB_HOST")
+		v := os.Getenv(prefix + "GITHUB_HOST")
 		if v == "" {
-			log.Printf("info: there's no envar GOGH_GITHUB_HOST (%v)", err)
+			log.Printf("info: there's no envar %sGITHUB_HOST (%v)", prefix, err)
 		} else {
 			var value GithubHost
 			if err = value.UnmarshalText([]byte(v)); err != nil {
@@ -39,9 +41,9 @@ func GetEnvar() (envar Envar, err error) {
 		}
 	}
 	{
-		v := os.Getenv("GOGH_GITHUB_TOKEN")
+		v := os.Getenv(prefix + "GITHUB_TOKEN")
 		if v == "" {
-			log.Printf("info: there's no envar GOGH_GITHUB_TOKEN (%v)", err)
+			log.Printf("info: there's no envar %sGITHUB_TOKEN (%v)", prefix, err)
 		} else {
 			var value GithubToken
 			if err = value.UnmarshalText([]byte(v)); err != nil {

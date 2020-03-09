@@ -6,23 +6,20 @@ import (
 	"log"
 
 	"github.com/kyoh86/gogh/appenv/gen"
-	"github.com/kyoh86/gogh/appenv/prop"
 	"github.com/kyoh86/gogh/env"
 )
 
 //go:generate go run -tags generate ./main.go
 
 func main() {
-	gen := &gen.Generator{
-		EnvarPrefix: "GOGH_",
-	}
+	g := &gen.Generator{}
 
-	if err := gen.Do(
+	if err := g.Do(
 		"github.com/kyoh86/gogh/env",
 		"../",
-		prop.Prop(new(env.Roots), prop.File(), prop.Envar()),
-		prop.Prop(new(env.GithubHost), prop.File(), prop.Envar()),
-		prop.Prop(new(env.GithubToken), prop.Keyring(), prop.Envar()),
+		gen.Prop(new(env.Roots), gen.File(), gen.Envar()),
+		gen.Prop(new(env.GithubHost), gen.File(), gen.Envar()),
+		gen.Prop(new(env.GithubToken), gen.Keyring(), gen.Envar()),
 	); err != nil {
 		log.Fatal(err)
 	}
