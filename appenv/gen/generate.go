@@ -14,7 +14,7 @@ type Generator struct {
 
 	name string
 
-	storeFile    bool
+	storeYAML    bool
 	storeKeyring bool
 	storeEnvar   bool
 }
@@ -40,7 +40,7 @@ func (g *Generator) init() error {
 		g.name = rel
 	}
 
-	g.storeFile = false
+	g.storeYAML = false
 	g.storeKeyring = false
 	g.storeEnvar = false
 
@@ -60,74 +60,147 @@ func (g *Generator) createFile(packagePath string) *jen.File {
 
 func (g *Generator) parseProps(properties []*Property) {
 	for _, p := range properties {
-		g.storeFile = g.storeFile || p.storeFile
+		g.storeYAML = g.storeYAML || p.storeYAML
 		g.storeKeyring = g.storeKeyring || p.storeKeyring
 		g.storeEnvar = g.storeEnvar || p.storeEnvar
 	}
 }
 
-func (g *Generator) doMerge(file *jen.File, properties []*Property) {
-	/* TODO:
-	- make the "Merge", LoadFile, SaveFile, LoadKeyring, SaveKeyring and GetEnvar function private
-	- create new interface Config (like "Merged").
-	- create new "Preference() Accessor" and "Get() Config" function.
-	- create "Save" method on Accessor
-	*/
-	file.Func().Id("Merge").ParamsFunc(func(mergeParams *jen.Group) {
-		if g.storeFile {
-			mergeParams.Id("file").Id("File")
+func (g *Generator) genAccess(file *jen.File, properties []*Property) {
+	file.Func().Id("GetAccess").ParamsFunc(func(accessParams *jen.Group) {
+		if g.storeYAML {
+			accessParams.Id("yamlReader").Qual("io", "Reader")
 		}
 		if g.storeKeyring {
-			mergeParams.Id("keyring").Id("Keyring")
+			accessParams.Id("keyringService").String()
 		}
 		if g.storeEnvar {
-			mergeParams.Id("envar").Id("Envar")
+			accessParams.Id("envarPrefix").String()
 		}
-	}).Params(jen.Id("merged").Id("Merged")).BlockFunc(func(mergeCodes *jen.Group) {
-		file.Type().Id("Merged").StructFunc(func(mergedFields *jen.Group) {
+	}).Params(jen.Id("access").Id("Access"), jen.Err().Id("error")).BlockFunc(func(accessCodes *jen.Group) {
+		if g.storeYAML {
+			accessCodes.List(jen.Id("yml"), jen.Err()).
+				Op(":=").Id("loadYAML").Call(jen.Id("yamlReader"))
+			accessCodes.If(jen.Err().Op("!=").Nil()).Block(
+				jen.Return(jen.Id("access"), jen.Err()),
+			)
+		}
+		if g.storeKeyring {
+			accessCodes.List(jen.Id("keyring"), jen.Err()).
+				Op(":=").Id("loadKeyring").Call(jen.Id("keyringService"))
+			accessCodes.If(jen.Err().Op("!=").Nil()).Block(
+				jen.Return(jen.Id("access"), jen.Err()),
+			)
+		}
+		if g.storeEnvar {
+			accessCodes.List(jen.Id("envar"), jen.Err()).
+				Op(":=").Id("getEnvar").Call(jen.Id("envarPrefix"))
+			accessCodes.If(jen.Err().Op("!=").Nil()).Block(
+				jen.Return(jen.Id("access"), jen.Err()),
+			)
+		}
+		file.Type().Id("Access").StructFunc(func(accessFields *jen.Group) {
 			for _, p := range properties {
-				mergedFields.Id(p.camelName).Id(p.valueType)
+				accessFields.Id(p.camelName).Id(p.valueType)
 
-				file.Func().Params(jen.Id("m").Id("*Merged")).Id(p.name).Params().Id(p.valueType).Block(
-					jen.Return(jen.Id("m").Dot(p.camelName)),
+				file.Func().Params(jen.Id("a").Id("*Access")).Id(p.name).Params().Id(p.valueType).Block(
+					jen.Return(jen.Id("a").Dot(p.camelName)),
 				).Line()
 
-				mergeCodes.Id("merged").Dot(p.camelName).Op("=").New(jen.Qual(p.pkgPath, p.name)).Dot("Default").Call().Assert(jen.Id(p.valueType))
-				if p.storeFile {
-					g.tryMerge(mergeCodes, "file", p)
+				accessCodes.Id("access").Dot(p.camelName).Op("=").New(jen.Qual(p.pkgPath, p.name)).Dot("Default").Call().Assert(jen.Id(p.valueType))
+				if p.storeYAML {
+					g.tryAccess(accessCodes, "yml", p)
 				}
 				if p.storeKeyring {
-					g.tryMerge(mergeCodes, "keyring", p)
+					g.tryAccess(accessCodes, "keyring", p)
 				}
 				if p.storeEnvar {
-					g.tryMerge(mergeCodes, "envar", p)
+					g.tryAccess(accessCodes, "envar", p)
 				}
-				mergeCodes.Line()
+				accessCodes.Line()
 			}
 		})
-		mergeCodes.Return()
+		accessCodes.Return()
 	})
 }
 
-func (g *Generator) tryMerge(mergeCodes *jen.Group, srcName string, p *Property) {
-	mergeCodes.If(jen.Id(srcName).Dot(p.name).Op("!=").Nil()).Block(
-		jen.Id("merged").Dot(p.camelName).Op("=").Id(srcName).Dot(p.name).Dot("Value").Call().Assert(jen.Id(p.valueType)),
+func (g *Generator) tryAccess(accessCodes *jen.Group, srcName string, p *Property) {
+	accessCodes.If(jen.Id(srcName).Dot(p.name).Op("!=").Nil()).Block(
+		jen.Id("access").Dot(p.camelName).Op("=").Id(srcName).Dot(p.name).Dot("Value").Call().Assert(jen.Id(p.valueType)),
 	)
 }
 
-func (g *Generator) doAccess(file *jen.File, properties []*Property) {
-	file.Type().Id("Accessor").StructFunc(func(accessorFields *jen.Group) {
-		if g.storeFile {
-			accessorFields.Id("file").Id("File")
+func (g *Generator) genConfig(file *jen.File, properties []*Property) {
+	file.Type().Id("Config").StructFunc(func(configFields *jen.Group) {
+		if g.storeYAML {
+			configFields.Id("yml").Id("YAML")
 		}
 		if g.storeKeyring {
-			accessorFields.Id("keyring").Id("Keyring")
+			configFields.Id("keyring").Id("Keyring")
 		}
-	})
+	}).Line()
 
-	file.Func().Params(jen.Id("a").Id("*Accessor")).Id("Names").Call().Params(jen.Index().String()).Block(
+	file.Func().Id("GetConfig").ParamsFunc(func(getConfigParams *jen.Group) {
+		if g.storeYAML {
+			getConfigParams.Id("yamlReader").Qual("io", "Reader")
+		}
+		if g.storeKeyring {
+			getConfigParams.Id("keyringService").String()
+		}
+	}).Params(jen.Id("config").Id("Config"), jen.Err().Id("error")).BlockFunc(func(getConfigCodes *jen.Group) {
+		if g.storeYAML {
+			getConfigCodes.List(jen.Id("yml"), jen.Err()).
+				Op(":=").Id("loadYAML").Call(jen.Id("yamlReader"))
+			getConfigCodes.If(jen.Err().Op("!=").Nil()).Block(
+				jen.Return(jen.Id("config"), jen.Err()),
+			)
+		}
+		if g.storeKeyring {
+			getConfigCodes.List(jen.Id("keyring"), jen.Err()).
+				Op(":=").Id("loadKeyring").Call(jen.Id("keyringService"))
+			getConfigCodes.If(jen.Err().Op("!=").Nil()).Block(
+				jen.Return(jen.Id("config"), jen.Err()),
+			)
+		}
+		if g.storeYAML {
+			getConfigCodes.Id("config").Dot("yml").Op("=").Id("yml")
+		}
+		if g.storeKeyring {
+			getConfigCodes.Id("config").Dot("keyring").Op("=").Id("keyring")
+		}
+		getConfigCodes.Return()
+	}).Line()
+
+	file.Func().Params(jen.Id("c").Id("*Config")).Id("Save").ParamsFunc(func(configParams *jen.Group) {
+		if g.storeYAML {
+			configParams.Id("yamlWriter").Qual("io", "Writer")
+		}
+		if g.storeKeyring {
+			configParams.Id("keyringService").String()
+		}
+	}).Params(jen.Id("error")).BlockFunc(func(saveConfigCodes *jen.Group) {
+		if g.storeYAML {
+			saveConfigCodes.If(
+				jen.Err().Op(":=").Id("saveYAML").Call(jen.Id("yamlWriter"), jen.Id("&c").Dot("yml")),
+				jen.Err().Op("!=").Nil(),
+			).Block(
+				jen.Return(jen.Err()),
+			)
+		}
+		if g.storeKeyring {
+			saveConfigCodes.If(
+				jen.Err().Op(":=").Id("saveKeyring").Call(jen.Id("keyringService"), jen.Id("&c").Dot("keyring")),
+				jen.Err().Op("!=").Nil(),
+			).Block(
+				jen.Return(jen.Err()),
+			)
+		}
+		saveConfigCodes.Return(jen.Nil())
+	}).Line()
+
+	file.Func().Id("ConfigNames").Call().Params(jen.Index().String()).Block(
 		jen.Return().Index().String().ValuesFunc(func(namesList *jen.Group) {
-			file.Func().Params(jen.Id("a").Id("*Accessor")).Id("Property").Params(jen.Id("name").String()).Params(jen.Qual(pkgTypes, "Accessor"), jen.Id("error")).Block(
+			file.Func().Params(jen.Id("a").Id("*Config")).Id("Property").Params(jen.Id("name").String()).Params(jen.Qual(pkgTypes, "Config"), jen.Id("error")).Block(
 				jen.Switch(jen.Id("name")).BlockFunc(func(propSwitch *jen.Group) {
 					for _, p := range properties {
 						// Add property name
@@ -135,19 +208,19 @@ func (g *Generator) doAccess(file *jen.File, properties []*Property) {
 
 						// Add property case
 						propSwitch.Case(jen.Lit(p.dottedName)).
-							Block(jen.Return(jen.Id("&"+p.camelName+"Accessor").Values(jen.Dict{
+							Block(jen.Return(jen.Id("&"+p.camelName+"Config").Values(jen.Dict{
 								jen.Id("parent"): jen.Id("a"),
 							}), jen.Nil()))
 
-						// Build Poperty Accessor
-						file.Type().Id(p.camelName + "Accessor").Struct(
-							jen.Id("parent").Id("*Accessor"),
+						// Build Poperty Config
+						file.Type().Id(p.camelName + "Config").Struct(
+							jen.Id("parent").Id("*Config"),
 						)
 
 						// Implement "Get" Func
-						file.Func().Params(jen.Id("a").Id("*"+p.camelName+"Accessor")).Id("Get").Params().Params(jen.String(), jen.Id("error")).BlockFunc(func(getCodes *jen.Group) {
-							if p.storeFile {
-								g.tryGet(getCodes, "file", p)
+						file.Func().Params(jen.Id("a").Id("*"+p.camelName+"Config")).Id("Get").Params().Params(jen.String(), jen.Id("error")).BlockFunc(func(getCodes *jen.Group) {
+							if p.storeYAML {
+								g.tryGet(getCodes, "yml", p)
 							}
 							if p.storeKeyring {
 								g.tryGet(getCodes, "keyring", p)
@@ -156,9 +229,9 @@ func (g *Generator) doAccess(file *jen.File, properties []*Property) {
 						}).Line()
 
 						// Implement "Set" Func
-						file.Func().Params(jen.Id("a").Id("*" + p.camelName + "Accessor")).Id("Set").Params(jen.Id("value").String()).Params(jen.Id("error")).BlockFunc(func(setCodes *jen.Group) {
-							if p.storeFile {
-								g.trySet(setCodes, "file", p)
+						file.Func().Params(jen.Id("a").Id("*" + p.camelName + "Config")).Id("Set").Params(jen.Id("value").String()).Params(jen.Id("error")).BlockFunc(func(setCodes *jen.Group) {
+							if p.storeYAML {
+								g.trySet(setCodes, "yml", p)
 							}
 							if p.storeKeyring {
 								g.trySet(setCodes, "keyring", p)
@@ -167,9 +240,9 @@ func (g *Generator) doAccess(file *jen.File, properties []*Property) {
 						}).Line()
 
 						// Implement "Unset" Func
-						file.Func().Params(jen.Id("a").Id("*" + p.camelName + "Accessor")).Id("Unset").Params().BlockFunc(func(unsetCodes *jen.Group) {
-							if p.storeFile {
-								g.tryUnset(unsetCodes, "file", p)
+						file.Func().Params(jen.Id("a").Id("*" + p.camelName + "Config")).Id("Unset").Params().BlockFunc(func(unsetCodes *jen.Group) {
+							if p.storeYAML {
+								g.tryUnset(unsetCodes, "yml", p)
 							}
 							if p.storeKeyring {
 								g.tryUnset(unsetCodes, "keyring", p)
@@ -181,6 +254,7 @@ func (g *Generator) doAccess(file *jen.File, properties []*Property) {
 			)
 		}),
 	).Line()
+
 }
 
 func (g *Generator) tryGet(getCodes *jen.Group, srcName string, p *Property) {
@@ -217,54 +291,54 @@ func (g *Generator) tryUnset(unsetCodes *jen.Group, srcName string, p *Property)
 	unsetCodes.Id("a").Dot("parent").Dot(srcName).Dot(p.name).Op("=").Nil()
 }
 
-func (g *Generator) doFile(file *jen.File, properties []*Property) {
-	file.Type().Id("File").StructFunc(func(fileFields *jen.Group) {
+func (g *Generator) genYAML(file *jen.File, properties []*Property) {
+	file.Type().Id("YAML").StructFunc(func(yamlFields *jen.Group) {
 		for _, p := range properties {
-			if !p.storeFile {
+			if !p.storeYAML {
 				continue
 			}
-			fileFields.Id(p.name).
+			yamlFields.Id(p.name).
 				Op("*").Qual(p.pkgPath, p.name).
 				Tag(map[string]string{"yaml": p.camelName + ",omitempty"})
 		}
 	})
 	file.Line()
 
-	file.Func().Id("SaveFile").
+	file.Func().Id("saveYAML").
 		Params(
 			jen.Id("w").Qual("io", "Writer"),
-			jen.Id("file").Id("*File"),
+			jen.Id("yml").Id("*YAML"),
 		).
 		Add(jen.Id("error")).
 		Block(
 			jen.Return(
 				jen.Qual("gopkg.in/yaml.v3", "NewEncoder").Call(jen.Id("w")).
 					Op(".").
-					Id("Encode").Call(jen.Id("file")),
+					Id("Encode").Call(jen.Id("yml")),
 			),
 		)
 	file.Line()
-	file.Func().Id("LoadFile").
+	file.Func().Id("loadYAML").
 		Params(
 			jen.Id("r").Qual("io", "Reader"),
 		).
 		Params(
-			jen.Id("file").Id("File"),
+			jen.Id("yml").Id("YAML"),
 			jen.Err().Id("error"),
 		).
 		Block(
 			jen.Err().Op("=").Qual("gopkg.in/yaml.v3", "NewDecoder").Call(jen.Id("r")).
 				Op(".").
-				Id("Decode").Call(jen.Op("&").Id("file")),
+				Id("Decode").Call(jen.Op("&").Id("yml")),
 			jen.Return(),
 		)
 	file.Line()
 }
 
-func (g *Generator) doKeyring(file *jen.File, properties []*Property) {
+func (g *Generator) genKeyring(file *jen.File, properties []*Property) {
 	file.Type().Id("Keyring").StructFunc(func(keyringFields *jen.Group) {
-		file.Func().Id("LoadKeyring").Params(jen.Id("serviceName").String()).Params(jen.Id("key").Id("Keyring"), jen.Err().Id("error")).BlockFunc(func(loadKeyringCodes *jen.Group) {
-			file.Func().Id("SaveKeyring").Params(jen.Id("serviceName").String(), jen.Id("key").Id("Keyring")).Params(jen.Err().Id("error")).BlockFunc(func(saveKeyringCodes *jen.Group) {
+		file.Func().Id("loadKeyring").Params(jen.Id("keyringService").String()).Params(jen.Id("key").Id("Keyring"), jen.Err().Id("error")).BlockFunc(func(loadKeyringCodes *jen.Group) {
+			file.Func().Id("saveKeyring").Params(jen.Id("keyringService").String(), jen.Id("key").Id("*Keyring")).Params(jen.Err().Id("error")).BlockFunc(func(saveKeyringCodes *jen.Group) {
 				for _, p := range properties {
 					if !p.storeKeyring {
 						continue
@@ -272,7 +346,7 @@ func (g *Generator) doKeyring(file *jen.File, properties []*Property) {
 					keyringFields.Id(p.name).
 						Op("*").Qual(p.pkgPath, p.name)
 					loadKeyringCodes.Block(jen.List(jen.Id("v"), jen.Err()).Op(":=").Qual(pkgKeyring, "Get").
-						Call(jen.Id("serviceName"), jen.Lit(p.kebabName)),
+						Call(jen.Id("keyringService"), jen.Lit(p.kebabName)),
 						jen.If(jen.Err().Op("==").Nil()).Block(
 							jen.Var().Id("value").Qual(p.pkgPath, p.name),
 							jen.If(
@@ -283,7 +357,7 @@ func (g *Generator) doKeyring(file *jen.File, properties []*Property) {
 							),
 							jen.Id("key").Dot(p.name).Op("=").Id("&value"),
 						).Else().Block(
-							jen.Qual("log", "Printf").Call(jen.Lit("info: there's no secret in "+p.kebabName+"@%s (%v)"), jen.Id("serviceName"), jen.Err()),
+							jen.Qual("log", "Printf").Call(jen.Lit("info: there's no secret in "+p.kebabName+"@%s (%v)"), jen.Id("keyringService"), jen.Err()),
 						),
 					)
 					saveKeyringCodes.Block(
@@ -292,7 +366,7 @@ func (g *Generator) doKeyring(file *jen.File, properties []*Property) {
 							jen.Return(jen.Err()),
 						),
 						jen.If(
-							jen.Err().Op(":=").Qual(pkgKeyring, "Set").Call(jen.Id("serviceName"), jen.Lit(p.kebabName), jen.String().Call(jen.Id("buf"))),
+							jen.Err().Op(":=").Qual(pkgKeyring, "Set").Call(jen.Id("keyringService"), jen.Lit(p.kebabName), jen.String().Call(jen.Id("buf"))),
 							jen.Err().Op("!=").Nil(),
 						).Block(
 							jen.Return(jen.Err()),
@@ -306,9 +380,9 @@ func (g *Generator) doKeyring(file *jen.File, properties []*Property) {
 	})
 }
 
-func (g *Generator) doEnvar(file *jen.File, properties []*Property) {
+func (g *Generator) genEnvar(file *jen.File, properties []*Property) {
 	file.Type().Id("Envar").StructFunc(func(envarFields *jen.Group) {
-		file.Func().Id("GetEnvar").Params(jen.Id("prefix").String()).Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
+		file.Func().Id("getEnvar").Params(jen.Id("prefix").String()).Params(jen.Id("envar").Id("Envar"), jen.Err().Id("error")).BlockFunc(func(loadEnvarCodes *jen.Group) {
 			loadEnvarCodes.Id("prefix").Op("=").Qual(pkgStrcase, "UpperSnakeCase").Call(jen.Id("prefix"))
 			for _, p := range properties {
 				if !p.storeEnvar {
@@ -350,23 +424,23 @@ func (g *Generator) Do(packagePath, outDir string, properties ...*Property) erro
 
 	g.parseProps(properties)
 
-	mergeFile := g.createFile(packagePath)
-	g.doMerge(mergeFile, properties)
-	if err := mergeFile.Save(filepath.Join(full, "merge_gen.go")); err != nil {
-		return err
-	}
-
 	accessFile := g.createFile(packagePath)
-	g.doAccess(accessFile, properties)
+	g.genAccess(accessFile, properties)
 	if err := accessFile.Save(filepath.Join(full, "access_gen.go")); err != nil {
 		return err
 	}
 
-	if g.storeFile {
-		fileFile := g.createFile(packagePath)
-		fileFile.ImportAlias(pkgYAML, "yaml")
-		g.doFile(fileFile, properties)
-		if err := fileFile.Save(filepath.Join(full, "file_gen.go")); err != nil {
+	configFile := g.createFile(packagePath)
+	g.genConfig(configFile, properties)
+	if err := configFile.Save(filepath.Join(full, "config_gen.go")); err != nil {
+		return err
+	}
+
+	if g.storeYAML {
+		ymlFile := g.createFile(packagePath)
+		ymlFile.ImportAlias(pkgYAML, "yaml")
+		g.genYAML(ymlFile, properties)
+		if err := ymlFile.Save(filepath.Join(full, "yml_gen.go")); err != nil {
 			return err
 		}
 	}
@@ -374,7 +448,7 @@ func (g *Generator) Do(packagePath, outDir string, properties ...*Property) erro
 	if g.storeKeyring {
 		keyringFile := g.createFile(packagePath)
 		keyringFile.ImportAlias(pkgKeyring, "keyring")
-		g.doKeyring(keyringFile, properties)
+		g.genKeyring(keyringFile, properties)
 		if err := keyringFile.Save(filepath.Join(full, "keyring_gen.go")); err != nil {
 			return err
 		}
@@ -382,7 +456,7 @@ func (g *Generator) Do(packagePath, outDir string, properties ...*Property) erro
 
 	if g.storeEnvar {
 		envarFile := g.createFile(packagePath)
-		g.doEnvar(envarFile, properties)
+		g.genEnvar(envarFile, properties)
 		if err := envarFile.Save(filepath.Join(full, "envar_gen.go")); err != nil {
 			return err
 		}

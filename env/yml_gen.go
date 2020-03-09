@@ -7,16 +7,16 @@ import (
 	"io"
 )
 
-type File struct {
+type YAML struct {
 	Roots      *Roots      `yaml:"roots,omitempty"`
 	GithubHost *GithubHost `yaml:"githubHost,omitempty"`
 }
 
-func SaveFile(w io.Writer, file *File) error {
-	return yaml.NewEncoder(w).Encode(file)
+func saveYAML(w io.Writer, yml *YAML) error {
+	return yaml.NewEncoder(w).Encode(yml)
 }
 
-func LoadFile(r io.Reader) (file File, err error) {
-	err = yaml.NewDecoder(r).Decode(&file)
+func loadYAML(r io.Reader) (yml YAML, err error) {
+	err = yaml.NewDecoder(r).Decode(&yml)
 	return
 }

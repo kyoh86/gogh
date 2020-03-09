@@ -23,7 +23,7 @@ func (f storeFunc) mark(d *Property) {
 // They can be expand for other storages, but that is NOT
 // realistic to implement all of them in all of properties.
 
-func File() Store    { return storeFunc(func(d *Property) { d.storeFile = true }) }
+func YAML() Store    { return storeFunc(func(d *Property) { d.storeYAML = true }) }
 func Envar() Store   { return storeFunc(func(d *Property) { d.storeEnvar = true }) }
 func Keyring() Store { return storeFunc(func(d *Property) { d.storeKeyring = true }) }
 
@@ -65,7 +65,7 @@ type Property struct {
 	kebabName  string
 	dottedName string
 
-	storeFile    bool
+	storeYAML    bool
 	storeEnvar   bool
 	storeKeyring bool
 

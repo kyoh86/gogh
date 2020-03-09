@@ -2,127 +2,62 @@
 
 package env
 
-import (
-	"fmt"
-	types "github.com/kyoh86/gogh/appenv/types"
-)
+import "io"
 
-type Accessor struct {
-	file    File
-	keyring Keyring
-}
-
-func (a *Accessor) Names() []string {
-	return []string{"roots", "github.host", "github.token"}
-}
-
-func (a *Accessor) Property(name string) (types.Accessor, error) {
-	switch name {
-	case "roots":
-		return &rootsAccessor{parent: a}, nil
-	case "github.host":
-		return &githubHostAccessor{parent: a}, nil
-	case "github.token":
-		return &githubTokenAccessor{parent: a}, nil
+func GetAccess(yamlReader io.Reader, keyringService string, envarPrefix string) (access Access, err error) {
+	yml, err := loadYAML(yamlReader)
+	if err != nil {
+		return access, err
 	}
-	return nil, fmt.Errorf("invalid propertye name %q", name)
-}
-
-type rootsAccessor struct {
-	parent *Accessor
-}
-
-func (a *rootsAccessor) Get() (string, error) {
-	{
-		p := a.parent.file.Roots
-		if p != nil {
-			text, err := p.MarshalText()
-			return string(text), err
-		}
+	keyring, err := loadKeyring(keyringService)
+	if err != nil {
+		return access, err
 	}
-	return "", nil
-}
-
-func (a *rootsAccessor) Set(value string) error {
-	{
-		p := a.parent.file.Roots
-		if p == nil {
-			p = new(Roots)
-		}
-		if err := p.UnmarshalText([]byte(value)); err != nil {
-			return err
-		}
-		a.parent.file.Roots = p
+	envar, err := getEnvar(envarPrefix)
+	if err != nil {
+		return access, err
 	}
-	return nil
-}
-
-func (a *rootsAccessor) Unset() {
-	a.parent.file.Roots = nil
-}
-
-type githubHostAccessor struct {
-	parent *Accessor
-}
-
-func (a *githubHostAccessor) Get() (string, error) {
-	{
-		p := a.parent.file.GithubHost
-		if p != nil {
-			text, err := p.MarshalText()
-			return string(text), err
-		}
+	access.roots = new(Roots).Default().([]string)
+	if yml.Roots != nil {
+		access.roots = yml.Roots.Value().([]string)
 	}
-	return "", nil
-}
-
-func (a *githubHostAccessor) Set(value string) error {
-	{
-		p := a.parent.file.GithubHost
-		if p == nil {
-			p = new(GithubHost)
-		}
-		if err := p.UnmarshalText([]byte(value)); err != nil {
-			return err
-		}
-		a.parent.file.GithubHost = p
+	if envar.Roots != nil {
+		access.roots = envar.Roots.Value().([]string)
 	}
-	return nil
-}
 
-func (a *githubHostAccessor) Unset() {
-	a.parent.file.GithubHost = nil
-}
-
-type githubTokenAccessor struct {
-	parent *Accessor
-}
-
-func (a *githubTokenAccessor) Get() (string, error) {
-	{
-		p := a.parent.keyring.GithubToken
-		if p != nil {
-			text, err := p.MarshalText()
-			return p.Mask(string(text)), err
-		}
+	access.githubHost = new(GithubHost).Default().(string)
+	if yml.GithubHost != nil {
+		access.githubHost = yml.GithubHost.Value().(string)
 	}
-	return "", nil
-}
-
-func (a *githubTokenAccessor) Set(value string) error {
-	{
-		p := a.parent.keyring.GithubToken
-		if p == nil {
-			p = new(GithubToken)
-		}
-		if err := p.UnmarshalText([]byte(value)); err != nil {
-			return err
-		}
-		a.parent.keyring.GithubToken = p
+	if envar.GithubHost != nil {
+		access.githubHost = envar.GithubHost.Value().(string)
 	}
-	return nil
+
+	access.githubToken = new(GithubToken).Default().(string)
+	if keyring.GithubToken != nil {
+		access.githubToken = keyring.GithubToken.Value().(string)
+	}
+	if envar.GithubToken != nil {
+		access.githubToken = envar.GithubToken.Value().(string)
+	}
+
+	return
 }
 
-func (a *githubTokenAccessor) Unset() {
-	a.parent.keyring.GithubToken = nil
+type Access struct {
+	roots       []string
+	githubHost  string
+	githubToken string
+}
+
+func (a *Access) Roots() []string {
+	return a.roots
+}
+
+func (a *Access) GithubHost() string {
+	return a.githubHost
+}
+
+func (a *Access) GithubToken() string {
+	return a.githubToken
 }

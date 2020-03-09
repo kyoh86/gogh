@@ -16,7 +16,7 @@ type Mask interface {
 	Mask(value string) string
 }
 
-type Accessor interface {
+type Config interface {
 	Get() (string, error)
 	Set(value string) error
 	Unset()

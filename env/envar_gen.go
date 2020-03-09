@@ -14,7 +14,7 @@ type Envar struct {
 	GithubToken *GithubToken
 }
 
-func GetEnvar(prefix string) (envar Envar, err error) {
+func getEnvar(prefix string) (envar Envar, err error) {
 	prefix = gostrcase.UpperSnakeCase(prefix)
 	{
 		v := os.Getenv(prefix + "ROOTS")
