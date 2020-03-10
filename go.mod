@@ -5,11 +5,11 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
-	github.com/dave/jennifer v1.4.0
-	github.com/golang/mock v1.4.0
+	github.com/golang/mock v1.4.1
 	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/google/go-github/v29 v29.0.3
 	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
+	github.com/kyoh86/appenv v0.0.1
 	github.com/kyoh86/ask v0.0.7
 	github.com/kyoh86/xdg v1.2.0
 	github.com/rakyll/statik v0.1.7
@@ -27,7 +27,7 @@ require (
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
 	golang.org/x/tools v0.0.0-20200304143113-d6a4d55695f2 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
-	gopkg.in/yaml.v2 v2.2.7 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 )

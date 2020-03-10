@@ -4,7 +4,7 @@ package env
 
 import (
 	"fmt"
-	types "github.com/kyoh86/gogh/appenv/types"
+	types "github.com/kyoh86/appenv/types"
 	"io"
 )
 

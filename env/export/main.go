@@ -5,7 +5,7 @@ package main
 import (
 	"log"
 
-	"github.com/kyoh86/gogh/appenv/gen"
+	"github.com/kyoh86/appenv/gen"
 	"github.com/kyoh86/gogh/env"
 )
 

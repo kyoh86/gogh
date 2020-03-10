@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kyoh86/gogh/appenv/types"
+	"github.com/kyoh86/appenv/types"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/thoas/go-funk"
 )
