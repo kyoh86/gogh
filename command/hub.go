@@ -10,7 +10,7 @@ import (
 
 // HubClient is an interface generated for "github.com/kyoh86/gogh/internal/hub.Client".
 type HubClient interface {
-	Create(gogh.Context, *gogh.Repo, string, *url.URL, bool) (*github.Repository, error)
-	Fork(gogh.Context, *gogh.Repo, string) (*gogh.Repo, error)
-	Repos(gogh.Context, string, bool, bool, bool, string, string, string) ([]string, error)
+	Create(gogh.Env, *gogh.Repo, string, *url.URL, bool) (*github.Repository, error)
+	Fork(gogh.Env, *gogh.Repo, string) (*gogh.Repo, error)
+	Repos(gogh.Env, string, bool, bool, bool, string, string, string) ([]string, error)
 }

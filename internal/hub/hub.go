@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,28 +13,28 @@ import (
 )
 
 // New builds GitHub Client with GitHub API token that is configured.
-func New(ctx gogh.Context) (*Client, error) {
-	if host := ctx.GitHubHost(); host != "" && host != "github.com" {
+func New(env gogh.Env) (*Client, error) {
+	if host := env.GithubHost(); host != "" && host != "github.com" {
 		url := fmt.Sprintf("https://%s/api/v3", host)
-		client, err := github.NewEnterpriseClient(url, url, oauth2Client(ctx))
+		client, err := github.NewEnterpriseClient(url, url, oauth2Client(env))
 		if err != nil {
 			return nil, err
 		}
 		return &Client{client}, nil
 	}
-	return &Client{github.NewClient(oauth2Client(ctx))}, nil
+	return &Client{github.NewClient(oauth2Client(env))}, nil
 }
 
-func authenticated(ctx gogh.Context) bool {
-	return ctx.GitHubToken() != ""
+func authenticated(env gogh.Env) bool {
+	return env.GithubToken() != ""
 }
 
-func oauth2Client(ctx gogh.Context) *http.Client {
-	if !authenticated(ctx) {
+func oauth2Client(env gogh.Env) *http.Client {
+	if !authenticated(env) {
 		return nil
 	}
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: ctx.GitHubToken()})
-	return oauth2.NewClient(ctx, ts)
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: env.GithubToken()})
+	return oauth2.NewClient(context.TODO(), ts)
 }
 
 type Client struct {
@@ -51,7 +52,7 @@ type Client struct {
 //   * direction:   Can be one of asc or desc default. Default means asc when using full_name, otherwise desc
 // Returns:
 //   List of the url for repoisitories
-func (i *Client) Repos(ctx gogh.Context, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
+func (i *Client) Repos(env gogh.Env, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
 	/*
 		Build GitHub requests.
 		See: https://developer.github.com/v3/repos/#parameters
@@ -71,8 +72,8 @@ func (i *Client) Repos(ctx gogh.Context, user string, own, collaborate, member b
 		affs = append(affs, "organization_member")
 	}
 	// If the context has no authentication token, specifies context user name for "me".
-	if user == "" && !authenticated(ctx) {
-		user = ctx.GitHubUser()
+	if user == "" && !authenticated(env) {
+		user = "kyoh86" // TODO: cache.GithubUser() or the get 'me' with Github token
 	}
 
 	opts := &github.RepositoryListOptions{
@@ -91,7 +92,7 @@ func (i *Client) Repos(ctx gogh.Context, user string, own, collaborate, member b
 	for page := 1; page <= last; page++ {
 		opts.ListOptions.Page = page
 
-		repos, res, err := i.client.Repositories.List(ctx, user, opts)
+		repos, res, err := i.client.Repositories.List(context.TODO(), user, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +107,7 @@ func (i *Client) Repos(ctx gogh.Context, user string, own, collaborate, member b
 
 // Fork will fork a repository for yours (or for the organization).
 func (i *Client) Fork(
-	ctx gogh.Context,
+	env gogh.Env,
 	repo *gogh.Repo,
 	organization string,
 ) (result *gogh.Repo, retErr error) {
@@ -117,17 +118,17 @@ func (i *Client) Fork(
 				Optional parameter to specify the organization name if forking into an organization.
 	*/
 	// If the context has no authentication token, specifies context user name for "me".
-	if organization == "" && !authenticated(ctx) {
-		organization = ctx.GitHubUser()
+	if organization == "" && !authenticated(env) {
+		organization = "kyoh86" // TODO: cache.GithubUser() or the get 'me' with Github token
 	}
 
 	opts := &github.RepositoryCreateForkOptions{
 		Organization: organization,
 	}
 
-	newRepo, _, err := i.client.Repositories.CreateFork(ctx, repo.Owner(), repo.Name(), opts)
+	newRepo, _, err := i.client.Repositories.CreateFork(context.TODO(), repo.Owner(), repo.Name(), opts)
 	if newRepo != nil {
-		result, retErr = gogh.ParseRepo(ctx, newRepo.GetHTMLURL())
+		result, retErr = gogh.ParseRepo(env, newRepo.GetHTMLURL())
 	}
 	if err != nil {
 		retErr = fmt.Errorf("creating fork: %w", err)
@@ -137,7 +138,7 @@ func (i *Client) Fork(
 
 // Create new repository.
 func (i *Client) Create(
-	ctx gogh.Context,
+	env gogh.Env,
 	repo *gogh.Repo,
 	description string,
 	homepage *url.URL,
@@ -169,9 +170,9 @@ func (i *Client) Create(
 	}
 
 	organization := repo.Owner()
-	if organization == ctx.GitHubUser() {
+	if organization == "kyoh86" { // TODO: cache.GithubUser() or the get 'me' with Github token
 		organization = ""
 	}
-	newRepo, _, err := i.client.Repositories.Create(ctx, organization, newRepo)
+	newRepo, _, err := i.client.Repositories.Create(context.TODO(), organization, newRepo)
 	return newRepo, err
 }

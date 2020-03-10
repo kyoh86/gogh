@@ -43,15 +43,15 @@ func (*Config) String() string {
 	return "gogh/config.Config"
 }
 
-func (c *Config) GitHubUser() string {
+func (c *Config) GithubUser() string {
 	return c.GitHub.User
 }
 
-func (c *Config) GitHubToken() string {
+func (c *Config) GithubToken() string {
 	return c.GitHub.Token
 }
 
-func (c *Config) GitHubHost() string {
+func (c *Config) GithubHost() string {
 	return c.GitHub.Host
 }
 

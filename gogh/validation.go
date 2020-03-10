@@ -62,13 +62,10 @@ func ValidateRoots(roots []string) error {
 	return nil
 }
 
-func ValidateContext(ctx Context) error {
+func ValidateContext(env Env) error {
 	var validationError error
-	if err := ValidateRoots(ctx.Root()); err != nil {
+	if err := ValidateRoots(env.Roots()); err != nil {
 		validationError = multierr.Append(validationError, fmt.Errorf("invalid roots: %w", err))
-	}
-	if err := ValidateOwner(ctx.GitHubUser()); err != nil {
-		validationError = multierr.Append(validationError, fmt.Errorf("invalid GitHub user: %w", err))
 	}
 	return validationError
 }

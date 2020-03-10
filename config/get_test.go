@@ -19,9 +19,9 @@ func resetEnv(t *testing.T) {
 func TestDefaultConfig(t *testing.T) {
 	resetEnv(t)
 	cfg := DefaultConfig()
-	assert.Equal(t, "", cfg.GitHubToken())
-	assert.Equal(t, "github.com", cfg.GitHubHost())
-	assert.Equal(t, "", cfg.GitHubUser())
+	assert.Equal(t, "", cfg.GithubToken())
+	assert.Equal(t, "github.com", cfg.GithubHost())
+	assert.Equal(t, "", cfg.GithubUser())
 	assert.NotEmpty(t, cfg.Root())
 	assert.NotEmpty(t, cfg.PrimaryRoot())
 }
@@ -41,9 +41,9 @@ github:
   host: hostx1
 `))
 		require.NoError(t, err)
-		assert.Equal(t, "", cfg.GitHubToken(), "token should not be saved in file")
-		assert.Equal(t, "hostx1", cfg.GitHubHost())
-		assert.Equal(t, "kyoh86", cfg.GitHubUser())
+		assert.Equal(t, "", cfg.GithubToken(), "token should not be saved in file")
+		assert.Equal(t, "hostx1", cfg.GithubHost())
+		assert.Equal(t, "kyoh86", cfg.GithubUser())
 		assert.Equal(t, []string{"/foo", "/bar"}, cfg.Root())
 		assert.Equal(t, "/foo", cfg.PrimaryRoot())
 	})
@@ -80,15 +80,15 @@ func TestSaveConfig(t *testing.T) {
 
 func TestGetEnvarConfig(t *testing.T) {
 	resetEnv(t)
-	require.NoError(t, os.Setenv(envGoghGitHubToken, "tokenx1"))
-	require.NoError(t, os.Setenv(envGoghGitHubHost, "hostx1"))
-	require.NoError(t, os.Setenv(envGoghGitHubUser, "kyoh86"))
+	require.NoError(t, os.Setenv(envGoghGithubToken, "tokenx1"))
+	require.NoError(t, os.Setenv(envGoghGithubHost, "hostx1"))
+	require.NoError(t, os.Setenv(envGoghGithubUser, "kyoh86"))
 	require.NoError(t, os.Setenv(envGoghRoot, "/foo:/bar:/bar:/foo"))
 	cfg, err := GetEnvarConfig()
 	require.NoError(t, err)
-	assert.Equal(t, "tokenx1", cfg.GitHubToken())
-	assert.Equal(t, "hostx1", cfg.GitHubHost())
-	assert.Equal(t, "kyoh86", cfg.GitHubUser())
+	assert.Equal(t, "tokenx1", cfg.GithubToken())
+	assert.Equal(t, "hostx1", cfg.GithubHost())
+	assert.Equal(t, "kyoh86", cfg.GithubUser())
 	assert.Equal(t, []string{"/foo", "/bar"}, cfg.Root(), "expects roots are not duplicated")
 	assert.Equal(t, "/foo", cfg.PrimaryRoot())
 }

@@ -24,7 +24,7 @@ type testService struct {
 	hubClient *MockHubClient
 	root1     string
 	root2     string
-	ctx       *MockContext
+	env       *MockContext
 }
 
 func (s testService) teardown(t *testing.T) {
@@ -52,8 +52,8 @@ func initTest(t *testing.T) *testService {
 	require.NoError(t, err)
 
 	ctxMock.EXPECT().Done().AnyTimes().Return(nil)
-	ctxMock.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-	ctxMock.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+	ctxMock.EXPECT().GithubHost().AnyTimes().Return("github.com")
+	ctxMock.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 	ctxMock.EXPECT().Root().AnyTimes().Return([]string{root1, root2})
 	ctxMock.EXPECT().PrimaryRoot().AnyTimes().Return(root1)
 	return &testService{
@@ -64,6 +64,6 @@ func initTest(t *testing.T) *testService {
 		hubClient: hubClient,
 		root1:     root1,
 		root2:     root2,
-		ctx:       ctxMock,
+		env:       ctxMock,
 	}
 }

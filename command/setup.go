@@ -13,7 +13,7 @@ import (
 
 // Setup shells in shell scipt
 // Usage: eval "$(gogh setup)"
-func Setup(ctx gogh.Context, _, shell string) error {
+func Setup(env gogh.Env, _, shell string) error {
 	staticFs, err := fs.New()
 	if err != nil {
 		return err

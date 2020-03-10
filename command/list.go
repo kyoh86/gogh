@@ -7,7 +7,7 @@ import (
 )
 
 // List local projects
-func List(ctx gogh.Context, formatter gogh.ProjectListFormatter, primary bool, query string) error {
+func List(ctx gogh.Env, formatter gogh.ProjectListFormatter, primary bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary

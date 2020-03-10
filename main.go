@@ -121,12 +121,12 @@ func get(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("cd", "Jump to the local project").BoolVar(&cd)
 	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoSpecs)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		repos, err := repoSpecs.Validate(ctx)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		repos, err := repoSpecs.Validate(env)
 		if err != nil {
 			return err
 		}
-		return command.GetAll(ctx, new(git.Client), update, withSSH, shallow, repos)
+		return command.GetAll(env, new(git.Client), update, withSSH, shallow, repos)
 	})
 }
 
@@ -141,8 +141,8 @@ func bulk(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Bulk(ctx, new(git.Client), update, withSSH, shallow)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.Bulk(env, new(git.Client), update, withSSH, shallow)
 	})
 }
 
@@ -161,8 +161,8 @@ func pipe(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&srcCmd)
 	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&srcCmdArgs)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Pipe(ctx, new(git.Client), update, withSSH, shallow, srcCmd, srcCmdArgs)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.Pipe(env, new(git.Client), update, withSSH, shallow, srcCmd, srcCmdArgs)
 	})
 }
 
@@ -181,16 +181,16 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		hubClient, err := hub.New(ctx)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		hubClient, err := hub.New(env)
 		if err != nil {
 			return err
 		}
-		repo, err := spec.Validate(ctx)
+		repo, err := spec.Validate(env)
 		if err != nil {
 			return err
 		}
-		return command.Fork(ctx, new(git.Client), hubClient, update, withSSH, shallow, organization, repo)
+		return command.Fork(env, new(git.Client), hubClient, update, withSSH, shallow, organization, repo)
 	})
 }
 
@@ -215,16 +215,16 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&shared)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		hubClient, err := hub.New(ctx)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		hubClient, err := hub.New(env)
 		if err != nil {
 			return err
 		}
-		repo, err := spec.Validate(ctx)
+		repo, err := spec.Validate(env)
 		if err != nil {
 			return err
 		}
-		return command.New(ctx, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, repo)
+		return command.New(env, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, repo)
 	})
 }
 
@@ -237,8 +237,8 @@ func where(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Where(ctx, primary, query)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.Where(env, primary, query)
 	})
 }
 
@@ -253,8 +253,8 @@ func list(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.List(ctx, format.Formatter(), primary, query)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.List(env, format.Formatter(), primary, query)
 	})
 }
 
@@ -267,8 +267,8 @@ func dump(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.List(ctx, gogh.URLFormatter(), primary, query)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.List(env, gogh.URLFormatter(), primary, query)
 	})
 }
 
@@ -281,8 +281,8 @@ func remove(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Delete(ctx, primary, query)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.Delete(env, primary, query)
 	})
 }
 
@@ -295,12 +295,12 @@ func find(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		repo, err := spec.Validate(ctx)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		repo, err := spec.Validate(env)
 		if err != nil {
 			return err
 		}
-		return command.Find(ctx, primary, repo)
+		return command.Find(env, primary, repo)
 	})
 }
 
@@ -309,8 +309,8 @@ func root(app *kingpin.Application) (string, func() error) {
 	cmd := app.Command("root", "Show repositories' root")
 	cmd.Flag("all", "Show all roots").Envar("GOGH_FLAG_ROOT_ALL").BoolVar(&all)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Root(ctx, all)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.Root(env, all)
 	})
 }
 
@@ -327,8 +327,8 @@ set up gogh in your shell-rc file (".bashrc" / ".zshrc") like below.
 eval "$(gogh setup)"`).Hidden()
 	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		return command.Setup(ctx, "", shell)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		return command.Setup(env, "", shell)
 	})
 }
 
@@ -351,11 +351,11 @@ func repos(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("sort", "Sort repositories by").Default("full_name").EnumVar(&sort, "created", "updated", "pushed", "full_name")
 	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
 
-	return mainutil.WrapCommand(cmd, func(ctx gogh.Context) error {
-		hubClient, err := hub.New(ctx)
+	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
+		hubClient, err := hub.New(env)
 		if err != nil {
 			return err
 		}
-		return command.Repos(ctx, hubClient, user, own, collaborate, member, visibility, sort, direction)
+		return command.Repos(env, hubClient, user, own, collaborate, member, visibility, sort, direction)
 	})
 }

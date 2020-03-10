@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mustParseRepo(t *testing.T, ctx gogh.Context, name string) *gogh.Repo {
+func mustParseRepo(t *testing.T, ctx gogh.Env, name string) *gogh.Repo {
 	t.Helper()
 	repo, err := gogh.ParseRepo(ctx, name)
 	require.NoError(t, err)
@@ -20,8 +20,8 @@ func TestRepoParse(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := NewMockContext(ctrl)
-	ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-	ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+	ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
+	ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 
 	t.Run("full HTTPS URL", func(t *testing.T) {
 		repo, err := gogh.ParseRepo(ctx, "https://github.com/kyoh86/pusheen-explorer")

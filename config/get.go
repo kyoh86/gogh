@@ -14,18 +14,18 @@ import (
 )
 
 var (
-	envGoghGitHubUser  = "GOGH_GITHUB_USER"
-	envGoghGitHubToken = "GOGH_GITHUB_TOKEN"
-	envGoghGitHubHost  = "GOGH_GITHUB_HOST"
+	envGoghGithubUser  = "GOGH_GITHUB_USER"
+	envGoghGithubToken = "GOGH_GITHUB_TOKEN"
+	envGoghGithubHost  = "GOGH_GITHUB_HOST"
 	envGoghRoot        = "GOGH_ROOT"
 	envNames           = []string{
-		envGoghGitHubUser,
-		envGoghGitHubToken,
-		envGoghGitHubHost,
+		envGoghGithubUser,
+		envGoghGithubToken,
+		envGoghGithubHost,
 		envGoghRoot,
 	}
 	keyGoghServiceName = "gogh.kyoh86.dev"
-	keyGoghGitHubToken = "github-token"
+	keyGoghGithubToken = "github-token"
 )
 
 const (
@@ -63,9 +63,9 @@ func LoadConfig(r io.Reader) (config *Config, err error) {
 }
 
 func LoadKeyring() *Config {
-	token, err := keyring.Get(keyGoghServiceName, keyGoghGitHubToken)
+	token, err := keyring.Get(keyGoghServiceName, keyGoghGithubToken)
 	if err != nil {
-		log.Printf("info: there's no token in %s::%s (%v)", keyGoghServiceName, keyGoghGitHubToken, err)
+		log.Printf("info: there's no token in %s::%s (%v)", keyGoghServiceName, keyGoghGithubToken, err)
 		return &Config{}
 	}
 

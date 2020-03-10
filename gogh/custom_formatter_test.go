@@ -17,7 +17,7 @@ func TestCustomListFormatter(t *testing.T) {
 		defer ctrl.Finish()
 		ctx := NewMockContext(ctrl)
 
-		ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
 		project1, err := gogh.ParseProject(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
 		formatter, err := gogh.CustomFormatter("{{short .}}{{null}}{{full .}}{{null}}{{relative .}}")
@@ -33,7 +33,7 @@ func TestCustomListFormatter(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		ctx := NewMockContext(ctrl)
-		ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+		ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
 
 		project1, err := gogh.ParseProject(ctx, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
@@ -45,7 +45,7 @@ func TestCustomListFormatter(t *testing.T) {
 		expCtrl := gomock.NewController(t)
 		defer expCtrl.Finish()
 		expCtx := NewMockContext(expCtrl)
-		expCtx.EXPECT().GitHubHost().AnyTimes().Return("example.com")
+		expCtx.EXPECT().GithubHost().AnyTimes().Return("example.com")
 
 		project4, err := gogh.ParseProject(expCtx, "/go/src", "/go/src/example.com/kyoh86/bar")
 

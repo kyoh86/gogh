@@ -64,7 +64,7 @@ var (
 	gitHubUserOptionAccessor = OptionAccessor{
 		optionName: "github.user",
 		getter: func(cfg *Config) string {
-			return cfg.GitHubUser()
+			return cfg.GithubUser()
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {
@@ -85,7 +85,7 @@ var (
 	gitHubTokenOptionAccessor = OptionAccessor{
 		optionName: "github.token",
 		getter: func(cfg *Config) string {
-			if cfg.GitHubToken() == "" {
+			if cfg.GithubToken() == "" {
 				return ""
 			}
 			return "*****"
@@ -94,17 +94,17 @@ var (
 			if value == "" {
 				return ErrEmptyValue
 			}
-			return keyring.Set(keyGoghServiceName, keyGoghGitHubToken, value)
+			return keyring.Set(keyGoghServiceName, keyGoghGithubToken, value)
 		},
 		unsetter: func(cfg *Config) error {
-			return keyring.Delete(keyGoghServiceName, keyGoghGitHubToken)
+			return keyring.Delete(keyGoghServiceName, keyGoghGithubToken)
 		},
 	}
 
 	gitHubHostOptionAccessor = OptionAccessor{
 		optionName: "github.host",
 		getter: func(cfg *Config) string {
-			return cfg.GitHubHost()
+			return cfg.GithubHost()
 		},
 		putter: func(cfg *Config, value string) error {
 			if value == "" {

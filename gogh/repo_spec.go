@@ -81,15 +81,15 @@ func (r RepoSpec) String() string {
 	return r.raw
 }
 
-func (r *RepoSpec) Validate(ctx Context) (*Repo, error) {
+func (r *RepoSpec) Validate(env Env) (*Repo, error) {
 	repo := r.repo // copy object
 	if repo.host == "" {
-		repo.host = ctx.GitHubHost()
-	} else if repo.host != ctx.GitHubHost() {
+		repo.host = env.GithubHost()
+	} else if repo.host != env.GithubHost() {
 		return nil, fmt.Errorf("not supported host: %q", repo.host)
 	}
 	if repo.owner == "" {
-		repo.owner = ctx.GitHubUser()
+		repo.owner = "kyoh86" // TODO: cache.GithubUser() or the get 'me' with Github token
 	}
 	return &repo, nil
 }
@@ -121,10 +121,10 @@ func (specs RepoSpecs) String() string {
 func (specs RepoSpecs) IsCumulative() bool { return true }
 
 // Repos will get repositories with GitHub host and user
-func (specs RepoSpecs) Validate(ctx Context) ([]Repo, error) {
+func (specs RepoSpecs) Validate(env Env) ([]Repo, error) {
 	repos := make([]Repo, 0, len(specs))
 	for _, spec := range specs {
-		repo, err := spec.Validate(ctx)
+		repo, err := spec.Validate(env)
 		if err != nil {
 			return nil, err
 		}

@@ -41,7 +41,7 @@ func TestValidateContext(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		ctx := NewMockContext(ctrl)
-		ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+		ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 		ctx.EXPECT().Root().AnyTimes().Return([]string{"/\x00"})
 
 		assert.Error(t, gogh.ValidateContext(ctx))
@@ -50,7 +50,7 @@ func TestValidateContext(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		ctx := NewMockContext(ctrl)
-		ctx.EXPECT().GitHubUser().AnyTimes().Return("")
+		ctx.EXPECT().GithubUser().AnyTimes().Return("")
 		ctx.EXPECT().Root().AnyTimes().Return([]string{"/path/to/not/existing"})
 
 		assert.Error(t, gogh.ValidateContext(ctx))
@@ -59,7 +59,7 @@ func TestValidateContext(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		ctx := NewMockContext(ctrl)
-		ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+		ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 		ctx.EXPECT().Root().AnyTimes().Return([]string{"/path/to/not/existing"})
 
 		assert.NoError(t, gogh.ValidateContext(ctx))

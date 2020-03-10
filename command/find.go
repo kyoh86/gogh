@@ -9,7 +9,7 @@ import (
 )
 
 // Find a local project
-func Find(ctx gogh.Context, primary bool, repo *gogh.Repo) error {
+func Find(ctx gogh.Env, primary bool, repo *gogh.Repo) error {
 	log.Printf("info: Finding a repository %s", repo)
 
 	finder := gogh.FindProject

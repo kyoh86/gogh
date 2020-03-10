@@ -9,7 +9,7 @@ import (
 )
 
 // Delete local projects
-func Delete(ctx gogh.Context, primary bool, query string) error {
+func Delete(ctx gogh.Env, primary bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary

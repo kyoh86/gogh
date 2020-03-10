@@ -21,7 +21,7 @@ func TestFind(t *testing.T) {
 	proj3 := filepath.Join(svc.root2, "github.com", "kyoh85", "test", ".git")
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
-	assert.EqualError(t, command.Find(svc.ctx, true, mustParseRepo(t, svc.ctx, "gogh")), "project not found")
+	assert.EqualError(t, command.Find(svc.env, true, mustParseRepo(t, svc.env, "gogh")), "project not found")
 
 	assert.NoError(t, command.Find(svc.ctx, false, mustParseRepo(t, svc.ctx, "gogh")))
 

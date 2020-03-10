@@ -13,8 +13,8 @@ func TestRepoSpec(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := NewMockContext(ctrl)
-	ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-	ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+	ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
+	ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 
 	t.Run("full HTTPS URL", func(t *testing.T) {
 		spec := new(gogh.RepoSpec)
@@ -112,8 +112,8 @@ func TestRepoSpecs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := NewMockContext(ctrl)
-	ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
-	ctx.EXPECT().GitHubUser().AnyTimes().Return("kyoh86")
+	ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
+	ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 
 	var specs gogh.RepoSpecs
 	require.NoError(t, specs.Set("https://github.com/kyoh86/pusheen-explorer"), "full HTTPS URL")

@@ -10,7 +10,7 @@ import (
 )
 
 // Pipe handles like `gogh pipe github-list-starred kyoh86` calling `github-list-starred kyoh86` and bulk its output
-func Pipe(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, command string, commandArgs []string) (retErr error) {
+func Pipe(env gogh.Env, gitClient GitClient, update, withSSH, shallow bool, command string, commandArgs []string) (retErr error) {
 	cmd := exec.Command(command, commandArgs...)
 	in, err := cmd.StdoutPipe()
 	if err != nil {
@@ -26,16 +26,16 @@ func Pipe(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool, 
 			retErr = err
 		}
 	}()
-	return bulkFromReader(ctx, gitClient, in, update, withSSH, shallow)
+	return bulkFromReader(env, gitClient, in, update, withSSH, shallow)
 }
 
 // Bulk get repositories specified in stdin.
-func Bulk(ctx gogh.Context, gitClient GitClient, update, withSSH, shallow bool) error {
-	return bulkFromReader(ctx, gitClient, os.Stdin, update, withSSH, shallow)
+func Bulk(env gogh.Env, gitClient GitClient, update, withSSH, shallow bool) error {
+	return bulkFromReader(env, gitClient, os.Stdin, update, withSSH, shallow)
 }
 
 // bulkFromReader bulk get repositories specified in reader.
-func bulkFromReader(ctx gogh.Context, gitClient GitClient, in io.Reader, update, withSSH, shallow bool) error {
+func bulkFromReader(env gogh.Env, gitClient GitClient, in io.Reader, update, withSSH, shallow bool) error {
 	var specs gogh.RepoSpecs
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
@@ -47,9 +47,9 @@ func bulkFromReader(ctx gogh.Context, gitClient GitClient, in io.Reader, update,
 		return err
 	}
 
-	repos, err := specs.Validate(ctx)
+	repos, err := specs.Validate(env)
 	if err != nil {
 		return err
 	}
-	return GetAll(ctx, gitClient, update, withSSH, shallow, repos)
+	return GetAll(env, gitClient, update, withSSH, shallow, repos)
 }

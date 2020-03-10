@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/kyoh86/gogh/config"
+	"github.com/kyoh86/gogh/env"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/xdg"
 )
@@ -46,7 +47,7 @@ func currentConfig(configFile string) (*config.Config, *config.Config, error) {
 	return savedConfig, cfg, nil
 }
 
-func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Context) error) (string, func() error) {
+func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() error {

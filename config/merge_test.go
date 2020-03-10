@@ -11,27 +11,27 @@ import (
 func TestMergeConfig(t *testing.T) {
 	resetEnv(t)
 
-	require.NoError(t, os.Setenv(envGoghGitHubToken, "tokenx1"))
-	require.NoError(t, os.Setenv(envGoghGitHubHost, "hostx1"))
-	require.NoError(t, os.Setenv(envGoghGitHubUser, "kyoh86"))
+	require.NoError(t, os.Setenv(envGoghGithubToken, "tokenx1"))
+	require.NoError(t, os.Setenv(envGoghGithubHost, "hostx1"))
+	require.NoError(t, os.Setenv(envGoghGithubUser, "kyoh86"))
 	require.NoError(t, os.Setenv(envGoghRoot, "/foo:/bar"))
 
 	cfg1, err := GetEnvarConfig()
 	require.NoError(t, err)
 
 	t.Run("full overwritten config", func(t *testing.T) {
-		require.NoError(t, os.Setenv(envGoghGitHubToken, "tokenx2"))
-		require.NoError(t, os.Setenv(envGoghGitHubHost, "hostx2"))
-		require.NoError(t, os.Setenv(envGoghGitHubUser, "kyoh87"))
+		require.NoError(t, os.Setenv(envGoghGithubToken, "tokenx2"))
+		require.NoError(t, os.Setenv(envGoghGithubHost, "hostx2"))
+		require.NoError(t, os.Setenv(envGoghGithubUser, "kyoh87"))
 		require.NoError(t, os.Setenv(envGoghRoot, "/baz:/bux"))
 
 		cfg2, err := GetEnvarConfig()
 		require.NoError(t, err)
 
 		cfg := MergeConfig(cfg1, cfg2) // prior after config
-		assert.Equal(t, "tokenx2", cfg.GitHubToken())
-		assert.Equal(t, "hostx2", cfg.GitHubHost())
-		assert.Equal(t, "kyoh87", cfg.GitHubUser())
+		assert.Equal(t, "tokenx2", cfg.GithubToken())
+		assert.Equal(t, "hostx2", cfg.GithubHost())
+		assert.Equal(t, "kyoh87", cfg.GithubUser())
 		assert.Equal(t, []string{"/baz", "/bux"}, cfg.Root())
 		assert.Equal(t, "/baz", cfg.PrimaryRoot())
 	})
@@ -43,9 +43,9 @@ func TestMergeConfig(t *testing.T) {
 		require.NoError(t, err)
 
 		cfg := MergeConfig(cfg1, cfg2) // prior after config
-		assert.Equal(t, "tokenx1", cfg.GitHubToken())
-		assert.Equal(t, "hostx1", cfg.GitHubHost())
-		assert.Equal(t, "kyoh86", cfg.GitHubUser())
+		assert.Equal(t, "tokenx1", cfg.GithubToken())
+		assert.Equal(t, "hostx1", cfg.GithubHost())
+		assert.Equal(t, "kyoh86", cfg.GithubUser())
 		assert.Equal(t, []string{"/foo", "/bar"}, cfg.Root())
 		assert.Equal(t, "/foo", cfg.PrimaryRoot())
 	})

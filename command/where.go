@@ -9,7 +9,7 @@ import (
 )
 
 // Where is a local project
-func Where(ctx gogh.Context, primary bool, query string) error {
+func Where(ctx gogh.Env, primary bool, query string) error {
 	log.Printf("info: Finding a repository by query %s", query)
 
 	walk := gogh.Walk

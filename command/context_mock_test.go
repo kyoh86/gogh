@@ -61,46 +61,46 @@ func (mr *MockContextMockRecorder) PrimaryRoot() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrimaryRoot", reflect.TypeOf((*MockContext)(nil).PrimaryRoot))
 }
 
-// GitHubUser mocks base method
-func (m *MockContext) GitHubUser() string {
+// GithubUser mocks base method
+func (m *MockContext) GithubUser() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GitHubUser")
+	ret := m.ctrl.Call(m, "GithubUser")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// GitHubUser indicates an expected call of GitHubUser
-func (mr *MockContextMockRecorder) GitHubUser() *gomock.Call {
+// GithubUser indicates an expected call of GithubUser
+func (mr *MockContextMockRecorder) GithubUser() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GitHubUser", reflect.TypeOf((*MockContext)(nil).GitHubUser))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GithubUser", reflect.TypeOf((*MockContext)(nil).GithubUser))
 }
 
-// GitHubToken mocks base method
-func (m *MockContext) GitHubToken() string {
+// GithubToken mocks base method
+func (m *MockContext) GithubToken() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GitHubToken")
+	ret := m.ctrl.Call(m, "GithubToken")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// GitHubToken indicates an expected call of GitHubToken
-func (mr *MockContextMockRecorder) GitHubToken() *gomock.Call {
+// GithubToken indicates an expected call of GithubToken
+func (mr *MockContextMockRecorder) GithubToken() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GitHubToken", reflect.TypeOf((*MockContext)(nil).GitHubToken))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GithubToken", reflect.TypeOf((*MockContext)(nil).GithubToken))
 }
 
-// GitHubHost mocks base method
-func (m *MockContext) GitHubHost() string {
+// GithubHost mocks base method
+func (m *MockContext) GithubHost() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GitHubHost")
+	ret := m.ctrl.Call(m, "GithubHost")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// GitHubHost indicates an expected call of GitHubHost
-func (mr *MockContextMockRecorder) GitHubHost() *gomock.Call {
+// GithubHost indicates an expected call of GithubHost
+func (mr *MockContextMockRecorder) GithubHost() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GitHubHost", reflect.TypeOf((*MockContext)(nil).GitHubHost))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GithubHost", reflect.TypeOf((*MockContext)(nil).GithubHost))
 }
 
 // Deadline mocks base method

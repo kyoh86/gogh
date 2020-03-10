@@ -36,7 +36,7 @@ func (m *MockHubClient) EXPECT() *MockHubClientMockRecorder {
 }
 
 // Create mocks base method
-func (m *MockHubClient) Create(arg0 gogh.Context, arg1 *gogh.Repo, arg2 string, arg3 *url.URL, arg4 bool) (*github.Repository, error) {
+func (m *MockHubClient) Create(arg0 gogh.Env, arg1 *gogh.Repo, arg2 string, arg3 *url.URL, arg4 bool) (*github.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(*github.Repository)
@@ -51,7 +51,7 @@ func (mr *MockHubClientMockRecorder) Create(arg0, arg1, arg2, arg3, arg4 interfa
 }
 
 // Fork mocks base method
-func (m *MockHubClient) Fork(arg0 gogh.Context, arg1 *gogh.Repo, arg2 string) (*gogh.Repo, error) {
+func (m *MockHubClient) Fork(arg0 gogh.Env, arg1 *gogh.Repo, arg2 string) (*gogh.Repo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Fork", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*gogh.Repo)
@@ -66,7 +66,7 @@ func (mr *MockHubClientMockRecorder) Fork(arg0, arg1, arg2 interface{}) *gomock.
 }
 
 // Repos mocks base method
-func (m *MockHubClient) Repos(arg0 gogh.Context, arg1 string, arg2, arg3, arg4 bool, arg5, arg6, arg7 string) ([]string, error) {
+func (m *MockHubClient) Repos(arg0 gogh.Env, arg1 string, arg2, arg3, arg4 bool, arg5, arg6, arg7 string) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Repos", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	ret0, _ := ret[0].([]string)

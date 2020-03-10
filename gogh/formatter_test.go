@@ -16,7 +16,7 @@ func TestFormatter(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	ctx := NewMockContext(ctrl)
-	ctx.EXPECT().GitHubHost().AnyTimes().Return("github.com")
+	ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
 
 	t.Run("dry run formatters", func(t *testing.T) {
 		project, err := gogh.ParseProject(ctx, "/go/src", "/go/src/github.com/kyoh86/gogh")
@@ -110,7 +110,7 @@ func TestFormatter(t *testing.T) {
 		expCtrl := gomock.NewController(t)
 		defer expCtrl.Finish()
 		expCtx := NewMockContext(expCtrl)
-		expCtx.EXPECT().GitHubHost().AnyTimes().Return("example.com")
+		expCtx.EXPECT().GithubHost().AnyTimes().Return("example.com")
 
 		project4, err := gogh.ParseProject(expCtx, "/go/src", "/go/src/example.com/kyoh86/bar")
 		require.NoError(t, err)
