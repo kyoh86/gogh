@@ -7,7 +7,7 @@ import (
 )
 
 func ConfigGetAll(cfg *env.Config) error {
-	for _, name := range env.ConfigNames() {
+	for _, name := range env.PropertyNames() {
 		opt, _ := cfg.Property(name) // ignore error: config.OptionNames covers all accessor
 		value, err := opt.Get()
 		if err != nil {

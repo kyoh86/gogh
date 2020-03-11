@@ -10,6 +10,11 @@ import (
 	"github.com/thoas/go-funk"
 )
 
+const (
+	KeyringService = "gogh.kyoh86.dev"
+	EnvarPrefix    = "GOGH_"
+)
+
 type GithubToken struct {
 	types.StringPropertyBase
 }

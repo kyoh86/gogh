@@ -9,7 +9,7 @@ require (
 	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/google/go-github/v29 v29.0.3
 	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
-	github.com/kyoh86/appenv v0.0.2
+	github.com/kyoh86/appenv v0.0.4
 	github.com/kyoh86/ask v0.0.7
 	github.com/kyoh86/xdg v1.2.0
 	github.com/rakyll/statik v0.1.7

@@ -37,7 +37,7 @@ func (c *Config) Save(yamlWriter io.Writer, keyringService string) error {
 	return nil
 }
 
-func ConfigNames() []string {
+func PropertyNames() []string {
 	return []string{"roots", "github.host", "github.token"}
 }
 
@@ -50,7 +50,7 @@ func (a *Config) Property(name string) (types.Config, error) {
 	case "github.token":
 		return &githubTokenConfig{parent: a}, nil
 	}
-	return nil, fmt.Errorf("invalid propertye name %q", name)
+	return nil, fmt.Errorf("invalid property name %q", name)
 }
 
 type rootsConfig struct {

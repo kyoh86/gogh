@@ -1,18 +1,27 @@
 package command_test
 
-func ExampleRoot() {
-	//UNDONE: mock and example
-	// env := &config.Config{
-	// 	VRoot: config.PathListOption{"/foo", "/bar"},
-	// }
+import (
+	"fmt"
+	"strings"
 
-	// if err := command.Roots(env, false); err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println()
-	// if err := command.Roots(env, true); err != nil {
-	// 	panic(err)
-	// }
+	"github.com/kyoh86/gogh/command"
+	"github.com/kyoh86/gogh/env"
+)
+
+func ExampleRoot() {
+	yml := strings.NewReader("roots:\n  - /foo\n  - /bar")
+
+	config, err := env.GetAccess(yml, env.DiscardKeyringService, "")
+	if err != nil {
+		panic(err)
+	}
+	if err := command.Roots(&config, false); err != nil {
+		panic(err)
+	}
+	fmt.Println()
+	if err := command.Roots(&config, true); err != nil {
+		panic(err)
+	}
 
 	// Output:
 	// /foo

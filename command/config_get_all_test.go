@@ -1,21 +1,42 @@
 package command_test
 
+import (
+	"log"
+	"strings"
+	"testing"
+
+	"github.com/kyoh86/gogh/command"
+	"github.com/kyoh86/gogh/env"
+	"github.com/stretchr/testify/assert"
+)
+
 func ExampleConfigGetAll() {
-	// UNDONE: mock and example
-	// if err := command.ConfigGetAll(&config.Config{
-	// 	GitHub: config.GitHubConfig{
-	// 		Token: "tokenx1",
-	// 		Host:  "hostx1",
-	// 		User:  "kyoh86",
-	// 	},
-	// 	VRoot: []string{"/foo", "/bar"},
-	// }); err != nil {
-	// 	panic(err)
-	// }
+	yml := strings.NewReader(`
+roots:
+  - /foo
+  - /bar
+githubHost: hostx1`)
+	config, err := env.GetConfig(yml, "")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := command.ConfigGetAll(&config); err != nil {
+		log.Fatal(err)
+	}
 
 	// Unordered output:
-	// root: /foo:/bar
+	// roots: /foo:/bar
 	// github.host: hostx1
-	// github.user: kyoh86
-	// github.token: *****
+	// github.token:
+}
+
+func TestConfigGetAll(t *testing.T) {
+	yml := strings.NewReader(`
+roots:
+  - /foo
+  - /bar
+githubHost: hostx1`)
+	config, err := env.GetConfig(yml, "")
+	assert.NoError(t, err)
+	assert.NoError(t, command.ConfigGetAll(&config))
 }

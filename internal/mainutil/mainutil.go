@@ -18,11 +18,6 @@ func setConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
 		StringVar(configFile)
 }
 
-const (
-	goghKeyringService = "gogh.kyoh86.dev"
-	goghEnvarPrefix    = "GOGH_"
-)
-
 func openYAML(filename string) (io.Reader, func() error, error) {
 	var reader io.Reader
 	var teardown func() error
@@ -49,7 +44,7 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 			return err
 		}
 		defer teardown()
-		access, err := env.GetAccess(reader, goghKeyringService, goghEnvarPrefix)
+		access, err := env.GetAccess(reader, env.KeyringService, env.EnvarPrefix)
 		if err != nil {
 			return err
 		}
@@ -67,7 +62,7 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) 
 			return err
 		}
 		defer teardown()
-		config, err := env.GetConfig(reader, goghKeyringService)
+		config, err := env.GetConfig(reader, env.KeyringService)
 		if err != nil {
 			return err
 		}
@@ -84,6 +79,6 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) 
 			return err
 		}
 		defer file.Close()
-		return config.Save(file, goghKeyringService)
+		return config.Save(file, env.KeyringService)
 	}
 }

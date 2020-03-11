@@ -7,11 +7,16 @@ import (
 	"log"
 )
 
+const DiscardKeyringService string = ""
+
 type Keyring struct {
 	GithubToken *GithubToken
 }
 
 func loadKeyring(keyringService string) (key Keyring, err error) {
+	if keyringService == DiscardKeyringService {
+		return
+	}
 	{
 		v, err := keyring.Get(keyringService, "github-token")
 		if err == nil {
@@ -28,6 +33,9 @@ func loadKeyring(keyringService string) (key Keyring, err error) {
 }
 
 func saveKeyring(keyringService string, key *Keyring) (err error) {
+	if keyringService == DiscardKeyringService {
+		return
+	}
 	{
 		buf, err := key.GithubToken.MarshalText()
 		if err != nil {
