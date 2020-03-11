@@ -7,13 +7,13 @@ import (
 )
 
 // List local projects
-func List(ctx gogh.Env, formatter gogh.ProjectListFormatter, primary bool, query string) error {
+func List(env gogh.Env, formatter gogh.ProjectListFormatter, primary bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
 	}
 
-	if err := gogh.Query(ctx, query, walk, func(p *gogh.Project) error {
+	if err := gogh.Query(env, query, walk, func(p *gogh.Project) error {
 		formatter.Add(p)
 		return nil
 	}); err != nil {

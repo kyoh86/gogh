@@ -4,12 +4,11 @@ import (
 	"testing"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func ExampleSetup_zsh() {
-	if err := command.Setup(&config.Config{}, "gogh-cd", "zsh"); err != nil {
+	if err := command.Setup(nil, "gogh-cd", "zsh"); err != nil {
 		panic(err)
 	}
 	// Output:
@@ -45,7 +44,7 @@ func ExampleSetup_zsh() {
 	// eval "$(command gogh --completion-script-zsh)"
 }
 func ExampleSetup_bash() {
-	if err := command.Setup(&config.Config{}, "gogh-cd", "bash"); err != nil {
+	if err := command.Setup(nil, "gogh-cd", "bash"); err != nil {
 		panic(err)
 	}
 	// Output:
@@ -83,7 +82,7 @@ func ExampleSetup_bash() {
 }
 
 func TestSetup(t *testing.T) {
-	assert.EqualError(t, command.Setup(&config.Config{}, "gogh-cd", "invalid"), "unsupported shell \"invalid\"")
-	assert.NoError(t, command.Setup(&config.Config{}, "gogh-cd", "zsh"))
-	assert.NoError(t, command.Setup(&config.Config{}, "gogh-cd", "bash"))
+	assert.EqualError(t, command.Setup(nil, "gogh-cd", "invalid"), "unsupported shell \"invalid\"")
+	assert.NoError(t, command.Setup(nil, "gogh-cd", "zsh"))
+	assert.NoError(t, command.Setup(nil, "gogh-cd", "bash"))
 }

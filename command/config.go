@@ -3,40 +3,47 @@ package command
 import (
 	"fmt"
 
-	"github.com/kyoh86/gogh/config"
+	"github.com/kyoh86/gogh/env"
 )
 
-func ConfigGetAll(cfg *config.Config) error {
-	for _, name := range config.OptionNames() {
-		opt, _ := config.Option(name) // ignore error: config.OptionNames covers all accessor
-		value := opt.Get(cfg)
+func ConfigGetAll(cfg *env.Config) error {
+	for _, name := range env.ConfigNames() {
+		opt, _ := cfg.Property(name) // ignore error: config.OptionNames covers all accessor
+		value, err := opt.Get()
+		if err != nil {
+			return err
+		}
 		fmt.Printf("%s: %s\n", name, value)
 	}
 	return nil
 }
 
-func ConfigGet(cfg *config.Config, optionName string) error {
-	opt, err := config.Option(optionName)
+func ConfigGet(cfg *env.Config, optionName string) error {
+	opt, err := cfg.Property(optionName)
 	if err != nil {
 		return err
 	}
-	value := opt.Get(cfg)
+	value, err := opt.Get()
+	if err != nil {
+		return err
+	}
 	fmt.Println(value)
 	return nil
 }
 
-func ConfigPut(cfg *config.Config, optionName, optionValue string) error {
-	opt, err := config.Option(optionName)
+func ConfigSet(cfg *env.Config, optionName, optionValue string) error {
+	opt, err := cfg.Property(optionName)
 	if err != nil {
 		return err
 	}
-	return opt.Put(cfg, optionValue)
+	return opt.Set(optionValue)
 }
 
-func ConfigUnset(cfg *config.Config, optionName string) error {
-	opt, err := config.Option(optionName)
+func ConfigUnset(cfg *env.Config, optionName string) error {
+	opt, err := cfg.Property(optionName)
 	if err != nil {
 		return err
 	}
-	return opt.Unset(cfg)
+	opt.Unset()
+	return nil
 }

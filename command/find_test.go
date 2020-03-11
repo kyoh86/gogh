@@ -23,9 +23,9 @@ func TestFind(t *testing.T) {
 
 	assert.EqualError(t, command.Find(svc.env, true, mustParseRepo(t, svc.env, "gogh")), "project not found")
 
-	assert.NoError(t, command.Find(svc.ctx, false, mustParseRepo(t, svc.ctx, "gogh")))
+	assert.NoError(t, command.Find(svc.env, false, mustParseRepo(t, svc.env, "gogh")))
 
-	assert.NoError(t, command.Find(svc.ctx, false, mustParseRepo(t, svc.ctx, "kyoh85/test")))
+	assert.NoError(t, command.Find(svc.env, false, mustParseRepo(t, svc.env, "kyoh85/test")))
 
-	assert.NoError(t, command.Find(svc.ctx, true, mustParseRepo(t, svc.ctx, "vim-gogh")))
+	assert.NoError(t, command.Find(svc.env, true, mustParseRepo(t, svc.env, "vim-gogh")))
 }

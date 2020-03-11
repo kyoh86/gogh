@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func mustParseRepo(t *testing.T, ctx gogh.Env, name string) *gogh.Repo {
+func mustParseRepo(t *testing.T, env gogh.Env, name string) *gogh.Repo {
 	t.Helper()
-	repo, err := gogh.ParseRepo(ctx, name)
+	repo, err := gogh.ParseRepo(env, name)
 	require.NoError(t, err)
 	return repo
 }

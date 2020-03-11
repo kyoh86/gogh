@@ -9,7 +9,7 @@ import (
 )
 
 // Where is a local project
-func Where(ctx gogh.Env, primary bool, query string) error {
+func Where(env gogh.Env, primary bool, query string) error {
 	log.Printf("info: Finding a repository by query %s", query)
 
 	walk := gogh.Walk
@@ -19,7 +19,7 @@ func Where(ctx gogh.Env, primary bool, query string) error {
 
 	formatter := gogh.FullPathFormatter()
 
-	if err := gogh.Query(ctx, query, walk, func(p *gogh.Project) error {
+	if err := gogh.Query(env, query, walk, func(p *gogh.Project) error {
 		formatter.Add(p)
 		return nil
 	}); err != nil {

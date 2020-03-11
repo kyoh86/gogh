@@ -40,28 +40,17 @@ func TestValidateContext(t *testing.T) {
 	t.Run("invalid root", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		ctx := NewMockContext(ctrl)
-		ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
-		ctx.EXPECT().Root().AnyTimes().Return([]string{"/\x00"})
+		env := NewMockEnv(ctrl)
+		env.EXPECT().Roots().AnyTimes().Return([]string{"/\x00"})
 
-		assert.Error(t, gogh.ValidateContext(ctx))
-	})
-	t.Run("invalid owner", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		ctx := NewMockContext(ctrl)
-		ctx.EXPECT().GithubUser().AnyTimes().Return("")
-		ctx.EXPECT().Root().AnyTimes().Return([]string{"/path/to/not/existing"})
-
-		assert.Error(t, gogh.ValidateContext(ctx))
+		assert.Error(t, gogh.ValidateContext(env))
 	})
 	t.Run("valid context", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		ctx := NewMockContext(ctrl)
-		ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
-		ctx.EXPECT().Root().AnyTimes().Return([]string{"/path/to/not/existing"})
+		env := NewMockEnv(ctrl)
+		env.EXPECT().Roots().AnyTimes().Return([]string{"/path/to/not/existing"})
 
-		assert.NoError(t, gogh.ValidateContext(ctx))
+		assert.NoError(t, gogh.ValidateContext(env))
 	})
 }

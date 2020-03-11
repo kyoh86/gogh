@@ -25,7 +25,7 @@ func TestDelete(t *testing.T) {
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
 	t.Run("delete proj2 explicitly", func(t *testing.T) {
-		assert.NoError(t, command.Delete(svc.ctx, false, "gogh-test-2"))
+		assert.NoError(t, command.Delete(svc.env, false, "gogh-test-2"))
 		var err error
 		_, err = os.Stat(proj1)
 		assert.NoError(t, err)
@@ -40,7 +40,7 @@ func TestDelete(t *testing.T) {
 		teardown := testutil.Stubin(t, []byte("y\n"))
 		defer teardown()
 
-		assert.NoError(t, command.Delete(svc.ctx, false, "3"))
+		assert.NoError(t, command.Delete(svc.env, false, "3"))
 		var err error
 		_, err = os.Stat(proj1)
 		assert.NoError(t, err)
@@ -55,7 +55,7 @@ func TestDelete(t *testing.T) {
 		teardown := testutil.Stubin(t, []byte("y\n"))
 		defer teardown()
 
-		assert.NoError(t, command.Delete(svc.ctx, true, "test"))
+		assert.NoError(t, command.Delete(svc.env, true, "test"))
 		var err error
 		_, err = os.Stat(proj1)
 		assert.True(t, os.IsNotExist(err))
@@ -67,7 +67,7 @@ func TestDelete(t *testing.T) {
 	})
 
 	t.Run("did not match", func(t *testing.T) {
-		assert.EqualError(t, command.Delete(svc.ctx, true, "foobar"), "any projects did not matched for \"foobar\"")
+		assert.EqualError(t, command.Delete(svc.env, true, "foobar"), "any projects did not matched for \"foobar\"")
 		var err error
 		_, err = os.Stat(proj1)
 		assert.NoError(t, err)

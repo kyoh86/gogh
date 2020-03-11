@@ -87,10 +87,10 @@ func TestEmpty(t *testing.T) {
 		require.NoError(t, os.MkdirAll(proj1, 0755))
 		assert.NoError(t, command.List(svc.env, gogh.ShortFormatter(), false, ""))
 	})
-	t.Run("Root", func(t *testing.T) {
+	t.Run("Roots", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
 
-		assert.NoError(t, command.Root(svc.env, false))
+		assert.NoError(t, command.Roots(svc.env, false))
 	})
 }

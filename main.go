@@ -8,7 +8,7 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/config"
+	"github.com/kyoh86/gogh/env"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/git"
 	"github.com/kyoh86/gogh/internal/hub"
@@ -33,7 +33,7 @@ func main() {
 	for _, f := range []func(*kingpin.Application) (string, func() error){
 		configGetAll,
 		configGet,
-		configPut,
+		configSet,
 		configUnset,
 
 		get,
@@ -72,22 +72,22 @@ func configGet(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get", "get an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(cfg *env.Config) error {
 		return command.ConfigGet(cfg, name)
 	})
 }
 
-func configPut(app *kingpin.Application) (string, func() error) {
+func configSet(app *kingpin.Application) (string, func() error) {
 	var (
 		name  string
 		value string
 	)
-	cmd := app.GetCommand("config").Command("put", "put an option").Alias("set")
+	cmd := app.GetCommand("config").Command("set", "set an option").Alias("set")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 	cmd.Arg("value", "option value").Required().StringVar(&value)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
-		return command.ConfigPut(cfg, name, value)
+	return mainutil.WrapConfigurableCommand(cmd, func(cfg *env.Config) error {
+		return command.ConfigSet(cfg, name, value)
 	})
 }
 
@@ -98,7 +98,7 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("unset", "unset an option").Alias("rm")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(cfg *config.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(cfg *env.Config) error {
 		return command.ConfigUnset(cfg, name)
 	})
 }
@@ -310,7 +310,7 @@ func root(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("all", "Show all roots").Envar("GOGH_FLAG_ROOT_ALL").BoolVar(&all)
 
 	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
-		return command.Root(env, all)
+		return command.Roots(env, all)
 	})
 }
 

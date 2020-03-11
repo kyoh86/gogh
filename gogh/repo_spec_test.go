@@ -12,9 +12,8 @@ import (
 func TestRepoSpec(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	ctx := NewMockContext(ctrl)
-	ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
-	ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
+	env := NewMockEnv(ctrl)
+	env.EXPECT().GithubHost().AnyTimes().Return("github.com")
 
 	t.Run("full HTTPS URL", func(t *testing.T) {
 		spec := new(gogh.RepoSpec)
@@ -111,9 +110,8 @@ func TestRepoSpec(t *testing.T) {
 func TestRepoSpecs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	ctx := NewMockContext(ctrl)
-	ctx.EXPECT().GithubHost().AnyTimes().Return("github.com")
-	ctx.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
+	env := NewMockEnv(ctrl)
+	env.EXPECT().GithubHost().AnyTimes().Return("github.com")
 
 	var specs gogh.RepoSpecs
 	require.NoError(t, specs.Set("https://github.com/kyoh86/pusheen-explorer"), "full HTTPS URL")
@@ -133,7 +131,7 @@ func TestRepoSpecs(t *testing.T) {
 
 	assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer,git@github.com:kyoh86/pusheen-explorer.git,gogh", specs.String())
 
-	repos, err := specs.Validate(ctx)
+	repos, err := specs.Validate(env)
 	require.NoError(t, err)
 	require.Len(t, repos, 3)
 	assert.Equal(t, "https://github.com/kyoh86/pusheen-explorer", repos[0].String())
