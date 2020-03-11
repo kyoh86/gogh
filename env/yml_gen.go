@@ -16,7 +16,12 @@ func saveYAML(w io.Writer, yml *YAML) error {
 	return yaml.NewEncoder(w).Encode(yml)
 }
 
+var EmptyYAMLReader io.Reader = nil
+
 func loadYAML(r io.Reader) (yml YAML, err error) {
+	if r == EmptyYAMLReader {
+		return
+	}
 	err = yaml.NewDecoder(r).Decode(&yml)
 	return
 }
