@@ -11,7 +11,6 @@ import (
 
 func TestEnv(t *testing.T) {
 	// NOTE: these tests include for generators.
-	// So it should not be payed attension for coverage.
 	t.Run("emptyFile", func(t *testing.T) {
 		file, err := loadYAML(strings.NewReader("{}"))
 		require.NoError(t, err)
