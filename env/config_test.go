@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// UNDONE: move this test to appenv
+
 func TestEnv(t *testing.T) {
 	// NOTE: these tests include for generators.
 	t.Run("emptyFile", func(t *testing.T) {
@@ -53,35 +55,4 @@ roots:
 			assert.EqualValues(t, []string{"foo", "bar"}, envar.Roots.Value())
 		}
 	})
-
-	/*
-			t.Run("mergeEmpty", func(t *testing.T) {
-				merged := mergeAll(YAML{}, Keyring{}, Envar{})
-				assert.Empty(t, merged.GithubToken())
-				assert.Equal(t, "github.com", merged.GithubHost())
-				assert.NotEmpty(t, merged.Roots())
-
-			})
-
-			t.Run("mergeOverride", func(t *testing.T) {
-				fileRaw := `
-		githubHost: host1
-		roots:
-		  - root1a
-		  - root1b`
-				file, err := loadYAML(strings.NewReader(fileRaw))
-				require.NoError(t, err)
-
-				os.Setenv("GOGH_GITHUB_TOKEN", "dummy-token")
-				os.Setenv("GOGH_GITHUB_HOST", "host2")
-				os.Setenv("GOGH_ROOTS", "root2a")
-				envar, err := getEnvar("GOGH_")
-				require.NoError(t, err)
-
-				merged := mergeAll(file, Keyring{}, envar)
-				assert.Equal(t, "dummy-token", merged.GithubToken())
-				assert.Equal(t, "host2", merged.GithubHost())
-				assert.EqualValues(t, []string{"root2a"}, merged.Roots())
-			})
-	*/
 }
