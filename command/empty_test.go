@@ -25,7 +25,7 @@ func TestEmpty(t *testing.T) {
 		withSSH := false
 
 		svc.gitClient.EXPECT().Clone(local, remote, shallow).Return(nil)
-		assert.NoError(t, command.Pipe(svc.env, svc.gitClient, update, withSSH, shallow, "echo", []string{"kyoh86/gogh"}))
+		assert.NoError(t, command.Pipe(svc.ev, svc.gitClient, update, withSSH, shallow, "echo", []string{"kyoh86/gogh"}))
 	})
 
 	t.Run("Bulk", func(t *testing.T) {
@@ -42,7 +42,7 @@ func TestEmpty(t *testing.T) {
 		defer teardown()
 
 		svc.gitClient.EXPECT().Clone(local, remote, shallow).Return(nil)
-		assert.NoError(t, command.Bulk(svc.env, svc.gitClient, update, withSSH, shallow))
+		assert.NoError(t, command.Bulk(svc.ev, svc.gitClient, update, withSSH, shallow))
 	})
 
 	t.Run("GetAll", func(t *testing.T) {
@@ -59,9 +59,9 @@ func TestEmpty(t *testing.T) {
 
 		svc.gitClient.EXPECT().Clone(local1, remote1, shallow).Return(nil)
 		svc.gitClient.EXPECT().Clone(local2, remote2, shallow).Return(nil)
-		assert.NoError(t, command.GetAll(svc.env, svc.gitClient, update, withSSH, shallow, []gogh.Repo{
-			*mustParseRepo(t, svc.env, "kyoh86/gogh"),
-			*mustParseRepo(t, svc.env, "kyoh86/vim-gogh"),
+		assert.NoError(t, command.GetAll(svc.ev, svc.gitClient, update, withSSH, shallow, []gogh.Repo{
+			*mustParseRepo(t, svc.ev, "kyoh86/gogh"),
+			*mustParseRepo(t, svc.ev, "kyoh86/vim-gogh"),
 		}))
 	})
 
@@ -76,7 +76,7 @@ func TestEmpty(t *testing.T) {
 		withSSH := false
 
 		svc.gitClient.EXPECT().Clone(local, remote, shallow).Return(nil)
-		assert.NoError(t, command.Get(svc.env, svc.gitClient, update, withSSH, shallow, mustParseRepo(t, svc.env, "kyoh86/gogh")))
+		assert.NoError(t, command.Get(svc.ev, svc.gitClient, update, withSSH, shallow, mustParseRepo(t, svc.ev, "kyoh86/gogh")))
 	})
 
 	t.Run("List", func(t *testing.T) {
@@ -85,12 +85,12 @@ func TestEmpty(t *testing.T) {
 
 		proj1 := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(proj1, 0755))
-		assert.NoError(t, command.List(svc.env, gogh.ShortFormatter(), false, ""))
+		assert.NoError(t, command.List(svc.ev, gogh.ShortFormatter(), false, ""))
 	})
 	t.Run("Roots", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
 
-		assert.NoError(t, command.Roots(svc.env, false))
+		assert.NoError(t, command.Roots(svc.ev, false))
 	})
 }

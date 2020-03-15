@@ -21,7 +21,7 @@ func TestWhere(t *testing.T) {
 	proj3 := filepath.Join(svc.root2, "github.com", "kyoh85", "test", ".git")
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
-	assert.EqualError(t, command.Where(svc.env, false, "gogh"), "try more precise name")
-	assert.EqualError(t, command.Where(svc.env, false, "noone"), "project not found")
-	assert.NoError(t, command.Where(svc.env, true, "gogh"))
+	assert.EqualError(t, command.Where(svc.ev, false, "gogh"), "try more precise name")
+	assert.EqualError(t, command.Where(svc.ev, false, "noone"), "project not found")
+	assert.NoError(t, command.Where(svc.ev, true, "gogh"))
 }

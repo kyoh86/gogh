@@ -9,7 +9,7 @@ import (
 )
 
 // Find a local project
-func Find(env gogh.Env, primary bool, repo *gogh.Repo) error {
+func Find(ev gogh.Env, primary bool, repo *gogh.Repo) error {
 	log.Printf("info: Finding a repository %s", repo)
 
 	finder := gogh.FindProject
@@ -19,7 +19,7 @@ func Find(env gogh.Env, primary bool, repo *gogh.Repo) error {
 
 	formatter := gogh.FullPathFormatter()
 
-	project, err := finder(env, repo)
+	project, err := finder(ev, repo)
 	if err != nil {
 		return err
 	}

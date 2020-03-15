@@ -8,13 +8,13 @@ import (
 )
 
 // Roots prints a gogh.root
-func Roots(env gogh.Env, all bool) error {
+func Roots(ev gogh.Env, all bool) error {
 	if !all {
-		fmt.Println(gogh.PrimaryRoot(env))
+		fmt.Println(gogh.PrimaryRoot(ev))
 		return nil
 	}
 	log.Println("info: Finding all roots...")
-	for _, root := range env.Roots() {
+	for _, root := range ev.Roots() {
 		fmt.Println(root)
 	}
 	return nil

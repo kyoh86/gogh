@@ -21,14 +21,14 @@ func TestFind(t *testing.T) {
 	proj3 := filepath.Join(svc.root2, "github.com", "kyoh85", "test", ".git")
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
-	svc.env.EXPECT().GithubUser().Return("kyoh86")
-	assert.EqualError(t, command.Find(svc.env, true, mustParseRepo(t, svc.env, "gogh")), "project not found")
+	svc.ev.EXPECT().GithubUser().Return("kyoh86")
+	assert.EqualError(t, command.Find(svc.ev, true, mustParseRepo(t, svc.ev, "gogh")), "project not found")
 
-	svc.env.EXPECT().GithubUser().Return("kyoh86")
-	assert.NoError(t, command.Find(svc.env, false, mustParseRepo(t, svc.env, "gogh")))
+	svc.ev.EXPECT().GithubUser().Return("kyoh86")
+	assert.NoError(t, command.Find(svc.ev, false, mustParseRepo(t, svc.ev, "gogh")))
 
-	svc.env.EXPECT().GithubUser().Return("kyoh86")
-	assert.NoError(t, command.Find(svc.env, false, mustParseRepo(t, svc.env, "kyoh85/test")))
+	svc.ev.EXPECT().GithubUser().Return("kyoh86")
+	assert.NoError(t, command.Find(svc.ev, false, mustParseRepo(t, svc.ev, "kyoh85/test")))
 
-	assert.NoError(t, command.Find(svc.env, true, mustParseRepo(t, svc.env, "vim-gogh")))
+	assert.NoError(t, command.Find(svc.ev, true, mustParseRepo(t, svc.ev, "vim-gogh")))
 }

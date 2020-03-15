@@ -8,8 +8,8 @@ import (
 )
 
 // Repos will show a list of repositories for a user.
-func Repos(ctx context.Context, env gogh.Env, hubClient HubClient, user string, own, collaborate, member bool, visibility, sort, direction string) error {
-	repos, err := hubClient.Repos(ctx, env, user, own, collaborate, member, visibility, sort, direction)
+func Repos(ctx context.Context, ev gogh.Env, hubClient HubClient, user string, own, collaborate, member bool, visibility, sort, direction string) error {
+	repos, err := hubClient.Repos(ctx, ev, user, own, collaborate, member, visibility, sort, direction)
 	if err != nil {
 		return err
 	}

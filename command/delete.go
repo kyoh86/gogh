@@ -9,14 +9,14 @@ import (
 )
 
 // Delete local projects
-func Delete(env gogh.Env, primary bool, query string) error {
+func Delete(ev gogh.Env, primary bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
 	}
 
 	var projects []*gogh.Project
-	if err := gogh.Query(env, query, walk, func(p *gogh.Project) error {
+	if err := gogh.Query(ev, query, walk, func(p *gogh.Project) error {
 		projects = append(projects, p)
 		return nil
 	}); err != nil {

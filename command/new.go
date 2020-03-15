@@ -12,7 +12,7 @@ import (
 // New creates a local project and a remote repository.
 func New(
 	ctx context.Context,
-	env gogh.Env,
+	ev gogh.Env,
 	gitClient GitClient,
 	hubClient HubClient,
 	private bool,
@@ -25,7 +25,7 @@ func New(
 	repo *gogh.Repo,
 ) error {
 	log.Printf("info: Creating new project and a remote repository %s", repo)
-	project, err := gogh.FindOrNewProject(env, repo)
+	project, err := gogh.FindOrNewProject(ev, repo)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func New(
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	newRepo, err := hubClient.Create(ctx, env, repo, description, homepage, private)
+	newRepo, err := hubClient.Create(ctx, ev, repo, description, homepage, private)
 	if err != nil {
 		return err
 	}

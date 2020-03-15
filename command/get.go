@@ -8,10 +8,10 @@ import (
 )
 
 // GetAll clonse or updates remote repositories.
-func GetAll(env gogh.Env, gitClient GitClient, update, withSSH, shallow bool, repos []gogh.Repo) error {
+func GetAll(ev gogh.Env, gitClient GitClient, update, withSSH, shallow bool, repos []gogh.Repo) error {
 	for _, repo := range repos {
 		repo := repo
-		if err := Get(env, gitClient, update, withSSH, shallow, &repo); err != nil {
+		if err := Get(ev, gitClient, update, withSSH, shallow, &repo); err != nil {
 			return err
 		}
 	}
@@ -21,9 +21,9 @@ func GetAll(env gogh.Env, gitClient GitClient, update, withSSH, shallow bool, re
 // Get clones or updates a remote repository.
 // If update is true, updates the locally cloned repository. Otherwise does nothing.
 // If shallow is true, does shallow cloning. (no effect if already cloned or the VCS is Mercurial and git-svn)
-func Get(env gogh.Env, gitClient GitClient, update, withSSH, shallow bool, repo *gogh.Repo) error {
+func Get(ev gogh.Env, gitClient GitClient, update, withSSH, shallow bool, repo *gogh.Repo) error {
 	repoURL := repo.URL(withSSH)
-	project, err := gogh.FindOrNewProject(env, repo)
+	project, err := gogh.FindOrNewProject(ev, repo)
 	if err != nil {
 		return err
 	}
