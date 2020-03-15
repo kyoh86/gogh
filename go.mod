@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
 	github.com/golang/mock v1.4.1
-	github.com/golang/protobuf v1.3.4 // indirect
+	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/google/go-github/v29 v29.0.3
 	github.com/kyoh86/appenv v0.0.4
 	github.com/kyoh86/ask v0.0.7
@@ -18,7 +18,7 @@ require (
 	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.5.1
-	github.com/thoas/go-funk v0.5.0
+	github.com/thoas/go-funk v0.6.0
 	github.com/zalando/go-keyring v0.0.0-20200121091418-667557018717
 	go.uber.org/multierr v1.5.0
 	golang.org/x/crypto v0.0.0-20200311171314-f7b00557c8c4 // indirect
@@ -29,7 +29,7 @@ require (
 	golang.org/x/tools v0.0.0-20200304143113-d6a4d55695f2 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.2.8
-	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 )
 

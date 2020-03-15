@@ -8,8 +8,9 @@ import (
 )
 
 type YAML struct {
-	Roots      *Roots      `yaml:"roots,omitempty"`
 	GithubHost *GithubHost `yaml:"githubHost,omitempty"`
+	GithubUser *GithubUser `yaml:"githubUser,omitempty"`
+	Roots      *Roots      `yaml:"roots,omitempty"`
 }
 
 func saveYAML(w io.Writer, yml *YAML) error {

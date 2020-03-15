@@ -4,12 +4,8 @@ package env
 
 import "io"
 
-func GetAccess(yamlReader io.Reader, keyringService string, envarPrefix string) (access Access, err error) {
+func GetAccess(yamlReader io.Reader, envarPrefix string) (access Access, err error) {
 	yml, err := loadYAML(yamlReader)
-	if err != nil {
-		return access, err
-	}
-	keyring, err := loadKeyring(keyringService)
 	if err != nil {
 		return access, err
 	}
@@ -17,14 +13,6 @@ func GetAccess(yamlReader io.Reader, keyringService string, envarPrefix string) 
 	if err != nil {
 		return access, err
 	}
-	access.roots = new(Roots).Default().([]string)
-	if yml.Roots != nil {
-		access.roots = yml.Roots.Value().([]string)
-	}
-	if envar.Roots != nil {
-		access.roots = envar.Roots.Value().([]string)
-	}
-
 	access.githubHost = new(GithubHost).Default().(string)
 	if yml.GithubHost != nil {
 		access.githubHost = yml.GithubHost.Value().(string)
@@ -33,31 +21,39 @@ func GetAccess(yamlReader io.Reader, keyringService string, envarPrefix string) 
 		access.githubHost = envar.GithubHost.Value().(string)
 	}
 
-	access.githubToken = new(GithubToken).Default().(string)
-	if keyring.GithubToken != nil {
-		access.githubToken = keyring.GithubToken.Value().(string)
+	access.githubUser = new(GithubUser).Default().(string)
+	if yml.GithubUser != nil {
+		access.githubUser = yml.GithubUser.Value().(string)
 	}
-	if envar.GithubToken != nil {
-		access.githubToken = envar.GithubToken.Value().(string)
+	if envar.GithubUser != nil {
+		access.githubUser = envar.GithubUser.Value().(string)
+	}
+
+	access.roots = new(Roots).Default().([]string)
+	if yml.Roots != nil {
+		access.roots = yml.Roots.Value().([]string)
+	}
+	if envar.Roots != nil {
+		access.roots = envar.Roots.Value().([]string)
 	}
 
 	return
 }
 
 type Access struct {
-	roots       []string
-	githubHost  string
-	githubToken string
-}
-
-func (a *Access) Roots() []string {
-	return a.roots
+	githubHost string
+	githubUser string
+	roots      []string
 }
 
 func (a *Access) GithubHost() string {
 	return a.githubHost
 }
 
-func (a *Access) GithubToken() string {
-	return a.githubToken
+func (a *Access) GithubUser() string {
+	return a.githubUser
+}
+
+func (a *Access) Roots() []string {
+	return a.roots
 }

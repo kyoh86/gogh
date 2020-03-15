@@ -15,15 +15,16 @@ func ExampleConfigSet() {
 	source := strings.NewReader(`
 roots:
   - /foo
+githubUser: userx1
 githubHost: hostx1`)
-	config, err := env.GetConfig(source, "")
+	config, err := env.GetConfig(source)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if err := command.ConfigSet(&config, "github.host", "hostx2"); err != nil {
 		log.Fatal(err)
 	}
-	if err := config.Save(os.Stdout, env.DiscardKeyringService); err != nil {
+	if err := config.Save(os.Stdout); err != nil {
 		log.Fatal(err)
 	}
 	if err := command.ConfigGetAll(&config); err != nil {
@@ -34,19 +35,22 @@ githubHost: hostx1`)
 	// roots:
 	//   - /foo
 	// githubHost: hostx2
+	// githubUser: userx1
 	// roots: /foo
 	// github.host: hostx2
-	// github.token:
+	// github.user: userx1
+	// github.token: *****
 }
 
 func TestConfigSet(t *testing.T) {
 	source := strings.NewReader(`
 roots:
   - /foo
+githubUser: userx1
 githubHost: hostx1`)
-	config, err := env.GetConfig(source, "")
+	config, err := env.GetConfig(source)
 	assert.NoError(t, err)
 	assert.NoError(t, command.ConfigSet(&config, "github.host", "hostx2"))
-	assert.NoError(t, config.Save(os.Stdout, env.DiscardKeyringService))
+	assert.NoError(t, config.Save(os.Stdout))
 	assert.NoError(t, command.ConfigGetAll(&config))
 }

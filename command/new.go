@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"log"
 	"net/url"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 // New creates a local project and a remote repository.
 func New(
+	ctx context.Context,
 	env gogh.Env,
 	gitClient GitClient,
 	hubClient HubClient,
@@ -52,7 +54,7 @@ func New(
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	newRepo, err := hubClient.Create(env, repo, description, homepage, private)
+	newRepo, err := hubClient.Create(ctx, env, repo, description, homepage, private)
 	if err != nil {
 		return err
 	}

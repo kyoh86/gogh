@@ -9,25 +9,13 @@ import (
 )
 
 type Envar struct {
-	Roots       *Roots
-	GithubHost  *GithubHost
-	GithubToken *GithubToken
+	GithubHost *GithubHost
+	GithubUser *GithubUser
+	Roots      *Roots
 }
 
 func getEnvar(prefix string) (envar Envar, err error) {
 	prefix = gostrcase.UpperSnakeCase(prefix)
-	{
-		v := os.Getenv(prefix + "ROOTS")
-		if v == "" {
-			log.Printf("info: there's no envar %sROOTS (%v)", prefix, err)
-		} else {
-			var value Roots
-			if err = value.UnmarshalText([]byte(v)); err != nil {
-				return envar, err
-			}
-			envar.Roots = &value
-		}
-	}
 	{
 		v := os.Getenv(prefix + "GITHUB_HOST")
 		if v == "" {
@@ -41,15 +29,27 @@ func getEnvar(prefix string) (envar Envar, err error) {
 		}
 	}
 	{
-		v := os.Getenv(prefix + "GITHUB_TOKEN")
+		v := os.Getenv(prefix + "GITHUB_USER")
 		if v == "" {
-			log.Printf("info: there's no envar %sGITHUB_TOKEN (%v)", prefix, err)
+			log.Printf("info: there's no envar %sGITHUB_USER (%v)", prefix, err)
 		} else {
-			var value GithubToken
+			var value GithubUser
 			if err = value.UnmarshalText([]byte(v)); err != nil {
 				return envar, err
 			}
-			envar.GithubToken = &value
+			envar.GithubUser = &value
+		}
+	}
+	{
+		v := os.Getenv(prefix + "ROOTS")
+		if v == "" {
+			log.Printf("info: there's no envar %sROOTS (%v)", prefix, err)
+		} else {
+			var value Roots
+			if err = value.UnmarshalText([]byte(v)); err != nil {
+				return envar, err
+			}
+			envar.Roots = &value
 		}
 	}
 	return

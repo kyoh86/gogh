@@ -8,6 +8,6 @@ import (
 // Env is an interface generated for "github.com/kyoh86/gogh/env.Access".
 type Env interface {
 	GithubHost() string
-	GithubToken() string
+	GithubUser() string
 	Roots() []string
 }

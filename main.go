@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/url"
@@ -182,7 +183,8 @@ func fork(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
 
 	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
-		hubClient, err := hub.New(env)
+		ctx := context.Background()
+		hubClient, err := hub.New(ctx, env)
 		if err != nil {
 			return err
 		}
@@ -190,7 +192,7 @@ func fork(app *kingpin.Application) (string, func() error) {
 		if err != nil {
 			return err
 		}
-		return command.Fork(env, new(git.Client), hubClient, update, withSSH, shallow, organization, repo)
+		return command.Fork(ctx, env, new(git.Client), hubClient, update, withSSH, shallow, organization, repo)
 	})
 }
 
@@ -216,7 +218,8 @@ func create(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
 
 	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
-		hubClient, err := hub.New(env)
+		ctx := context.Background()
+		hubClient, err := hub.New(ctx, env)
 		if err != nil {
 			return err
 		}
@@ -224,7 +227,7 @@ func create(app *kingpin.Application) (string, func() error) {
 		if err != nil {
 			return err
 		}
-		return command.New(env, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, repo)
+		return command.New(ctx, env, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, repo)
 	})
 }
 
@@ -352,10 +355,11 @@ func repos(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
 
 	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
-		hubClient, err := hub.New(env)
+		ctx := context.Background()
+		hubClient, err := hub.New(ctx, env)
 		if err != nil {
 			return err
 		}
-		return command.Repos(env, hubClient, user, own, collaborate, member, visibility, sort, direction)
+		return command.Repos(ctx, env, hubClient, user, own, collaborate, member, visibility, sort, direction)
 	})
 }

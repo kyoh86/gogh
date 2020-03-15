@@ -12,7 +12,7 @@ import (
 
 func ExampleConfigGet() {
 	yml := strings.NewReader(`{"roots": ["/foo", "/bar"]}`)
-	config, err := env.GetConfig(yml, "")
+	config, err := env.GetConfig(yml)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func ExampleConfigGet() {
 }
 
 func TestConfigGet(t *testing.T) {
-	config, err := env.GetConfig(env.EmptyYAMLReader, env.KeyringService)
+	config, err := env.GetConfig(env.EmptyYAMLReader)
 	if err != nil {
 		log.Fatal(err)
 	}

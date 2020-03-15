@@ -9,81 +9,39 @@ import (
 )
 
 type Config struct {
-	yml     YAML
-	keyring Keyring
+	yml YAML
 }
 
-func GetConfig(yamlReader io.Reader, keyringService string) (config Config, err error) {
+func GetConfig(yamlReader io.Reader) (config Config, err error) {
 	yml, err := loadYAML(yamlReader)
 	if err != nil {
 		return config, err
 	}
-	keyring, err := loadKeyring(keyringService)
-	if err != nil {
-		return config, err
-	}
 	config.yml = yml
-	config.keyring = keyring
 	return
 }
 
-func (c *Config) Save(yamlWriter io.Writer, keyringService string) error {
+func (c *Config) Save(yamlWriter io.Writer) error {
 	if err := saveYAML(yamlWriter, &c.yml); err != nil {
-		return err
-	}
-	if err := saveKeyring(keyringService, &c.keyring); err != nil {
 		return err
 	}
 	return nil
 }
 
 func PropertyNames() []string {
-	return []string{"roots", "github.host", "github.token"}
+	return []string{"github.host", "github.user", "roots"}
 }
 
 func (a *Config) Property(name string) (types.Config, error) {
 	switch name {
-	case "roots":
-		return &rootsConfig{parent: a}, nil
 	case "github.host":
 		return &githubHostConfig{parent: a}, nil
-	case "github.token":
-		return &githubTokenConfig{parent: a}, nil
+	case "github.user":
+		return &githubUserConfig{parent: a}, nil
+	case "roots":
+		return &rootsConfig{parent: a}, nil
 	}
 	return nil, fmt.Errorf("invalid property name %q", name)
-}
-
-type rootsConfig struct {
-	parent *Config
-}
-
-func (a *rootsConfig) Get() (string, error) {
-	{
-		p := a.parent.yml.Roots
-		if p != nil {
-			text, err := p.MarshalText()
-			return string(text), err
-		}
-	}
-	return "", nil
-}
-
-func (a *rootsConfig) Set(value string) error {
-	{
-		p := a.parent.yml.Roots
-		if p == nil {
-			p = new(Roots)
-		}
-		if err := p.UnmarshalText([]byte(value)); err != nil {
-			return err
-		}
-		a.parent.yml.Roots = p
-	}
-	return nil
-}
-
-func (a *rootsConfig) Unset() {
-	a.parent.yml.Roots = nil
 }
 
 type githubHostConfig struct {
@@ -119,35 +77,68 @@ func (a *githubHostConfig) Unset() {
 	a.parent.yml.GithubHost = nil
 }
 
-type githubTokenConfig struct {
+type githubUserConfig struct {
 	parent *Config
 }
 
-func (a *githubTokenConfig) Get() (string, error) {
+func (a *githubUserConfig) Get() (string, error) {
 	{
-		p := a.parent.keyring.GithubToken
+		p := a.parent.yml.GithubUser
 		if p != nil {
 			text, err := p.MarshalText()
-			return p.Mask(string(text)), err
+			return string(text), err
 		}
 	}
 	return "", nil
 }
 
-func (a *githubTokenConfig) Set(value string) error {
+func (a *githubUserConfig) Set(value string) error {
 	{
-		p := a.parent.keyring.GithubToken
+		p := a.parent.yml.GithubUser
 		if p == nil {
-			p = new(GithubToken)
+			p = new(GithubUser)
 		}
 		if err := p.UnmarshalText([]byte(value)); err != nil {
 			return err
 		}
-		a.parent.keyring.GithubToken = p
+		a.parent.yml.GithubUser = p
 	}
 	return nil
 }
 
-func (a *githubTokenConfig) Unset() {
-	a.parent.keyring.GithubToken = nil
+func (a *githubUserConfig) Unset() {
+	a.parent.yml.GithubUser = nil
+}
+
+type rootsConfig struct {
+	parent *Config
+}
+
+func (a *rootsConfig) Get() (string, error) {
+	{
+		p := a.parent.yml.Roots
+		if p != nil {
+			text, err := p.MarshalText()
+			return string(text), err
+		}
+	}
+	return "", nil
+}
+
+func (a *rootsConfig) Set(value string) error {
+	{
+		p := a.parent.yml.Roots
+		if p == nil {
+			p = new(Roots)
+		}
+		if err := p.UnmarshalText([]byte(value)); err != nil {
+			return err
+		}
+		a.parent.yml.Roots = p
+	}
+	return nil
+}
+
+func (a *rootsConfig) Unset() {
+	a.parent.yml.Roots = nil
 }

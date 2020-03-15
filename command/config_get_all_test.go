@@ -15,8 +15,9 @@ func ExampleConfigGetAll() {
 roots:
   - /foo
   - /bar
-githubHost: hostx1`)
-	config, err := env.GetConfig(yml, "")
+githubHost: hostx1
+githubUser: userx1`)
+	config, err := env.GetConfig(yml)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,7 +28,8 @@ githubHost: hostx1`)
 	// Unordered output:
 	// roots: /foo:/bar
 	// github.host: hostx1
-	// github.token:
+	// github.user: userx1
+	// github.token: *****
 }
 
 func TestConfigGetAll(t *testing.T) {
@@ -36,7 +38,7 @@ roots:
   - /foo
   - /bar
 githubHost: hostx1`)
-	config, err := env.GetConfig(yml, "")
+	config, err := env.GetConfig(yml)
 	assert.NoError(t, err)
 	assert.NoError(t, command.ConfigGetAll(&config))
 }

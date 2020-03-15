@@ -25,6 +25,7 @@ func TestFindOrNewProject(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	env := NewMockEnv(ctrl)
+	env.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 	env.EXPECT().GithubHost().AnyTimes().Return("github.com")
 	env.EXPECT().Roots().AnyTimes().Return([]string{tmp1, tmp2})
 

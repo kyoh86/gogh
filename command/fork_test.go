@@ -1,6 +1,7 @@
 package command_test
 
 import (
+	"context"
 	"errors"
 	"net/url"
 	"os"
@@ -14,6 +15,7 @@ import (
 )
 
 func TestFork(t *testing.T) {
+	ctx := context.Background()
 	t.Run("CloneError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
@@ -32,7 +34,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().Clone(path, u, shallow).Return(cloneErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, "", repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, "", repo),
 			cloneErr.Error(),
 		)
 	})
@@ -54,7 +56,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().Update(path).Return(updateErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, "", repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, "", repo),
 			updateErr.Error(),
 		)
 	})
@@ -74,10 +76,10 @@ func TestFork(t *testing.T) {
 
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(nil, forkErr)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(nil, forkErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			forkErr.Error(),
 		)
 	})
@@ -99,11 +101,11 @@ func TestFork(t *testing.T) {
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(nil, getRemotesErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			getRemotesErr.Error(),
 		)
 	})
@@ -125,7 +127,7 @@ func TestFork(t *testing.T) {
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -135,7 +137,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().RemoveRemote(path, gomock.Any()).Return(removeRemoteErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			removeRemoteErr.Error(),
 		)
 	})
@@ -157,7 +159,7 @@ func TestFork(t *testing.T) {
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -171,7 +173,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().AddRemote(path, "kyoh86", u).Return(addRemoteErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			addRemoteErr.Error(),
 		)
 	})
@@ -193,7 +195,7 @@ func TestFork(t *testing.T) {
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -209,7 +211,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().AddRemote(path, "kyoh86-tryouts", u2).Return(addRemoteErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			addRemoteErr.Error(),
 		)
 	})
@@ -231,7 +233,7 @@ func TestFork(t *testing.T) {
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -248,7 +250,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().Fetch(path).Return(fetchErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			fetchErr.Error(),
 		)
 	})
@@ -269,7 +271,7 @@ func TestFork(t *testing.T) {
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Clone(path, u, shallow).Return(nil)
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -287,7 +289,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().GetCurrentBranch(path).Return("branch-test", getBranchErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			getBranchErr.Error(),
 		)
 	})
@@ -308,7 +310,7 @@ func TestFork(t *testing.T) {
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Clone(path, u, shallow).Return(nil)
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -327,7 +329,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().SetUpstreamTo(path, "kyoh86-tryouts/branch-test").Return(setUpstreamErr)
 		assert.EqualError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 			setUpstreamErr.Error(),
 		)
 	})
@@ -347,7 +349,7 @@ func TestFork(t *testing.T) {
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Clone(path, u, shallow).Return(nil)
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -366,7 +368,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().SetUpstreamTo(path, "kyoh86-tryouts/branch-test").Return(nil)
 		assert.NoError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 		)
 	})
 
@@ -384,7 +386,7 @@ func TestFork(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
@@ -403,7 +405,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().SetUpstreamTo(path, "kyoh86-tryouts/branch-test").Return(nil)
 		assert.NoError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 		)
 	})
 
@@ -422,7 +424,7 @@ func TestFork(t *testing.T) {
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
 		newRepo := mustParseRepo(t, svc.env, "kyoh86-tryouts/gogh")
-		svc.hubClient.EXPECT().Fork(svc.env, repo, organization).Return(newRepo, nil)
+		svc.hubClient.EXPECT().Fork(ctx, svc.env, repo, organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin": nil,
 			"dummy":  nil,
@@ -437,7 +439,7 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().SetUpstreamTo(path, "kyoh86-tryouts/branch-test").Return(nil)
 		assert.NoError(
 			t,
-			command.Fork(svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
+			command.Fork(ctx, svc.env, svc.gitClient, svc.hubClient, update, withSSH, shallow, organization, repo),
 		)
 	})
 }

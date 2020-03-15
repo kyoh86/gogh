@@ -11,7 +11,7 @@ import (
 func ExampleRoot() {
 	yml := strings.NewReader("roots:\n  - /foo\n  - /bar")
 
-	config, err := env.GetAccess(yml, env.DiscardKeyringService, "")
+	config, err := env.GetAccess(yml, env.EnvarPrefix)
 	if err != nil {
 		panic(err)
 	}

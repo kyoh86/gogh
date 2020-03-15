@@ -19,7 +19,7 @@ func ExampleList_url() {
 	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "owner", "empty"), 0755)
 	yml := strings.NewReader("githubHost: example.com\nroots:\n  - " + tmp)
 
-	config, err := env.GetAccess(yml, env.DiscardKeyringService, "")
+	config, err := env.GetAccess(yml, env.EnvarPrefix)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func ExampleList_custom() {
 	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "owner", "empty"), 0755)
 	yml := strings.NewReader("githubHost: example.com\nroots:\n  - " + tmp)
 
-	config, err := env.GetAccess(yml, env.DiscardKeyringService, "")
+	config, err := env.GetAccess(yml, env.EnvarPrefix)
 	if err != nil {
 		panic(err)
 	}

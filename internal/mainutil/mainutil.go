@@ -44,7 +44,8 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 			return err
 		}
 		defer teardown()
-		access, err := env.GetAccess(reader, env.KeyringService, env.EnvarPrefix)
+
+		access, err := env.GetAccess(reader, env.EnvarPrefix)
 		if err != nil {
 			return err
 		}
@@ -62,7 +63,8 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) 
 			return err
 		}
 		defer teardown()
-		config, err := env.GetConfig(reader, env.KeyringService)
+
+		config, err := env.GetConfig(reader)
 		if err != nil {
 			return err
 		}
@@ -79,6 +81,6 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) 
 			return err
 		}
 		defer file.Close()
-		return config.Save(file, env.KeyringService)
+		return config.Save(file)
 	}
 }

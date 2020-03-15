@@ -60,6 +60,7 @@ func TestRepoParse(t *testing.T) {
 	})
 
 	t.Run("name only repo", func(t *testing.T) {
+		env.EXPECT().GithubUser().Return("kyoh86")
 		repo, err := gogh.ParseRepo(env, "gogh")
 		require.NoError(t, err)
 		assert.Equal(t, "kyoh86/gogh", repo.FullName())

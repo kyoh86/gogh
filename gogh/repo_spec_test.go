@@ -111,6 +111,7 @@ func TestRepoSpecs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	env := NewMockEnv(ctrl)
+	env.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 	env.EXPECT().GithubHost().AnyTimes().Return("github.com")
 
 	var specs gogh.RepoSpecs

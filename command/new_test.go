@@ -1,6 +1,7 @@
 package command_test
 
 import (
+	"context"
 	"errors"
 	"net/url"
 	"os"
@@ -16,6 +17,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	ctx := context.Background()
 	t.Run("GetRemoteError", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
@@ -36,6 +38,7 @@ func TestNew(t *testing.T) {
 		getRemotesErr := errors.New("get remote error")
 		svc.gitClient.EXPECT().GetRemotes(local).Return(nil, getRemotesErr)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -70,6 +73,7 @@ func TestNew(t *testing.T) {
 		initErr := errors.New("init error")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(initErr)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -103,8 +107,9 @@ func TestNew(t *testing.T) {
 		repo := mustParseRepo(t, svc.env, "kyoh86/gogh")
 		createErr := errors.New("remote error")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, createErr)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(nil, createErr)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -139,9 +144,10 @@ func TestNew(t *testing.T) {
 		addRemoteErr := errors.New("add remote error")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(addRemoteErr)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -175,9 +181,10 @@ func TestNew(t *testing.T) {
 		repo := mustParseRepo(t, svc.env, "kyoh86/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(nil)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -214,6 +221,7 @@ func TestNew(t *testing.T) {
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Do(gitClient.Init).Return(localErr)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -230,9 +238,10 @@ func TestNew(t *testing.T) {
 
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -268,8 +277,9 @@ func TestNew(t *testing.T) {
 		createErr := errors.New("create error")
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(nil, createErr)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(nil, createErr)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -286,9 +296,10 @@ func TestNew(t *testing.T) {
 
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -324,7 +335,7 @@ func TestNew(t *testing.T) {
 		addRemoteErr := errors.New("add remote error")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Do(func(
 			local string,
 			name string,
@@ -333,6 +344,7 @@ func TestNew(t *testing.T) {
 			require.NoError(t, gitClient.AddRemote(local, name, url))
 		}).Return(addRemoteErr)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -350,6 +362,7 @@ func TestNew(t *testing.T) {
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -388,6 +401,7 @@ func TestNew(t *testing.T) {
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -434,7 +448,7 @@ func TestNew(t *testing.T) {
 		) {
 			require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared))
 		}).Return(nil)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Do(func(
 			local string,
 			name string,
@@ -443,6 +457,7 @@ func TestNew(t *testing.T) {
 			require.NoError(t, gitClient.AddRemote(local, name, url))
 		}).Return(nil)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -477,9 +492,10 @@ func TestNew(t *testing.T) {
 		repo := mustParseRepo(t, svc.env, "kyoh86/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -496,6 +512,7 @@ func TestNew(t *testing.T) {
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
 		assert.NoError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,
@@ -533,6 +550,7 @@ func TestNew(t *testing.T) {
 
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		assert.EqualError(t, command.New(
+			ctx,
 			svc.env,
 			svc.gitClient,
 			svc.hubClient,

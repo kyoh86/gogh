@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -81,6 +82,8 @@ func (r RepoSpec) String() string {
 	return r.raw
 }
 
+var _ flag.Value = (*RepoSpec)(nil)
+
 func (r *RepoSpec) Validate(env Env) (*Repo, error) {
 	repo := r.repo // copy object
 	if repo.host == "" {
@@ -89,7 +92,7 @@ func (r *RepoSpec) Validate(env Env) (*Repo, error) {
 		return nil, fmt.Errorf("not supported host: %q", repo.host)
 	}
 	if repo.owner == "" {
-		repo.owner = "kyoh86" // TODO: cache.GithubUser() or the get 'me' with Github token
+		repo.owner = env.GithubUser()
 	}
 	return &repo, nil
 }

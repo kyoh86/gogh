@@ -15,17 +15,6 @@ const (
 	EnvarPrefix    = "GOGH_"
 )
 
-type GithubToken struct {
-	types.StringPropertyBase
-}
-
-func (p *GithubToken) Mask(value string) string {
-	if value == "" {
-		return ""
-	}
-	return "*****"
-}
-
 type GithubHost struct {
 	types.StringPropertyBase
 }
