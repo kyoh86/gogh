@@ -62,9 +62,9 @@ func ValidateRoots(roots []string) error {
 	return nil
 }
 
-func ValidateContext(env Env) error {
+func ValidateContext(ev Env) error {
 	var validationError error
-	if err := ValidateRoots(env.Roots()); err != nil {
+	if err := ValidateRoots(ev.Roots()); err != nil {
 		validationError = multierr.Append(validationError, fmt.Errorf("invalid roots: %w", err))
 	}
 	return validationError

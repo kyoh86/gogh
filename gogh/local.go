@@ -27,20 +27,20 @@ var (
 )
 
 // FindProject will find a project (local repository) that matches exactly.
-func FindProject(env Env, repo *Repo) (*Project, error) {
-	return findProject(env, repo, Walk)
+func FindProject(ev Env, repo *Repo) (*Project, error) {
+	return findProject(ev, repo, Walk)
 }
 
 // FindProjectInPrimary will find a project (local repository) that matches exactly.
-func FindProjectInPrimary(env Env, repo *Repo) (*Project, error) {
-	return findProject(env, repo, WalkInPrimary)
+func FindProjectInPrimary(ev Env, repo *Repo) (*Project, error) {
+	return findProject(ev, repo, WalkInPrimary)
 }
 
-func findProject(env Env, repo *Repo, walker Walker) (*Project, error) {
+func findProject(ev Env, repo *Repo, walker Walker) (*Project, error) {
 	var project *Project
 
 	// Find existing repository first
-	if err := walker(env, func(p *Project) error {
+	if err := walker(ev, func(p *Project) error {
 		if repo.Match(p) {
 			project = p
 			return filepath.SkipDir
@@ -58,20 +58,20 @@ func findProject(env Env, repo *Repo, walker Walker) (*Project, error) {
 }
 
 // FindOrNewProject will find a project (local repository) that matches exactly or create new one.
-func FindOrNewProject(env Env, repo *Repo) (*Project, error) {
-	return findOrNewProject(env, repo, Walk)
+func FindOrNewProject(ev Env, repo *Repo) (*Project, error) {
+	return findOrNewProject(ev, repo, Walk)
 }
 
 // FindOrNewProjectInPrimary will find a project (local repository) that matches exactly or create new one.
-func FindOrNewProjectInPrimary(env Env, repo *Repo) (*Project, error) {
-	return findOrNewProject(env, repo, WalkInPrimary)
+func FindOrNewProjectInPrimary(ev Env, repo *Repo) (*Project, error) {
+	return findOrNewProject(ev, repo, WalkInPrimary)
 }
 
-func findOrNewProject(env Env, repo *Repo, walker Walker) (*Project, error) {
-	switch p, err := findProject(env, repo, walker); err {
+func findOrNewProject(ev Env, repo *Repo, walker Walker) (*Project, error) {
+	switch p, err := findProject(ev, repo, walker); err {
 	case ErrProjectNotFound:
 		// No repository found, returning new one
-		return NewProject(env, repo)
+		return NewProject(ev, repo)
 	case nil:
 		return p, nil
 	default:
@@ -80,9 +80,9 @@ func findOrNewProject(env Env, repo *Repo, walker Walker) (*Project, error) {
 }
 
 // NewProject creates a project (local repository)
-func NewProject(env Env, repo *Repo) (*Project, error) {
+func NewProject(ev Env, repo *Repo) (*Project, error) {
 	relPath := repo.RelPath()
-	fullPath := filepath.Join(PrimaryRoot(env), relPath)
+	fullPath := filepath.Join(PrimaryRoot(ev), relPath)
 	return &Project{
 		FullPath:  fullPath,
 		RelPath:   relPath,
@@ -92,8 +92,8 @@ func NewProject(env Env, repo *Repo) (*Project, error) {
 }
 
 // FindProjectPath willl get a project (local repository) path from remote repository URL
-func FindProjectPath(env Env, repo *Repo) (string, error) {
-	project, err := FindProject(env, repo)
+func FindProjectPath(ev Env, repo *Repo) (string, error) {
+	project, err := FindProject(ev, repo)
 	if err != nil {
 		return "", err
 	}
@@ -113,8 +113,8 @@ func (p *Project) Subpaths() []string {
 }
 
 // IsInPrimaryRoot check which the repository is in primary root directory for gogh
-func (p *Project) IsInPrimaryRoot(env Env) bool {
-	return strings.HasPrefix(p.FullPath, PrimaryRoot(env))
+func (p *Project) IsInPrimaryRoot(ev Env) bool {
+	return strings.HasPrefix(p.FullPath, PrimaryRoot(ev))
 }
 
 func isVcsDir(path string) bool {
@@ -129,7 +129,7 @@ type WalkFunc func(*Project) error
 type Walker func(Env, WalkFunc) error
 
 // walkInPath thorugh projects (local repositories) in a path
-func walkInPath(env Env, root string, callback WalkFunc) error {
+func walkInPath(ev Env, root string, callback WalkFunc) error {
 	stat, err := os.Stat(root)
 	switch {
 	case err == nil:
@@ -149,7 +149,7 @@ func walkInPath(env Env, root string, callback WalkFunc) error {
 		if !isVcsDir(path) {
 			return nil
 		}
-		p, err := ParseProject(env, root, path)
+		p, err := ParseProject(ev, root, path)
 		if err != nil {
 			return nil
 		}
@@ -160,7 +160,7 @@ func walkInPath(env Env, root string, callback WalkFunc) error {
 	})
 }
 
-func ParseProject(env Env, root string, fullPath string) (*Project, error) {
+func ParseProject(ev Env, root string, fullPath string) (*Project, error) {
 	rel, err := filepath.Rel(root, fullPath)
 	if err != nil {
 		return nil, err
@@ -169,7 +169,7 @@ func ParseProject(env Env, root string, fullPath string) (*Project, error) {
 	if len(pathParts) != 3 {
 		return nil, errors.New("not supported project path")
 	}
-	if env.GithubHost() != pathParts[0] {
+	if ev.GithubHost() != pathParts[0] {
 		return nil, fmt.Errorf("not supported project host %q", pathParts[0])
 	}
 	if err := ValidateOwner(pathParts[1]); err != nil {
@@ -187,14 +187,14 @@ func ParseProject(env Env, root string, fullPath string) (*Project, error) {
 }
 
 // WalkInPrimary thorugh projects (local repositories) in the first gogh.root directory
-func WalkInPrimary(env Env, callback WalkFunc) error {
-	return walkInPath(env, PrimaryRoot(env), callback)
+func WalkInPrimary(ev Env, callback WalkFunc) error {
+	return walkInPath(ev, PrimaryRoot(ev), callback)
 }
 
 // Walk thorugh projects (local repositories) in gogh.root directories
-func Walk(env Env, callback WalkFunc) error {
-	for _, root := range env.Roots() {
-		if err := walkInPath(env, root, callback); err != nil {
+func Walk(ev Env, callback WalkFunc) error {
+	for _, root := range ev.Roots() {
+		if err := walkInPath(ev, root, callback); err != nil {
 			return err
 		}
 	}
@@ -202,8 +202,8 @@ func Walk(env Env, callback WalkFunc) error {
 }
 
 // Query searches projects (local repositories) with specified walker
-func Query(env Env, query string, walk Walker, callback WalkFunc) error {
-	return walk(env, func(p *Project) error {
+func Query(ev Env, query string, walk Walker, callback WalkFunc) error {
+	return walk(ev, func(p *Project) error {
 		if query != "" && query != p.FullPath && !strings.Contains(p.RelPath, query) {
 			return nil
 		}

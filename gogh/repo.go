@@ -18,15 +18,6 @@ type Repo struct {
 	fragment   string // fragment for references, without '#'
 }
 
-// ParseRepo parses a repo-name for a repository in the GitHub
-func ParseRepo(env Env, rawRepo string) (*Repo, error) {
-	spec := new(RepoSpec)
-	if err := spec.Set(rawRepo); err != nil {
-		return nil, err
-	}
-	return spec.Validate(env)
-}
-
 // Owner returns a user name of an owner of the repository
 func (r *Repo) Owner() string {
 	return r.owner

@@ -84,15 +84,15 @@ func (r RepoSpec) String() string {
 
 var _ flag.Value = (*RepoSpec)(nil)
 
-func (r *RepoSpec) Validate(env Env) (*Repo, error) {
+func (r *RepoSpec) Validate(ev Env) (*Repo, error) {
 	repo := r.repo // copy object
 	if repo.host == "" {
-		repo.host = env.GithubHost()
-	} else if repo.host != env.GithubHost() {
+		repo.host = ev.GithubHost()
+	} else if repo.host != ev.GithubHost() {
 		return nil, fmt.Errorf("not supported host: %q", repo.host)
 	}
 	if repo.owner == "" {
-		repo.owner = env.GithubUser()
+		repo.owner = ev.GithubUser()
 	}
 	return &repo, nil
 }
@@ -124,14 +124,23 @@ func (specs RepoSpecs) String() string {
 func (specs RepoSpecs) IsCumulative() bool { return true }
 
 // Repos will get repositories with GitHub host and user
-func (specs RepoSpecs) Validate(env Env) ([]Repo, error) {
+func (specs RepoSpecs) Validate(ev Env) ([]Repo, error) {
 	repos := make([]Repo, 0, len(specs))
 	for _, spec := range specs {
-		repo, err := spec.Validate(env)
+		repo, err := spec.Validate(ev)
 		if err != nil {
 			return nil, err
 		}
 		repos = append(repos, *repo)
 	}
 	return repos, nil
+}
+
+// ParseRepo parses a repo-name for a repository in the GitHub
+func ParseRepo(ev Env, rawRepo string) (*Repo, error) {
+	spec := new(RepoSpec)
+	if err := spec.Set(rawRepo); err != nil {
+		return nil, err
+	}
+	return spec.Validate(ev)
 }

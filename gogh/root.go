@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-func PrimaryRoot(env Env) string {
-	return expandPath(env.Roots()[0])
+func PrimaryRoot(ev Env) string {
+	return expandPath(ev.Roots()[0])
 }
 
 func expandPath(path string) string {

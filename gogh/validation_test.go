@@ -40,17 +40,17 @@ func TestValidateContext(t *testing.T) {
 	t.Run("invalid root", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		env := NewMockEnv(ctrl)
-		env.EXPECT().Roots().AnyTimes().Return([]string{"/\x00"})
+		ev := NewMockEnv(ctrl)
+		ev.EXPECT().Roots().AnyTimes().Return([]string{"/\x00"})
 
-		assert.Error(t, gogh.ValidateContext(env))
+		assert.Error(t, gogh.ValidateContext(ev))
 	})
 	t.Run("valid context", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		env := NewMockEnv(ctrl)
-		env.EXPECT().Roots().AnyTimes().Return([]string{"/path/to/not/existing"})
+		ev := NewMockEnv(ctrl)
+		ev.EXPECT().Roots().AnyTimes().Return([]string{"/path/to/not/existing"})
 
-		assert.NoError(t, gogh.ValidateContext(env))
+		assert.NoError(t, gogh.ValidateContext(ev))
 	})
 }

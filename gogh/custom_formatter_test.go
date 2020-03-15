@@ -15,10 +15,10 @@ func TestCustomListFormatter(t *testing.T) {
 	t.Run("null separator", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		env := NewMockEnv(ctrl)
+		ev := NewMockEnv(ctrl)
 
-		env.EXPECT().GithubHost().AnyTimes().Return("github.com")
-		project1, err := gogh.ParseProject(env, "/go/src", "/go/src/github.com/kyoh86/foo")
+		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
+		project1, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
 		formatter, err := gogh.CustomFormatter("{{short .}}{{null}}{{full .}}{{null}}{{relative .}}")
 		require.NoError(t, err)
@@ -32,14 +32,14 @@ func TestCustomListFormatter(t *testing.T) {
 	t.Run("normal separator", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		env := NewMockEnv(ctrl)
-		env.EXPECT().GithubHost().AnyTimes().Return("github.com")
+		ev := NewMockEnv(ctrl)
+		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
 
-		project1, err := gogh.ParseProject(env, "/go/src", "/go/src/github.com/kyoh86/foo")
+		project1, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		project2, err := gogh.ParseProject(env, "/go/src", "/go/src/github.com/kyoh86/bar")
+		project2, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		project3, err := gogh.ParseProject(env, "/go/src", "/go/src/github.com/kyoh87/bar")
+		project3, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh87/bar")
 		require.NoError(t, err)
 
 		expCtrl := gomock.NewController(t)
@@ -50,9 +50,9 @@ func TestCustomListFormatter(t *testing.T) {
 		project4, err := gogh.ParseProject(expCtx, "/go/src", "/go/src/example.com/kyoh86/bar")
 
 		require.NoError(t, err)
-		project5, err := gogh.ParseProject(env, "/go/src", "/go/src/github.com/kyoh86/baz")
+		project5, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/baz")
 		require.NoError(t, err)
-		project6, err := gogh.ParseProject(env, "/foo", "/foo/github.com/kyoh86/baz")
+		project6, err := gogh.ParseProject(ev, "/foo", "/foo/github.com/kyoh86/baz")
 		require.NoError(t, err)
 
 		formatter, err := gogh.CustomFormatter("{{short .}};;{{full .}};;{{relative .}}")
