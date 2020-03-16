@@ -34,9 +34,11 @@ func getToken(ev gogh.Env) (string, error) {
 func oauth2Client(authContext context.Context, ev gogh.Env) *http.Client {
 	token, err := getToken(ev)
 	if err != nil {
+		//UNDONE: warn (set github.token)
 		return nil
 	}
 	if token == "" {
+		//UNDONE: warn (set github.token)
 		return nil
 	}
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
