@@ -163,12 +163,12 @@ func TestFork(t *testing.T) {
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,
 			"kyoh86":         nil,
-			"kyoh86-tryouts": nil,
+			"kyoh85-tryouts": nil,
 			"dummy":          nil,
 		}, nil)
 		svc.gitClient.EXPECT().RemoveRemote(path, "origin").Return(nil)
 		svc.gitClient.EXPECT().RemoveRemote(path, "kyoh86").Return(nil)
-		svc.gitClient.EXPECT().RemoveRemote(path, "kyoh86-tryouts").Return(nil)
+		svc.gitClient.EXPECT().RemoveRemote(path, "kyoh85-tryouts").Return(nil)
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().AddRemote(path, "kyoh86", u).Return(addRemoteErr)
 		assert.EqualError(
