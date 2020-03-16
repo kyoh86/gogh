@@ -106,11 +106,11 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 
 func get(app *kingpin.Application) (string, func() error) {
 	var (
-		update    bool
-		withSSH   bool
-		shallow   bool
-		repoSpecs gogh.RepoSpecs
-		cd        bool
+		update  bool
+		withSSH bool
+		shallow bool
+		specs   gogh.RepoSpecs
+		cd      bool
 		// unused: it is dummy to accept option.
 		//         its function defined in init.*sh in the /sh/src
 		//         if we want to use gogh get --cd,
@@ -120,14 +120,10 @@ func get(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
 	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
 	cmd.Flag("cd", "Jump to the local project").BoolVar(&cd)
-	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&repoSpecs)
+	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&specs)
 
 	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
-		repos, err := repoSpecs.Validate(env)
-		if err != nil {
-			return err
-		}
-		return command.GetAll(env, new(git.Client), update, withSSH, shallow, repos)
+		return command.GetAll(env, new(git.Client), update, withSSH, shallow, specs)
 	})
 }
 
@@ -188,11 +184,7 @@ func fork(app *kingpin.Application) (string, func() error) {
 		if err != nil {
 			return err
 		}
-		repo, err := spec.Validate(env)
-		if err != nil {
-			return err
-		}
-		return command.Fork(ctx, env, new(git.Client), hubClient, update, withSSH, shallow, organization, repo)
+		return command.Fork(ctx, env, new(git.Client), hubClient, update, withSSH, shallow, organization, &spec)
 	})
 }
 
@@ -223,11 +215,7 @@ func create(app *kingpin.Application) (string, func() error) {
 		if err != nil {
 			return err
 		}
-		repo, err := spec.Validate(env)
-		if err != nil {
-			return err
-		}
-		return command.New(ctx, env, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, repo)
+		return command.New(ctx, env, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, &spec)
 	})
 }
 
@@ -299,11 +287,7 @@ func find(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
 
 	return mainutil.WrapCommand(cmd, func(env gogh.Env) error {
-		repo, err := spec.Validate(env)
-		if err != nil {
-			return err
-		}
-		return command.Find(env, primary, repo)
+		return command.Find(env, primary, &spec)
 	})
 }
 
