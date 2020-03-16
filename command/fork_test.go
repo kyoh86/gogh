@@ -151,14 +151,14 @@ func TestFork(t *testing.T) {
 			update       = true
 			withSSH      = false
 			shallow      = false
-			organization = "kyoh86-tryouts"
+			organization = "kyoh85-tryouts"
 		)
 		addRemoteErr := errors.New("add remote 1 error")
 
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), os.ModePerm))
 
 		svc.gitClient.EXPECT().Update(path).Return(nil)
-		newRepo := mustParseRepo(t, svc.ev, "kyoh86-tryouts/gogh")
+		newRepo := mustParseRepo(t, svc.ev, "kyoh85-tryouts/gogh")
 		svc.hubClient.EXPECT().Fork(ctx, svc.ev, gomock.Any(), organization).Return(newRepo, nil)
 		svc.gitClient.EXPECT().GetRemotes(path).Return(map[string]*url.URL{
 			"origin":         nil,

@@ -24,7 +24,7 @@ type testService struct {
 	hubClient *MockHubClient
 	root1     string
 	root2     string
-	ev       *MockEnv
+	ev        *MockEnv
 }
 
 func (s testService) teardown(t *testing.T) {
@@ -61,6 +61,6 @@ func initTest(t *testing.T) *testService {
 		hubClient: hubClient,
 		root1:     root1,
 		root2:     root2,
-		ev:       ctxMock,
+		ev:        ctxMock,
 	}
 }

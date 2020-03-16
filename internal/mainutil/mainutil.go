@@ -24,7 +24,7 @@ func openYAML(filename string) (io.Reader, func() error, error) {
 	file, err := os.Open(filename)
 	switch {
 	case err == nil:
-		teardown = func() error { return file.Close() }
+		teardown = file.Close
 		reader = file
 	case os.IsNotExist(err):
 		reader = env.EmptyYAMLReader
@@ -38,12 +38,17 @@ func openYAML(filename string) (io.Reader, func() error, error) {
 func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
-	return cmd.FullCommand(), func() error {
+	return cmd.FullCommand(), func() (retErr error) {
 		reader, teardown, err := openYAML(configFile)
 		if err != nil {
 			return err
 		}
-		defer teardown()
+		defer func() {
+			if err := teardown(); err != nil && retErr == nil {
+				retErr = err
+				return
+			}
+		}()
 
 		access, err := env.GetAccess(reader, env.EnvarPrefix)
 		if err != nil {
@@ -57,12 +62,17 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
-	return cmd.FullCommand(), func() error {
+	return cmd.FullCommand(), func() (retErr error) {
 		reader, teardown, err := openYAML(configFile)
 		if err != nil {
 			return err
 		}
-		defer teardown()
+		defer func() {
+			if err := teardown(); err != nil && retErr == nil {
+				retErr = err
+				return
+			}
+		}()
 
 		config, err := env.GetConfig(reader)
 		if err != nil {

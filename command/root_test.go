@@ -8,7 +8,7 @@ import (
 	"github.com/kyoh86/gogh/env"
 )
 
-func ExampleRoot() {
+func ExampleRoots() {
 	yml := strings.NewReader("roots:\n  - /foo\n  - /bar")
 
 	config, err := env.GetAccess(yml, env.EnvarPrefix)

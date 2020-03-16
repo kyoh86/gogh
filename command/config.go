@@ -52,7 +52,10 @@ func ConfigSet(cfg *env.Config, optionName, optionValue string) error {
 		if err != nil {
 			return err
 		}
-		keyring.Set(strings.Join([]string{host, env.KeyringService}, "."), user, optionValue)
+		if err := keyring.Set(strings.Join([]string{host, env.KeyringService}, "."), user, optionValue); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	opt, err := cfg.Property(optionName)

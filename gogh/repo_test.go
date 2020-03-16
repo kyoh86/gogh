@@ -16,13 +16,6 @@ func mustParseRepoSpec(t *testing.T, name string) *gogh.RepoSpec {
 	return &spec
 }
 
-func mustParseRepo(t *testing.T, ev gogh.Env, name string) *gogh.Repo {
-	t.Helper()
-	repo, err := gogh.ParseRepo(ev, name)
-	require.NoError(t, err)
-	return repo
-}
-
 func TestRepoParse(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
