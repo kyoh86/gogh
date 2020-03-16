@@ -29,11 +29,11 @@ type testService struct {
 
 func (s testService) teardown(t *testing.T) {
 	t.Helper()
+	require.NoError(t, os.RemoveAll(s.root1))
+	require.NoError(t, os.RemoveAll(s.root2))
 	s.gitCtrl.Finish()
 	s.hubCtrl.Finish()
 	s.envCtrl.Finish()
-	require.NoError(t, os.RemoveAll(s.root1))
-	require.NoError(t, os.RemoveAll(s.root2))
 }
 
 func initTest(t *testing.T) *testService {

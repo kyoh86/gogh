@@ -76,11 +76,7 @@ func findOrNewProject(ev Env, spec *RepoSpec, walker Walker) (*Project, *Repo, e
 	switch proj, repo, err := findProject(ev, spec, walker); err {
 	case ErrProjectNotFound:
 		// No repository found, returning new one
-		proj, err := NewProject(ev, spec)
-		if err != nil {
-			return nil, nil, err
-		}
-		return proj, repo, nil
+		return newProject(ev, repo), repo, nil
 	case nil:
 		return proj, repo, nil
 	default:
@@ -94,7 +90,10 @@ func NewProject(ev Env, spec *RepoSpec) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
+	return newProject(ev, repo), nil
+}
 
+func newProject(ev Env, repo *Repo) *Project {
 	relPath := repo.RelPath()
 	fullPath := filepath.Join(PrimaryRoot(ev), relPath)
 	return &Project{
@@ -102,7 +101,7 @@ func NewProject(ev Env, spec *RepoSpec) (*Project, error) {
 		RelPath:   relPath,
 		PathParts: []string{repo.host, repo.owner, repo.name},
 		Exists:    isVcsDir(fullPath),
-	}, nil
+	}
 }
 
 // FindProjectPath willl get a project (local repository) path from remote repository URL
