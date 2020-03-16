@@ -27,17 +27,22 @@ var (
 )
 
 // FindProject will find a project (local repository) that matches exactly.
-func FindProject(ev Env, repo *Repo) (*Project, error) {
-	return findProject(ev, repo, Walk)
+func FindProject(ev Env, spec *RepoSpec) (*Project, *Repo, error) {
+	return findProject(ev, spec, Walk)
 }
 
 // FindProjectInPrimary will find a project (local repository) that matches exactly.
-func FindProjectInPrimary(ev Env, repo *Repo) (*Project, error) {
-	return findProject(ev, repo, WalkInPrimary)
+func FindProjectInPrimary(ev Env, spec *RepoSpec) (*Project, *Repo, error) {
+	return findProject(ev, spec, WalkInPrimary)
 }
 
-func findProject(ev Env, repo *Repo, walker Walker) (*Project, error) {
+func findProject(ev Env, spec *RepoSpec, walker Walker) (*Project, *Repo, error) {
 	var project *Project
+
+	repo, err := spec.validate(ev)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	// Find existing repository first
 	if err := walker(ev, func(p *Project) error {
@@ -47,40 +52,49 @@ func findProject(ev Env, repo *Repo, walker Walker) (*Project, error) {
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if project != nil {
-		return project, nil
+		return project, repo, nil
 	}
 
-	return nil, ErrProjectNotFound
+	return nil, repo, ErrProjectNotFound
 }
 
 // FindOrNewProject will find a project (local repository) that matches exactly or create new one.
-func FindOrNewProject(ev Env, repo *Repo) (*Project, error) {
-	return findOrNewProject(ev, repo, Walk)
+func FindOrNewProject(ev Env, spec *RepoSpec) (*Project, *Repo, error) {
+	return findOrNewProject(ev, spec, Walk)
 }
 
 // FindOrNewProjectInPrimary will find a project (local repository) that matches exactly or create new one.
-func FindOrNewProjectInPrimary(ev Env, repo *Repo) (*Project, error) {
-	return findOrNewProject(ev, repo, WalkInPrimary)
+func FindOrNewProjectInPrimary(ev Env, spec *RepoSpec) (*Project, *Repo, error) {
+	return findOrNewProject(ev, spec, WalkInPrimary)
 }
 
-func findOrNewProject(ev Env, repo *Repo, walker Walker) (*Project, error) {
-	switch p, err := findProject(ev, repo, walker); err {
+func findOrNewProject(ev Env, spec *RepoSpec, walker Walker) (*Project, *Repo, error) {
+	switch proj, repo, err := findProject(ev, spec, walker); err {
 	case ErrProjectNotFound:
 		// No repository found, returning new one
-		return NewProject(ev, repo)
+		proj, err := NewProject(ev, spec)
+		if err != nil {
+			return nil, nil, err
+		}
+		return proj, repo, nil
 	case nil:
-		return p, nil
+		return proj, repo, nil
 	default:
-		return nil, err
+		return nil, nil, err
 	}
 }
 
 // NewProject creates a project (local repository)
-func NewProject(ev Env, repo *Repo) (*Project, error) {
+func NewProject(ev Env, spec *RepoSpec) (*Project, error) {
+	repo, err := spec.validate(ev)
+	if err != nil {
+		return nil, err
+	}
+
 	relPath := repo.RelPath()
 	fullPath := filepath.Join(PrimaryRoot(ev), relPath)
 	return &Project{
@@ -92,8 +106,8 @@ func NewProject(ev Env, repo *Repo) (*Project, error) {
 }
 
 // FindProjectPath willl get a project (local repository) path from remote repository URL
-func FindProjectPath(ev Env, repo *Repo) (string, error) {
-	project, err := FindProject(ev, repo)
+func FindProjectPath(ev Env, spec *RepoSpec) (string, error) {
+	project, _, err := FindProject(ev, spec)
 	if err != nil {
 		return "", err
 	}

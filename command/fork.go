@@ -11,12 +11,13 @@ import (
 )
 
 // Fork clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin
-func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubClient, update, withSSH, shallow bool, organization string, repo *gogh.Repo) error {
+func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubClient, update, withSSH, shallow bool, organization string, spec *gogh.RepoSpec) error {
 	log.Print("info: Finding a repository")
-	project, err := gogh.FindOrNewProject(ev, repo)
+	project, repo, err := gogh.FindOrNewProject(ev, spec)
 	if err != nil {
 		return err
 	}
+
 	log.Print("info: Getting a repository")
 	if !project.Exists {
 		repoURL := repo.URL(withSSH)

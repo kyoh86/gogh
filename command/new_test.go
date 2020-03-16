@@ -34,7 +34,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(localGit, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		getRemotesErr := errors.New("get remote error")
 		svc.gitClient.EXPECT().GetRemotes(local).Return(nil, getRemotesErr)
 		assert.EqualError(t, command.New(
@@ -49,7 +49,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), getRemotesErr.Error())
 		assert.DirExists(t, local)
 	})
@@ -69,7 +69,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		initErr := errors.New("init error")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(initErr)
 		assert.EqualError(t, command.New(
@@ -84,7 +84,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), initErr.Error())
 		assert.DirExists(t, local)
 	})
@@ -104,10 +104,10 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		createErr := errors.New("remote error")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(nil, createErr)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(nil, createErr)
 		assert.EqualError(t, command.New(
 			ctx,
 			svc.ev,
@@ -120,7 +120,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), createErr.Error())
 		assert.DirExists(t, local)
 	})
@@ -140,11 +140,11 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		addRemoteErr := errors.New("add remote error")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(addRemoteErr)
 		assert.EqualError(t, command.New(
 			ctx,
@@ -158,7 +158,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), addRemoteErr.Error())
 		assert.DirExists(t, local)
 	})
@@ -178,10 +178,10 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Return(nil)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Return(nil)
 		assert.NoError(t, command.New(
 			ctx,
@@ -195,7 +195,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 		assert.DirExists(t, local)
 	})
@@ -216,7 +216,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		localErr := errors.New("local error")
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Do(gitClient.Init).Return(localErr)
@@ -232,13 +232,13 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), localErr.Error())
 		assert.DirExists(t, local)
 
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
 			ctx,
@@ -252,7 +252,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 		assert.DirExists(t, local)
 	})
@@ -273,11 +273,11 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		createErr := errors.New("create error")
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(nil, createErr)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(nil, createErr)
 		assert.EqualError(t, command.New(
 			ctx,
 			svc.ev,
@@ -290,13 +290,13 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), createErr.Error())
 		assert.DirExists(t, local)
 
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
 			ctx,
@@ -310,7 +310,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 		assert.DirExists(t, local)
 	})
@@ -331,11 +331,11 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		addRemoteErr := errors.New("add remote error")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Do(func(
 			local string,
 			name string,
@@ -355,7 +355,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), addRemoteErr.Error())
 		assert.DirExists(t, local)
 
@@ -373,7 +373,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 		assert.DirExists(t, local)
 	})
@@ -394,9 +394,10 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
+		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared.String()))
-		require.NoError(t, gitClient.AddRemote(local, "origin", repo.URL(true)))
+		require.NoError(t, gitClient.AddRemote(local, "origin", u))
 
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
@@ -412,7 +413,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 		assert.DirExists(t, local)
 	})
@@ -433,10 +434,9 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared.String()))
-		u := repo.URL(false)
-		require.NoError(t, gitClient.AddRemote(local, "kyoh86", u))
+		require.NoError(t, gitClient.AddRemote(local, "kyoh86", homepage))
 
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).Do(func(
@@ -448,8 +448,8 @@ func TestNew(t *testing.T) {
 		) {
 			require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared))
 		}).Return(nil)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
-		svc.gitClient.EXPECT().AddRemote(local, "origin", u).Do(func(
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(createNewRepoWithURL(homepage), nil)
+		svc.gitClient.EXPECT().AddRemote(local, "origin", homepage).Do(func(
 			local string,
 			name string,
 			url *url.URL,
@@ -468,7 +468,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 		assert.DirExists(t, local)
 	})
@@ -489,10 +489,10 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		u, _ := url.Parse("https://github.com/kyoh86/gogh")
 		svc.gitClient.EXPECT().Init(local, bare, template, separateGitDir, shared.String()).DoAndReturn(gitClient.Init)
-		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), repo, description, homepage, private).Return(createNewRepoWithURL(u), nil)
+		svc.hubClient.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), description, homepage, private).Return(createNewRepoWithURL(u), nil)
 		svc.gitClient.EXPECT().AddRemote(local, "origin", u).DoAndReturn(gitClient.AddRemote)
 		assert.NoError(t, command.New(
 			ctx,
@@ -506,7 +506,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 
 		svc.gitClient.EXPECT().GetRemotes(local).DoAndReturn(gitClient.GetRemotes)
@@ -523,7 +523,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		))
 	})
 
@@ -543,7 +543,7 @@ func TestNew(t *testing.T) {
 		require.NoError(t, os.MkdirAll(local, os.ModePerm))
 		homepage, _ := url.Parse("https://kyoh86.dev/gogh")
 		shared := command.RepoShared("false")
-		repo := mustParseRepo(t, svc.ev, "kyoh86/gogh")
+		spec := mustParseRepoSpec(t, "kyoh86/gogh")
 		require.NoError(t, gitClient.Init(local, bare, template, separateGitDir, shared.String()))
 		u, _ := url.Parse("https://github.com/kyoh86/dummy")
 		require.NoError(t, gitClient.AddRemote(local, "origin", u))
@@ -561,7 +561,7 @@ func TestNew(t *testing.T) {
 			template,
 			separateGitDir,
 			shared,
-			repo,
+			spec,
 		), gogh.ErrProjectAlreadyExists.Error())
 	})
 }

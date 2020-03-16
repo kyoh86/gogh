@@ -22,13 +22,13 @@ func TestFind(t *testing.T) {
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
 	svc.ev.EXPECT().GithubUser().Return("kyoh86")
-	assert.EqualError(t, command.Find(svc.ev, true, mustParseRepo(t, svc.ev, "gogh")), "project not found")
+	assert.EqualError(t, command.Find(svc.ev, true, mustParseRepoSpec(t, "gogh")), "project not found")
 
 	svc.ev.EXPECT().GithubUser().Return("kyoh86")
-	assert.NoError(t, command.Find(svc.ev, false, mustParseRepo(t, svc.ev, "gogh")))
+	assert.NoError(t, command.Find(svc.ev, false, mustParseRepoSpec(t, "gogh")))
 
 	svc.ev.EXPECT().GithubUser().Return("kyoh86")
-	assert.NoError(t, command.Find(svc.ev, false, mustParseRepo(t, svc.ev, "kyoh85/test")))
+	assert.NoError(t, command.Find(svc.ev, false, mustParseRepoSpec(t, "kyoh85/test")))
 
-	assert.NoError(t, command.Find(svc.ev, true, mustParseRepo(t, svc.ev, "vim-gogh")))
+	assert.NoError(t, command.Find(svc.ev, true, mustParseRepoSpec(t, "vim-gogh")))
 }

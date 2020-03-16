@@ -84,7 +84,7 @@ func (r RepoSpec) String() string {
 
 var _ flag.Value = (*RepoSpec)(nil)
 
-func (r *RepoSpec) Validate(ev Env) (*Repo, error) {
+func (r *RepoSpec) validate(ev Env) (*Repo, error) {
 	repo := r.repo // copy object
 	if repo.host == "" {
 		repo.host = ev.GithubHost()
@@ -127,7 +127,7 @@ func (specs RepoSpecs) IsCumulative() bool { return true }
 func (specs RepoSpecs) Validate(ev Env) ([]Repo, error) {
 	repos := make([]Repo, 0, len(specs))
 	for _, spec := range specs {
-		repo, err := spec.Validate(ev)
+		repo, err := spec.validate(ev)
 		if err != nil {
 			return nil, err
 		}
@@ -142,5 +142,5 @@ func ParseRepo(ev Env, rawRepo string) (*Repo, error) {
 	if err := spec.Set(rawRepo); err != nil {
 		return nil, err
 	}
-	return spec.Validate(ev)
+	return spec.validate(ev)
 }

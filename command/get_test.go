@@ -26,17 +26,17 @@ func TestGet(t *testing.T) {
 		m.EXPECT().Clone(gomock.Eq(filepath.Join(svc.root1, "github.com/kyoh86/gogh")), gomock.Any(), gomock.Eq(false)),
 		m.EXPECT().Clone(gomock.Eq(filepath.Join(svc.root1, "github.com/kyoh86/vim-gogh")), gomock.Any(), gomock.Eq(false)),
 	)
-	assert.NoError(t, command.GetAll(svc.ev, m, false, false, false, []gogh.Repo{
-		*mustParseRepo(t, svc.ev, "kyoh86/gogh"),
-		*mustParseRepo(t, svc.ev, "kyoh86/vim-gogh"),
+	assert.NoError(t, command.GetAll(svc.ev, m, false, false, false, gogh.RepoSpecs{
+		*mustParseRepoSpec(t, "kyoh86/gogh"),
+		*mustParseRepoSpec(t, "kyoh86/vim-gogh"),
 	}))
 
 	m.EXPECT().Clone(gomock.Eq(filepath.Join(svc.root1, "github.com/kyoh86/gogh")), gomock.Any(), gomock.Eq(false))
-	assert.NoError(t, command.Get(svc.ev, m, false, false, false, mustParseRepo(t, svc.ev, "kyoh86/gogh")), "success getting one")
+	assert.NoError(t, command.Get(svc.ev, m, false, false, false, mustParseRepoSpec(t, "kyoh86/gogh")), "success getting one")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(svc.root1, "github.com", "kyoh86", "gogh", ".git"), 0755))
-	assert.NoError(t, command.Get(svc.ev, m, false, false, false, mustParseRepo(t, svc.ev, "kyoh86/gogh")), "success getting one that is already exist")
+	assert.NoError(t, command.Get(svc.ev, m, false, false, false, mustParseRepoSpec(t, "kyoh86/gogh")), "success getting one that is already exist")
 
 	m.EXPECT().Update(gomock.Eq(filepath.Join(svc.root1, "github.com/kyoh86/gogh")))
-	assert.NoError(t, command.Get(svc.ev, m, true, false, false, mustParseRepo(t, svc.ev, "kyoh86/gogh")), "success updating one that is already exist")
+	assert.NoError(t, command.Get(svc.ev, m, true, false, false, mustParseRepoSpec(t, "kyoh86/gogh")), "success updating one that is already exist")
 }

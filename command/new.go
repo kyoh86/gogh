@@ -22,10 +22,10 @@ func New(
 	template string,
 	separateGitDir string,
 	shared RepoShared,
-	repo *gogh.Repo,
+	spec *gogh.RepoSpec,
 ) error {
-	log.Printf("info: Creating new project and a remote repository %s", repo)
-	project, err := gogh.FindOrNewProject(ev, repo)
+	log.Printf("info: Creating new project and a remote repository %s", spec)
+	project, repo, err := gogh.FindOrNewProject(ev, spec)
 	if err != nil {
 		return err
 	}

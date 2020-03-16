@@ -47,9 +47,5 @@ func bulkFromReader(ev gogh.Env, gitClient GitClient, in io.Reader, update, with
 		return err
 	}
 
-	repos, err := specs.Validate(ev)
-	if err != nil {
-		return err
-	}
-	return GetAll(ev, gitClient, update, withSSH, shallow, repos)
+	return GetAll(ev, gitClient, update, withSSH, shallow, specs)
 }

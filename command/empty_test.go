@@ -59,9 +59,9 @@ func TestEmpty(t *testing.T) {
 
 		svc.gitClient.EXPECT().Clone(local1, remote1, shallow).Return(nil)
 		svc.gitClient.EXPECT().Clone(local2, remote2, shallow).Return(nil)
-		assert.NoError(t, command.GetAll(svc.ev, svc.gitClient, update, withSSH, shallow, []gogh.Repo{
-			*mustParseRepo(t, svc.ev, "kyoh86/gogh"),
-			*mustParseRepo(t, svc.ev, "kyoh86/vim-gogh"),
+		assert.NoError(t, command.GetAll(svc.ev, svc.gitClient, update, withSSH, shallow, gogh.RepoSpecs{
+			*mustParseRepoSpec(t, "kyoh86/gogh"),
+			*mustParseRepoSpec(t, "kyoh86/vim-gogh"),
 		}))
 	})
 
@@ -76,7 +76,7 @@ func TestEmpty(t *testing.T) {
 		withSSH := false
 
 		svc.gitClient.EXPECT().Clone(local, remote, shallow).Return(nil)
-		assert.NoError(t, command.Get(svc.ev, svc.gitClient, update, withSSH, shallow, mustParseRepo(t, svc.ev, "kyoh86/gogh")))
+		assert.NoError(t, command.Get(svc.ev, svc.gitClient, update, withSSH, shallow, mustParseRepoSpec(t, "kyoh86/gogh")))
 	})
 
 	t.Run("List", func(t *testing.T) {

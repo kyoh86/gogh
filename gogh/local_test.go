@@ -32,7 +32,7 @@ func TestFindOrNewProject(t *testing.T) {
 	path := filepath.Join(tmp1, "github.com", "kyoh86", "gogh")
 
 	t.Run("not existing repository", func(t *testing.T) {
-		p, err := gogh.FindOrNewProject(ev, mustParseRepo(t, ev, "ssh://git@github.com/kyoh86/gogh.git"))
+		p, _, err := gogh.FindOrNewProject(ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
 		assert.Equal(t, path, p.FullPath)
 		assert.False(t, p.Exists)
@@ -43,21 +43,21 @@ func TestFindOrNewProject(t *testing.T) {
 		inOther := filepath.Join(tmp2, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(inOther, 0755))
 		defer os.RemoveAll(inOther)
-		p, err := gogh.FindOrNewProjectInPrimary(ev, mustParseRepo(t, ev, "ssh://git@github.com/kyoh86/gogh.git"))
+		p, _, err := gogh.FindOrNewProjectInPrimary(ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
 		assert.Equal(t, path, p.FullPath)
 		assert.False(t, p.Exists)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 	})
 	t.Run("not existing repository with FindProject", func(t *testing.T) {
-		_, err := gogh.FindProject(ev, mustParseRepo(t, ev, "ssh://git@github.com/kyoh86/gogh.git"))
+		_, _, err := gogh.FindProject(ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, "project not found")
 	})
 	t.Run("not existing repository with FindProjectInPrimary", func(t *testing.T) {
 		inOther := filepath.Join(tmp2, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(inOther, 0755))
 		defer os.RemoveAll(inOther)
-		_, err := gogh.FindProjectInPrimary(ev, mustParseRepo(t, ev, "ssh://git@github.com/kyoh86/gogh.git"))
+		_, _, err := gogh.FindProjectInPrimary(ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, "project not found")
 	})
 	t.Run("fail with invalid root", func(t *testing.T) {
@@ -67,7 +67,7 @@ func TestFindOrNewProject(t *testing.T) {
 		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
 		ev.EXPECT().Roots().AnyTimes().Return([]string{"/\x00"})
 
-		_, err := gogh.FindOrNewProject(ev, mustParseRepo(t, ev, "ssh://git@github.com/kyoh86/gogh.git"))
+		_, _, err := gogh.FindOrNewProject(ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		assert.Error(t, err)
 	})
 	t.Run("existing repository", func(t *testing.T) {
@@ -82,20 +82,20 @@ func TestFindOrNewProject(t *testing.T) {
 		}()
 
 		t.Run("full name", func(t *testing.T) {
-			gotPath, err := gogh.FindProjectPath(ev, mustParseRepo(t, ev, "ssh://git@github.com/kyoh86/gogh.git"))
+			gotPath, err := gogh.FindProjectPath(ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 			require.NoError(t, err)
 			assert.Equal(t, path, gotPath)
 		})
 
 		t.Run("shortest precise name (owner and name)", func(t *testing.T) {
-			p, err := gogh.FindOrNewProject(ev, mustParseRepo(t, ev, "kyoh86/gogh"))
+			p, _, err := gogh.FindOrNewProject(ev, mustParseRepoSpec(t, "kyoh86/gogh"))
 			require.NoError(t, err)
 			assert.Equal(t, path, p.FullPath)
 			assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 		})
 
 		t.Run("shortest pricese name (name only)", func(t *testing.T) {
-			p, err := gogh.FindOrNewProject(ev, mustParseRepo(t, ev, "foo"))
+			p, _, err := gogh.FindOrNewProject(ev, mustParseRepoSpec(t, "foo"))
 			require.NoError(t, err)
 			assert.Equal(t, filepath.Join(tmp1, "github.com", "kyoh86", "foo"), p.FullPath)
 			assert.Equal(t, []string{"foo", "kyoh86/foo", "github.com/kyoh86/foo"}, p.Subpaths())
