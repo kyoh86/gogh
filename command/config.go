@@ -85,6 +85,7 @@ func ConfigUnset(cfg *env.Config, optionName string) error {
 		if err != nil {
 			return err
 		}
+
 		if err := keyring.Delete(strings.Join([]string{host, env.KeyringService}, "."), user); err != nil {
 			return err
 		}

@@ -8,10 +8,12 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	keyring "github.com/zalando/go-keyring"
 )
 
 func TestMain(m *testing.M) {
 	log.SetOutput(ioutil.Discard)
+	keyring.MockInit()
 	code := m.Run()
 	os.Exit(code)
 }
