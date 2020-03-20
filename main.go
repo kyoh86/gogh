@@ -83,7 +83,7 @@ func configSet(app *kingpin.Application) (string, func() error) {
 		name  string
 		value string
 	)
-	cmd := app.GetCommand("config").Command("set", "set an option").Alias("set")
+	cmd := app.GetCommand("config").Command("set", "set an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 	cmd.Arg("value", "option value").Required().StringVar(&value)
 
