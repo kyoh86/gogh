@@ -2,6 +2,8 @@ package env
 
 import (
 	"go/build"
+	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
 
@@ -37,9 +39,36 @@ type Roots struct {
 }
 
 func (p *Roots) Value() interface{} {
-	return p.value
+	var list []string
+	uniq := map[string]struct{}{}
+	for _, p := range p.value {
+		exp := expandPath(p)
+		if _, ok := uniq[exp]; ok {
+			continue
+		}
+		uniq[exp] = struct{}{}
+		list = append(list, exp)
+	}
+	return list
 }
 
+func expandPath(path string) string {
+	if len(path) == 0 {
+		return path
+	}
+
+	path = os.ExpandEnv(path)
+	if path[0] != '~' || (len(path) > 1 && path[1] != filepath.Separator) {
+		return path
+	}
+
+	user, err := user.Current()
+	if err != nil {
+		return path
+	}
+
+	return filepath.Join(user.HomeDir, path[1:])
+}
 func (*Roots) Default() interface{} {
 	gopaths := filepath.SplitList(build.Default.GOPATH)
 	root := make([]string, 0, len(gopaths))
