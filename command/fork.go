@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -10,17 +11,16 @@ import (
 )
 
 // Fork clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin
-func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, withSSH, shallow bool, organization string, repo *gogh.Repo) error {
-	InitLog(ctx)
-
+func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubClient, update, withSSH, shallow bool, organization string, spec *gogh.RepoSpec) error {
 	log.Print("info: Finding a repository")
-	project, err := gogh.FindOrNewProject(ctx, repo)
+	project, repo, err := gogh.FindOrNewProject(ev, spec)
 	if err != nil {
 		return err
 	}
+
 	log.Print("info: Getting a repository")
 	if !project.Exists {
-		repoURL := repo.URL(ctx, withSSH)
+		repoURL := repo.URL(withSSH)
 		log.Print("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
 		if err := gitClient.Clone(project.FullPath, repoURL, shallow); err != nil {
 			return err
@@ -32,7 +32,7 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 		}
 	}
 	log.Print("info: Forking a repository")
-	newRepo, err := hubClient.Fork(ctx, repo, organization)
+	newRepo, err := hubClient.Fork(ctx, ev, repo, organization)
 	if err != nil {
 		var accepted *github.AcceptedError
 		if !errors.As(err, &accepted) {
@@ -46,8 +46,8 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 	}
 
 	log.Print("info: Removing old remotes")
-	owner := repo.Owner(ctx)
-	me := newRepo.Owner(ctx)
+	owner := repo.Owner()
+	me := newRepo.Owner()
 	for name := range remotes {
 		if name == me || name == owner || name == "origin" {
 			if err := gitClient.RemoveRemote(project.FullPath, name); err != nil {
@@ -57,10 +57,10 @@ func Fork(ctx gogh.Context, gitClient GitClient, hubClient HubClient, update, wi
 	}
 
 	log.Print("info: Creating new remotes")
-	if err := gitClient.AddRemote(project.FullPath, owner, repo.URL(ctx, withSSH)); err != nil {
+	if err := gitClient.AddRemote(project.FullPath, owner, repo.URL(withSSH)); err != nil {
 		return err
 	}
-	if err := gitClient.AddRemote(project.FullPath, me, newRepo.URL(ctx, withSSH)); err != nil {
+	if err := gitClient.AddRemote(project.FullPath, me, newRepo.URL(withSSH)); err != nil {
 		return err
 	}
 

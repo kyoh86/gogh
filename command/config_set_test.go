@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func ExampleConfigUnset() {
+func ExampleConfigSet() {
 	source := strings.NewReader(`
 roots:
   - /foo
@@ -21,7 +21,7 @@ githubHost: hostx1`)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := command.ConfigUnset(&config, "github.host"); err != nil {
+	if err := command.ConfigSet(&config, "github.host", "hostx2"); err != nil {
 		log.Fatal(err)
 	}
 	if err := config.Save(os.Stdout); err != nil {
@@ -34,14 +34,16 @@ githubHost: hostx1`)
 	// Unordered output:
 	// roots:
 	//   - /foo
+	// githubHost: hostx2
 	// githubUser: userx1
 	// roots: /foo
-	// github.host:
+	// github.host: hostx2
 	// github.user: userx1
 	// github.token: *****
 }
 
-func TestConfigUnset(t *testing.T) {
+func TestConfigSet(t *testing.T) {
+	// NOTE: never use real host name. github.token breaks keyring store
 	source := strings.NewReader(`
 roots:
   - /foo
@@ -49,8 +51,12 @@ githubUser: userx1
 githubHost: hostx1`)
 	config, err := env.GetConfig(source)
 	assert.NoError(t, err)
-	assert.NoError(t, command.ConfigUnset(&config, "github.host"))
+	assert.NoError(t, command.ConfigSet(&config, "github.host", "hostx2"))
 	assert.NoError(t, config.Save(os.Stdout))
 	assert.NoError(t, command.ConfigGetAll(&config))
-	assert.Error(t, command.ConfigUnset(&config, "invalid.config"))
+
+	assert.Error(t, command.ConfigSet(&config, "invalid.config", "invalid"))
+	assert.Error(t, command.ConfigUnset(&config, "github.token"))
+	assert.NoError(t, command.ConfigSet(&config, "github.token", "invalid"))
+	assert.NoError(t, command.ConfigUnset(&config, "github.token"))
 }

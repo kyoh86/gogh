@@ -1,20 +1,26 @@
-package gogh
+package gogh_test
 
 import (
 	"bytes"
 	"strings"
 	"testing"
 
-	"github.com/kyoh86/gogh/internal/context"
+	gomock "github.com/golang/mock/gomock"
+	"github.com/kyoh86/gogh/gogh"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCustomListFormatter(t *testing.T) {
 	t.Run("null separator", func(t *testing.T) {
-		project1, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		ev := NewMockEnv(ctrl)
+
+		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
+		project1, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		formatter, err := CustomFormatter("{{short .}}{{null}}{{full .}}{{null}}{{relative .}}")
+		formatter, err := gogh.CustomFormatter("{{short .}}{{null}}{{full .}}{{null}}{{relative .}}")
 		require.NoError(t, err)
 		formatter.Add(project1)
 		assert.Equal(t, 1, formatter.Len())
@@ -24,20 +30,32 @@ func TestCustomListFormatter(t *testing.T) {
 		assert.Equal(t, expected, buf.String())
 	})
 	t.Run("normal separator", func(t *testing.T) {
-		project1, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/foo")
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		ev := NewMockEnv(ctrl)
+		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
+
+		project1, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/foo")
 		require.NoError(t, err)
-		project2, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/bar")
+		project2, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/bar")
 		require.NoError(t, err)
-		project3, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh87/bar")
-		require.NoError(t, err)
-		project4, err := parseProject(&context.MockContext{MGitHubHost: "example.com"}, "/go/src", "/go/src/example.com/kyoh86/bar")
-		require.NoError(t, err)
-		project5, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/go/src", "/go/src/github.com/kyoh86/baz")
-		require.NoError(t, err)
-		project6, err := parseProject(&context.MockContext{MGitHubHost: "github.com"}, "/foo", "/foo/github.com/kyoh86/baz")
+		project3, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh87/bar")
 		require.NoError(t, err)
 
-		formatter, err := CustomFormatter("{{short .}};;{{full .}};;{{relative .}}")
+		expCtrl := gomock.NewController(t)
+		defer expCtrl.Finish()
+		expCtx := NewMockEnv(expCtrl)
+		expCtx.EXPECT().GithubHost().AnyTimes().Return("example.com")
+
+		project4, err := gogh.ParseProject(expCtx, "/go/src", "/go/src/example.com/kyoh86/bar")
+
+		require.NoError(t, err)
+		project5, err := gogh.ParseProject(ev, "/go/src", "/go/src/github.com/kyoh86/baz")
+		require.NoError(t, err)
+		project6, err := gogh.ParseProject(ev, "/foo", "/foo/github.com/kyoh86/baz")
+		require.NoError(t, err)
+
+		formatter, err := gogh.CustomFormatter("{{short .}};;{{full .}};;{{relative .}}")
 		require.NoError(t, err)
 		formatter.Add(project1)
 		formatter.Add(project2)

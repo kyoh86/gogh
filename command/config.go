@@ -2,49 +2,100 @@ package command
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/kyoh86/gogh/config"
+	"github.com/kyoh86/gogh/env"
+	keyring "github.com/zalando/go-keyring"
 )
 
-func ConfigGetAll(cfg *config.Config) error {
-	InitLog(cfg)
-
-	for _, name := range config.OptionNames() {
-		opt, _ := config.Option(name) // ignore error: config.OptionNames covers all accessor
-		value := opt.Get(cfg)
-		fmt.Printf("%s: %s\n", name, value)
+func ConfigGetAll(cfg *env.Config) error {
+	for _, name := range env.PropertyNames() {
+		opt, _ := cfg.Property(name) // ignore error: config.OptionNames covers all accessor
+		value, err := opt.Get()
+		if err != nil {
+			return err
+		}
+		if value == "" {
+			// NOTE: to avoid a bug in the example test...
+			// https://github.com/golang/go/issues/26460
+			fmt.Printf("%s:\n", name)
+		} else {
+			fmt.Printf("%s: %s\n", name, value)
+		}
 	}
+	fmt.Println("github.token: *****")
 	return nil
 }
 
-func ConfigGet(cfg *config.Config, optionName string) error {
-	InitLog(cfg)
-
-	opt, err := config.Option(optionName)
+func ConfigGet(cfg *env.Config, optionName string) error {
+	opt, err := cfg.Property(optionName)
 	if err != nil {
 		return err
 	}
-	value := opt.Get(cfg)
-	fmt.Fprintln(cfg.Stdout(), value)
+	value, err := opt.Get()
+	if err != nil {
+		return err
+	}
+	fmt.Println(value)
 	return nil
 }
 
-func ConfigPut(cfg *config.Config, optionName, optionValue string) error {
-	InitLog(cfg)
-
-	opt, err := config.Option(optionName)
+func githubTokenProperty(cfg *env.Config) (host string, user string, err error) {
+	hostCfg, err := cfg.Property("github.host")
 	if err != nil {
-		return err
+		return host, user, err
 	}
-	return opt.Put(cfg, optionValue)
+	host, err = hostCfg.Get()
+	if err != nil {
+		return host, user, err
+	}
+	userCfg, err := cfg.Property("github.user")
+	if err != nil {
+		return host, user, err
+	}
+	user, err = userCfg.Get()
+	if err != nil {
+		return host, user, err
+	}
+	return host, user, err
 }
 
-func ConfigUnset(cfg *config.Config, optionName string) error {
-	InitLog(cfg)
+func ConfigSet(cfg *env.Config, optionName, optionValue string) error {
+	if optionName == "github.token" {
+		host, user, err := githubTokenProperty(cfg)
+		if err != nil {
+			return err
+		}
+		if err := keyring.Set(strings.Join([]string{host, env.KeyringService}, "."), user, optionValue); err != nil {
+			return err
+		}
+		return nil
+	}
 
-	opt, err := config.Option(optionName)
+	opt, err := cfg.Property(optionName)
 	if err != nil {
 		return err
 	}
-	return opt.Unset(cfg)
+	return opt.Set(optionValue)
+}
+
+func ConfigUnset(cfg *env.Config, optionName string) error {
+	if optionName == "github.token" {
+		host, user, err := githubTokenProperty(cfg)
+		if err != nil {
+			return err
+		}
+
+		if err := keyring.Delete(strings.Join([]string{host, env.KeyringService}, "."), user); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	opt, err := cfg.Property(optionName)
+	if err != nil {
+		return err
+	}
+	opt.Unset()
+	return nil
 }

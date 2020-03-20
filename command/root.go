@@ -7,17 +7,15 @@ import (
 	"github.com/kyoh86/gogh/gogh"
 )
 
-// Root prints a gogh.root
-func Root(ctx gogh.Context, all bool) error {
-	InitLog(ctx)
-
+// Roots prints a gogh.root
+func Roots(ev gogh.Env, all bool) error {
 	if !all {
-		fmt.Fprintln(ctx.Stdout(), ctx.PrimaryRoot())
+		fmt.Println(gogh.PrimaryRoot(ev))
 		return nil
 	}
 	log.Println("info: Finding all roots...")
-	for _, root := range ctx.Root() {
-		fmt.Fprintln(ctx.Stdout(), root)
+	for _, root := range ev.Roots() {
+		fmt.Println(root)
 	}
 	return nil
 }

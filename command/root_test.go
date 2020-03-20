@@ -2,23 +2,27 @@ package command_test
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/config"
+	"github.com/kyoh86/gogh/env"
 )
 
-func ExampleRoot() {
-	ctx := &config.Config{
-		VRoot: config.PathListOption{"/foo", "/bar"},
-	}
+func ExampleRoots() {
+	yml := strings.NewReader("roots:\n  - /foo\n  - /bar")
 
-	if err := command.Root(ctx, false); err != nil {
+	config, err := env.GetAccess(yml, env.EnvarPrefix)
+	if err != nil {
+		panic(err)
+	}
+	if err := command.Roots(&config, false); err != nil {
 		panic(err)
 	}
 	fmt.Println()
-	if err := command.Root(ctx, true); err != nil {
+	if err := command.Roots(&config, true); err != nil {
 		panic(err)
 	}
+
 	// Output:
 	// /foo
 	//

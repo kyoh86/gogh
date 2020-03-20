@@ -8,23 +8,22 @@ import (
 	"github.com/kyoh86/gogh/gogh"
 )
 
-// Where is a local project
-func Where(ev gogh.Env, primary bool, query string) error {
-	log.Printf("info: Finding a repository by query %s", query)
+// Find a local project
+func Find(ev gogh.Env, primary bool, spec *gogh.RepoSpec) error {
+	log.Printf("info: Finding a repository %s", spec)
 
-	walk := gogh.Walk
+	finder := gogh.FindProject
 	if primary {
-		walk = gogh.WalkInPrimary
+		finder = gogh.FindProjectInPrimary
 	}
 
 	formatter := gogh.FullPathFormatter()
 
-	if err := gogh.Query(ev, query, walk, func(p *gogh.Project) error {
-		formatter.Add(p)
-		return nil
-	}); err != nil {
+	project, _, err := finder(ev, spec)
+	if err != nil {
 		return err
 	}
+	formatter.Add(project)
 
 	switch l := formatter.Len(); {
 	case l == 1:

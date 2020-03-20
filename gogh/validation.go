@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/comail/colog"
 	"go.uber.org/multierr"
 )
 
@@ -63,21 +62,10 @@ func ValidateRoots(roots []string) error {
 	return nil
 }
 
-func ValidateLogLevel(level string) error {
-	_, err := colog.ParseLevel(level)
-	return err
-}
-
-func ValidateContext(ctx Context) error {
+func ValidateContext(ev Env) error {
 	var validationError error
-	if err := ValidateRoots(ctx.Root()); err != nil {
+	if err := ValidateRoots(ev.Roots()); err != nil {
 		validationError = multierr.Append(validationError, fmt.Errorf("invalid roots: %w", err))
-	}
-	if err := ValidateOwner(ctx.GitHubUser()); err != nil {
-		validationError = multierr.Append(validationError, fmt.Errorf("invalid GitHub user: %w", err))
-	}
-	if err := ValidateLogLevel(ctx.LogLevel()); err != nil {
-		validationError = multierr.Append(validationError, fmt.Errorf("invalid log level: %w", err))
 	}
 	return validationError
 }

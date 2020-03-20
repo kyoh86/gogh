@@ -1,89 +1,49 @@
-package gogh
+package gogh_test
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
 	"testing"
 
-	"github.com/kyoh86/gogh/internal/context"
+	gomock "github.com/golang/mock/gomock"
+	"github.com/kyoh86/gogh/gogh"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestParseProject(t *testing.T) {
-	tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
-	require.NoError(t, err)
-	ctx := context.MockContext{MRoot: []string{tmp}, MGitHubHost: "github.com"}
+func TestNewProject(t *testing.T) {
+	svc := initTest(t)
+	defer svc.teardown(t)
 
-	t.Run("in primary root", func(t *testing.T) {
-		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
-		p, err := parseProject(&ctx, tmp, path)
-		require.NoError(t, err)
-		assert.Equal(t, path, p.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
-		assert.True(t, p.IsInPrimaryRoot(&ctx))
+	t.Run("success", func(t *testing.T) {
+		var spec gogh.RepoSpec
+		require.NoError(t, spec.Set("https://github.com/kyoh86/gogh"))
+		proj, err := gogh.NewProject(svc.ev, &spec)
+		assert.NotNil(t, proj)
+		assert.NoError(t, err)
 	})
 
-	t.Run("secondary path", func(t *testing.T) {
-		tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
-		require.NoError(t, err)
-		ctx := ctx
-		ctx.MRoot = append(ctx.MRoot, tmp2)
-		path := filepath.Join(tmp2, "github.com", "kyoh86", "gogh")
-		p, err := parseProject(&ctx, tmp2, path)
-		require.NoError(t, err)
-		assert.Equal(t, path, p.FullPath)
-		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
-		assert.False(t, p.IsInPrimaryRoot(&ctx))
-	})
-
-	t.Run("expect to fail to parse relative path", func(t *testing.T) {
-		r, err := parseProject(&ctx, tmp, "./github.com/kyoh86/gogh/gogh")
-		assert.NotNil(t, err)
-		assert.Nil(t, r)
-	})
-
-	t.Run("expect to fail to parse unsupported depth", func(t *testing.T) {
-		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/kyoh86/gogh/gogh"))
-		assert.NotNil(t, err)
-		assert.Nil(t, r)
-	})
-
-	t.Run("expect to fail to parse unsupported host", func(t *testing.T) {
-		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "example.com/kyoh86/gogh"))
-		assert.NotNil(t, err)
-		assert.Nil(t, r)
-	})
-
-	t.Run("expect to fail to parse owner name that starts with hyphen", func(t *testing.T) {
-		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/-kyoh86/gogh"))
-		assert.NotNil(t, err)
-		assert.Nil(t, r)
-	})
-
-	t.Run("expect to fail to parse project name that contains invalid character", func(t *testing.T) {
-		r, err := parseProject(&ctx, tmp, filepath.Join(tmp, "github.com/kyoh86/foo,bar"))
-		assert.NotNil(t, err)
-		assert.Nil(t, r)
+	t.Run("not supported host", func(t *testing.T) {
+		var spec gogh.RepoSpec
+		require.NoError(t, spec.Set("https://example.com/kyoh86/gogh"))
+		proj, err := gogh.NewProject(svc.ev, &spec)
+		assert.Error(t, err)
+		assert.Nil(t, proj)
 	})
 }
 
 func TestFindOrNewProject(t *testing.T) {
-	tmp1, err := ioutil.TempDir(os.TempDir(), "gogh-test")
-	require.NoError(t, err)
-	defer os.RemoveAll(tmp1)
-	tmp2, err := ioutil.TempDir(os.TempDir(), "gogh-test")
-	require.NoError(t, err)
-	defer os.RemoveAll(tmp2)
-	ctx := context.MockContext{MRoot: []string{tmp1, tmp2}, MGitHubUser: "kyoh86", MGitHubHost: "github.com"}
+	svc := initTest(t)
+	defer svc.teardown(t)
 
-	path := filepath.Join(tmp1, "github.com", "kyoh86", "gogh")
+	path := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 
 	t.Run("not existing repository", func(t *testing.T) {
-		p, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		p, _, err := gogh.FindOrNewProject(svc.ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
 		assert.Equal(t, path, p.FullPath)
 		assert.False(t, p.Exists)
@@ -91,48 +51,49 @@ func TestFindOrNewProject(t *testing.T) {
 	})
 	t.Run("not existing repository (in primary)", func(t *testing.T) {
 		// Create same name repository in other root
-		inOther := filepath.Join(tmp2, "github.com", "kyoh86", "gogh", ".git")
+		inOther := filepath.Join(svc.root2, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(inOther, 0755))
 		defer os.RemoveAll(inOther)
-		p, err := FindOrNewProjectInPrimary(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		p, _, err := gogh.FindOrNewProjectInPrimary(svc.ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		require.NoError(t, err)
 		assert.Equal(t, path, p.FullPath)
 		assert.False(t, p.Exists)
 		assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 	})
 	t.Run("not existing repository with FindProject", func(t *testing.T) {
-		_, err := FindProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		_, _, err := gogh.FindProject(svc.ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, "project not found")
 	})
 	t.Run("not existing repository with FindProjectInPrimary", func(t *testing.T) {
-		inOther := filepath.Join(tmp2, "github.com", "kyoh86", "gogh", ".git")
+		inOther := filepath.Join(svc.root2, "github.com", "kyoh86", "gogh", ".git")
 		require.NoError(t, os.MkdirAll(inOther, 0755))
 		defer os.RemoveAll(inOther)
-		_, err := FindProjectInPrimary(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		_, _, err := gogh.FindProjectInPrimary(svc.ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 		assert.EqualError(t, err, "project not found")
 	})
-	t.Run("not supported host URL by FindProject", func(t *testing.T) {
-		_, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
-		assert.EqualError(t, err, `not supported host: "example.com"`)
-	})
-	t.Run("not supported host URL by FindProjectPath", func(t *testing.T) {
-		_, err := FindProjectPath(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
-		assert.EqualError(t, err, `not supported host: "example.com"`)
-	})
-	t.Run("not supported host URL by NewProject", func(t *testing.T) {
-		_, err := NewProject(&ctx, parseURL(t, "ssh://git@example.com/kyoh86/gogh.git"))
-		assert.EqualError(t, err, `not supported host: "example.com"`)
-	})
 	t.Run("fail with invalid root", func(t *testing.T) {
-		ctx := context.MockContext{MRoot: []string{"/\x00"}, MGitHubUser: "kyoh86", MGitHubHost: "github.com"}
-		_, err := FindOrNewProject(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		ev := NewMockEnv(ctrl)
+		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
+		ev.EXPECT().Roots().AnyTimes().Return([]string{"/\x00"})
+
+		_, _, err := gogh.FindOrNewProject(ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
+		assert.Error(t, err)
+	})
+	t.Run("not supported host", func(t *testing.T) {
+		_, _, err := gogh.FindOrNewProject(svc.ev, mustParseRepoSpec(t, "ssh://git@example.com/kyoh86/gogh.git"))
+		assert.Error(t, err)
+	})
+	t.Run("finding path with not supported host", func(t *testing.T) {
+		_, err := gogh.FindProjectPath(svc.ev, mustParseRepoSpec(t, "ssh://git@example.com/kyoh86/gogh.git"))
 		assert.Error(t, err)
 	})
 	t.Run("existing repository", func(t *testing.T) {
 		// Create same name repository
-		require.NoError(t, os.MkdirAll(filepath.Join(tmp1, "github.com", "kyoh85", "gogh", ".git"), 0755))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root1, "github.com", "kyoh85", "gogh", ".git"), 0755))
 		// Create different name repository
-		require.NoError(t, os.MkdirAll(filepath.Join(tmp1, "github.com", "kyoh86", "foo", ".git"), 0755))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root1, "github.com", "kyoh86", "foo", ".git"), 0755))
 		// Create target repository
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
 		defer func() {
@@ -140,70 +101,119 @@ func TestFindOrNewProject(t *testing.T) {
 		}()
 
 		t.Run("full name", func(t *testing.T) {
-			gotPath, err := FindProjectPath(&ctx, parseURL(t, "ssh://git@github.com/kyoh86/gogh.git"))
+			gotPath, err := gogh.FindProjectPath(svc.ev, mustParseRepoSpec(t, "ssh://git@github.com/kyoh86/gogh.git"))
 			require.NoError(t, err)
 			assert.Equal(t, path, gotPath)
 		})
 
 		t.Run("shortest precise name (owner and name)", func(t *testing.T) {
-			p, err := FindOrNewProject(&ctx, parseURL(t, "kyoh86/gogh"))
+			p, _, err := gogh.FindOrNewProject(svc.ev, mustParseRepoSpec(t, "kyoh86/gogh"))
 			require.NoError(t, err)
 			assert.Equal(t, path, p.FullPath)
 			assert.Equal(t, []string{"gogh", "kyoh86/gogh", "github.com/kyoh86/gogh"}, p.Subpaths())
 		})
 
 		t.Run("shortest pricese name (name only)", func(t *testing.T) {
-			p, err := FindOrNewProject(&ctx, parseURL(t, "foo"))
+			p, _, err := gogh.FindOrNewProject(svc.ev, mustParseRepoSpec(t, "foo"))
 			require.NoError(t, err)
-			assert.Equal(t, filepath.Join(tmp1, "github.com", "kyoh86", "foo"), p.FullPath)
+			assert.Equal(t, filepath.Join(svc.root1, "github.com", "kyoh86", "foo"), p.FullPath)
 			assert.Equal(t, []string{"foo", "kyoh86/foo", "github.com/kyoh86/foo"}, p.Subpaths())
 		})
 	})
 }
 
-func parseURL(t *testing.T, text string) *Repo {
-	t.Helper()
-	u, err := ParseRepo(text)
-	require.NoError(t, err)
-	return u
-}
-
 func TestWalk(t *testing.T) {
-	neverCalled := func(t *testing.T) func(*Project) error {
-		return func(*Project) error {
+	neverCalled := func(t *testing.T) func(*gogh.Project) error {
+		return func(*gogh.Project) error {
 			t.Fatal("should not be called but...")
 			return nil
 		}
 	}
-	t.Run("Not existing root", func(t *testing.T) {
-		t.Run("primary root", func(t *testing.T) {
-			ctx := context.MockContext{MRoot: []string{"/that/will/never/exist"}}
-			require.NoError(t, Walk(&ctx, neverCalled(t)))
-		})
-		t.Run("secondary root", func(t *testing.T) {
-			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
-			require.NoError(t, err)
-			ctx := context.MockContext{MRoot: []string{tmp, "/that/will/never/exist"}}
-			require.NoError(t, Walk(&ctx, neverCalled(t)))
-		})
+
+	t.Run("empty roots", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.teardown(t)
+		assert.NoError(t, gogh.Walk(svc.ev, neverCalled(t)))
 	})
 
-	t.Run("Root specifies a file", func(t *testing.T) {
+	t.Run("not exist roots", func(t *testing.T) {
+		envCtrl := gomock.NewController(t)
+		ev := NewMockEnv(envCtrl)
+		ev.EXPECT().Roots().AnyTimes().Return([]string{filepath.Join("/", "not", "exists")})
+
+		assert.NoError(t, gogh.Walk(ev, neverCalled(t)))
+	})
+
+	t.Run("cover all projects", func(t *testing.T) {
+		svc := initTest(t)
+		defer svc.teardown(t)
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root1, "github.com", "kyoh86", "proj-1", ".git"), os.ModePerm))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root1, "github.com", "kyoh86", "proj-2", ".git"), os.ModePerm))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root2, "github.com", "kyoh86", "proj-3", ".git"), os.ModePerm))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root2, "github.com", "kyoh86", "proj-4", ".git"), os.ModePerm))
+
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root2, "invalid.com", "kyoh86", "invalid-1", ".git"), os.ModePerm))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root2, "github.com", "kyoh86", "too-deep", "invalid-2", ".git"), os.ModePerm))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root2, "github.com", "in'valid", "invalid-3", ".git"), os.ModePerm))
+		require.NoError(t, os.MkdirAll(filepath.Join(svc.root2, "github.com", "kyoh86", "in'valid-4", ".git"), os.ModePerm))
+
+		var (
+			found1 bool
+			found2 bool
+			found3 bool
+			found4 bool
+		)
+		require.NoError(t, gogh.Walk(svc.ev, func(p *gogh.Project) error {
+			switch p.RelPath {
+			case filepath.Join("github.com", "kyoh86", "proj-1"):
+				assert.True(t, p.IsInPrimaryRoot(svc.ev))
+				found1 = true
+			case filepath.Join("github.com", "kyoh86", "proj-2"):
+				assert.True(t, p.IsInPrimaryRoot(svc.ev))
+				found2 = true
+			case filepath.Join("github.com", "kyoh86", "proj-3"):
+				assert.False(t, p.IsInPrimaryRoot(svc.ev))
+				found3 = true
+			case filepath.Join("github.com", "kyoh86", "proj-4"):
+				assert.False(t, p.IsInPrimaryRoot(svc.ev))
+				found4 = true
+			default:
+				return fmt.Errorf("not prepared project %s", p.RelPath)
+			}
+			return nil
+		}))
+		assert.True(t, found1)
+		assert.True(t, found2)
+		assert.True(t, found3)
+		assert.True(t, found4)
+	})
+
+	t.Run("Roots specifies a file", func(t *testing.T) {
 		t.Run("Primary root is a file", func(t *testing.T) {
 			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 			require.NoError(t, err)
 			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-			ctx := context.MockContext{MRoot: []string{filepath.Join(tmp, "foo")}}
-			require.NoError(t, Walk(&ctx, neverCalled(t)))
-			require.NoError(t, WalkInPrimary(&ctx, neverCalled(t)))
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			ev := NewMockEnv(ctrl)
+			ev.EXPECT().Roots().AnyTimes().Return([]string{filepath.Join(tmp, "foo")})
+
+			require.NoError(t, gogh.Walk(ev, neverCalled(t)))
+			require.NoError(t, gogh.WalkInPrimary(ev, neverCalled(t)))
 		})
 		t.Run("Secondary root is a file", func(t *testing.T) {
 			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
 			require.NoError(t, err)
 			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-			ctx := context.MockContext{MRoot: []string{tmp, filepath.Join(tmp, "foo")}}
-			require.NoError(t, Walk(&ctx, neverCalled(t)))
-			require.NoError(t, WalkInPrimary(&ctx, neverCalled(t)))
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			ev := NewMockEnv(ctrl)
+			ev.EXPECT().Roots().AnyTimes().Return([]string{tmp, filepath.Join(tmp, "foo")})
+
+			require.NoError(t, gogh.Walk(ev, neverCalled(t)))
+			require.NoError(t, gogh.WalkInPrimary(ev, neverCalled(t)))
 		})
 	})
 
@@ -213,8 +223,13 @@ func TestWalk(t *testing.T) {
 		path := filepath.Join(tmp, "github.com", "kyoh--86", "gogh")
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
 
-		ctx := context.MockContext{MRoot: []string{tmp, filepath.Join(tmp)}}
-		assert.NoError(t, Walk(&ctx, neverCalled(t)))
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		ev := NewMockEnv(ctrl)
+		ev.EXPECT().Roots().AnyTimes().Return([]string{tmp, filepath.Join(tmp)})
+		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
+
+		assert.NoError(t, gogh.Walk(ev, neverCalled(t)))
 	})
 
 	t.Run("through error from callback", func(t *testing.T) {
@@ -222,11 +237,16 @@ func TestWalk(t *testing.T) {
 		require.NoError(t, err)
 		path := filepath.Join(tmp, "github.com", "kyoh86", "gogh")
 		require.NoError(t, os.MkdirAll(filepath.Join(path, ".git"), 0755))
-
 		require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-		ctx := context.MockContext{MRoot: []string{tmp, filepath.Join(tmp, "foo")}, MGitHubHost: "github.com"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		ev := NewMockEnv(ctrl)
+		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
+		ev.EXPECT().Roots().AnyTimes().Return([]string{tmp, filepath.Join(tmp, "foo")})
+
 		err = errors.New("sample error")
-		assert.EqualError(t, Walk(&ctx, func(p *Project) error {
+		assert.EqualError(t, gogh.Walk(ev, func(p *gogh.Project) error {
 			assert.Equal(t, path, p.FullPath)
 			return err
 		}), "sample error")
@@ -241,7 +261,11 @@ func TestList_Symlink(t *testing.T) {
 	symDir, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 
-	ctx := &context.MockContext{MRoot: []string{root}, MGitHubHost: "github.com"}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ev := NewMockEnv(ctrl)
+	ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
+	ev.EXPECT().Roots().AnyTimes().Return([]string{root})
 
 	err = os.MkdirAll(filepath.Join(root, "github.com", "atom", "atom", ".git"), 0777)
 	require.NoError(t, err)
@@ -254,7 +278,7 @@ func TestList_Symlink(t *testing.T) {
 
 	var lock sync.Mutex
 	paths := []string{}
-	require.NoError(t, Walk(ctx, func(p *Project) error {
+	require.NoError(t, gogh.Walk(ev, func(p *gogh.Project) error {
 		lock.Lock()
 		defer lock.Unlock()
 		paths = append(paths, p.RelPath)
@@ -265,22 +289,19 @@ func TestList_Symlink(t *testing.T) {
 }
 
 func TestQuery(t *testing.T) {
-	root1, err := ioutil.TempDir(os.TempDir(), "gogh-test1")
-	require.NoError(t, err)
-	root2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
-	require.NoError(t, err)
-	path1 := filepath.Join(root1, "github.com", "kyoh86", "gogh")
+	svc := initTest(t)
+	defer svc.teardown(t)
+
+	path1 := filepath.Join(svc.root1, "github.com", "kyoh86", "gogh")
 	require.NoError(t, os.MkdirAll(filepath.Join(path1, ".git"), 0755))
-	path2 := filepath.Join(root1, "github.com", "kyoh85", "gogh")
+	path2 := filepath.Join(svc.root1, "github.com", "kyoh85", "gogh")
 	require.NoError(t, os.MkdirAll(filepath.Join(path2, ".git"), 0755))
-	path3 := filepath.Join(root1, "github.com", "kyoh86", "foo")
+	path3 := filepath.Join(svc.root1, "github.com", "kyoh86", "foo")
 	require.NoError(t, os.MkdirAll(filepath.Join(path3, ".git"), 0755))
-	path5 := filepath.Join(root2, "github.com", "kyoh86", "gogh")
+	path5 := filepath.Join(svc.root2, "github.com", "kyoh86", "gogh")
 	require.NoError(t, os.MkdirAll(filepath.Join(path5, ".git"), 0755))
 
-	ctx := context.MockContext{MRoot: []string{root1, root2}, MGitHubHost: "github.com"}
-
-	assert.NoError(t, Query(&ctx, "never found", Walk, func(*Project) error {
+	assert.NoError(t, gogh.Query(svc.ev, "never found", gogh.Walk, func(*gogh.Project) error {
 		t.Fatal("should not be called but...")
 		return nil
 	}))
@@ -290,7 +311,7 @@ func TestQuery(t *testing.T) {
 		expect.Store(path1, struct{}{})
 		expect.Store(path2, struct{}{})
 		expect.Store(path5, struct{}{})
-		assert.NoError(t, Query(&ctx, "gogh", Walk, func(p *Project) error {
+		assert.NoError(t, gogh.Query(svc.ev, "gogh", gogh.Walk, func(p *gogh.Project) error {
 			_, ok := expect.Load(p.FullPath)
 			assert.True(t, ok, p.FullPath)
 			expect.Delete(p.FullPath)
@@ -306,7 +327,7 @@ func TestQuery(t *testing.T) {
 		expect.Store(path1, struct{}{})
 		expect.Store(path2, struct{}{})
 		expect.Store(path5, struct{}{})
-		assert.NoError(t, Query(&ctx, "gog", Walk, func(p *Project) error {
+		assert.NoError(t, gogh.Query(svc.ev, "gog", gogh.Walk, func(p *gogh.Project) error {
 			_, ok := expect.Load(p.FullPath)
 			assert.True(t, ok, p.FullPath)
 			expect.Delete(p.FullPath)
@@ -321,7 +342,7 @@ func TestQuery(t *testing.T) {
 		var expect sync.Map
 		expect.Store(path1, struct{}{})
 		expect.Store(path5, struct{}{})
-		assert.NoError(t, Query(&ctx, "kyoh86/gogh", Walk, func(p *Project) error {
+		assert.NoError(t, gogh.Query(svc.ev, "kyoh86/gogh", gogh.Walk, func(p *gogh.Project) error {
 			_, ok := expect.Load(p.FullPath)
 			assert.True(t, ok, p.FullPath)
 			expect.Delete(p.FullPath)
@@ -336,7 +357,7 @@ func TestQuery(t *testing.T) {
 		var expect sync.Map
 		expect.Store(path1, struct{}{})
 		expect.Store(path5, struct{}{})
-		assert.NoError(t, Query(&ctx, "yoh86/gog", Walk, func(p *Project) error {
+		assert.NoError(t, gogh.Query(svc.ev, "yoh86/gog", gogh.Walk, func(p *gogh.Project) error {
 			_, ok := expect.Load(p.FullPath)
 			assert.True(t, ok, p.FullPath)
 			expect.Delete(p.FullPath)
@@ -351,7 +372,7 @@ func TestQuery(t *testing.T) {
 		var expect sync.Map
 		expect.Store(path1, struct{}{})
 		expect.Store(path5, struct{}{})
-		assert.NoError(t, Query(&ctx, "github.com/kyoh86/gogh", Walk, func(p *Project) error {
+		assert.NoError(t, gogh.Query(svc.ev, "github.com/kyoh86/gogh", gogh.Walk, func(p *gogh.Project) error {
 			_, ok := expect.Load(p.FullPath)
 			assert.True(t, ok, p.FullPath)
 			expect.Delete(p.FullPath)
@@ -366,7 +387,7 @@ func TestQuery(t *testing.T) {
 		var expect sync.Map
 		expect.Store(path1, struct{}{})
 		expect.Store(path5, struct{}{})
-		assert.NoError(t, Query(&ctx, "ithub.com/kyoh86/gog", Walk, func(p *Project) error {
+		assert.NoError(t, gogh.Query(svc.ev, "ithub.com/kyoh86/gog", gogh.Walk, func(p *gogh.Project) error {
 			_, ok := expect.Load(p.FullPath)
 			assert.True(t, ok, p.FullPath)
 			expect.Delete(p.FullPath)
@@ -381,7 +402,7 @@ func TestQuery(t *testing.T) {
 		var expect sync.Map
 		expect.Store(path1, struct{}{})
 		expect.Store(path2, struct{}{})
-		assert.NoError(t, Query(&ctx, "gogh", WalkInPrimary, func(p *Project) error {
+		assert.NoError(t, gogh.Query(svc.ev, "gogh", gogh.WalkInPrimary, func(p *gogh.Project) error {
 			_, ok := expect.Load(p.FullPath)
 			assert.True(t, ok, p.FullPath)
 			expect.Delete(p.FullPath)

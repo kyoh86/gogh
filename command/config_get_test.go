@@ -1,23 +1,33 @@
 package command_test
 
 import (
+	"log"
+	"strings"
 	"testing"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/config"
+	"github.com/kyoh86/gogh/env"
 	"github.com/stretchr/testify/assert"
 )
 
 func ExampleConfigGet() {
-	if err := command.ConfigGet(&config.Config{
-		VRoot: []string{"/foo", "/bar"},
-	}, "root"); err != nil {
-		panic(err)
+	yml := strings.NewReader(`{"roots": ["/foo", "/bar"]}`)
+	config, err := env.GetConfig(yml)
+	if err != nil {
+		log.Fatal(err)
 	}
+	if err := command.ConfigGet(&config, "roots"); err != nil {
+		log.Fatal(err)
+	}
+
 	// Output:
 	// /foo:/bar
 }
 
 func TestConfigGet(t *testing.T) {
-	assert.EqualError(t, command.ConfigGet(&config.Config{}, "invalid.name"), "invalid option name")
+	config, err := env.GetConfig(env.EmptyYAMLReader)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.EqualError(t, command.ConfigGet(&config, "invalid.name"), `invalid property name "invalid.name"`)
 }

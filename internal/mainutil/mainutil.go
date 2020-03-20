@@ -1,12 +1,12 @@
 package mainutil
 
 import (
-	"log"
+	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/alecthomas/kingpin"
-	"github.com/kyoh86/gogh/config"
+	"github.com/kyoh86/gogh/env"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/xdg"
 )
@@ -18,57 +18,68 @@ func setConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
 		StringVar(configFile)
 }
 
-func currentConfig(configFile string) (*config.Config, *config.Config, error) {
-	var savedConfig *config.Config
-	file, err := os.Open(configFile)
+func openYAML(filename string) (io.Reader, func() error, error) {
+	var reader io.Reader
+	var teardown func() error
+	file, err := os.Open(filename)
 	switch {
 	case err == nil:
-		defer file.Close()
-		savedConfig, err = config.LoadConfig(file)
-		if err != nil {
-			return nil, nil, err
-		}
+		teardown = file.Close
+		reader = file
 	case os.IsNotExist(err):
-		savedConfig = &config.Config{}
+		reader = env.EmptyYAMLReader
+		teardown = func() error { return nil }
 	default:
 		return nil, nil, err
 	}
-
-	savedConfig = config.MergeConfig(savedConfig, config.LoadKeyring())
-	envarConfig, err := config.GetEnvarConfig()
-	if err != nil {
-		return nil, nil, err
-	}
-	cfg := config.MergeConfig(config.DefaultConfig(), savedConfig, envarConfig)
-	if err := gogh.ValidateContext(cfg); err != nil {
-		log.Printf("warn: invalid config: %v", err)
-	}
-	return savedConfig, cfg, nil
+	return reader, teardown, nil
 }
 
-func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Context) error) (string, func() error) {
+func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
-	return cmd.FullCommand(), func() error {
-		_, cfg, err := currentConfig(configFile)
+	return cmd.FullCommand(), func() (retErr error) {
+		reader, teardown, err := openYAML(configFile)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err := teardown(); err != nil && retErr == nil {
+				retErr = err
+				return
+			}
+		}()
+
+		access, err := env.GetAccess(reader, env.EnvarPrefix)
 		if err != nil {
 			return err
 		}
 
-		return f(cfg)
+		return f(&access)
 	}
 }
 
-func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*config.Config) error) (string, func() error) {
+func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
-	return cmd.FullCommand(), func() error {
-		savedConfig, _, err := currentConfig(configFile)
+	return cmd.FullCommand(), func() (retErr error) {
+		reader, teardown, err := openYAML(configFile)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err := teardown(); err != nil && retErr == nil {
+				retErr = err
+				return
+			}
+		}()
+
+		config, err := env.GetConfig(reader)
 		if err != nil {
 			return err
 		}
 
-		if err = f(savedConfig); err != nil {
+		if err = f(&config); err != nil {
 			return err
 		}
 
@@ -80,6 +91,6 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*config.Config) erro
 			return err
 		}
 		defer file.Close()
-		return config.SaveConfig(file, savedConfig)
+		return config.Save(file)
 	}
 }

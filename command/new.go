@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"log"
 	"net/url"
 	"os"
@@ -10,7 +11,8 @@ import (
 
 // New creates a local project and a remote repository.
 func New(
-	ctx gogh.Context,
+	ctx context.Context,
+	ev gogh.Env,
 	gitClient GitClient,
 	hubClient HubClient,
 	private bool,
@@ -20,18 +22,16 @@ func New(
 	template string,
 	separateGitDir string,
 	shared RepoShared,
-	repo *gogh.Repo,
+	spec *gogh.RepoSpec,
 ) error {
-	InitLog(ctx)
-
-	log.Printf("info: Creating new project and a remote repository %s", repo)
-	project, err := gogh.FindOrNewProject(ctx, repo)
+	log.Printf("info: Creating new project and a remote repository %s", spec)
+	project, repo, err := gogh.FindOrNewProject(ev, spec)
 	if err != nil {
 		return err
 	}
 
 	log.Printf("info: Checking existing project")
-	remote, err := checkProjectRemote(ctx, gitClient, project, repo)
+	remote, err := checkProjectRemote(gitClient, project, repo)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func New(
 
 	// hub create
 	log.Println("info: Creating a new repository in GitHub")
-	newRepo, err := hubClient.Create(ctx, repo, description, homepage, private)
+	newRepo, err := hubClient.Create(ctx, ev, repo, description, homepage, private)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func New(
 	return nil
 }
 
-func checkProjectRemote(ctx gogh.Context, gitClient GitClient, project *gogh.Project, repo *gogh.Repo) (bool, error) {
+func checkProjectRemote(gitClient GitClient, project *gogh.Project, repo *gogh.Repo) (bool, error) {
 	if !project.Exists {
 		return false, nil
 	}
@@ -84,10 +84,10 @@ func checkProjectRemote(ctx gogh.Context, gitClient GitClient, project *gogh.Pro
 		if remote == nil {
 			return false, nil
 		}
-		if remote.String() == repo.URL(ctx, false).String() {
+		if remote.String() == repo.URL(false).String() {
 			return true, nil
 		}
-		if remote.String() == repo.URL(ctx, true).String() {
+		if remote.String() == repo.URL(true).String() {
 			return true, nil
 		}
 		return true, gogh.ErrProjectAlreadyExists

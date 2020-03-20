@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWhere(t *testing.T) {
+func TestFind(t *testing.T) {
 	svc := initTest(t)
 	defer svc.teardown(t)
 
@@ -21,7 +21,14 @@ func TestWhere(t *testing.T) {
 	proj3 := filepath.Join(svc.root2, "github.com", "kyoh85", "test", ".git")
 	require.NoError(t, os.MkdirAll(proj3, 0755))
 
-	assert.EqualError(t, command.Where(svc.ev, false, "gogh"), "try more precise name")
-	assert.EqualError(t, command.Where(svc.ev, false, "noone"), "project not found")
-	assert.NoError(t, command.Where(svc.ev, true, "gogh"))
+	svc.ev.EXPECT().GithubUser().Return("kyoh86")
+	assert.EqualError(t, command.Find(svc.ev, true, mustParseRepoSpec(t, "gogh")), "project not found")
+
+	svc.ev.EXPECT().GithubUser().Return("kyoh86")
+	assert.NoError(t, command.Find(svc.ev, false, mustParseRepoSpec(t, "gogh")))
+
+	svc.ev.EXPECT().GithubUser().Return("kyoh86")
+	assert.NoError(t, command.Find(svc.ev, false, mustParseRepoSpec(t, "kyoh85/test")))
+
+	assert.NoError(t, command.Find(svc.ev, true, mustParseRepoSpec(t, "vim-gogh")))
 }

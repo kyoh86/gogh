@@ -9,16 +9,14 @@ import (
 )
 
 // Delete local projects
-func Delete(ctx gogh.Context, primary bool, query string) error {
-	InitLog(ctx)
-
+func Delete(ev gogh.Env, primary bool, query string) error {
 	var walk gogh.Walker = gogh.Walk
 	if primary {
 		walk = gogh.WalkInPrimary
 	}
 
 	var projects []*gogh.Project
-	if err := gogh.Query(ctx, query, walk, func(p *gogh.Project) error {
+	if err := gogh.Query(ev, query, walk, func(p *gogh.Project) error {
 		projects = append(projects, p)
 		return nil
 	}); err != nil {
@@ -29,10 +27,10 @@ func Delete(ctx gogh.Context, primary bool, query string) error {
 		return fmt.Errorf("any projects did not matched for %q", query)
 	}
 
-	fmt.Fprintln(ctx.Stdout(), "Deleting projects. Please confirm them and answer by [y/n]")
+	fmt.Println("Deleting projects. Please confirm them and answer by [y/n]")
 	for _, p := range projects {
 		fmt.Print(p.FullPath)
-		yes, err := ask.Limit(5).Reader(ctx.Stdin()).YesNo()
+		yes, err := ask.Limit(5).YesNo()
 		if err != nil {
 			return err
 		}
