@@ -39,7 +39,7 @@ type Roots struct {
 }
 
 func (p *Roots) Value() interface{} {
-	list := make([]string, 0, len(p.value)
+	list := make([]string, 0, len(p.value))
 	uniq := map[string]struct{}{}
 	for _, p := range p.value {
 		exp := expandPath(p)
