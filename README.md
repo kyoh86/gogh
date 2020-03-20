@@ -68,7 +68,7 @@ A name of your GitHub user (i.e. `kyoh86`).
 
 If an environment variable `GOGH_GITHUB_USER` is set, its value is used instead.
 
-### `root`
+### `roots`
 
 The paths to directory under which cloned repositories are placed.
 See [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below. Default: `~/go/src`.
@@ -78,12 +78,6 @@ If so, the first one becomes primary one i.e. new repository clones are always c
 You may want to specify `$GOPATH/src` as a secondary root.
 
 If an environment variable `GOGH_ROOT` is set, its value is used instead.
-
-### `log.level`
-
-The level to output logs (debug, info, warn, error or panic). Default: `warn`.
-
-If an environment variable `GOGH_LOG_LEVEL` is set, its value is used instead.
 
 ### `github.token`
 
@@ -96,13 +90,6 @@ If an environment variable `GOGH_GITHUB_TOKEN` is set, its value is used instead
 The host name to connect to GitHub. Default: `github.com`.
 
 If an environment variable `GOGH_GITHUB_HOST` is set, its value is used instead.
-
-### `log.(date|time|microseconds|longfile|shortfile|utc)`
-
-It can be customized that what log prints with message. Default: `log.time` is "yes", others are "no".
-`"yes"` means that its optional property should be printed.
-
-If an environment variable `GOGH_LOG_(DATE|TIME|MICROSECONDS|LONGFILE|SHORTFILE|UTC)` is set, its value is used instead.
 
 ## COMMANDS
 
