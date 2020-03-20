@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -33,12 +34,8 @@ func getToken(ev gogh.Env) (string, error) {
 
 func oauth2Client(authContext context.Context, ev gogh.Env) *http.Client {
 	token, err := getToken(ev)
-	if err != nil {
-		//UNDONE: warn (set github.token)
-		return nil
-	}
-	if token == "" {
-		//UNDONE: warn (set github.token)
+	if err != nil || token == "" {
+		log.Println("info: you can set GitHub token with `gogh config set github.token <token>`")
 		return nil
 	}
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
