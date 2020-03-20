@@ -4,7 +4,6 @@ package env
 
 import (
 	gostrcase "github.com/stoewer/go-strcase"
-	"log"
 	"os"
 )
 
@@ -18,9 +17,7 @@ func getEnvar(prefix string) (envar Envar, err error) {
 	prefix = gostrcase.UpperSnakeCase(prefix)
 	{
 		v := os.Getenv(prefix + "GITHUB_HOST")
-		if v == "" {
-			log.Printf("info: there's no envar %sGITHUB_HOST (%v)", prefix, err)
-		} else {
+		if v != "" {
 			var value GithubHost
 			if err = value.UnmarshalText([]byte(v)); err != nil {
 				return envar, err
@@ -30,9 +27,7 @@ func getEnvar(prefix string) (envar Envar, err error) {
 	}
 	{
 		v := os.Getenv(prefix + "GITHUB_USER")
-		if v == "" {
-			log.Printf("info: there's no envar %sGITHUB_USER (%v)", prefix, err)
-		} else {
+		if v != "" {
 			var value GithubUser
 			if err = value.UnmarshalText([]byte(v)); err != nil {
 				return envar, err
@@ -42,9 +37,7 @@ func getEnvar(prefix string) (envar Envar, err error) {
 	}
 	{
 		v := os.Getenv(prefix + "ROOTS")
-		if v == "" {
-			log.Printf("info: there's no envar %sROOTS (%v)", prefix, err)
-		} else {
+		if v != "" {
 			var value Roots
 			if err = value.UnmarshalText([]byte(v)); err != nil {
 				return envar, err
