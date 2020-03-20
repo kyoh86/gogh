@@ -1,14 +1,11 @@
 package command
 
 import (
+	"log"
 	"os"
-
-	"github.com/comail/colog"
 )
 
 func InitLog() {
-	colog.SetMinLevel(colog.LInfo)
-	colog.SetDefaultLevel(colog.LError)
-	colog.SetOutput(os.Stderr)
-	colog.Register()
+	log.SetOutput(os.Stderr)
+	log.SetFlags(0)
 }

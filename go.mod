@@ -4,7 +4,6 @@ require (
 	github.com/alecthomas/kingpin v2.2.6+incompatible
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
-	github.com/comail/colog v0.0.0-20160416085026-fba8e7b1f46c
 	github.com/golang/mock v1.4.1
 	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/google/go-github/v29 v29.0.3
