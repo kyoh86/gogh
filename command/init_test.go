@@ -47,6 +47,8 @@ func initTest(t *testing.T) *testService {
 	hubClient := NewMockHubClient(hubCtrl)
 	ctxMock := NewMockEnv(envCtrl)
 
+	//UNDONE: prepare dummy hooks dir
+
 	root1, err := ioutil.TempDir(os.TempDir(), "gogh-test1")
 	require.NoError(t, err)
 
