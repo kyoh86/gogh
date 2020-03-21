@@ -9,5 +9,6 @@ import (
 type Env interface {
 	GithubHost() string
 	GithubUser() string
+	Hooks() []string
 	Roots() []string
 }

@@ -60,6 +60,20 @@ func (mr *MockEnvMockRecorder) GithubUser() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GithubUser", reflect.TypeOf((*MockEnv)(nil).GithubUser))
 }
 
+// Hooks mocks base method
+func (m *MockEnv) Hooks() []string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Hooks")
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// Hooks indicates an expected call of Hooks
+func (mr *MockEnvMockRecorder) Hooks() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hooks", reflect.TypeOf((*MockEnv)(nil).Hooks))
+}
+
 // Roots mocks base method
 func (m *MockEnv) Roots() []string {
 	m.ctrl.T.Helper()

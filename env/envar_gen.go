@@ -11,6 +11,7 @@ type Envar struct {
 	GithubHost *GithubHost
 	GithubUser *GithubUser
 	Roots      *Roots
+	Hooks      *Hooks
 }
 
 func getEnvar(prefix string) (envar Envar, err error) {
@@ -43,6 +44,16 @@ func getEnvar(prefix string) (envar Envar, err error) {
 				return envar, err
 			}
 			envar.Roots = &value
+		}
+	}
+	{
+		v := os.Getenv(prefix + "HOOKS")
+		if v != "" {
+			var value Hooks
+			if err = value.UnmarshalText([]byte(v)); err != nil {
+				return envar, err
+			}
+			envar.Hooks = &value
 		}
 	}
 	return

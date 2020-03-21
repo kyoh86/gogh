@@ -37,6 +37,14 @@ func GetAccess(yamlReader io.Reader, envarPrefix string) (access Access, err err
 		access.roots = envar.Roots.Value().([]string)
 	}
 
+	access.hooks = new(Hooks).Default().([]string)
+	if yml.Hooks != nil {
+		access.hooks = yml.Hooks.Value().([]string)
+	}
+	if envar.Hooks != nil {
+		access.hooks = envar.Hooks.Value().([]string)
+	}
+
 	return
 }
 
@@ -44,6 +52,7 @@ type Access struct {
 	githubHost string
 	githubUser string
 	roots      []string
+	hooks      []string
 }
 
 func (a *Access) GithubHost() string {
@@ -56,4 +65,8 @@ func (a *Access) GithubUser() string {
 
 func (a *Access) Roots() []string {
 	return a.roots
+}
+
+func (a *Access) Hooks() []string {
+	return a.hooks
 }
