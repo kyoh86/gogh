@@ -5,13 +5,8 @@ import (
 	"os/exec"
 )
 
-// CommandRunner will run a command
-var CommandRunner = func(cmd *exec.Cmd) error {
-	return cmd.Run()
-}
-
 func ExecCommand(cmd *exec.Cmd) error {
-	err := CommandRunner(cmd)
+	err := cmd.Run()
 	if err != nil {
 		return &ExecError{cmd, err}
 	}
