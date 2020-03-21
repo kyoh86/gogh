@@ -117,7 +117,7 @@ func TestRepoParse(t *testing.T) {
 
 	t.Run("fail when url has no path", func(t *testing.T) {
 		r, err := gogh.ParseRepo(ev, "https://github.com/")
-		assert.EqualError(t, err, "empty project name")
+		assert.EqualError(t, err, "project name is empty")
 		assert.Nil(t, r)
 	})
 

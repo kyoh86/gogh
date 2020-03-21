@@ -93,7 +93,7 @@ func TestRepoSpec(t *testing.T) {
 
 	t.Run("fail when url has no path", func(t *testing.T) {
 		spec := new(gogh.RepoSpec)
-		assert.EqualError(t, spec.Set("https://github.com/"), "empty project name")
+		assert.EqualError(t, spec.Set("https://github.com/"), "project name is empty")
 	})
 
 	t.Run("fail when url has subfolder", func(t *testing.T) {
