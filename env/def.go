@@ -39,17 +39,11 @@ type Roots struct {
 }
 
 func (p *Roots) Value() interface{} {
-	list := make([]string, 0, len(p.value))
-	uniq := map[string]struct{}{}
+	roots := make([]string, 0, len(p.value))
 	for _, p := range p.value {
-		exp := expandPath(p)
-		if _, ok := uniq[exp]; ok {
-			continue
-		}
-		uniq[exp] = struct{}{}
-		list = append(list, exp)
+		roots = append(roots, expandPath(p))
 	}
-	return list
+	return funk.UniqString(roots)
 }
 
 func expandPath(path string) string {
@@ -71,11 +65,11 @@ func expandPath(path string) string {
 }
 func (*Roots) Default() interface{} {
 	gopaths := filepath.SplitList(build.Default.GOPATH)
-	root := make([]string, 0, len(gopaths))
+	roots := make([]string, 0, len(gopaths))
 	for _, gopath := range gopaths {
-		root = append(root, filepath.Join(gopath, "src"))
+		roots = append(roots, filepath.Join(gopath, "src"))
 	}
-	return funk.UniqString(root)
+	return funk.UniqString(roots)
 }
 
 // MarshalYAML implements the interface `yaml.Marshaler`
