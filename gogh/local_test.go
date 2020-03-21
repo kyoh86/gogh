@@ -136,14 +136,6 @@ func TestWalk(t *testing.T) {
 		assert.NoError(t, gogh.Walk(svc.ev, neverCalled(t)))
 	})
 
-	t.Run("not exist roots", func(t *testing.T) {
-		envCtrl := gomock.NewController(t)
-		ev := NewMockEnv(envCtrl)
-		ev.EXPECT().Roots().AnyTimes().Return([]string{filepath.Join("/", "not", "exists")})
-
-		assert.NoError(t, gogh.Walk(ev, neverCalled(t)))
-	})
-
 	t.Run("cover all projects", func(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
@@ -186,35 +178,6 @@ func TestWalk(t *testing.T) {
 		assert.True(t, found2)
 		assert.True(t, found3)
 		assert.True(t, found4)
-	})
-
-	t.Run("Roots specifies a file", func(t *testing.T) {
-		t.Run("Primary root is a file", func(t *testing.T) {
-			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
-			require.NoError(t, err)
-			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			ev := NewMockEnv(ctrl)
-			ev.EXPECT().Roots().AnyTimes().Return([]string{filepath.Join(tmp, "foo")})
-
-			require.NoError(t, gogh.Walk(ev, neverCalled(t)))
-			require.NoError(t, gogh.WalkInPrimary(ev, neverCalled(t)))
-		})
-		t.Run("Secondary root is a file", func(t *testing.T) {
-			tmp, err := ioutil.TempDir(os.TempDir(), "gogh-test")
-			require.NoError(t, err)
-			require.NoError(t, ioutil.WriteFile(filepath.Join(tmp, "foo"), nil, 0644))
-
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			ev := NewMockEnv(ctrl)
-			ev.EXPECT().Roots().AnyTimes().Return([]string{tmp, filepath.Join(tmp, "foo")})
-
-			require.NoError(t, gogh.Walk(ev, neverCalled(t)))
-			require.NoError(t, gogh.WalkInPrimary(ev, neverCalled(t)))
-		})
 	})
 
 	t.Run("through error with invalid project name", func(t *testing.T) {

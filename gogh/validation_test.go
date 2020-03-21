@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,23 +33,4 @@ func TestValidateRoots(t *testing.T) {
 	assert.EqualError(t, gogh.ValidateRoots([]string{}), "no root", "fail when no path in root")
 	assert.NoError(t, gogh.ValidateRoots([]string{"/path/to/not/existing", tmp}))
 	assert.Error(t, gogh.ValidateRoots([]string{"\x00", tmp}))
-}
-
-func TestValidateContext(t *testing.T) {
-	t.Run("invalid root", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		ev := NewMockEnv(ctrl)
-		ev.EXPECT().Roots().AnyTimes().Return([]string{"/\x00"})
-
-		assert.Error(t, gogh.ValidateContext(ev))
-	})
-	t.Run("valid context", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		ev := NewMockEnv(ctrl)
-		ev.EXPECT().Roots().AnyTimes().Return([]string{"/path/to/not/existing"})
-
-		assert.NoError(t, gogh.ValidateContext(ev))
-	})
 }

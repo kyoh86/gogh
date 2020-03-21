@@ -2,9 +2,7 @@ package delegate
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
-	"strings"
 )
 
 // CommandRunner will run a command
@@ -13,8 +11,6 @@ var CommandRunner = func(cmd *exec.Cmd) error {
 }
 
 func ExecCommand(cmd *exec.Cmd) error {
-	log.Println("debug: Calling", cmd.Args[0], strings.Join(cmd.Args[1:], " "))
-
 	err := CommandRunner(cmd)
 	if err != nil {
 		return &ExecError{cmd, err}

@@ -3,7 +3,6 @@ package gogh
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -147,15 +146,11 @@ func walkInPath(ev Env, root string, callback WalkFunc) error {
 	switch {
 	case err == nil:
 		// noop
-	case os.IsNotExist(err):
-		log.Printf("warn: root dir %s is not exist", root)
-		return nil
 	default:
 		return err
 	}
 	if !stat.IsDir() {
-		log.Printf("warn: root dir %s is not a directory", root)
-		return nil
+		return fmt.Errorf("root %q is not a directory", root)
 	}
 
 	return walker.Walk(root, func(path string, fi os.FileInfo) error {

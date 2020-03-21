@@ -2,10 +2,11 @@ package hub
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/google/go-github/v29/github"
@@ -19,27 +20,44 @@ import (
 func New(authContext context.Context, ev gogh.Env) (*Client, error) {
 	if host := ev.GithubHost(); host != "" && host != "github.com" {
 		url := fmt.Sprintf("https://%s/api/v3", host)
-		client, err := github.NewEnterpriseClient(url, url, oauth2Client(authContext, ev))
+		httpClient, err := oauth2Client(authContext, ev)
+		if err != nil {
+			return nil, err
+		}
+		client, err := github.NewEnterpriseClient(url, url, httpClient)
 		if err != nil {
 			return nil, err
 		}
 		return &Client{client}, nil
 	}
-	return &Client{github.NewClient(oauth2Client(authContext, ev))}, nil
+	httpClient, err := oauth2Client(authContext, ev)
+	if err != nil {
+		return nil, err
+	}
+	return &Client{github.NewClient(httpClient)}, nil
 }
 
 func getToken(ev gogh.Env) (string, error) {
+	if ev.GithubUser() == "" {
+		return "", errors.New("github.user is necessary to access GitHub")
+	}
+	envar := os.Getenv("GOGH_GITHUB_TOKEN")
+	if envar != "" {
+		return envar, nil
+	}
 	return keyring.Get(strings.Join([]string{ev.GithubHost(), env.KeyringService}, "."), ev.GithubUser())
 }
 
-func oauth2Client(authContext context.Context, ev gogh.Env) *http.Client {
+func oauth2Client(authContext context.Context, ev gogh.Env) (*http.Client, error) {
 	token, err := getToken(ev)
-	if err != nil || token == "" {
-		log.Println("info: you can set GitHub token with `gogh config set github.token <token>`")
-		return nil
+	if err != nil {
+		return nil, err
+	}
+	if token == "" {
+		return nil, errors.New("github.token is necessary to access GitHub")
 	}
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	return oauth2.NewClient(authContext, ts)
+	return oauth2.NewClient(authContext, ts), nil
 }
 
 type Client struct {

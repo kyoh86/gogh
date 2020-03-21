@@ -60,13 +60,9 @@ It's possible to change targets by a preference **YAML file**.
 If you don't set `--config` flag or `GOGH_CONFIG` environment variable,
 `gogh` loads configurations from `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/config.yaml`
 
+To set new configure, you should use `gogh config set <name> <value>`.
+
 Each of propoerties are able to be overwritten by environment variables.
-
-### (REQUIRED) `github.user`
-
-A name of your GitHub user (i.e. `kyoh86`).
-
-If an environment variable `GOGH_GITHUB_USER` is set, its value is used instead.
 
 ### `roots`
 
@@ -77,11 +73,20 @@ This property can have multiple values.
 If so, the first one becomes primary one i.e. new repository clones are always created under it.
 You may want to specify `$GOPATH/src` as a secondary root.
 
-If an environment variable `GOGH_ROOT` is set, its value is used instead.
+### `github.user`
+
+A name of your GitHub user (i.e. `kyoh86`).
+
+If an environment variable `GOGH_GITHUB_USER` is set, its value is used instead.
+
+If an environment variable `GOGH_ROOTS` is set, its value is used instead.
 
 ### `github.token`
 
 The token to connect GitHub API.
+
+`gogh` saves this one in `keyring`.
+It is saved for a service `<github.host>.gogh.kyoh86.dev` and a user `github.user`.
 
 If an environment variable `GOGH_GITHUB_TOKEN` is set, its value is used instead.
 
@@ -176,7 +181,7 @@ Print all configuration options value.
 
 Print one configuration option value.
 
-### `config put`
+### `config set`
 
 Set or add one configuration option.
 

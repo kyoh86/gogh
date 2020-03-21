@@ -2,12 +2,9 @@ package gogh
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
-
-	"go.uber.org/multierr"
 )
 
 var invalidNameRegexp = regexp.MustCompile(`[^\w\-\.]`)
@@ -60,12 +57,4 @@ func ValidateRoots(roots []string) error {
 	}
 
 	return nil
-}
-
-func ValidateContext(ev Env) error {
-	var validationError error
-	if err := ValidateRoots(ev.Roots()); err != nil {
-		validationError = multierr.Append(validationError, fmt.Errorf("invalid roots: %w", err))
-	}
-	return validationError
 }

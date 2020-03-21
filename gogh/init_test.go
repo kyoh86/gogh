@@ -2,19 +2,12 @@ package gogh_test
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
-
-func TestMain(m *testing.M) {
-	log.SetOutput(ioutil.Discard)
-	code := m.Run()
-	os.Exit(code)
-}
 
 type testService struct {
 	envCtrl *gomock.Controller

@@ -92,7 +92,11 @@ func (r *RepoSpec) validate(ev Env) (*Repo, error) {
 		return nil, fmt.Errorf("not supported host: %q", repo.host)
 	}
 	if repo.owner == "" {
-		repo.owner = ev.GithubUser()
+		def := ev.GithubUser()
+		if def == "" {
+			return nil, fmt.Errorf("owner is empty")
+		}
+		repo.owner = def
 	}
 	return &repo, nil
 }
