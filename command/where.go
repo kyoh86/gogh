@@ -10,7 +10,7 @@ import (
 
 // Where is a local project
 func Where(ev gogh.Env, primary bool, query string) error {
-	log.Printf("info: Finding a repository by query %s", query)
+	log.Printf("info: Finding a repository by query %s\n", query)
 
 	walk := gogh.Walk
 	if primary {

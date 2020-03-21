@@ -24,13 +24,13 @@ func New(
 	shared RepoShared,
 	spec *gogh.RepoSpec,
 ) error {
-	log.Printf("info: Creating new project and a remote repository %s", spec)
+	log.Printf("info: Creating new project and a remote repository %s\n", spec)
 	project, repo, err := gogh.FindOrNewProject(ev, spec)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("info: Checking existing project")
+	log.Println("info: Checking existing project")
 	remote, err := checkProjectRemote(gitClient, project, repo)
 	if err != nil {
 		return err

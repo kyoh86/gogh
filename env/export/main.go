@@ -21,6 +21,6 @@ func main() {
 		gen.Prop(new(env.GithubUser), gen.YAML(), gen.Envar()),
 		gen.Prop(new(env.Roots), gen.YAML(), gen.Envar()),
 	); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }

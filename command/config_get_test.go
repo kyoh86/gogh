@@ -14,10 +14,10 @@ func ExampleConfigGet() {
 	yml := strings.NewReader(`{"roots": ["/foo", "/bar"]}`)
 	config, err := env.GetConfig(yml)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	if err := command.ConfigGet(&config, "roots"); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	// Output:
@@ -27,7 +27,7 @@ func ExampleConfigGet() {
 func TestConfigGet(t *testing.T) {
 	config, err := env.GetConfig(env.EmptyYAMLReader)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	assert.EqualError(t, command.ConfigGet(&config, "invalid.name"), `invalid property name "invalid.name"`)
 }

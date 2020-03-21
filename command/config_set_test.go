@@ -19,16 +19,16 @@ githubUser: userx1
 githubHost: hostx1`)
 	config, err := env.GetConfig(source)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	if err := command.ConfigSet(&config, "github.host", "hostx2"); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	if err := config.Save(os.Stdout); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	if err := command.ConfigGetAll(&config); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	// Unordered output:

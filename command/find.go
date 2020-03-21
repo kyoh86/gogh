@@ -10,7 +10,7 @@ import (
 
 // Find a local project
 func Find(ev gogh.Env, primary bool, spec *gogh.RepoSpec) error {
-	log.Printf("info: Finding a repository %s", spec)
+	log.Printf("info: Finding a repository %s\n", spec)
 
 	finder := gogh.FindProject
 	if primary {

@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/google/go-github/v29/github"
@@ -12,26 +11,26 @@ import (
 
 // Fork clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin
 func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubClient, update, withSSH, shallow bool, organization string, spec *gogh.RepoSpec) error {
-	log.Print("info: Finding a repository")
+	log.Println("info: Finding a repository")
 	project, repo, err := gogh.FindOrNewProject(ev, spec)
 	if err != nil {
 		return err
 	}
 
-	log.Print("info: Getting a repository")
+	log.Println("info: Getting a repository")
 	if !project.Exists {
 		repoURL := repo.URL(withSSH)
-		log.Print("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
+		log.Printf("info: Clone %s -> %s\n", repoURL, project.FullPath)
 		if err := gitClient.Clone(project.FullPath, repoURL, shallow); err != nil {
 			return err
 		}
 	} else if update {
-		log.Print("info: Update", project.FullPath)
+		log.Println("info: Update", project.FullPath)
 		if err := gitClient.Update(project.FullPath); err != nil {
 			return err
 		}
 	}
-	log.Print("info: Forking a repository")
+	log.Println("info: Forking a repository")
 	newRepo, err := hubClient.Fork(ctx, ev, repo, organization)
 	if err != nil {
 		var accepted *github.AcceptedError
@@ -39,13 +38,13 @@ func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubCl
 			return err
 		}
 	}
-	log.Print("info: Getting remotes")
+	log.Println("info: Getting remotes")
 	remotes, err := gitClient.GetRemotes(project.FullPath)
 	if err != nil {
 		return err
 	}
 
-	log.Print("info: Removing old remotes")
+	log.Println("info: Removing old remotes")
 	owner := repo.Owner()
 	me := newRepo.Owner()
 	for name := range remotes {
@@ -56,7 +55,7 @@ func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubCl
 		}
 	}
 
-	log.Print("info: Creating new remotes")
+	log.Println("info: Creating new remotes")
 	if err := gitClient.AddRemote(project.FullPath, owner, repo.URL(withSSH)); err != nil {
 		return err
 	}
@@ -64,12 +63,12 @@ func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubCl
 		return err
 	}
 
-	log.Print("info: Fetching new remotes")
+	log.Println("info: Fetching new remotes")
 	if err := gitClient.Fetch(project.FullPath); err != nil {
 		return err
 	}
 
-	log.Printf("info: Setting upstream to %q", me)
+	log.Printf("info: Setting upstream to %q\n", me)
 	branch, err := gitClient.GetCurrentBranch(project.FullPath)
 	if err != nil {
 		return err

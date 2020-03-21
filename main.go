@@ -56,7 +56,7 @@ func main() {
 		cmds[key] = run
 	}
 	if err := cmds[kingpin.MustParse(app.Parse(os.Args[1:]))](); err != nil {
-		log.Fatalf("error: %s", err)
+		log.Fatalf("error: %s\n", err)
 	}
 }
 

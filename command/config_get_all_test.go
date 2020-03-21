@@ -19,10 +19,10 @@ githubHost: hostx1
 githubUser: userx1`)
 	config, err := env.GetConfig(yml)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	if err := command.ConfigGetAll(&config); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	// Unordered output:

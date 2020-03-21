@@ -28,7 +28,7 @@ func Get(ev gogh.Env, gitClient GitClient, update, withSSH, shallow bool, spec *
 	}
 	if !project.Exists {
 		repoURL := repo.URL(withSSH)
-		log.Println("info: Clone", fmt.Sprintf("%s -> %s", repoURL, project.FullPath))
+		log.Printf("info: Clone %s -> %s\n", repoURL, project.FullPath)
 		if err := gitClient.Clone(project.FullPath, repoURL, shallow); err != nil {
 			return err
 		}
