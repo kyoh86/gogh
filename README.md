@@ -99,6 +99,14 @@ The host name to connect to GitHub. Default: `github.com`.
 
 If an environment variable `GOGH_GITHUB_HOST` is set, its value is used instead.
 
+### `hooks`
+
+The directory name to store [hooks](#HOOKS). Default: 
+
+If an environment variable `GOGH_HOOKS` is et, its value is used instead.
+
+If you don't set this one, `gogh` searches hooks from `${XDG_CONFIG_HOME:-$HOME/.config}/gogh/hooks`
+
 ## COMMANDS
 
 See `gogh --long-help` for details.
@@ -222,6 +230,60 @@ Local repositories are placed under `gogh.roots` with named github.com/*user*/*r
 |   +-- gogh/
 +-- alecthomas/
   +-- kingpin/
+```
+
+If you set github.host, they will be placed with *github.host*/*user*/*repo*.
+
+## HOOKS
+
+Like Git Hooks, gogh has a way to fire off custom scripts when some commands be called.
+
+### Installing a hook
+
+The hooks are all stored in the directory that configured in `hooks` and `.gogh/hooks` in the each repository.
+
+Any properly named executable scripts will work fine -
+you can write them in Shellscript, Ruby, Python or whatever language you are familiar with.
+
+### Hook names
+
+| Name             | Trigger                                                       |
+|------------------|---------------------------------------------------------------|
+| post-get-each    | `get`, `bulk-get` or `pipe-get` is processed each repository  |
+| post-create      | `create` is processed                                         |
+| post-fork        | `fork` is processed                                           |
+| pre-remove-each  | `remove` is processing each repository                        |
+
+### Context
+
+All of the hooks will be called in the root of the target project.
+
+### Example
+
+```console
+$ mkdir -p ~/.config/gogh/hooks
+$ echo '#!/bin/sh' > ~/.config/gogh/hooks/post-create
+$ echo 'yo go-project' >> ~/.config/gogh/hooks/post-create
+$ chmod +x ~/.config/gogh/hooks/post-create
+$ gogh create foobar
+Creating new project and a remote repository foobar
+Checking existing project
+Creating a directory
+Initializing a repository
+Creating a new repository in GitHub
+Executing post-create hook
+
+     _-----_     ╭──────────────────────────╮
+    |       |    │      Welcome to the      │
+    |--(o)--|    │        funkadelic        │
+   `---------´   │ generator-go-project/app │
+    ( _´U`_ )    │        generator!        │
+    /___A___\   /╰──────────────────────────╯
+     |  ~  |     
+   __'.___.'__   
+ ´   `  |° ´ Y ` 
+
+? Project name 
 ```
 
 ## SHELL EXTENTIONS
