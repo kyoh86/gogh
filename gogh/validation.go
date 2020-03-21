@@ -2,8 +2,6 @@ package gogh
 
 import (
 	"errors"
-	"os"
-	"path/filepath"
 	"regexp"
 )
 
@@ -31,33 +29,5 @@ func ValidateOwner(owner string) error {
 	if !validOwnerRegexp.MatchString(owner) {
 		return errors.New("invalid owner name")
 	}
-	return nil
-}
-
-func ValidateRoot(root string) (string, error) {
-	path := filepath.Clean(root)
-	_, err := os.Stat(path)
-	switch {
-	case err == nil:
-		return filepath.EvalSymlinks(path)
-	case os.IsNotExist(err):
-		return path, nil
-	default:
-		return "", err
-	}
-}
-
-func ValidateRoots(roots []string) error {
-	for i, v := range roots {
-		r, err := ValidateRoot(v)
-		if err != nil {
-			return err
-		}
-		roots[i] = r
-	}
-	if len(roots) == 0 {
-		return errors.New("no root")
-	}
-
 	return nil
 }
