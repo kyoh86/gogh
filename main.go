@@ -37,20 +37,22 @@ func main() {
 		configSet,
 		configUnset,
 
-		get,
-		bulk,
-		pipe,
-		fork,
-		create,
-		where,
+		roots,
+		setup,
+
 		list,
 		dump,
 		find,
-		remove,
-		root,
-		setup,
-
+		where,
 		repos,
+
+		get,
+		bulkGet,
+		pipeGet,
+
+		create,
+		fork,
+		remove,
 	} {
 		key, run := f(app)
 		cmds[key] = run
@@ -104,132 +106,31 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 	})
 }
 
-func get(app *kingpin.Application) (string, func() error) {
-	var (
-		update  bool
-		withSSH bool
-		shallow bool
-		specs   gogh.RepoSpecs
-		cd      bool
-		// unused: it is dummy to accept option.
-		//         its function defined in init.*sh in the /sh/src
-		//         if we want to use gogh get --cd,
-	)
-	cmd := app.Command("get", "Clone/sync with a remote repository")
-	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
-	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
-	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
-	cmd.Flag("cd", "Jump to the local project").BoolVar(&cd)
-	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&specs)
+func roots(app *kingpin.Application) (string, func() error) {
+	var all bool
+	cmd := app.Command("roots", "Show repositories' root").Alias("root")
+	cmd.Flag("all", "Show all roots").Envar("GOGH_FLAG_ROOT_ALL").BoolVar(&all)
 
 	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.GetAll(ev, new(git.Client), update, withSSH, shallow, specs)
+		return command.Roots(ev, all)
 	})
 }
 
-func bulk(app *kingpin.Application) (string, func() error) {
+func setup(app *kingpin.Application) (string, func() error) {
 	var (
-		update  bool
-		withSSH bool
-		shallow bool
+		shell string
 	)
-	cmd := app.Command("bulk-get", "Bulk get repositories specified in stdin")
-	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
-	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
-	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd := app.Command("setup", `Generate shell script to setup gogh
+
+If you want to use "gogh cd", "gogh get --cd" and autocompletions for gogh,
+
+set up gogh in your shell-rc file (".bashrc" / ".zshrc") like below.
+
+eval "$(gogh setup)"`).Hidden()
+	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
 
 	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.Bulk(ev, new(git.Client), update, withSSH, shallow)
-	})
-}
-
-func pipe(app *kingpin.Application) (string, func() error) {
-	var (
-		update     bool
-		withSSH    bool
-		shallow    bool
-		srcCmd     string
-		srcCmdArgs []string
-	)
-	cmd := app.Command("pipe-get", "Bulk get repositories specified from other command output")
-	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
-	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
-	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
-	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&srcCmd)
-	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&srcCmdArgs)
-
-	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.Pipe(ev, new(git.Client), update, withSSH, shallow, srcCmd, srcCmdArgs)
-	})
-}
-
-func fork(app *kingpin.Application) (string, func() error) {
-	var (
-		update       bool
-		withSSH      bool
-		shallow      bool
-		organization string
-		spec         gogh.RepoSpec
-	)
-	cmd := app.Command("fork", "Clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin")
-	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
-	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
-	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
-	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
-	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
-
-	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		ctx := context.Background()
-		hubClient, err := hub.New(ctx, ev)
-		if err != nil {
-			return err
-		}
-		return command.Fork(ctx, ev, new(git.Client), hubClient, update, withSSH, shallow, organization, &spec)
-	})
-}
-
-func create(app *kingpin.Application) (string, func() error) {
-	var (
-		private        bool
-		description    string
-		homepage       *url.URL
-		bare           bool
-		template       string
-		separateGitDir string
-		shared         command.RepoShared
-		spec           gogh.RepoSpec
-	)
-	cmd := app.Command("new", "Create a local project and a remote repository.").Alias("create")
-	cmd.Flag("private", "Create a private repository").BoolVar(&private)
-	cmd.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&description)
-	cmd.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&homepage)
-	cmd.Flag("bare", "Create a bare repository. If GIT_DIR environment is not set, it is set to the current working directory").BoolVar(&bare)
-	cmd.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&template)
-	cmd.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&separateGitDir)
-	cmd.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&shared)
-	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
-
-	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		ctx := context.Background()
-		hubClient, err := hub.New(ctx, ev)
-		if err != nil {
-			return err
-		}
-		return command.New(ctx, ev, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, &spec)
-	})
-}
-
-func where(app *kingpin.Application) (string, func() error) {
-	var (
-		primary bool
-		query   string
-	)
-	cmd := app.Command("where", "Where is a local project")
-	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
-	cmd.Arg("query", "Project name query").StringVar(&query)
-
-	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.Where(ev, primary, query)
+		return command.Setup(ev, "", shell)
 	})
 }
 
@@ -263,20 +164,6 @@ func dump(app *kingpin.Application) (string, func() error) {
 	})
 }
 
-func remove(app *kingpin.Application) (string, func() error) {
-	var (
-		primary bool
-		query   string
-	)
-	cmd := app.Command("delete", "Delete projects").Alias("remove").Alias("rm")
-	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
-	cmd.Arg("query", "Project name query").StringVar(&query)
-
-	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.Delete(ev, primary, query)
-	})
-}
-
 func find(app *kingpin.Application) (string, func() error) {
 	var (
 		primary bool
@@ -291,31 +178,17 @@ func find(app *kingpin.Application) (string, func() error) {
 	})
 }
 
-func root(app *kingpin.Application) (string, func() error) {
-	var all bool
-	cmd := app.Command("root", "Show repositories' root")
-	cmd.Flag("all", "Show all roots").Envar("GOGH_FLAG_ROOT_ALL").BoolVar(&all)
-
-	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.Roots(ev, all)
-	})
-}
-
-func setup(app *kingpin.Application) (string, func() error) {
+func where(app *kingpin.Application) (string, func() error) {
 	var (
-		shell string
+		primary bool
+		query   string
 	)
-	cmd := app.Command("setup", `Generate shell script to setup gogh
-
-If you want to use "gogh cd", "gogh get --cd" and autocompletions for gogh,
-
-set up gogh in your shell-rc file (".bashrc" / ".zshrc") like below.
-
-eval "$(gogh setup)"`).Hidden()
-	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
+	cmd := app.Command("where", "Where is a local project")
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.Setup(ev, "", shell)
+		return command.Where(ev, primary, query)
 	})
 }
 
@@ -329,7 +202,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 		sort        string
 		direction   string
 	)
-	cmd := app.Command("repo", "List remote repositories").Alias("repos").Alias("search-repo").Alias("search-repos")
+	cmd := app.Command("repos", "List remote repositories").Alias("repo").Alias("search-repo").Alias("search-repos").Alias("list-repos")
 	cmd.Flag("user", "Who has the repositories. Empty means the authenticated user").StringVar(&user)
 	cmd.Flag("own", "Include repositories that are owned by the user").Default("true").BoolVar(&own)
 	cmd.Flag("collaborate", "Include repositories that the user has been added to as a collaborator").Default("true").BoolVar(&collaborate)
@@ -345,5 +218,134 @@ func repos(app *kingpin.Application) (string, func() error) {
 			return err
 		}
 		return command.Repos(ctx, ev, hubClient, user, own, collaborate, member, visibility, sort, direction)
+	})
+}
+
+func get(app *kingpin.Application) (string, func() error) {
+	var (
+		update  bool
+		withSSH bool
+		shallow bool
+		specs   gogh.RepoSpecs
+		cd      bool
+		// unused: it is dummy to accept option.
+		//         its function defined in init.*sh in the /sh/src
+		//         if we want to use gogh get --cd,
+	)
+	cmd := app.Command("get", "Clone/sync with a remote repository")
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd.Flag("cd", "Jump to the local project").BoolVar(&cd)
+	cmd.Arg("repositories", "Target repositories (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&specs)
+
+	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
+		return command.GetAll(ev, new(git.Client), update, withSSH, shallow, specs)
+	})
+}
+
+func bulkGet(app *kingpin.Application) (string, func() error) {
+	var (
+		update  bool
+		withSSH bool
+		shallow bool
+	)
+	cmd := app.Command("bulk-get", "Bulk get repositories specified in stdin")
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+
+	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
+		return command.Bulk(ev, new(git.Client), update, withSSH, shallow)
+	})
+}
+
+func pipeGet(app *kingpin.Application) (string, func() error) {
+	var (
+		update     bool
+		withSSH    bool
+		shallow    bool
+		srcCmd     string
+		srcCmdArgs []string
+	)
+	cmd := app.Command("pipe-get", "Bulk get repositories specified from other command output")
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd.Arg("command", "Subcommand calling to get import paths").StringVar(&srcCmd)
+	cmd.Arg("command-args", "Arguments that will be passed to subcommand").StringsVar(&srcCmdArgs)
+
+	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
+		return command.Pipe(ev, new(git.Client), update, withSSH, shallow, srcCmd, srcCmdArgs)
+	})
+}
+
+func create(app *kingpin.Application) (string, func() error) {
+	var (
+		private        bool
+		description    string
+		homepage       *url.URL
+		bare           bool
+		template       string
+		separateGitDir string
+		shared         command.RepoShared
+		spec           gogh.RepoSpec
+	)
+	cmd := app.Command("create", "Create a local project and a remote repository.").Alias("new")
+	cmd.Flag("private", "Create a private repository").BoolVar(&private)
+	cmd.Flag("description", "Use this text as the description of the GitHub repository").StringVar(&description)
+	cmd.Flag("homepage", "Use this text as the URL of the GitHub repository").URLVar(&homepage)
+	cmd.Flag("bare", "Create a bare repository. If GIT_DIR environment is not set, it is set to the current working directory").BoolVar(&bare)
+	cmd.Flag("template", "Specify the directory from which templates will be used").ExistingDirVar(&template)
+	cmd.Flag("separate-git-dir", `Instead of initializing the repository as a directory to either $GIT_DIR or ./.git/`).StringVar(&separateGitDir)
+	cmd.Flag("shared", "Specify that the Git repository is to be shared amongst several users.").SetValue(&shared)
+	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
+
+	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
+		ctx := context.Background()
+		hubClient, err := hub.New(ctx, ev)
+		if err != nil {
+			return err
+		}
+		return command.New(ctx, ev, new(git.Client), hubClient, private, description, homepage, bare, template, separateGitDir, shared, &spec)
+	})
+}
+
+func fork(app *kingpin.Application) (string, func() error) {
+	var (
+		update       bool
+		withSSH      bool
+		shallow      bool
+		organization string
+		spec         gogh.RepoSpec
+	)
+	cmd := app.Command("fork", "Clone/sync with a remote repository make a fork of a remote repository on GitHub and add GitHub as origin")
+	cmd.Flag("update", "Update the local project if cloned already").Short('u').BoolVar(&update)
+	cmd.Flag("ssh", "Clone with SSH").BoolVar(&withSSH)
+	cmd.Flag("shallow", "Do a shallow clone").BoolVar(&shallow)
+	cmd.Flag("org", "Fork the repository within this organization").PlaceHolder("ORGANIZATION").StringVar(&organization)
+	cmd.Arg("repository", "Target repository (<repository URL> | <user>/<project> | <project>)").Required().SetValue(&spec)
+
+	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
+		ctx := context.Background()
+		hubClient, err := hub.New(ctx, ev)
+		if err != nil {
+			return err
+		}
+		return command.Fork(ctx, ev, new(git.Client), hubClient, update, withSSH, shallow, organization, &spec)
+	})
+}
+
+func remove(app *kingpin.Application) (string, func() error) {
+	var (
+		primary bool
+		query   string
+	)
+	cmd := app.Command("remove", "Delete projects").Alias("rm").Alias("delete").Alias("del")
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Arg("query", "Project name query").StringVar(&query)
+
+	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
+		return command.Delete(ev, primary, query)
 	})
 }

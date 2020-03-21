@@ -25,18 +25,21 @@ You can also list projects (local repositories) (`gogh list`), find a project (`
 ## SYNOPSIS
 
 ```
-gogh [--config=<CONFIG>] get [--update,u] [--ssh] [--shallow] [(<repository URL> | <user>/<project> | <project>)...]
-gogh [--config=<CONFIG>] bulk-get [--update,u] [--ssh] [--shallow]
-gogh [--config=<CONFIG>] pipe-get [--update,u] [--ssh] [--shallow] <command> <command-args>...
-gogh [--config=<CONFIG>] fork [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
-gogh [--config=<CONFIG>] new [--update,u] [--ssh] [--shallow] [--no-remote] [--remote-name=<REMOTE>] [--org=<ORGANIZATION] (<repository URL> | <user>/<project> | <project>)
-gogh [--config=<CONFIG>] list [--format,f=short|full|relative|url] [--primary,p] [<query>]
-gogh [--config=<CONFIG>] dump [--primary,p] [<query>]
-gogh [--config=<CONFIG>] find (<project>)
-gogh [--config=<CONFIG>] where [--primary,p] [<query>]
-gogh [--config=<CONFIG>] repo [--user=<USER>] [--own] [--collaborate] [--member] [--visibility=<VISIBILITY>] [--sort=<SORT>] [--direction=<DIRECTION>]
-gogh [--config=<CONFIG>] root [--all]
+gogh list
+gogh dump
+gogh find
+gogh where
+gogh repos
+
+gogh get
+gogh bulk-get
+gogh pipe-get
+gogh create
+gogh fork
+gogh remove
 ```
+
+See `gogh --help-long` for details.
 
 ## INSTALLATION
 
@@ -98,37 +101,7 @@ If an environment variable `GOGH_GITHUB_HOST` is set, its value is used instead.
 
 ## COMMANDS
 
-```
-gogh --long-help
-```
-
-### `get`
-
-Clone a remote repository under gogh root directory (see [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below).
-If the repository is already cloned to local project, nothing will happen unless `-u` (`--update`) flag is supplied,
-in which case the project (local repository) is updated (`git pull --ff-only` eg.).
-When you use `-p` option, the repository is cloned via SSH protocol.
-
-If there are multiple `gogh.root`s, existing local clones are searched first.
-Then a new repository clone is created under the primary root if none is found.
-
-With `--shallow` option, a "shallow clone" will be performed (for Git repositories only, `git clone --depth 1 ...` eg.).
-Be careful that a shallow-cloned repository cannot be pushed to remote.
-
-Currently Git and Mercurial repositories are supported.
-
-### `bulk-get`
-
-Reads repository URLs from stdin line by line and performs 'get' for each of them.
-
-### `pipe-get`
-
-Reads repository URLs from other command output by line and performs 'get' for each of them.
-
-### `fork`
-
-Clone a remote repository under gogh root direcotry if the project is not exist in local.
-And fork int on remote GitHub repository with calling `hub fork`
+See `gogh --long-help` for details.
 
 ### `list`
 
@@ -141,7 +114,7 @@ If a query argument is given, only repositories whose names contain that query t
 * `-f=relative` is given, the relative paths from gogh root to the repository will be printed.
 * `-f=url` is given, the urls of the repository will be printed.
 
-### `list`
+### `dump`
 
 Dump local repository list.
 This is shorthand for `gogh list --format=url`.
@@ -165,29 +138,45 @@ Look into a locally cloned repository with the shell.
 
 Show where a local repository is.
 
-### `repo`
+### `repos`
 
 Show a list of repositories for a user.
 
-### `root`
+### `get`
 
-Print repositories' root (i.e. `config get root`). Without `--all` option, the primary one is shown.
+Clone a remote repository under gogh root directory (see [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below).
+If the repository is already cloned to local project, nothing will happen unless `-u` (`--update`) flag is supplied,
+in which case the project (local repository) is updated (`git pull --ff-only` eg.).
+When you use `--ssh` option, the repository is cloned via SSH protocol.
 
-### `config get-all`
+If there are multiple `gogh.roots`, existing local clones are searched first.
+Then a new repository clone is created under the primary root if none is found.
 
-Print all configuration options value.
+With `--shallow` option, a "shallow clone" will be performed (for Git repositories only, `git clone --depth 1 ...` eg.).
+Be careful that a shallow-cloned repository cannot be pushed to remote.
 
-### `config get`
+Currently Git and Mercurial repositories are supported.
 
-Print one configuration option value.
+### `bulk-get`
 
-### `config set`
+Reads repository URLs from stdin line by line and performs 'get' for each of them.
 
-Set or add one configuration option.
+### `pipe-get`
 
-### `config unset`
+Reads repository URLs from other command output by line and performs 'get' for each of them.
 
-Unset one configuration option.
+### `create`
+
+Create a new repository on remote GitHub and clone it into local project.
+
+### `fork`
+
+Clone a remote repository under gogh root direcotry if the project is not exist in local.
+And fork int on remote GitHub repository with calling `hub fork`
+
+### `remove`
+
+Remove a repository on remote GitHub and local project.
 
 ## ENVIRONMENT VARIABLES
 
@@ -206,11 +195,11 @@ If we want show only primary root, call `gogh root --no-all`.
 e.g.
 
 ```
-$ echo $GOGH_ROOT
+$ echo $GOGH_ROOTS
 /Users/kyoh86/Projects:/Users/kyoh86/go/src
-$ gogh root
+$ gogh roots
 /Users/kyoh86/Projects
-$ gogh root --all
+$ gogh roots --all
 /Users/kyoh86/Projects
 /Users/kyoh86/go/src
 $ GOGH_FLAG_ROOT_ALL=1 gogh root
@@ -222,7 +211,7 @@ $ GOGH_FLAG_ROOT_ALL=1 gogh root --no-all
 
 ## DIRECTORY STRUCTURES
 
-Local repositories are placed under `gogh.root` with named github.com/*user*/*repo*.
+Local repositories are placed under `gogh.roots` with named github.com/*user*/*repo*.
 
 ```
 ~/go/src
@@ -268,10 +257,12 @@ NOTE: Now gogh supports `bash` or `zsh` only.
         * `gogh` can be configured with envars instead of git-config(1).
 * `gogh` doesn't support VCSs other than GitHub
     * If I want to manage projects in VCSs other than GitHub, I should use other tool, I think so.
+* `gogh` holds tokens for GitHub in the `keyring` for security.
+    * `hub`, `gh` and `ghq` hold them in raw config file.
 * I wanted to merge functions of [ghq](https://github.com/motemen/ghq) and [hub](https://github.com/github/hub).
     * `gogh new` creates a new one with make both of a local project and a remote repository.
-        * It calls `git init` and `hub create` in the gogh.root directory.
-    * `gogh fork` clones a remote repository into the gogh.root directory and fork it GitHub (with calling `hub fork`).
+        * It calls `git init` and `hub create` in the gogh.roots directory.
+    * `gogh fork` clones a remote repository into the gogh.roots directory and fork it GitHub (with calling `hub fork`).
     * But there may be some collision in configurations of **ghq** and **hub**. It offers a challenge for me to resolve them by gogh.
 * (nits) I don't like `github.com/onsi/gomega` and `github.com/urfave/cli`. But I love `github.com/stretchr/testify` and `github.com/alecthomas/kingpin`.
 * (nits) I want gogh to be able to be used as a library (`github.com/kyoh86/gogh/gogh` package).
