@@ -47,16 +47,21 @@ func initTest(t *testing.T) *testService {
 	hubClient := NewMockHubClient(hubCtrl)
 	ctxMock := NewMockEnv(envCtrl)
 
-	//UNDONE: prepare dummy hooks dir
-
-	root1, err := ioutil.TempDir(os.TempDir(), "gogh-test1")
+	root1, err := ioutil.TempDir(os.TempDir(), "gogh-root1")
 	require.NoError(t, err)
 
-	root2, err := ioutil.TempDir(os.TempDir(), "gogh-test2")
+	root2, err := ioutil.TempDir(os.TempDir(), "gogh-root2")
+	require.NoError(t, err)
+
+	hook1, err := ioutil.TempDir(os.TempDir(), "gogh-hook1")
+	require.NoError(t, err)
+
+	hook2, err := ioutil.TempDir(os.TempDir(), "gogh-hook2")
 	require.NoError(t, err)
 
 	ctxMock.EXPECT().GithubHost().AnyTimes().Return("github.com")
 	ctxMock.EXPECT().Roots().AnyTimes().Return([]string{root1, root2})
+	ctxMock.EXPECT().Hooks().AnyTimes().Return([]string{hook1, hook2})
 	return &testService{
 		gitCtrl:   gitCtrl,
 		hubCtrl:   hubCtrl,

@@ -13,8 +13,11 @@ import (
 func ExampleConfigGetAll() {
 	yml := strings.NewReader(`
 roots:
-  - /foo
-  - /bar
+  - /root1
+  - /root2
+hooks:
+  - /hook1
+  - /hook2
 githubHost: hostx1
 githubUser: userx1`)
 	config, err := env.GetConfig(yml)
@@ -26,7 +29,8 @@ githubUser: userx1`)
 	}
 
 	// Unordered output:
-	// roots: /foo:/bar
+	// roots: /root1:/root2
+	// hooks: /hook1:/hook2
 	// github.host: hostx1
 	// github.user: userx1
 	// github.token: *****
@@ -35,8 +39,11 @@ githubUser: userx1`)
 func TestConfigGetAll(t *testing.T) {
 	yml := strings.NewReader(`
 roots:
-  - /foo
-  - /bar
+  - /root1
+  - /root2
+hooks:
+  - /hook1
+  - /hook2
 githubHost: hostx1`)
 	config, err := env.GetConfig(yml)
 	assert.NoError(t, err)

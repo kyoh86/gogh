@@ -14,7 +14,9 @@ import (
 func ExampleConfigSet() {
 	source := strings.NewReader(`
 roots:
-  - /foo
+  - /root1
+hooks:
+  - /hook1
 githubUser: userx1
 githubHost: hostx1`)
 	config, err := env.GetConfig(source)
@@ -33,10 +35,13 @@ githubHost: hostx1`)
 
 	// Unordered output:
 	// roots:
-	//   - /foo
+	//   - /root1
+	// hooks:
+	//   - /hook1
 	// githubHost: hostx2
 	// githubUser: userx1
-	// roots: /foo
+	// roots: /root1
+	// hooks: /hook1
 	// github.host: hostx2
 	// github.user: userx1
 	// github.token: *****
@@ -46,7 +51,9 @@ func TestConfigSet(t *testing.T) {
 	// NOTE: never use real host name. github.token breaks keyring store
 	source := strings.NewReader(`
 roots:
-  - /foo
+  - /root1
+hooks:
+  - /hook1
 githubUser: userx1
 githubHost: hostx1`)
 	config, err := env.GetConfig(source)
