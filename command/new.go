@@ -68,7 +68,7 @@ func New(
 		return err
 	}
 
-	return nil
+	return execHooks(ev, project, hookPostCreate)
 }
 
 func checkProjectRemote(gitClient GitClient, project *gogh.Project, repo *gogh.Repo) (bool, error) {

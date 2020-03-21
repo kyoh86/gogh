@@ -33,7 +33,7 @@ func Get(ev gogh.Env, gitClient GitClient, update, withSSH, shallow bool, spec *
 			return err
 		}
 		fmt.Println(project.FullPath)
-		return nil
+		return execHooks(ev, project, hookPostGetEach)
 	}
 	if update {
 		log.Println("info: Update", project.FullPath)

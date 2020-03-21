@@ -35,6 +35,9 @@ func Delete(ev gogh.Env, primary bool, query string) error {
 			return err
 		}
 		if *yes {
+			if err := execHooks(ev, p, hookPreRemoveEach); err != nil {
+				return err
+			}
 			if err := os.RemoveAll(p.FullPath); err != nil {
 				return err
 			}

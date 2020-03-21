@@ -14,7 +14,9 @@ import (
 func ExampleConfigUnset() {
 	source := strings.NewReader(`
 roots:
-  - /foo
+  - /root1
+hooks:
+  - /hook1
 githubUser: userx1
 githubHost: hostx1`)
 	config, err := env.GetConfig(source)
@@ -33,9 +35,12 @@ githubHost: hostx1`)
 
 	// Unordered output:
 	// roots:
-	//   - /foo
+	//   - /root1
+	// hooks:
+	//   - /hook1
 	// githubUser: userx1
-	// roots: /foo
+	// roots: /root1
+	// hooks: /hook1
 	// github.host:
 	// github.user: userx1
 	// github.token: *****
@@ -44,7 +49,9 @@ githubHost: hostx1`)
 func TestConfigUnset(t *testing.T) {
 	source := strings.NewReader(`
 roots:
-  - /foo
+  - /root1
+hooks:
+  - /hook1
 githubUser: userx1
 githubHost: hostx1`)
 	config, err := env.GetConfig(source)

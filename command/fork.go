@@ -76,5 +76,5 @@ func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubCl
 	if err := gitClient.SetUpstreamTo(project.FullPath, me+"/"+branch); err != nil {
 		return err
 	}
-	return nil
+	return execHooks(ev, project, hookPostFork)
 }

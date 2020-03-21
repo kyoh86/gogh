@@ -11,6 +11,7 @@ type YAML struct {
 	GithubHost *GithubHost `yaml:"githubHost,omitempty"`
 	GithubUser *GithubUser `yaml:"githubUser,omitempty"`
 	Roots      *Roots      `yaml:"roots,omitempty"`
+	Hooks      *Hooks      `yaml:"hooks,omitempty"`
 }
 
 func saveYAML(w io.Writer, yml *YAML) error {

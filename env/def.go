@@ -1,6 +1,7 @@
 package env
 
 import (
+	"errors"
 	"go/build"
 	"os"
 	"os/user"
@@ -8,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/kyoh86/appenv/types"
-	"github.com/kyoh86/gogh/gogh"
+	"github.com/kyoh86/xdg"
 	"github.com/thoas/go-funk"
 )
 
@@ -34,16 +35,16 @@ type GithubUser struct {
 	types.StringPropertyBase
 }
 
-type Roots struct {
+type Paths struct {
 	value []string
 }
 
-func (p *Roots) Value() interface{} {
-	roots := make([]string, 0, len(p.value))
+func (p *Paths) Value() interface{} {
+	paths := make([]string, 0, len(p.value))
 	for _, p := range p.value {
-		roots = append(roots, expandPath(p))
+		paths = append(paths, expandPath(p))
 	}
-	return funk.UniqString(roots)
+	return funk.UniqString(paths)
 }
 
 func expandPath(path string) string {
@@ -63,22 +64,14 @@ func expandPath(path string) string {
 
 	return filepath.Join(user.HomeDir, path[1:])
 }
-func (*Roots) Default() interface{} {
-	gopaths := filepath.SplitList(build.Default.GOPATH)
-	roots := make([]string, 0, len(gopaths))
-	for _, gopath := range gopaths {
-		roots = append(roots, filepath.Join(gopath, "src"))
-	}
-	return funk.UniqString(roots)
-}
 
 // MarshalYAML implements the interface `yaml.Marshaler`
-func (p *Roots) MarshalYAML() (interface{}, error) {
+func (p *Paths) MarshalYAML() (interface{}, error) {
 	return p.value, nil
 }
 
 // UnmarshalYAML implements the interface `yaml.Unmarshaler`
-func (p *Roots) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (p *Paths) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var parsed []string
 	if err := unmarshal(&parsed); err != nil {
 		return err
@@ -87,16 +80,65 @@ func (p *Roots) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (p *Roots) MarshalText() (text []byte, err error) {
+func (p *Paths) MarshalText() (text []byte, err error) {
 	return []byte(strings.Join(p.value, string(filepath.ListSeparator))), nil
 }
 
-func (p *Roots) UnmarshalText(text []byte) error {
+func (p *Paths) UnmarshalText(text []byte) error {
 	list := filepath.SplitList(string(text))
 
-	if err := gogh.ValidateRoots(list); err != nil {
+	if err := validatePaths(list); err != nil {
 		return err
 	}
 	p.value = funk.UniqString(list)
 	return nil
+}
+
+func validatePath(path string) (string, error) {
+	path = filepath.Clean(path)
+	_, err := os.Stat(path)
+	switch {
+	case err == nil:
+		return filepath.EvalSymlinks(path)
+	case os.IsNotExist(err):
+		return path, nil
+	default:
+		return "", err
+	}
+}
+
+func validatePaths(paths []string) error {
+	for i, v := range paths {
+		r, err := validatePath(v)
+		if err != nil {
+			return err
+		}
+		paths[i] = r
+	}
+	if len(paths) == 0 {
+		return errors.New("no path")
+	}
+
+	return nil
+}
+
+type Roots struct {
+	Paths
+}
+
+func (*Roots) Default() interface{} {
+	gopaths := filepath.SplitList(build.Default.GOPATH)
+	paths := make([]string, 0, len(gopaths))
+	for _, gopath := range gopaths {
+		paths = append(paths, filepath.Join(gopath, "src"))
+	}
+	return funk.UniqString(paths)
+}
+
+type Hooks struct {
+	Paths
+}
+
+func (*Hooks) Default() interface{} {
+	return []string{filepath.Join(xdg.ConfigHome(), "gogh", "hooks")}
 }

@@ -29,7 +29,7 @@ func (c *Config) Save(yamlWriter io.Writer) error {
 }
 
 func PropertyNames() []string {
-	return []string{"github.host", "github.user", "roots"}
+	return []string{"github.host", "github.user", "roots", "hooks"}
 }
 
 func (a *Config) Property(name string) (types.Config, error) {
@@ -40,6 +40,8 @@ func (a *Config) Property(name string) (types.Config, error) {
 		return &githubUserConfig{parent: a}, nil
 	case "roots":
 		return &rootsConfig{parent: a}, nil
+	case "hooks":
+		return &hooksConfig{parent: a}, nil
 	}
 	return nil, fmt.Errorf("invalid property name %q", name)
 }
@@ -141,4 +143,37 @@ func (a *rootsConfig) Set(value string) error {
 
 func (a *rootsConfig) Unset() {
 	a.parent.yml.Roots = nil
+}
+
+type hooksConfig struct {
+	parent *Config
+}
+
+func (a *hooksConfig) Get() (string, error) {
+	{
+		p := a.parent.yml.Hooks
+		if p != nil {
+			text, err := p.MarshalText()
+			return string(text), err
+		}
+	}
+	return "", nil
+}
+
+func (a *hooksConfig) Set(value string) error {
+	{
+		p := a.parent.yml.Hooks
+		if p == nil {
+			p = new(Hooks)
+		}
+		if err := p.UnmarshalText([]byte(value)); err != nil {
+			return err
+		}
+		a.parent.yml.Hooks = p
+	}
+	return nil
+}
+
+func (a *hooksConfig) Unset() {
+	a.parent.yml.Hooks = nil
 }
