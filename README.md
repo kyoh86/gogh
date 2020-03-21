@@ -101,7 +101,7 @@ If an environment variable `GOGH_GITHUB_HOST` is set, its value is used instead.
 
 ### `hooks`
 
-The directory name to store [hooks](#HOOKS). Default: 
+The directory name to store [hooks](#HOOKS-1). Default: 
 
 If an environment variable `GOGH_HOOKS` is et, its value is used instead.
 
