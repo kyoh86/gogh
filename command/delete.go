@@ -40,5 +40,6 @@ func Delete(ev gogh.Env, primary bool, query string) error {
 			}
 		}
 	}
+	// UNDONE: execute post-remove-each hook in the ev.Hooks() and the filepath.Join(project.FullPath, ".gogh", "hooks")
 	return nil
 }

@@ -68,6 +68,7 @@ func New(
 		return err
 	}
 
+	// UNDONE: execute post-create hook in the ev.Hooks() and the filepath.Join(project.FullPath, ".gogh", "hooks")
 	return nil
 }
 

@@ -100,3 +100,5 @@ func (p *Roots) UnmarshalText(text []byte) error {
 	p.value = funk.UniqString(list)
 	return nil
 }
+
+//UNDONE: create new property `Hooks`

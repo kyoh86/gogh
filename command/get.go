@@ -33,6 +33,7 @@ func Get(ev gogh.Env, gitClient GitClient, update, withSSH, shallow bool, spec *
 			return err
 		}
 		fmt.Println(project.FullPath)
+		// UNDONE: execute post-get-each hook in the ev.Hooks() and the filepath.Join(project.FullPath, ".gogh", "hooks")
 		return nil
 	}
 	if update {
