@@ -10,14 +10,17 @@ import (
 var invalidNameRegexp = regexp.MustCompile(`[^\w\-\.]`)
 
 func ValidateName(name string) error {
-	if name == "." || name == ".." {
-		return errors.New("'.' or '..' is reserved name")
+	if name == "." {
+		return errors.New("'.' is reserved name")
+	}
+	if name == ".." {
+		return errors.New("'..' is reserved name")
 	}
 	if name == "" {
-		return errors.New("empty project name")
+		return errors.New("project name is empty")
 	}
 	if invalidNameRegexp.MatchString(name) {
-		return errors.New("project name may only contain alphanumeric characters, dots or hyphens")
+		return errors.New("invalid project name")
 	}
 	return nil
 }
@@ -26,7 +29,7 @@ var validOwnerRegexp = regexp.MustCompile(`^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$`)
 
 func ValidateOwner(owner string) error {
 	if !validOwnerRegexp.MatchString(owner) {
-		return errors.New("owner name may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen")
+		return errors.New("invalid owner name")
 	}
 	return nil
 }

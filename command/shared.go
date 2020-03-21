@@ -28,7 +28,7 @@ func (s *RepoShared) Set(text string) error {
 		*s = RepoShared(text)
 		return nil
 	}
-	return fmt.Errorf(`invalid shared value %q; shared can be specified with "false", "true", "umask", "group", "all", "world", "everybody" or "0xxx" (octed value)`, text)
+	return fmt.Errorf("invalid shared value %q", text)
 }
 
 func (s RepoShared) String() string {

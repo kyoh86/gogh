@@ -39,7 +39,7 @@ func New(authContext context.Context, ev gogh.Env) (*Client, error) {
 
 func getToken(ev gogh.Env) (string, error) {
 	if ev.GithubUser() == "" {
-		return "", errors.New("github.user is necessary to access GitHub")
+		return "", errors.New("github.user is empty")
 	}
 	envar := os.Getenv("GOGH_GITHUB_TOKEN")
 	if envar != "" {
@@ -54,7 +54,7 @@ func oauth2Client(authContext context.Context, ev gogh.Env) (*http.Client, error
 		return nil, err
 	}
 	if token == "" {
-		return nil, errors.New("github.token is necessary to access GitHub")
+		return nil, errors.New("github.token is empty")
 	}
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	return oauth2.NewClient(authContext, ts), nil

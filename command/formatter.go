@@ -31,12 +31,12 @@ func (f *ProjectListFormat) Set(value string) error {
 	if strings.HasPrefix(value, "custom:") {
 		er, err := gogh.CustomFormatter(strings.TrimPrefix(value, "custom:"))
 		if err != nil {
-			return fmt.Errorf("format custom: must have following valid template %w", err)
+			return fmt.Errorf("invalid template %w", err)
 		}
 		f.formatter = er
 		return nil
 	}
-	return fmt.Errorf("format must be one of %s or 'custom:<advanced format>', got '%s'", strings.Join(ProjectListFormats(), ","), value)
+	return fmt.Errorf("invalid format %q", value)
 }
 
 func (f *ProjectListFormat) Formatter() gogh.ProjectListFormatter {

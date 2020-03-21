@@ -175,10 +175,10 @@ func ParseProject(ev Env, root string, fullPath string) (*Project, error) {
 	}
 	pathParts := strings.Split(rel, string(filepath.Separator))
 	if len(pathParts) != 3 {
-		return nil, errors.New("not supported project path")
+		return nil, errors.New("invalid project path")
 	}
 	if ev.GithubHost() != pathParts[0] {
-		return nil, fmt.Errorf("not supported project host %q", pathParts[0])
+		return nil, fmt.Errorf("unsupported host %q", pathParts[0])
 	}
 	if err := ValidateOwner(pathParts[1]); err != nil {
 		return nil, err

@@ -52,7 +52,7 @@ func CustomFormatter(format string) (ProjectListFormatter, error) {
 		"null":     func() string { return "\x00" },
 	}).Parse(format)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse custom format %w", err)
+		return nil, fmt.Errorf("invalid custom format %w", err)
 	}
 
 	return &customListFormatter{
