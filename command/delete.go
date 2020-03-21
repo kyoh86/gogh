@@ -35,11 +35,13 @@ func Delete(ev gogh.Env, primary bool, query string) error {
 			return err
 		}
 		if *yes {
+			if err := execHooks(ev, p, hookPreRemoveEach); err != nil {
+				return err
+			}
 			if err := os.RemoveAll(p.FullPath); err != nil {
 				return err
 			}
 		}
 	}
-	// UNDONE: execute post-remove-each hook in the ev.Hooks() and the filepath.Join(project.FullPath, ".gogh", "hooks")
 	return nil
 }

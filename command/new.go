@@ -68,8 +68,7 @@ func New(
 		return err
 	}
 
-	// UNDONE: execute post-create hook in the ev.Hooks() and the filepath.Join(project.FullPath, ".gogh", "hooks")
-	return nil
+	return execHooks(ev, project, hookPostCreate)
 }
 
 func checkProjectRemote(gitClient GitClient, project *gogh.Project, repo *gogh.Repo) (bool, error) {
