@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/gogh"
 	keyring "github.com/zalando/go-keyring"
 )
 
@@ -40,32 +41,9 @@ func ConfigGet(cfg *env.Config, optionName string) error {
 	return nil
 }
 
-func githubTokenProperty(cfg *env.Config) (host string, user string, err error) {
-	hostCfg, err := cfg.Property("github.host")
-	if err != nil {
-		return host, user, err
-	}
-	host, err = hostCfg.Get()
-	if err != nil {
-		return host, user, err
-	}
-	userCfg, err := cfg.Property("github.user")
-	if err != nil {
-		return host, user, err
-	}
-	user, err = userCfg.Get()
-	if err != nil {
-		return host, user, err
-	}
-	return host, user, err
-}
-
-func ConfigSet(cfg *env.Config, optionName, optionValue string) error {
+func ConfigSet(ev gogh.Env, cfg *env.Config, optionName, optionValue string) error {
 	if optionName == "github.token" {
-		host, user, err := githubTokenProperty(cfg)
-		if err != nil {
-			return err
-		}
+		host, user := ev.GithubHost(), ev.GithubUser()
 		if err := keyring.Set(strings.Join([]string{host, env.KeyringService}, "."), user, optionValue); err != nil {
 			return err
 		}
@@ -79,12 +57,9 @@ func ConfigSet(cfg *env.Config, optionName, optionValue string) error {
 	return opt.Set(optionValue)
 }
 
-func ConfigUnset(cfg *env.Config, optionName string) error {
+func ConfigUnset(ev gogh.Env, cfg *env.Config, optionName string) error {
 	if optionName == "github.token" {
-		host, user, err := githubTokenProperty(cfg)
-		if err != nil {
-			return err
-		}
+		host, user := ev.GithubHost(), ev.GithubUser()
 
 		if err := keyring.Delete(strings.Join([]string{host, env.KeyringService}, "."), user); err != nil {
 			return err

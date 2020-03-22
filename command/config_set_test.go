@@ -19,11 +19,11 @@ hooks:
   - /hook1
 githubUser: userx1
 githubHost: hostx1`)
-	config, err := env.GetConfig(source)
+	config, access, err := env.GetAppenv(source, env.EnvarPrefix)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if err := command.ConfigSet(&config, "github.host", "hostx2"); err != nil {
+	if err := command.ConfigSet(&access, &config, "github.host", "hostx2"); err != nil {
 		log.Fatalln(err)
 	}
 	if err := config.Save(os.Stdout); err != nil {
@@ -56,14 +56,14 @@ hooks:
   - /hook1
 githubUser: userx1
 githubHost: hostx1`)
-	config, err := env.GetConfig(source)
+	config, access, err := env.GetAppenv(source, env.EnvarPrefix)
 	assert.NoError(t, err)
-	assert.NoError(t, command.ConfigSet(&config, "github.host", "hostx2"))
+	assert.NoError(t, command.ConfigSet(&access, &config, "github.host", "hostx2"))
 	assert.NoError(t, config.Save(os.Stdout))
 	assert.NoError(t, command.ConfigGetAll(&config))
 
-	assert.Error(t, command.ConfigSet(&config, "invalid.config", "invalid"))
-	assert.Error(t, command.ConfigUnset(&config, "github.token"))
-	assert.NoError(t, command.ConfigSet(&config, "github.token", "invalid"))
-	assert.NoError(t, command.ConfigUnset(&config, "github.token"))
+	assert.Error(t, command.ConfigSet(&access, &config, "invalid.config", "invalid"))
+	assert.Error(t, command.ConfigUnset(&access, &config, "github.token"))
+	assert.NoError(t, command.ConfigSet(&access, &config, "github.token", "invalid"))
+	assert.NoError(t, command.ConfigUnset(&access, &config, "github.token"))
 }

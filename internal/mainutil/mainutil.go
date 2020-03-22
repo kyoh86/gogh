@@ -59,7 +59,7 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 	}
 }
 
-func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) (string, func() error) {
+func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Env, *env.Config) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() (retErr error) {
@@ -74,12 +74,12 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(*env.Config) error) 
 			}
 		}()
 
-		config, err := env.GetConfig(reader)
+		config, access, err := env.GetAppenv(reader, env.EnvarPrefix)
 		if err != nil {
 			return err
 		}
 
-		if err = f(&config); err != nil {
+		if err = f(&access, &config); err != nil {
 			return err
 		}
 

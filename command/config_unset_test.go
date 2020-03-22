@@ -19,11 +19,11 @@ hooks:
   - /hook1
 githubUser: userx1
 githubHost: hostx1`)
-	config, err := env.GetConfig(source)
+	config, access, err := env.GetAppenv(source, env.EnvarPrefix)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if err := command.ConfigUnset(&config, "github.host"); err != nil {
+	if err := command.ConfigUnset(&access, &config, "github.host"); err != nil {
 		log.Fatalln(err)
 	}
 	if err := config.Save(os.Stdout); err != nil {
@@ -54,10 +54,10 @@ hooks:
   - /hook1
 githubUser: userx1
 githubHost: hostx1`)
-	config, err := env.GetConfig(source)
+	config, access, err := env.GetAppenv(source, env.EnvarPrefix)
 	assert.NoError(t, err)
-	assert.NoError(t, command.ConfigUnset(&config, "github.host"))
+	assert.NoError(t, command.ConfigUnset(&access, &config, "github.host"))
 	assert.NoError(t, config.Save(os.Stdout))
 	assert.NoError(t, command.ConfigGetAll(&config))
-	assert.Error(t, command.ConfigUnset(&config, "invalid.config"))
+	assert.Error(t, command.ConfigUnset(&access, &config, "invalid.config"))
 }

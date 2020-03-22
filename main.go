@@ -65,7 +65,9 @@ func main() {
 func configGetAll(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get-all", "get all options").Alias("list").Alias("ls")
 
-	return mainutil.WrapConfigurableCommand(cmd, command.ConfigGetAll)
+	return mainutil.WrapConfigurableCommand(cmd, func(_ gogh.Env, cfg *env.Config) error {
+		return command.ConfigGetAll(cfg)
+	})
 }
 
 func configGet(app *kingpin.Application) (string, func() error) {
@@ -75,7 +77,7 @@ func configGet(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get", "get an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(cfg *env.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(_ gogh.Env, cfg *env.Config) error {
 		return command.ConfigGet(cfg, name)
 	})
 }
@@ -89,8 +91,8 @@ func configSet(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 	cmd.Arg("value", "option value").Required().StringVar(&value)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(cfg *env.Config) error {
-		return command.ConfigSet(cfg, name, value)
+	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *env.Config) error {
+		return command.ConfigSet(ev, cfg, name, value)
 	})
 }
 
@@ -101,8 +103,8 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("unset", "unset an option").Alias("rm")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(cfg *env.Config) error {
-		return command.ConfigUnset(cfg, name)
+	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *env.Config) error {
+		return command.ConfigUnset(ev, cfg, name)
 	})
 }
 
