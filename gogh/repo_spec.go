@@ -15,6 +15,12 @@ type RepoSpec struct {
 	repo Repo
 }
 
+// DefaultSpec descripts default properties
+type DefaultSpec interface {
+	GithubHost() string
+	GithubUser() string
+}
+
 // Convert SCP-like URL to SSH URL(e.g. [user@]host.xz:path/to/repo.git/)
 // ref. http://git-scm.com/docs/git-fetch#_git_urls
 // (golang hasn't supported Perl-like negative look-behind match)
@@ -84,15 +90,15 @@ func (r RepoSpec) String() string {
 
 var _ flag.Value = (*RepoSpec)(nil)
 
-func (r *RepoSpec) validate(ev Env) (*Repo, error) {
+func (r *RepoSpec) Validate(df DefaultSpec) (*Repo, error) {
 	repo := r.repo // copy object
 	if repo.host == "" {
-		repo.host = ev.GithubHost()
-	} else if repo.host != ev.GithubHost() {
+		repo.host = df.GithubHost()
+	} else if repo.host != df.GithubHost() {
 		return nil, fmt.Errorf("unsupported host %q", repo.host)
 	}
 	if repo.owner == "" {
-		def := ev.GithubUser()
+		def := df.GithubUser()
 		if def == "" {
 			return nil, fmt.Errorf("owner name is empty")
 		}
@@ -128,10 +134,10 @@ func (specs RepoSpecs) String() string {
 func (specs RepoSpecs) IsCumulative() bool { return true }
 
 // Repos will get repositories with GitHub host and user
-func (specs RepoSpecs) Validate(ev Env) ([]Repo, error) {
+func (specs RepoSpecs) Validate(df DefaultSpec) ([]Repo, error) {
 	repos := make([]Repo, 0, len(specs))
 	for _, spec := range specs {
-		repo, err := spec.validate(ev)
+		repo, err := spec.Validate(df)
 		if err != nil {
 			return nil, err
 		}
@@ -141,10 +147,10 @@ func (specs RepoSpecs) Validate(ev Env) ([]Repo, error) {
 }
 
 // ParseRepo parses a repo-name for a repository in the GitHub
-func ParseRepo(ev Env, rawRepo string) (*Repo, error) {
+func ParseRepo(df DefaultSpec, rawRepo string) (*Repo, error) {
 	spec := new(RepoSpec)
 	if err := spec.Set(rawRepo); err != nil {
 		return nil, err
 	}
-	return spec.validate(ev)
+	return spec.Validate(df)
 }

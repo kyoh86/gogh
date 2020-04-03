@@ -38,7 +38,7 @@ func FindProjectInPrimary(ev Env, spec *RepoSpec) (*Project, *Repo, error) {
 func findProject(ev Env, spec *RepoSpec, walker Walker) (*Project, *Repo, error) {
 	var project *Project
 
-	repo, err := spec.validate(ev)
+	repo, err := spec.Validate(ev)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -85,7 +85,7 @@ func findOrNewProject(ev Env, spec *RepoSpec, walker Walker) (*Project, *Repo, e
 
 // NewProject creates a project (local repository)
 func NewProject(ev Env, spec *RepoSpec) (*Project, error) {
-	repo, err := spec.validate(ev)
+	repo, err := spec.Validate(ev)
 	if err != nil {
 		return nil, err
 	}
