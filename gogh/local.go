@@ -154,13 +154,27 @@ func walkInPath(ev Env, root string, callback WalkFunc) error {
 	}
 
 	return walker.Walk(root, func(path string, fi os.FileInfo) error {
+		p, err := ParseProject(ev, root, path)
+		switch {
+		case err == ErrTooShallowPath:
+			return nil
+		case err == nil:
+			// continue
+		case err == ErrTooDeepPath:
+			return filepath.SkipDir
+		default:
+			switch err.(type) {
+			case *ErrorUnsupportedHost, ErrorInvalidName, ErrorInvalidOwner:
+				return filepath.SkipDir
+			default:
+				return nil
+			}
+		}
+
 		if !isVcsDir(path) {
 			return nil
 		}
-		p, err := ParseProject(ev, root, path)
-		if err != nil {
-			return nil
-		}
+
 		if err := callback(p); err != nil {
 			return err
 		}
@@ -168,17 +182,27 @@ func walkInPath(ev Env, root string, callback WalkFunc) error {
 	})
 }
 
+var (
+	ErrTooShallowPath = errors.New("too shallow path")
+	ErrTooDeepPath    = errors.New("too deep path")
+)
+
 func ParseProject(ev Env, root string, fullPath string) (*Project, error) {
 	rel, err := filepath.Rel(root, fullPath)
 	if err != nil {
 		return nil, err
 	}
 	pathParts := strings.Split(rel, string(filepath.Separator))
-	if len(pathParts) != 3 {
-		return nil, errors.New("invalid project path")
+	switch len(pathParts) {
+	case 3:
+		// continue
+	case 0, 1, 2:
+		return nil, ErrTooShallowPath
+	default:
+		return nil, ErrTooDeepPath
 	}
-	if ev.GithubHost() != pathParts[0] {
-		return nil, fmt.Errorf("unsupported host %q", pathParts[0])
+	if err := ValidateHost(ev, pathParts[0]); err != nil {
+		return nil, err
 	}
 	if err := ValidateOwner(pathParts[1]); err != nil {
 		return nil, err
