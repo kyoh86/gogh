@@ -146,6 +146,8 @@ func walkInPath(ev Env, root string, callback WalkFunc) error {
 	switch {
 	case err == nil:
 		// noop
+	case os.IsNotExist(err):
+		return nil
 	default:
 		return err
 	}
