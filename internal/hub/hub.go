@@ -137,14 +137,6 @@ func (i *Client) Fork(
 			- organization string
 				Optional parameter to specify the organization name if forking into an organization.
 	*/
-	// If the context has no authentication token, specifies context user name for "me".
-	if organization == "" {
-		token, err := getToken(ev)
-		if err == nil && token != "" {
-			organization = ev.GithubUser()
-		}
-	}
-
 	opts := &github.RepositoryCreateForkOptions{
 		Organization: organization,
 	}
