@@ -35,7 +35,7 @@ func New(authContext context.Context, ev gogh.Env) (*Client, error) {
 }
 
 func oauth2Client(authContext context.Context, ev gogh.Env) (*http.Client, error) {
-	token, err := GetGitHubToken(ev.GithubHost(), ev.GithubUser())
+	token, err := GetGithubToken(ev.GithubHost(), ev.GithubUser())
 	if err != nil {
 		return nil, err
 	}

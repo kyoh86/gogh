@@ -29,12 +29,12 @@ func Setup(_ context.Context, ev gogh.Env, cfg *env.Config, force bool) error {
 
 		return opt.Set(user)
 	}
-	token, _ := hub.GetGitHubToken(ev.GithubHost(), user)
+	token, _ := hub.GetGithubToken(ev.GithubHost(), user)
 	if token == "" || force {
 		if err := ask.Default(token).Hidden(true).Message(q("Enter your GitHub Private Access Token")).StringVar(&token).Do(); err != nil {
 			return fmt.Errorf("asking GitHub Private Access Token: %w", err)
 		}
 	}
 
-	return hub.SetGitHubToken(ev.GithubHost(), user, token)
+	return hub.SetGithubToken(ev.GithubHost(), user, token)
 }
