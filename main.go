@@ -38,7 +38,7 @@ func main() {
 		configUnset,
 
 		roots,
-		setup,
+		initialize,
 
 		list,
 		dump,
@@ -118,21 +118,21 @@ func roots(app *kingpin.Application) (string, func() error) {
 	})
 }
 
-func setup(app *kingpin.Application) (string, func() error) {
+func initialize(app *kingpin.Application) (string, func() error) {
 	var (
 		shell string
 	)
-	cmd := app.Command("setup", `Generate shell script to setup gogh
+	cmd := app.Command("init", `Generate shell script to initialize gogh
 
 If you want to use "gogh cd", "gogh get --cd" and autocompletions for gogh,
 
 set up gogh in your shell-rc file (".bashrc" / ".zshrc") like below.
 
-eval "$(gogh setup)"`).Hidden()
+eval "$(gogh init)"`).Hidden()
 	cmd.Flag("shell", "Target shell path").Envar("SHELL").Hidden().StringVar(&shell)
 
 	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
-		return command.Setup(ev, "", shell)
+		return command.Initialize(ev, "", shell)
 	})
 }
 

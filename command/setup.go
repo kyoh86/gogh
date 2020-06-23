@@ -11,9 +11,9 @@ import (
 	"github.com/rakyll/statik/fs"
 )
 
-// Setup shells in shell scipt
-// Usage: eval "$(gogh setup)"
-func Setup(ev gogh.Env, _, shell string) error {
+// Initialize shells in shell scipt
+// Usage: eval "$(gogh init)"
+func Initialize(ev gogh.Env, _, shell string) error {
 	staticFs, err := fs.New()
 	if err != nil {
 		return err

@@ -296,13 +296,13 @@ To be enabled shell extentions (for zsh / bash), set up gogh in your shell-rc fi
 * auto-completions
 
 ```
-eval "$(gogh setup)"
+eval "$(gogh init)"
 ```
 
 If you have not set `SHELL` envar right, tell your shell explicitly.
 
 ```
-eval "$(gogh setup --shell bash)"
+eval "$(gogh init --shell bash)"
 ```
 
 NOTE: Now gogh supports `bash` or `zsh` only.
