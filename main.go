@@ -36,6 +36,7 @@ func main() {
 		configGet,
 		configSet,
 		configUnset,
+		setup,
 
 		roots,
 		initialize,
@@ -105,6 +106,18 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 
 	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *env.Config) error {
 		return command.ConfigUnset(ev, cfg, name)
+	})
+}
+
+func setup(app *kingpin.Application) (string, func() error) {
+	var (
+		force bool
+	)
+	cmd := app.Command("setup", "Setup gordon with wizards")
+	cmd.Flag("force", "Ask even though that the option has already set").BoolVar(&force)
+
+	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *env.Config) error {
+		return command.Setup(context.Background(), ev, cfg, force)
 	})
 }
 

@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/google/go-github/v29/github"
-	"github.com/kyoh86/gogh/env"
 	"github.com/kyoh86/gogh/gogh"
-	keyring "github.com/zalando/go-keyring"
 	"golang.org/x/oauth2"
 )
 
@@ -37,19 +34,8 @@ func New(authContext context.Context, ev gogh.Env) (*Client, error) {
 	return &Client{github.NewClient(httpClient)}, nil
 }
 
-func getToken(ev gogh.Env) (string, error) {
-	if ev.GithubUser() == "" {
-		return "", errors.New("github.user is empty")
-	}
-	envar := os.Getenv("GOGH_GITHUB_TOKEN")
-	if envar != "" {
-		return envar, nil
-	}
-	return keyring.Get(strings.Join([]string{ev.GithubHost(), env.KeyringService}, "."), ev.GithubUser())
-}
-
 func oauth2Client(authContext context.Context, ev gogh.Env) (*http.Client, error) {
-	token, err := getToken(ev)
+	token, err := GetGitHubToken(ev.GithubHost(), ev.GithubUser())
 	if err != nil {
 		return nil, err
 	}

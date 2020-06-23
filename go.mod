@@ -10,6 +10,7 @@ require (
 	github.com/kyoh86/appenv v0.0.20
 	github.com/kyoh86/ask v0.0.7
 	github.com/kyoh86/xdg v1.2.0
+	github.com/morikuni/aec v1.0.0
 	github.com/rakyll/statik v0.1.7
 	github.com/saracen/walker v0.0.0-20191201085201-324a081bae7e
 	github.com/stoewer/go-strcase v1.2.0
