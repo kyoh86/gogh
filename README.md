@@ -4,7 +4,7 @@ GO GitHub project manager
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/kyoh86/gogh)](https://goreportcard.com/report/github.com/kyoh86/gogh)
 [![Coverage Status](https://img.shields.io/codecov/c/github/kyoh86/gogh.svg)](https://codecov.io/gh/kyoh86/gogh)
-![Deploy](https://github.com/kyoh86/gogh/workflows/Deploy/badge.svg)
+![Release](https://github.com/kyoh86/gogh/workflows/Release/badge.svg)
 
 ![](./image/gogh.jpg)
 
