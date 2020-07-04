@@ -213,6 +213,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 		own         bool
 		collaborate bool
 		member      bool
+		archived    bool
 		visibility  string
 		sort        string
 		direction   string
@@ -222,6 +223,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("own", "Include repositories that are owned by the user").Default("true").BoolVar(&own)
 	cmd.Flag("collaborate", "Include repositories that the user has been added to as a collaborator").Default("true").BoolVar(&collaborate)
 	cmd.Flag("member", "Include repositories that the user has access to through being a member of an organization. This includes every repository on every team that the user is on").Default("true").BoolVar(&member)
+	cmd.Flag("archived", "Include archived repository").BoolVar(&archived)
 	cmd.Flag("visibility", "Include repositories that can be access public/private").Default("all").EnumVar(&visibility, "all", "public", "private")
 	cmd.Flag("sort", "Sort repositories by").Default("full_name").EnumVar(&sort, "created", "updated", "pushed", "full_name")
 	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
@@ -232,7 +234,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 		if err != nil {
 			return err
 		}
-		return command.Repos(ctx, ev, hubClient, user, own, collaborate, member, visibility, sort, direction)
+		return command.Repos(ctx, ev, hubClient, user, own, collaborate, member, archived, visibility, sort, direction)
 	})
 }
 

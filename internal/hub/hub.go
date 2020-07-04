@@ -56,12 +56,13 @@ type Client struct {
 //   * own:         Include repositories that are owned by the user
 //   * collaborate: Include repositories that the user has been added to as a collaborator
 //   * member:      Include repositories that the user has access to through being a member of an organization. This includes every repository on every team that the user is on
+//   * archived:    Include repositories that has already archived.
 //   * visibility:  Can be one of all, public, or private
 //   * sort:        Can be one of created, updated, pushed, full_name
 //   * direction:   Can be one of asc or desc default. Default means asc when using full_name, otherwise desc
 // Returns:
 //   List of the url for repoisitories
-func (i *Client) Repos(ctx context.Context, ev gogh.Env, user string, own, collaborate, member bool, visibility, sort, direction string) ([]string, error) {
+func (i *Client) Repos(ctx context.Context, ev gogh.Env, user string, own, collaborate, member, archived bool, visibility, sort, direction string) ([]string, error) {
 	/*
 		Build GitHub requests.
 		See: https://developer.github.com/v3/repos/#parameters
@@ -104,6 +105,9 @@ func (i *Client) Repos(ctx context.Context, ev gogh.Env, user string, own, colla
 
 		last = res.LastPage
 		for _, repo := range repos {
+			if !archived && repo.GetArchived() {
+				continue
+			}
 			list = append(list, repo.GetHTMLURL())
 		}
 	}

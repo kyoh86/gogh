@@ -13,5 +13,5 @@ import (
 type HubClient interface {
 	Create(context.Context, gogh.Env, *gogh.Repo, string, *url.URL, bool) (*github.Repository, error)
 	Fork(context.Context, gogh.Env, *gogh.Repo, string) (*gogh.Repo, error)
-	Repos(context.Context, gogh.Env, string, bool, bool, bool, string, string, string) ([]string, error)
+	Repos(context.Context, gogh.Env, string, bool, bool, bool, bool, string, string, string) ([]string, error)
 }
