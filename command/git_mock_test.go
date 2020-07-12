@@ -6,6 +6,8 @@ package command_test
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	git "github.com/kyoh86/gogh/internal/git"
+	io "io"
 	url "net/url"
 	reflect "reflect"
 )
@@ -120,6 +122,21 @@ func (mr *MockGitClientMockRecorder) GetRemotes(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRemotes", reflect.TypeOf((*MockGitClient)(nil).GetRemotes), arg0)
 }
 
+// GetStatusSummary mocks base method
+func (m *MockGitClient) GetStatusSummary(arg0 string, arg1 io.Writer) (git.StatusSummary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStatusSummary", arg0, arg1)
+	ret0, _ := ret[0].(git.StatusSummary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStatusSummary indicates an expected call of GetStatusSummary
+func (mr *MockGitClientMockRecorder) GetStatusSummary(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatusSummary", reflect.TypeOf((*MockGitClient)(nil).GetStatusSummary), arg0, arg1)
+}
+
 // Init mocks base method
 func (m *MockGitClient) Init(arg0 string, arg1 bool, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
@@ -174,6 +191,20 @@ func (m *MockGitClient) SetUpstreamTo(arg0, arg1 string) error {
 func (mr *MockGitClientMockRecorder) SetUpstreamTo(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUpstreamTo", reflect.TypeOf((*MockGitClient)(nil).SetUpstreamTo), arg0, arg1)
+}
+
+// Status mocks base method
+func (m *MockGitClient) Status(arg0 string, arg1, arg2 io.Writer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Status", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Status indicates an expected call of Status
+func (mr *MockGitClientMockRecorder) Status(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockGitClient)(nil).Status), arg0, arg1, arg2)
 }
 
 // Update mocks base method

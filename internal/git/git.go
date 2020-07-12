@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"os/exec"
@@ -151,4 +152,82 @@ func (c *Client) SetUpstreamTo(local string, upstream string) error {
 	cmd.Dir = local
 
 	return delegate.ExecCommand(cmd)
+}
+
+func (c *Client) Status(path string, out, err io.Writer) error {
+	cmd := exec.Command("git", "status", "--porcelain")
+	cmd.Stdout = out
+	cmd.Stderr = err
+	cmd.Dir = path
+	return delegate.ExecCommand(cmd)
+}
+
+func (c *Client) GetStatusSummary(path string, err io.Writer) (StatusSummary, error) {
+	parser := &porcelainCollector{}
+	if err := c.Status(path, parser, err); err != nil {
+		return StatusSummaryClear, err
+	}
+	return parser.Close(), nil
+}
+
+type StatusSummary int
+
+const (
+	StatusSummaryClear     = StatusSummary(0)
+	StatusSummaryModified  = StatusSummary(1)
+	StatusSummaryUntracked = StatusSummary(2)
+)
+
+func (c StatusSummary) String() string {
+	switch c {
+	default: //case StatusSummaryClear:
+		return "  "
+	case StatusSummaryUntracked:
+		return " +"
+	case StatusSummaryModified:
+		return "M "
+	case StatusSummaryUntracked | StatusSummaryModified:
+		return "M+"
+	}
+}
+
+type porcelainCollector struct {
+	summary StatusSummary
+	surplus string
+}
+
+func runeToCode(r rune) StatusSummary {
+	switch r {
+	case ' ':
+		return StatusSummaryClear
+	case '?':
+		return StatusSummaryUntracked
+	default:
+		return StatusSummaryModified
+	}
+}
+
+func (w *porcelainCollector) parseLine(line string) {
+	if len(line) > 2 {
+		w.summary |= runeToCode([]rune(line)[0])
+		w.summary |= runeToCode([]rune(line)[1])
+	}
+}
+
+func (w *porcelainCollector) Write(p []byte) (int, error) {
+	lines := strings.Split(w.surplus+string(p), "\n")
+	last := len(lines) - 1
+	for i := 0; i < last; i++ {
+		w.parseLine(lines[i])
+	}
+	w.surplus = lines[last]
+	return len(p), nil
+}
+
+func (w *porcelainCollector) Close() StatusSummary {
+	w.parseLine(w.surplus)
+	summary := w.summary
+	w.surplus = ""
+	w.summary = StatusSummaryClear
+	return summary
 }

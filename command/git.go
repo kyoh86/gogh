@@ -3,6 +3,8 @@
 package command
 
 import (
+	"github.com/kyoh86/gogh/internal/git"
+	"io"
 	"net/url"
 )
 
@@ -14,9 +16,11 @@ type GitClient interface {
 	GetCurrentBranch(string) (string, error)
 	GetRemote(string, string) (*url.URL, error)
 	GetRemotes(string) (map[string]*url.URL, error)
+	GetStatusSummary(string, io.Writer) (git.StatusSummary, error)
 	Init(string, bool, string, string, string) error
 	RemoveRemote(string, string) error
 	RenameRemote(string, string, string) error
 	SetUpstreamTo(string, string) error
+	Status(string, io.Writer, io.Writer) error
 	Update(string) error
 }

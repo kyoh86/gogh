@@ -42,6 +42,7 @@ func main() {
 		initialize,
 
 		list,
+		statuses,
 		dump,
 		find,
 		where,
@@ -204,6 +205,24 @@ func where(app *kingpin.Application) (string, func() error) {
 
 	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
 		return command.Where(ev, primary, query)
+	})
+}
+
+func statuses(app *kingpin.Application) (string, func() error) {
+	var (
+		format  command.ProjectListFormat
+		primary bool
+		query   string
+		detail  bool
+	)
+	cmd := app.Command("statuses", "List project statuses").Alias("status")
+	cmd.Flag("format", "Format of each repository").Short('f').Default(command.ProjectListFormatLabelRelPath).SetValue(&format)
+	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
+	cmd.Flag("detail", "Show status detail").Short('d').BoolVar(&detail)
+	cmd.Arg("query", "Project name query").StringVar(&query)
+
+	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
+		return command.Statuses(ev, new(git.Client), format.Formatter(), primary, query, detail)
 	})
 }
 

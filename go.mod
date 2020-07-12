@@ -8,6 +8,7 @@ require (
 	github.com/golang/mock v1.4.1
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-github/v29 v29.0.3
+	github.com/koron-go/prefixw v1.0.0
 	github.com/kyoh86/appenv v0.0.20
 	github.com/kyoh86/ask v0.0.7
 	github.com/kyoh86/xdg v1.2.0
