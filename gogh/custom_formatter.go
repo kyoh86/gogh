@@ -1,7 +1,6 @@
 package gogh
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"text/template"
@@ -46,15 +45,6 @@ func CustomFormatter(format string) (ProjectListFormatter, error) {
 	}, nil
 }
 
-func formatToTemplateFunc(format func(w io.Writer, project *Project) error) func(project *Project) (string, error) {
-	return func(project *Project) (string, error) {
-		buf := new(bytes.Buffer)
-		if err := format(buf, project); err != nil {
-			return "", err
-		}
-		return buf.String(), nil
-	}
-}
 func (f *customListFormatter) format(w io.Writer, project *Project) error {
 	return f.template.Execute(w, project)
 }
