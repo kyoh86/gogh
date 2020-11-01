@@ -74,7 +74,7 @@ example.com/kyoh86/bar         ;; /go/src/ example.com/kyoh86/bar;;example.com/k
 /go/src/github.com/kyoh86/baz  ;; /go/src/ github.com/kyoh86/baz ;;github.com/kyoh86/baz                                       
 /foo/github.com/kyoh86/baz     ;; /foo/    github.com/kyoh86/baz ;;github.com/kyoh86/baz                                    
 `
-		expected = strings.Replace(expected, " ", "", -1)
+		expected = strings.ReplaceAll(expected, " ", "")
 		expected = strings.TrimLeft(expected, "\n")
 		assert.Equal(t, expected, buf.String())
 	})

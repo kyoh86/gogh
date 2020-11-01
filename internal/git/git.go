@@ -180,7 +180,7 @@ const (
 
 func (c StatusSummary) String() string {
 	switch c {
-	default: //case StatusSummaryClear:
+	default: // case StatusSummaryClear:
 		return "  "
 	case StatusSummaryUntracked:
 		return " +"
