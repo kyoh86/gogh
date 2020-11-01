@@ -2,6 +2,7 @@
 
 GO GitHub project manager
 
+[![PkgGoDev](https://pkg.go.dev/badge/kyoh86/gogh)](https://pkg.go.dev/kyoh86/gogh)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kyoh86/gogh)](https://goreportcard.com/report/github.com/kyoh86/gogh)
 [![Coverage Status](https://img.shields.io/codecov/c/github/kyoh86/gogh.svg)](https://codecov.io/gh/kyoh86/gogh)
 [![Release](https://github.com/kyoh86/gogh/workflows/Release/badge.svg)](https://github.com/kyoh86/gogh/releases)
