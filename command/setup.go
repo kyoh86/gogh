@@ -22,7 +22,7 @@ func Setup(_ context.Context, ev gogh.Env, cfg *env.Config, force bool) error {
 			return fmt.Errorf("asking GitHub user ID: %w", err)
 		}
 
-		opt, err := cfg.Property("github.user")
+		opt, err := cfg.Option("github.user")
 		if err != nil {
 			return err
 		}

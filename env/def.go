@@ -19,7 +19,7 @@ const (
 )
 
 type GithubHost struct {
-	types.StringPropertyBase
+	types.StringValue
 }
 
 const (
@@ -32,7 +32,7 @@ func (*GithubHost) Default() interface{} {
 }
 
 type GithubUser struct {
-	types.StringPropertyBase
+	types.StringValue
 }
 
 type Paths struct {

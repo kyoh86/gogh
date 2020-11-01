@@ -10,8 +10,8 @@ import (
 )
 
 func ConfigGetAll(cfg *env.Config) error {
-	for _, name := range env.PropertyNames() {
-		opt, _ := cfg.Property(name) // ignore error: config.OptionNames covers all accessor
+	for _, name := range env.OptionNames() {
+		opt, _ := cfg.Option(name) // ignore error: config.OptionNames covers all accessor
 		value, err := opt.Get()
 		if err != nil {
 			return err
@@ -29,7 +29,7 @@ func ConfigGetAll(cfg *env.Config) error {
 }
 
 func ConfigGet(cfg *env.Config, optionName string) error {
-	opt, err := cfg.Property(optionName)
+	opt, err := cfg.Option(optionName)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func ConfigSet(ev gogh.Env, cfg *env.Config, optionName, optionValue string) err
 		return nil
 	}
 
-	opt, err := cfg.Property(optionName)
+	opt, err := cfg.Option(optionName)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func ConfigUnset(ev gogh.Env, cfg *env.Config, optionName string) error {
 		return nil
 	}
 
-	opt, err := cfg.Property(optionName)
+	opt, err := cfg.Option(optionName)
 	if err != nil {
 		return err
 	}

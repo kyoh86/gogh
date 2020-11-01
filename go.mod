@@ -5,6 +5,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/danieljoos/wincred v1.1.0 // indirect
+	github.com/goccy/go-yaml v1.8.3
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-github/v29 v29.0.3

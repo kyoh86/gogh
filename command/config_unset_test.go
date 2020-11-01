@@ -35,9 +35,9 @@ githubHost: hostx1`)
 
 	// Unordered output:
 	// roots:
-	//     - /root1
+	// - /root1
 	// hooks:
-	//     - /hook1
+	// - /hook1
 	// githubUser: userx1
 	// roots: /root1
 	// hooks: /hook1

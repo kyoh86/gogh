@@ -29,5 +29,5 @@ func TestConfigGet(t *testing.T) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	assert.EqualError(t, command.ConfigGet(&config, "invalid.name"), `invalid property name "invalid.name"`)
+	assert.EqualError(t, command.ConfigGet(&config, "invalid.name"), `invalid option name "invalid.name"`)
 }
