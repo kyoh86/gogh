@@ -9,6 +9,7 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-github/v29 v29.0.3
+	github.com/gostaticanalysis/vetgen v0.1.0
 	github.com/koron-go/prefixw v1.0.0
 	github.com/kyoh86/appenv v0.1.0
 	github.com/kyoh86/ask v0.0.7
@@ -26,7 +27,7 @@ require (
 	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/sys v0.0.0-20201029080932-201ba4db2418 // indirect
-	golang.org/x/tools v0.0.0-20201031021630-582c62ec74d0 // indirect
+	golang.org/x/tools v0.0.0-20201031021630-582c62ec74d0
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
