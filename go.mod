@@ -15,6 +15,7 @@ require (
 	github.com/kyoh86/xdg v1.2.0
 	github.com/morikuni/aec v1.0.0
 	github.com/rakyll/statik v0.1.7
+	github.com/rjeczalik/interfaces v0.1.1-0.20200802125716-52753694177b
 	github.com/saracen/walker v0.1.1
 	github.com/stoewer/go-strcase v1.2.0
 	github.com/stretchr/objx v0.2.0 // indirect
@@ -24,8 +25,8 @@ require (
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
-	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
 	golang.org/x/sys v0.0.0-20201029080932-201ba4db2418 // indirect
+	golang.org/x/tools v0.0.0-20201031021630-582c62ec74d0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
