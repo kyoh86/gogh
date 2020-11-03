@@ -2,8 +2,7 @@
 
 package gogh
 
-import (
-)
+import ()
 
 // Env is an interface generated for "github.com/kyoh86/gogh/env.Access".
 type Env interface {
