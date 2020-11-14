@@ -7,13 +7,14 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	testtarget "github.com/kyoh86/gogh/command"
+	"github.com/kyoh86/gogh/internal/hub"
 	"github.com/stretchr/testify/require"
-	keyring "github.com/zalando/go-keyring"
 )
 
 func TestMain(m *testing.M) {
 	log.SetOutput(ioutil.Discard)
-	keyring.MockInit()
+	testtarget.TokenManager = hub.NewMemory
 	code := m.Run()
 	os.Exit(code)
 }

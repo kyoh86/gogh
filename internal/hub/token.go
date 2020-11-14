@@ -2,6 +2,7 @@ package hub
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,20 +57,23 @@ func NewKeyring(host string) (TokenManager, error) {
 		return nil, errors.New("host is empty")
 	}
 	serviceName := strings.Join([]string{host, env.KeyringService}, ".")
+
 	ring, err := keyring.Open(keyring.Config{
 		ServiceName: serviceName,
 
-		FileDir:                 filepath.Join(xdg.CacheHome(), KeyringFileDir, "keyring", host),
-		FilePasswordFunc:        keyring.PromptFunc(cli.AskPassword),
-		LibSecretCollectionName: serviceName,
-		KeychainName:            serviceName,
-		KeychainPasswordFunc:    keyring.PromptFunc(cli.AskPassword),
+		FileDir:              filepath.Join(xdg.CacheHome(), KeyringFileDir, "keyring", host),
+		FilePasswordFunc:     keyring.PromptFunc(cli.AskPassword),
+		KeychainName:         serviceName,
+		KeychainPasswordFunc: keyring.PromptFunc(cli.AskPassword),
 
 		PassDir: filepath.Join(xdg.CacheHome(), KeyringFileDir, "pass", host),
 	})
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("%#v\n", ring)
+	keys, _ := ring.Keys()
+	fmt.Printf("%#v\n", keys)
 	return &Keyring{ring: ring}, nil
 }
 
