@@ -6,8 +6,11 @@ import (
 
 	"github.com/kyoh86/gogh/env"
 	"github.com/kyoh86/gogh/gogh"
+	"github.com/kyoh86/gogh/internal/hub"
 	keyring "github.com/zalando/go-keyring"
 )
+
+var TokenManager = hub.NewKeyring
 
 func ConfigGetAll(cfg *env.Config) error {
 	for _, name := range env.OptionNames() {
