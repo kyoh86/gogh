@@ -26,7 +26,6 @@ jobs:
   test-others:
     name: Test others
     runs-on: ubuntu-latest
-    needs: test
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v2
@@ -57,7 +56,9 @@ jobs:
   test-status:
     name: Test status
     runs-on: ubuntu-latest
-    needs: test-others
+    needs:
+      - test
+      - test-others
     steps:
       - name: Set Check Status Success
         uses: Sibz/github-status-action@v1.1.1
