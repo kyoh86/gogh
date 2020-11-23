@@ -1,4 +1,4 @@
-//+build !windows
+//+build windows
 
 package command_test
 
@@ -23,7 +23,7 @@ func ExampleConfigGet() {
 	}
 
 	// Output:
-	// /foo:/bar
+	// /foo;/bar
 }
 
 func TestConfigGet(t *testing.T) {

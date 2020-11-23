@@ -1,4 +1,4 @@
-//+build !windows
+//+build windows
 
 package command_test
 
@@ -31,8 +31,8 @@ githubUser: userx1`)
 	}
 
 	// Unordered output:
-	// roots: /root1:/root2
-	// hooks: /hook1:/hook2
+	// roots: /root1;/root2
+	// hooks: /hook1;/hook2
 	// github.host: hostx1
 	// github.user: userx1
 	// github.token: *****
