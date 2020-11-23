@@ -1,47 +1,38 @@
-project_name: gogh
-release:
-  github:
-    owner: kyoh86
-    name: gogh
 brews:
-- install: |
-    bin.install "gogh"
-    man1.install "gogh.1"
-  github:
-    owner: kyoh86
-    name: homebrew-tap
-  folder: Formula
-  homepage: https://github.com/kyoh86/gogh
-  description: GO GitHub project manager
+  - install: |
+      bin.install "gogh"
+      man1.install "gogh.1"
+    tap:
+      owner: kyoh86
+      name: homebrew-tap
+    folder: Formula
+    homepage: https://github.com/kyoh86/gogh
+    description: GO GitHub project manager
 builds:
-- goos:
-  - linux
-  - darwin
-  - windows
-  goarch:
-  - amd64
-  - "386"
-  main: .
-  ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
-  binary: gogh
-  hooks:
-    pre: make man
+  - goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - "386"
+    hooks:
+      pre: make man
 archives:
-- id: gzip
-  format: tar.gz
-  format_overrides:
-    - goos: windows
-      format: zip
-  name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-  files:
-  - licence*
-  - LICENCE*
-  - license*
-  - LICENSE*
-  - readme*
-  - README*
-  - changelog*
-  - CHANGELOG*
-  - gogh.1
-snapshot:
-  name_template: SNAPSHOT-{{ .Commit }}
+  - id: gzip
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - licence*
+      - LICENCE*
+      - license*
+      - LICENSE*
+      - readme*
+      - README*
+      - changelog*
+      - CHANGELOG*
+      - gogh.1
