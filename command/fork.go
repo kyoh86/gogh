@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v32/github"
 	"github.com/kyoh86/gogh/gogh"
 )
 

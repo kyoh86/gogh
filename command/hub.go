@@ -4,7 +4,7 @@ package command
 
 import (
 	"context"
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v32/github"
 	"github.com/kyoh86/gogh/gogh"
 	"net/url"
 )

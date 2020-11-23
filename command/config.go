@@ -2,12 +2,13 @@ package command
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/kyoh86/gogh/env"
 	"github.com/kyoh86/gogh/gogh"
-	keyring "github.com/zalando/go-keyring"
+	"github.com/kyoh86/gogh/internal/hub"
 )
+
+var TokenManager = hub.NewKeyring
 
 func ConfigGetAll(cfg *env.Config) error {
 	for _, name := range env.OptionNames() {
@@ -43,11 +44,11 @@ func ConfigGet(cfg *env.Config, optionName string) error {
 
 func ConfigSet(ev gogh.Env, cfg *env.Config, optionName, optionValue string) error {
 	if optionName == "github.token" {
-		host, user := ev.GithubHost(), ev.GithubUser()
-		if err := keyring.Set(strings.Join([]string{host, env.KeyringService}, "."), user, optionValue); err != nil {
+		tm, err := TokenManager(ev.GithubHost())
+		if err != nil {
 			return err
 		}
-		return nil
+		return tm.SetGithubToken(ev.GithubUser(), optionValue)
 	}
 
 	opt, err := cfg.Option(optionName)
@@ -61,7 +62,11 @@ func ConfigUnset(ev gogh.Env, cfg *env.Config, optionName string) error {
 	if optionName == "github.token" {
 		host, user := ev.GithubHost(), ev.GithubUser()
 
-		if err := keyring.Delete(strings.Join([]string{host, env.KeyringService}, "."), user); err != nil {
+		tm, err := TokenManager(host)
+		if err != nil {
+			return err
+		}
+		if err := tm.DeleteGithubToken(user); err != nil {
 			return err
 		}
 		return nil

@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v32/github"
 	"github.com/kyoh86/gogh/gogh"
 	"golang.org/x/oauth2"
 )
@@ -35,7 +35,11 @@ func New(authContext context.Context, ev gogh.Env) (*Client, error) {
 }
 
 func oauth2Client(authContext context.Context, ev gogh.Env) (*http.Client, error) {
-	token, err := GetGithubToken(ev.GithubHost(), ev.GithubUser())
+	tm, err := NewKeyring(ev.GithubHost())
+	if err != nil {
+		return nil, err
+	}
+	token, err := tm.GetGithubToken(ev.GithubUser())
 	if err != nil {
 		return nil, err
 	}
