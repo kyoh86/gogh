@@ -171,16 +171,16 @@ func TestWalk(t *testing.T) {
 		)
 		require.NoError(t, gogh.Walk(svc.ev, func(p *gogh.Project) error {
 			switch p.RelPath {
-			case filepath.Join("github.com", "kyoh86", "proj-1"):
+			case filepath.ToSlash(filepath.Join("github.com", "kyoh86", "proj-1")):
 				assert.True(t, p.IsInPrimaryRoot(svc.ev))
 				found1 = true
-			case filepath.Join("github.com", "kyoh86", "proj-2"):
+			case filepath.ToSlash(filepath.Join("github.com", "kyoh86", "proj-2")):
 				assert.True(t, p.IsInPrimaryRoot(svc.ev))
 				found2 = true
-			case filepath.Join("github.com", "kyoh86", "proj-3"):
+			case filepath.ToSlash(filepath.Join("github.com", "kyoh86", "proj-3")):
 				assert.False(t, p.IsInPrimaryRoot(svc.ev))
 				found3 = true
-			case filepath.Join("github.com", "kyoh86", "proj-4"):
+			case filepath.ToSlash(filepath.Join("github.com", "kyoh86", "proj-4")):
 				assert.False(t, p.IsInPrimaryRoot(svc.ev))
 				found4 = true
 			default:
