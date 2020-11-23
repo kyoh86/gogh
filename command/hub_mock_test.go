@@ -7,7 +7,7 @@ package command_test
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	github "github.com/google/go-github/v32/github"
+	github "github.com/google/go-github/v29/github"
 	gogh "github.com/kyoh86/gogh/gogh"
 	url "net/url"
 	reflect "reflect"

@@ -63,6 +63,7 @@ githubHost: hostx1`)
 	assert.NoError(t, command.ConfigGetAll(&config))
 
 	assert.Error(t, command.ConfigSet(&access, &config, "invalid.config", "invalid"))
+	assert.Error(t, command.ConfigUnset(&access, &config, "github.token"))
 	assert.NoError(t, command.ConfigSet(&access, &config, "github.token", "invalid"))
 	assert.NoError(t, command.ConfigUnset(&access, &config, "github.token"))
 }

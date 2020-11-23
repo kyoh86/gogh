@@ -7,6 +7,7 @@ import (
 	"github.com/kyoh86/ask"
 	"github.com/kyoh86/gogh/env"
 	"github.com/kyoh86/gogh/gogh"
+	"github.com/kyoh86/gogh/internal/hub"
 	"github.com/morikuni/aec"
 )
 
@@ -28,16 +29,12 @@ func Setup(_ context.Context, ev gogh.Env, cfg *env.Config, force bool) error {
 
 		return opt.Set(user)
 	}
-	tm, err := TokenManager(ev.GithubHost())
-	if err != nil {
-		return err
-	}
-	token, _ := tm.GetGithubToken(user)
+	token, _ := hub.GetGithubToken(ev.GithubHost(), user)
 	if token == "" || force {
 		if err := ask.Default(token).Hidden(true).Message(q("Enter your GitHub Private Access Token")).StringVar(&token).Do(); err != nil {
 			return fmt.Errorf("asking GitHub Private Access Token: %w", err)
 		}
 	}
 
-	return tm.SetGithubToken(user, token)
+	return hub.SetGithubToken(ev.GithubHost(), user, token)
 }

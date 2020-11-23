@@ -3,7 +3,7 @@ package command_test
 import (
 	"net/url"
 
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v29/github"
 )
 
 func createNewRepoWithURL(u *url.URL) *github.Repository {
