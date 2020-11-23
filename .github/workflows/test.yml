@@ -37,7 +37,7 @@ jobs:
       - name: Search diagnostics
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.33
+          version: v1.32
       - name: Take coverage
         run: go test -coverprofile=coverage.txt -covermode=atomic ./...
       - name: Send coverage
