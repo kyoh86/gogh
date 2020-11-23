@@ -17,6 +17,7 @@ func Repos(
 	own,
 	collaborate,
 	member,
+	fork,
 	archived bool,
 	visibility,
 	sort,
@@ -24,7 +25,7 @@ func Repos(
 	formatter gogh.ProjectListFormatter,
 	query string,
 ) error {
-	repos, err := hubClient.Repos(ctx, ev, user, own, collaborate, member, archived, visibility, sort, direction)
+	repos, err := hubClient.Repos(ctx, ev, user, own, collaborate, member, fork, archived, visibility, sort, direction)
 	if err != nil {
 		return err
 	}
