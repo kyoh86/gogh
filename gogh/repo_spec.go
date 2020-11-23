@@ -27,6 +27,15 @@ type DefaultSpec interface {
 var hasSchemePattern = regexp.MustCompile("^[^:]+://")
 var scpLikeURLPattern = regexp.MustCompile("^([^@]+@)?([^:]+):/?(.+)$")
 
+// Parse text as RepoSpec
+func ParseRepoSpec(rawRepo string) (*RepoSpec, error) {
+	var spec RepoSpec
+	if err := spec.Set(rawRepo); err != nil {
+		return nil, err
+	}
+	return &spec, nil
+}
+
 // Set text as RepoSpec
 func (r *RepoSpec) Set(rawRepo string) error {
 	raw := rawRepo

@@ -157,7 +157,7 @@ func list(app *kingpin.Application) (string, func() error) {
 		query   string
 	)
 	cmd := app.Command("list", "List projects (local repositories)").Alias("ls")
-	cmd.Flag("format", "Format of each repository").Short('f').Default(command.ProjectListFormatLabelRelPath).SetValue(&format)
+	cmd.Flag("format", "Format of each repository").Short('f').Default(command.ProjectListFormatLabelSpec).SetValue(&format)
 	cmd.Flag("primary", "Only in primary root directory").Short('p').BoolVar(&primary)
 	cmd.Arg("query", "Project name query").StringVar(&query)
 
@@ -236,7 +236,10 @@ func repos(app *kingpin.Application) (string, func() error) {
 		visibility  string
 		sort        string
 		direction   string
+		format      command.ProjectListFormat
+		query       string
 	)
+
 	cmd := app.Command("repos", "List remote repositories").Alias("repo").Alias("search-repo").Alias("search-repos").Alias("list-repos")
 	cmd.Flag("user", "Who has the repositories. Empty means the authenticated user").StringVar(&user)
 	cmd.Flag("own", "Include repositories that are owned by the user").Default("true").BoolVar(&own)
@@ -246,6 +249,8 @@ func repos(app *kingpin.Application) (string, func() error) {
 	cmd.Flag("visibility", "Include repositories that can be access public/private").Default("all").EnumVar(&visibility, "all", "public", "private")
 	cmd.Flag("sort", "Sort repositories by").Default("full_name").EnumVar(&sort, "created", "updated", "pushed", "full_name")
 	cmd.Flag("direction", "Sort direction").Default("default").EnumVar(&direction, "asc", "desc", "default")
+	cmd.Flag("format", "Format of each repository").Short('f').Default(command.ProjectListFormatLabelURL).SetValue(&format)
+	cmd.Arg("query", "Project name query").StringVar(&query)
 
 	return mainutil.WrapCommand(cmd, func(ev gogh.Env) error {
 		ctx := context.Background()
@@ -253,7 +258,7 @@ func repos(app *kingpin.Application) (string, func() error) {
 		if err != nil {
 			return err
 		}
-		return command.Repos(ctx, ev, hubClient, user, own, collaborate, member, archived, visibility, sort, direction)
+		return command.Repos(ctx, ev, hubClient, user, own, collaborate, member, archived, visibility, sort, direction, format.Formatter(), query)
 	})
 }
 

@@ -18,6 +18,9 @@ func (f *ProjectListFormat) Set(value string) error {
 	case ProjectListFormatLabelRelPath:
 		f.formatter = gogh.RelPathFormatter()
 		return nil
+	case ProjectListFormatLabelSpec:
+		f.formatter = gogh.SpecFormatter()
+		return nil
 	case ProjectListFormatLabelFullPath:
 		f.formatter = gogh.FullPathFormatter()
 		return nil
@@ -46,6 +49,7 @@ func (f *ProjectListFormat) Formatter() gogh.ProjectListFormatter {
 // ProjectListFormat choices.
 const (
 	ProjectListFormatLabelShort    = "short"
+	ProjectListFormatLabelSpec     = "spec"
 	ProjectListFormatLabelFullPath = "full"
 	ProjectListFormatLabelURL      = "url"
 	ProjectListFormatLabelRelPath  = "relative"
@@ -59,6 +63,7 @@ func (f ProjectListFormat) String() string {
 func ProjectListFormats() []string {
 	return []string{
 		ProjectListFormatLabelShort,
+		ProjectListFormatLabelSpec,
 		ProjectListFormatLabelFullPath,
 		ProjectListFormatLabelURL,
 		ProjectListFormatLabelRelPath,

@@ -3,6 +3,7 @@ package gogh
 import (
 	"fmt"
 	"io"
+	"path"
 	"sync"
 )
 
@@ -91,6 +92,15 @@ func RelPathFormatter() ProjectListFormatter {
 
 func relPath(project *Project) string {
 	return project.RelPath
+}
+
+// SpecFormatter prints each relative-path of the project
+func SpecFormatter() ProjectListFormatter {
+	return &coreFormatter{format: spec}
+}
+
+func spec(project *Project) string {
+	return path.Join(project.PathParts[1:]...)
 }
 
 type shortFormatter struct {
