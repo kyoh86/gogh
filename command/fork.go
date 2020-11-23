@@ -45,10 +45,12 @@ func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubCl
 	}
 
 	log.Println("info: Removing old remotes")
-	owner := repo.Owner()
-	me := newRepo.Owner()
+	const (
+		fork = "origin"
+		base = "upstream"
+	)
 	for name := range remotes {
-		if name == me || name == owner || name == "origin" {
+		if name == fork || name == base {
 			if err := gitClient.RemoveRemote(project.FullPath, name); err != nil {
 				return err
 			}
@@ -56,10 +58,10 @@ func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubCl
 	}
 
 	log.Println("info: Creating new remotes")
-	if err := gitClient.AddRemote(project.FullPath, owner, repo.URL(withSSH)); err != nil {
+	if err := gitClient.AddRemote(project.FullPath, base, repo.URL(withSSH)); err != nil {
 		return err
 	}
-	if err := gitClient.AddRemote(project.FullPath, me, newRepo.URL(withSSH)); err != nil {
+	if err := gitClient.AddRemote(project.FullPath, fork, newRepo.URL(withSSH)); err != nil {
 		return err
 	}
 
@@ -68,12 +70,12 @@ func Fork(ctx context.Context, ev gogh.Env, gitClient GitClient, hubClient HubCl
 		return err
 	}
 
-	log.Printf("info: Setting upstream to %q\n", me)
+	log.Printf("info: Setting remote %q\n", fork)
 	branch, err := gitClient.GetCurrentBranch(project.FullPath)
 	if err != nil {
 		return err
 	}
-	if err := gitClient.SetUpstreamTo(project.FullPath, me+"/"+branch); err != nil {
+	if err := gitClient.SetUpstreamTo(project.FullPath, fork+"/"+branch); err != nil {
 		return err
 	}
 	return execHooks(ev, project, hookPostFork)
