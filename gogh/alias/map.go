@@ -1,30 +1,30 @@
 package alias
 
-// Lookup is map[alias: string]fullpath: string
-type Lookup map[string]string
+// lookup is map[alias: string]fullpath: string
+type lookup map[string]string
 
-func (l *Lookup) Set(key, value string) {
+func (l *lookup) Set(key, value string) {
 	if *l == nil {
 		*l = map[string]string{}
 	}
 	(*l)[key] = value
 }
 
-func (l *Lookup) Del(key string) {
+func (l *lookup) Del(key string) {
 	if *l == nil {
 		return
 	}
 	delete(*l, key)
 }
 
-func (l *Lookup) Get(key string) string {
+func (l *lookup) Get(key string) string {
 	if *l == nil {
 		return ""
 	}
 	return (*l)[key]
 }
 
-func (l *Lookup) Has(key string) bool {
+func (l *lookup) Has(key string) bool {
 	if *l == nil {
 		return false
 	}
@@ -32,30 +32,30 @@ func (l *Lookup) Has(key string) bool {
 	return ok
 }
 
-func (l *Lookup) Keys() []string {
-	if *l == nil {
+func (l lookup) Keys() []string {
+	if l == nil {
 		return nil
 	}
-	var keys []string
-	for key := range *l {
+	keys := make([]string, 0, len(l))
+	for key := range l {
 		keys = append(keys, key)
 	}
 	return keys
 }
 
-// Reverse is map[fullpath: string]Set[alias: string]
-type Reverse map[string]Set
+// reverse is map[fullpath: string]Set[alias: string]
+type reverse map[string]set
 
-func (m *Reverse) Set(key, value string) {
+func (m *reverse) Set(key, value string) {
 	if *m == nil {
-		*m = map[string]Set{}
+		*m = map[string]set{}
 	}
 	c := (*m)[key]
 	c.Set(value)
 	(*m)[key] = c
 }
 
-func (m Reverse) Del(key, value string) {
+func (m reverse) Del(key, value string) {
 	if m == nil {
 		return
 	}
@@ -66,14 +66,14 @@ func (m Reverse) Del(key, value string) {
 	}
 }
 
-func (m Reverse) Get(key string) Set {
+func (m reverse) Get(key string) set {
 	if m == nil {
 		return nil
 	}
 	return m[key]
 }
 
-func (m Reverse) Has(key, value string) bool {
+func (m reverse) Has(key, value string) bool {
 	if m == nil {
 		return false
 	}
@@ -84,11 +84,11 @@ func (m Reverse) Has(key, value string) bool {
 	return c.Has(value)
 }
 
-func (m Reverse) Keys() []string {
+func (m reverse) Keys() []string {
 	if m == nil {
 		return nil
 	}
-	var keys []string
+	keys := make([]string, 0, len(m))
 	for key := range m {
 		keys = append(keys, key)
 	}

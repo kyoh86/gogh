@@ -1,19 +1,17 @@
-package alias_test
+package alias
 
 import (
 	"testing"
-
-	testtarget "github.com/kyoh86/gogh/gogh/alias"
 )
 
 func TestLookup(t *testing.T) {
-	var l testtarget.Lookup
+	var l lookup
 
 	l.Set("key1", "val1")
-	assertSet(t, set("key1"), set(l.Keys()...))
+	assertSet(t, newSet("key1"), newSet(l.Keys()...))
 
 	l.Set("key2", "val2")
-	assertSet(t, set("key1", "key2"), set(l.Keys()...))
+	assertSet(t, newSet("key1", "key2"), newSet(l.Keys()...))
 
 	l.Set("key3", "val3")
 	if !l.Has("key1") {
@@ -34,7 +32,7 @@ func TestLookup(t *testing.T) {
 	if act := l.Get("key3"); act != "val3" {
 		t.Error("expect val3 is related for key3, but not")
 	}
-	assertSet(t, set("key1", "key2", "key3"), set(l.Keys()...))
+	assertSet(t, newSet("key1", "key2", "key3"), newSet(l.Keys()...))
 
 	l.Del("key3")
 	if !l.Has("key1") {
@@ -55,17 +53,17 @@ func TestLookup(t *testing.T) {
 	if act := l.Get("key3"); act != "" {
 		t.Error("expect empty value is related for key3, but not")
 	}
-	assertSet(t, set("key1", "key2"), set(l.Keys()...))
+	assertSet(t, newSet("key1", "key2"), newSet(l.Keys()...))
 }
 
 func TestReverse(t *testing.T) {
-	var r testtarget.Reverse
+	var r reverse
 
 	r.Set("key1", "val1-1")
-	assertSet(t, set("val1-1"), r.Get("key1"))
+	assertSet(t, newSet("val1-1"), r.Get("key1"))
 
 	r.Set("key1", "val1-2")
-	assertSet(t, set("val1-1", "val1-2"), r.Get("key1"))
+	assertSet(t, newSet("val1-1", "val1-2"), r.Get("key1"))
 
 	r.Set("key2", "val2-1")
 
@@ -120,5 +118,5 @@ func TestReverse(t *testing.T) {
 	if r.Get("key2").Has("val2-2") {
 		t.Error("expect val2-2 is not related for key2, but not")
 	}
-	assertSet(t, set("val2-1"), r.Get("key2"))
+	assertSet(t, newSet("val2-1"), r.Get("key2"))
 }

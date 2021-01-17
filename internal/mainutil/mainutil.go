@@ -1,14 +1,16 @@
 package mainutil
 
 import (
-	"io"
-	"os"
 	"path/filepath"
 
 	"github.com/alecthomas/kingpin"
 	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/xdg"
+)
+
+var (
+	aliasFile = filepath.Join(xdg.DataHome(), "gogh", "alias.yaml")
 )
 
 func setConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
@@ -18,40 +20,16 @@ func setConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
 		StringVar(configFile)
 }
 
-func openYAML(filename string) (io.Reader, func() error, error) {
-	var reader io.Reader
-	var teardown func() error
-	file, err := os.Open(filename)
-	switch {
-	case err == nil:
-		teardown = file.Close
-		reader = file
-	case os.IsNotExist(err):
-		reader = config.EmptyYAMLReader
-		teardown = func() error { return nil }
-	default:
-		return nil, nil, err
-	}
-	return reader, teardown, nil
-}
-
 func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() (retErr error) {
-		reader, teardown, err := openYAML(configFile)
+		access, err := loadAccess(configFile)
 		if err != nil {
 			return err
 		}
-		defer func() {
-			if err := teardown(); err != nil && retErr == nil {
-				retErr = err
-				return
-			}
-		}()
 
-		access, err := config.GetAccess(reader, config.EnvarPrefix)
-		if err != nil {
+		if err := loadAlias(aliasFile); err != nil {
 			return err
 		}
 
@@ -63,18 +41,7 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Env, *config.Co
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() (retErr error) {
-		reader, teardown, err := openYAML(configFile)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			if err := teardown(); err != nil && retErr == nil {
-				retErr = err
-				return
-			}
-		}()
-
-		config, access, err := config.GetAppenv(reader, config.EnvarPrefix)
+		config, access, err := loadAppenv(configFile)
 		if err != nil {
 			return err
 		}
@@ -83,14 +50,6 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Env, *config.Co
 			return err
 		}
 
-		if err := os.MkdirAll(filepath.Dir(configFile), 0744); err != nil {
-			return err
-		}
-		file, err := os.OpenFile(configFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		return config.Save(file)
+		return saveConfig(configFile, config)
 	}
 }

@@ -4,8 +4,8 @@ import "sync"
 
 type Def struct {
 	mutex   sync.Mutex
-	lookup  Lookup
-	reverse Reverse
+	lookup  lookup
+	reverse reverse
 }
 
 // MarshalYAML implements the interface `yaml.Marshaler`
@@ -15,7 +15,7 @@ func (d *Def) MarshalYAML() (interface{}, error) {
 
 // UnmarshalYAML implements the interface `yaml.Unmarshaler`
 func (d *Def) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var parsed Lookup
+	var parsed lookup
 	if err := unmarshal(&parsed); err != nil {
 		return err
 	}
@@ -51,6 +51,6 @@ func (d *Def) Lookup(alias string) (fullpath string) {
 	return d.lookup.Get(alias)
 }
 
-func (d *Def) Reverse(fullpath string) Set {
-	return d.reverse.Get(fullpath)
+func (d *Def) Reverse(fullpath string) []string {
+	return d.reverse.Get(fullpath).List()
 }

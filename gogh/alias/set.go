@@ -1,30 +1,30 @@
 package alias
 
-type Set map[string]struct{}
+type set map[string]struct{}
 
-func NewSet(list ...string) Set {
-	var s Set
+func newSet(list ...string) set {
+	var s set
 	for _, item := range list {
 		s.Set(item)
 	}
 	return s
 }
 
-func (s *Set) Set(key string) {
+func (s *set) Set(key string) {
 	if *s == nil {
 		*s = map[string]struct{}{}
 	}
 	(*s)[key] = struct{}{}
 }
 
-func (s Set) Del(key string) {
+func (s set) Del(key string) {
 	if s == nil {
 		return
 	}
 	delete(s, key)
 }
 
-func (s Set) Has(key string) bool {
+func (s set) Has(key string) bool {
 	if s == nil {
 		return false
 	}
@@ -32,8 +32,8 @@ func (s Set) Has(key string) bool {
 	return ok
 }
 
-func (s Set) List() []string {
-	var keys []string
+func (s set) List() []string {
+	keys := make([]string, 0, len(s))
 	for key := range s {
 		keys = append(keys, key)
 	}
