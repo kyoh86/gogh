@@ -56,17 +56,6 @@ func (f *coreFormatter) PrintAll(w io.Writer, sep string) error {
 	})
 }
 
-// ShortFormatter prints each project as short as possible.
-func ShortFormatter() ProjectListFormatter {
-	shorten := &shortFormatter{
-		dups:          map[string]bool{},
-		coreFormatter: &coreFormatter{},
-	}
-
-	shorten.coreFormatter.format = shorten.format
-	return shorten
-}
-
 // FullPathFormatter prints each full-path of the project.
 func FullPathFormatter() ProjectListFormatter {
 	return &coreFormatter{format: fullPath}
@@ -101,6 +90,17 @@ func SpecFormatter() ProjectListFormatter {
 
 func spec(project *Project) string {
 	return path.Join(project.PathParts[1:]...)
+}
+
+// ShortFormatter prints each project as short as possible.
+func ShortFormatter() ProjectListFormatter {
+	shorten := &shortFormatter{
+		dups:          map[string]bool{},
+		coreFormatter: &coreFormatter{},
+	}
+
+	shorten.coreFormatter.format = shorten.format
+	return shorten
 }
 
 type shortFormatter struct {
