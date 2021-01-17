@@ -30,8 +30,7 @@ func (d *Def) Set(alias, fullpath string) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 	if d.lookup.Has(alias) {
-		oldpath := d.lookup.Get(alias)
-		d.reverse.Del(oldpath, alias)
+		d.reverse.Del(d.lookup.Get(alias), alias)
 	}
 	d.lookup.Set(alias, fullpath)
 	d.reverse.Set(fullpath, alias)
