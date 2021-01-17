@@ -19,14 +19,14 @@ func TestMain(m *testing.M) {
 }
 
 type testService struct {
-	gitCtrl   *gomock.Controller
-	hubCtrl   *gomock.Controller
-	envCtrl   *gomock.Controller
-	gitClient *MockGitClient
-	hubClient *MockHubClient
-	root1     string
-	root2     string
-	ev        *MockEnv
+	gitCtrl    *gomock.Controller
+	hubCtrl    *gomock.Controller
+	configCtrl *gomock.Controller
+	gitClient  *MockGitClient
+	hubClient  *MockHubClient
+	root1      string
+	root2      string
+	ev         *MockEnv
 }
 
 func (s testService) teardown(t *testing.T) {
@@ -35,17 +35,17 @@ func (s testService) teardown(t *testing.T) {
 	require.NoError(t, os.RemoveAll(s.root2))
 	s.gitCtrl.Finish()
 	s.hubCtrl.Finish()
-	s.envCtrl.Finish()
+	s.configCtrl.Finish()
 }
 
 func initTest(t *testing.T) *testService {
 	t.Helper()
 	gitCtrl := gomock.NewController(t)
 	hubCtrl := gomock.NewController(t)
-	envCtrl := gomock.NewController(t)
+	configCtrl := gomock.NewController(t)
 	gitClient := NewMockGitClient(gitCtrl)
 	hubClient := NewMockHubClient(hubCtrl)
-	ctxMock := NewMockEnv(envCtrl)
+	ctxMock := NewMockEnv(configCtrl)
 
 	root1, err := ioutil.TempDir(os.TempDir(), "gogh-root1")
 	require.NoError(t, err)
@@ -63,13 +63,13 @@ func initTest(t *testing.T) *testService {
 	ctxMock.EXPECT().Roots().AnyTimes().Return([]string{root1, root2})
 	ctxMock.EXPECT().Hooks().AnyTimes().Return([]string{hook1, hook2})
 	return &testService{
-		gitCtrl:   gitCtrl,
-		hubCtrl:   hubCtrl,
-		envCtrl:   envCtrl,
-		gitClient: gitClient,
-		hubClient: hubClient,
-		root1:     root1,
-		root2:     root2,
-		ev:        ctxMock,
+		gitCtrl:    gitCtrl,
+		hubCtrl:    hubCtrl,
+		configCtrl: configCtrl,
+		gitClient:  gitClient,
+		hubClient:  hubClient,
+		root1:      root1,
+		root2:      root2,
+		ev:         ctxMock,
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/gogh/internal/git"
 	"github.com/kyoh86/gogh/internal/hub"
@@ -67,7 +67,7 @@ func main() {
 func configGetAll(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get-all", "get all options").Alias("list").Alias("ls")
 
-	return mainutil.WrapConfigurableCommand(cmd, func(_ gogh.Env, cfg *env.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(_ gogh.Env, cfg *config.Config) error {
 		return command.ConfigGetAll(cfg)
 	})
 }
@@ -79,7 +79,7 @@ func configGet(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("get", "get an option")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(_ gogh.Env, cfg *env.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(_ gogh.Env, cfg *config.Config) error {
 		return command.ConfigGet(cfg, name)
 	})
 }
@@ -93,7 +93,7 @@ func configSet(app *kingpin.Application) (string, func() error) {
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 	cmd.Arg("value", "option value").Required().StringVar(&value)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *env.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *config.Config) error {
 		return command.ConfigSet(ev, cfg, name, value)
 	})
 }
@@ -105,7 +105,7 @@ func configUnset(app *kingpin.Application) (string, func() error) {
 	cmd := app.GetCommand("config").Command("unset", "unset an option").Alias("rm")
 	cmd.Arg("name", "option name").Required().StringVar(&name)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *env.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *config.Config) error {
 		return command.ConfigUnset(ev, cfg, name)
 	})
 }
@@ -117,7 +117,7 @@ func setup(app *kingpin.Application) (string, func() error) {
 	cmd := app.Command("setup", "Setup gordon with wizards")
 	cmd.Flag("force", "Ask even though that the option has already set").BoolVar(&force)
 
-	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *env.Config) error {
+	return mainutil.WrapConfigurableCommand(cmd, func(ev gogh.Env, cfg *config.Config) error {
 		return command.Setup(context.Background(), ev, cfg, force)
 	})
 }

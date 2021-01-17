@@ -8,13 +8,13 @@ import (
 	"testing"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func ExampleConfigGet() {
 	yml := strings.NewReader(`{"roots": ["/foo", "/bar"]}`)
-	config, err := env.GetConfig(yml)
+	config, err := config.GetConfig(yml)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -27,7 +27,7 @@ func ExampleConfigGet() {
 }
 
 func TestConfigGet(t *testing.T) {
-	config, err := env.GetConfig(env.EmptyYAMLReader)
+	config, err := config.GetConfig(config.EmptyYAMLReader)
 	if err != nil {
 		log.Fatalln(err)
 	}

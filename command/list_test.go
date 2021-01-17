@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 )
 
@@ -19,7 +19,7 @@ func ExampleList_url() {
 	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "owner", "empty"), 0755)
 	yml := strings.NewReader("githubHost: example.com\nroots:\n  - " + tmp)
 
-	config, err := env.GetAccess(yml, env.EnvarPrefix)
+	config, err := config.GetAccess(yml, config.EnvarPrefix)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func ExampleList_custom() {
 	_ = os.MkdirAll(filepath.Join(tmp, "example.com", "owner", "empty"), 0755)
 	yml := strings.NewReader("githubHost: example.com\nroots:\n  - " + tmp)
 
-	config, err := env.GetAccess(yml, env.EnvarPrefix)
+	config, err := config.GetAccess(yml, config.EnvarPrefix)
 	if err != nil {
 		panic(err)
 	}

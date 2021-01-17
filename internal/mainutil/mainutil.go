@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kingpin"
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 	"github.com/kyoh86/xdg"
 )
@@ -27,7 +27,7 @@ func openYAML(filename string) (io.Reader, func() error, error) {
 		teardown = file.Close
 		reader = file
 	case os.IsNotExist(err):
-		reader = env.EmptyYAMLReader
+		reader = config.EmptyYAMLReader
 		teardown = func() error { return nil }
 	default:
 		return nil, nil, err
@@ -50,7 +50,7 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 			}
 		}()
 
-		access, err := env.GetAccess(reader, env.EnvarPrefix)
+		access, err := config.GetAccess(reader, config.EnvarPrefix)
 		if err != nil {
 			return err
 		}
@@ -59,7 +59,7 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 	}
 }
 
-func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Env, *env.Config) error) (string, func() error) {
+func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Env, *config.Config) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
 	return cmd.FullCommand(), func() (retErr error) {
@@ -74,7 +74,7 @@ func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Env, *env.Confi
 			}
 		}()
 
-		config, access, err := env.GetAppenv(reader, env.EnvarPrefix)
+		config, access, err := config.GetAppenv(reader, config.EnvarPrefix)
 		if err != nil {
 			return err
 		}

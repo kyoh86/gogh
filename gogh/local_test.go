@@ -140,12 +140,12 @@ func TestWalk(t *testing.T) {
 		svc := initTest(t)
 		defer svc.teardown(t)
 
-		envCtrl := gomock.NewController(t)
-		ev := NewMockEnv(envCtrl)
+		configCtrl := gomock.NewController(t)
+		ev := NewMockEnv(configCtrl)
 		ev.EXPECT().GithubUser().AnyTimes().Return("kyoh86")
 		ev.EXPECT().GithubHost().AnyTimes().Return("github.com")
 		ev.EXPECT().Roots().AnyTimes().Return([]string{filepath.Join(svc.root1, "unexist"), svc.root2})
-		defer envCtrl.Finish()
+		defer configCtrl.Finish()
 
 		assert.NoError(t, gogh.Walk(ev, neverCalled(t)))
 	})

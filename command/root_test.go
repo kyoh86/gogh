@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 )
 
 func ExampleRoots() {
 	yml := strings.NewReader("roots:\n  - /foo\n  - /bar")
 
-	config, err := env.GetAccess(yml, env.EnvarPrefix)
+	config, err := config.GetAccess(yml, config.EnvarPrefix)
 	if err != nil {
 		panic(err)
 	}

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +19,7 @@ hooks:
   - /hook1
 githubUser: userx1
 githubHost: hostx1`)
-	config, access, err := env.GetAppenv(source, env.EnvarPrefix)
+	config, access, err := config.GetAppenv(source, config.EnvarPrefix)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -54,7 +54,7 @@ hooks:
   - /hook1
 githubUser: userx1
 githubHost: hostx1`)
-	config, access, err := env.GetAppenv(source, env.EnvarPrefix)
+	config, access, err := config.GetAppenv(source, config.EnvarPrefix)
 	assert.NoError(t, err)
 	assert.NoError(t, command.ConfigUnset(&access, &config, "github.host"))
 	assert.NoError(t, config.Save(os.Stdout))

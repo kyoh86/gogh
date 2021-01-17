@@ -4,7 +4,7 @@ package gogh
 
 import ()
 
-// Env is an interface generated for "github.com/kyoh86/gogh/env.Access".
+// Env is an interface generated for "github.com/kyoh86/gogh/config.Access".
 type Env interface {
 	GithubHost() string
 	GithubUser() string

@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
 	keyring "github.com/zalando/go-keyring"
 )
 
-func ConfigGetAll(cfg *env.Config) error {
-	for _, name := range env.OptionNames() {
+func ConfigGetAll(cfg *config.Config) error {
+	for _, name := range config.OptionNames() {
 		opt, _ := cfg.Option(name) // ignore error: config.OptionNames covers all accessor
 		value, err := opt.Get()
 		if err != nil {
@@ -28,7 +28,7 @@ func ConfigGetAll(cfg *env.Config) error {
 	return nil
 }
 
-func ConfigGet(cfg *env.Config, optionName string) error {
+func ConfigGet(cfg *config.Config, optionName string) error {
 	opt, err := cfg.Option(optionName)
 	if err != nil {
 		return err
@@ -41,10 +41,10 @@ func ConfigGet(cfg *env.Config, optionName string) error {
 	return nil
 }
 
-func ConfigSet(ev gogh.Env, cfg *env.Config, optionName, optionValue string) error {
+func ConfigSet(ev gogh.Env, cfg *config.Config, optionName, optionValue string) error {
 	if optionName == "github.token" {
 		host, user := ev.GithubHost(), ev.GithubUser()
-		if err := keyring.Set(strings.Join([]string{host, env.KeyringService}, "."), user, optionValue); err != nil {
+		if err := keyring.Set(strings.Join([]string{host, config.KeyringService}, "."), user, optionValue); err != nil {
 			return err
 		}
 		return nil
@@ -57,11 +57,11 @@ func ConfigSet(ev gogh.Env, cfg *env.Config, optionName, optionValue string) err
 	return opt.Set(optionValue)
 }
 
-func ConfigUnset(ev gogh.Env, cfg *env.Config, optionName string) error {
+func ConfigUnset(ev gogh.Env, cfg *config.Config, optionName string) error {
 	if optionName == "github.token" {
 		host, user := ev.GithubHost(), ev.GithubUser()
 
-		if err := keyring.Delete(strings.Join([]string{host, env.KeyringService}, "."), user); err != nil {
+		if err := keyring.Delete(strings.Join([]string{host, config.KeyringService}, "."), user); err != nil {
 			return err
 		}
 		return nil

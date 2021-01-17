@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/kyoh86/gogh/command"
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +22,7 @@ hooks:
   - /hook2
 githubHost: hostx1
 githubUser: userx1`)
-	config, err := env.GetConfig(yml)
+	config, err := config.GetConfig(yml)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -47,7 +47,7 @@ hooks:
   - /hook1
   - /hook2
 githubHost: hostx1`)
-	config, err := env.GetConfig(yml)
+	config, err := config.GetConfig(yml)
 	assert.NoError(t, err)
 	assert.NoError(t, command.ConfigGetAll(&config))
 }

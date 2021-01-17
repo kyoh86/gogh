@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kyoh86/gogh/env"
+	"github.com/kyoh86/gogh/config"
 	keyring "github.com/zalando/go-keyring"
 )
 
@@ -16,7 +16,7 @@ func SetGithubToken(host, user, token string) error {
 	if user == "" {
 		return errors.New("user is empty")
 	}
-	return keyring.Set(strings.Join([]string{host, env.KeyringService}, "."), user, token)
+	return keyring.Set(strings.Join([]string{host, config.KeyringService}, "."), user, token)
 }
 
 func GetGithubToken(host, user string) (string, error) {
@@ -27,5 +27,5 @@ func GetGithubToken(host, user string) (string, error) {
 	if envar != "" {
 		return envar, nil
 	}
-	return keyring.Get(strings.Join([]string{host, env.KeyringService}, "."), user)
+	return keyring.Get(strings.Join([]string{host, config.KeyringService}, "."), user)
 }
