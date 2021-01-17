@@ -6,6 +6,7 @@ import (
 	"github.com/alecthomas/kingpin"
 	"github.com/kyoh86/gogh/config"
 	"github.com/kyoh86/gogh/gogh"
+	"github.com/kyoh86/gogh/gogh/alias"
 	"github.com/kyoh86/xdg"
 )
 
@@ -29,7 +30,7 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 			return err
 		}
 
-		if err := loadAlias(aliasFile); err != nil {
+		if err := alias.LoadInstance(aliasFile); err != nil {
 			return err
 		}
 

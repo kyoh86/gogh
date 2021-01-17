@@ -5,9 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/config"
-	"github.com/kyoh86/gogh/gogh/alias"
 )
 
 func openYAML(filename string) (io.Reader, func() error, error) {
@@ -67,24 +65,4 @@ func saveConfig(configFile string, c config.Config) error {
 	}
 	defer file.Close()
 	return c.Save(file)
-}
-
-func loadAlias(configFile string) (retErr error) {
-	reader, teardown, err := openYAML(configFile)
-	if err != nil {
-		retErr = err
-		return
-	}
-	defer func() {
-		if err := teardown(); err != nil && retErr == nil {
-			retErr = err
-			return
-		}
-	}()
-	var d alias.Def
-	if err := yaml.NewDecoder(reader).Decode(&d); err != nil {
-		return err
-	}
-	alias.Instance = d // nolint
-	return nil
 }
