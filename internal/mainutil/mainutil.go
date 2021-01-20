@@ -24,7 +24,7 @@ func setConfigFlag(cmd *kingpin.CmdClause, configFile *string) {
 func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
-	return cmd.FullCommand(), func() (retErr error) {
+	return cmd.FullCommand(), func() error {
 		access, err := loadAccess(configFile)
 		if err != nil {
 			return err
@@ -34,14 +34,18 @@ func WrapCommand(cmd *kingpin.CmdClause, f func(gogh.Env) error) (string, func()
 			return err
 		}
 
-		return f(&access)
+		if err := f(&access); err != nil {
+			return err
+		}
+
+		return alias.SaveInstance(aliasFile)
 	}
 }
 
 func WrapConfigurableCommand(cmd *kingpin.CmdClause, f func(gogh.Env, *config.Config) error) (string, func() error) {
 	var configFile string
 	setConfigFlag(cmd, &configFile)
-	return cmd.FullCommand(), func() (retErr error) {
+	return cmd.FullCommand(), func() error {
 		config, access, err := loadAppenv(configFile)
 		if err != nil {
 			return err
