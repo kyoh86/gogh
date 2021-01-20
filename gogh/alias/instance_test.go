@@ -79,4 +79,7 @@ func TestInstance(t *testing.T) {
 	if err := LoadInstance("./testdata/not-exist.yaml"); err != nil {
 		t.Errorf("failed to load instance from not-exist file: %s", err.Error())
 	}
+	if err := LoadInstance("./testdata/dummyfile"); err == nil {
+		t.Error("expect to fail to load instance from invalid file")
+	}
 }
