@@ -32,17 +32,6 @@ func (l *lookup) Has(key string) bool {
 	return ok
 }
 
-func (l lookup) Keys() []string {
-	if l == nil {
-		return nil
-	}
-	keys := make([]string, 0, len(l))
-	for key := range l {
-		keys = append(keys, key)
-	}
-	return keys
-}
-
 // reverse is map[fullpath: string]Set[alias: string]
 type reverse map[string]set
 
@@ -82,15 +71,4 @@ func (m reverse) Has(key, value string) bool {
 		return false
 	}
 	return c.Has(value)
-}
-
-func (m reverse) Keys() []string {
-	if m == nil {
-		return nil
-	}
-	keys := make([]string, 0, len(m))
-	for key := range m {
-		keys = append(keys, key)
-	}
-	return keys
 }

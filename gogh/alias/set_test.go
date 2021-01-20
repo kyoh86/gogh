@@ -21,6 +21,34 @@ func assertSet(t *testing.T, expect, actual set) {
 func TestSet(t *testing.T) {
 	var s set
 
+	t.Run("EmptySetNotPanic", func(t *testing.T) {
+		t.Run("Del", func(t *testing.T) {
+			t.Parallel()
+			var empty set
+			empty.Del("key0")
+		})
+		t.Run("List", func(t *testing.T) {
+			t.Parallel()
+			var empty set
+			list := empty.List()
+			if len(list) > 0 {
+				t.Errorf("empty set returns not empty list: %q", list)
+			}
+		})
+		t.Run("Has", func(t *testing.T) {
+			t.Parallel()
+			var empty set
+			if empty.Has("key0") {
+				t.Errorf("empty set has key0")
+			}
+		})
+		t.Run("Set", func(t *testing.T) {
+			t.Parallel()
+			var empty set
+			empty.Set("key0")
+		})
+	})
+
 	s.Set("key1")
 	s.Set("key2")
 	s.Set("key2") // dup
