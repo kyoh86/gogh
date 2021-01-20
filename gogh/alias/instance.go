@@ -1,7 +1,9 @@
 package alias
 
 import (
+	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/goccy/go-yaml"
 )
@@ -34,10 +36,37 @@ func LoadInstance(filename string) (retErr error) {
 				return
 			}
 		}()
-		return yaml.NewDecoder(file).Decode(&Instance)
+		return DecodeInstance(file)
 	case os.IsNotExist(err):
 		return nil
 	default:
 		return err
 	}
+}
+
+func DecodeInstance(r io.Reader) (retErr error) {
+	return yaml.NewDecoder(r).Decode(&Instance)
+}
+
+func SaveInstance(filename string) (retErr error) {
+	if err := os.MkdirAll(filepath.Dir(filename), 0700); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	switch {
+	case err == nil:
+		defer func() {
+			if err := file.Close(); err != nil && retErr == nil {
+				retErr = err
+				return
+			}
+		}()
+		return EncodeInstance(file)
+	default:
+		return err
+	}
+}
+
+func EncodeInstance(w io.Writer) (retErr error) {
+	return yaml.NewEncoder(w).Encode(&Instance)
 }
