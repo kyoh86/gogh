@@ -29,12 +29,19 @@ func DefaultLocalRoot() (string, error) {
 }
 
 type LocalController struct {
+	// UNDONE: support fs.FS
+	// UNDONE: support fs.FS
+
 	// NOTE: v1 -> v2 diferrence
 	// if we wanna manage mulstiple root, create multiple controller instances.
 	root string
 }
 
-func (l *LocalController) Create(ctx context.Context, d Description) (*Project, error) {
+type CreateOption struct {
+	//UNDONE: support isBare
+}
+
+func (l *LocalController) Create(ctx context.Context, d Description, _ *CreateOption) (*Project, error) {
 	p := &Project{
 		root:        l.root,
 		Description: d,
@@ -54,7 +61,13 @@ func (l *LocalController) Create(ctx context.Context, d Description) (*Project, 
 	return p, nil
 }
 
-func (l *LocalController) Clone(ctx context.Context, d Description) (*Project, error) {
+type CloneOption struct {
+	//UNDONE: support authentication
+	//UNDONE: support isBare
+	//UNDONE: support *git.CloneOptions
+}
+
+func (l *LocalController) Clone(ctx context.Context, d Description, _ *CloneOption) (*Project, error) {
 	p := &Project{
 		root:        l.root,
 		Description: d,

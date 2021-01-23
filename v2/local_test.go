@@ -28,7 +28,7 @@ func TestLocalController(t *testing.T) {
 	t.Run("Create", func(t *testing.T) {
 		d := description(t, "github.com", "kyoh86", "gogh")
 		t.Run("First", func(t *testing.T) {
-			project, err := local.Create(ctx, d)
+			project, err := local.Create(ctx, d, nil)
 			if err != nil {
 				t.Fatalf("failed to create a project: %s", err)
 			}
@@ -83,10 +83,10 @@ func TestLocalController(t *testing.T) {
 		})
 
 		t.Run("Duplicated", func(t *testing.T) {
-			if _, err := local.Create(ctx, d); err == nil {
+			if _, err := local.Create(ctx, d, nil); err == nil {
 				t.Fatalf("expect failure with creating a project that has already exist: %s", err)
 			}
-			if _, err := local.Clone(ctx, d); err == nil {
+			if _, err := local.Clone(ctx, d, nil); err == nil {
 				t.Fatalf("expect failure with cloning a project that has already exist: %s", err)
 			}
 		})
@@ -191,8 +191,9 @@ func TestLocalController(t *testing.T) {
 	})
 
 	t.Run("Clone", func(t *testing.T) {
+		t.Skip("skip remote access")
 		d := description(t, "github.com", "kyoh86", "gogh")
-		project, err := local.Clone(ctx, d)
+		project, err := local.Clone(ctx, d, nil)
 		if err != nil {
 			t.Fatalf("failed to clone a project: %s", err)
 		}
