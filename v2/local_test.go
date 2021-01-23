@@ -46,7 +46,7 @@ func TestLocalController(t *testing.T) {
 			}
 
 			// check built properties
-			expectRelPath := "github.com/kyoh86/gogh"
+			expectRelPath := filepath.Clean("github.com/kyoh86/gogh")
 			if expectRelPath != project.RelPath() {
 				t.Errorf("expect rel-path %q but %q is gotten", expectRelPath, project.RelPath())
 			}
@@ -54,7 +54,7 @@ func TestLocalController(t *testing.T) {
 			if expectURL != project.URL() {
 				t.Errorf("expect url %q but %q is gotten", expectURL, project.URL())
 			}
-			expectFullPath := filepath.Join(root, "github.com/kyoh86/gogh")
+			expectFullPath := filepath.Join(root, "github.com", "kyoh86", "gogh")
 			if expectFullPath != project.FullPath() {
 				t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullPath())
 			}
@@ -103,7 +103,7 @@ func TestLocalController(t *testing.T) {
 			t.Fatalf("failed to create dummy directory: %s", err)
 		}
 
-		expect := "github.com/kyoh86/gogh"
+		expect := "https://github.com/kyoh86/gogh"
 
 		// cases
 		for _, testcase := range []struct {
@@ -140,8 +140,8 @@ func TestLocalController(t *testing.T) {
 					t.Fatalf("expect just one project is matched, but actual %d matched", len(actual))
 				}
 				for _, act := range actual {
-					if expect != act.RelPath() {
-						t.Errorf("expect that %q is matched but actual: %q", expect, act.RelPath())
+					if expect != act.URL() {
+						t.Errorf("expect that %q is matched but actual: %q", expect, act.URL())
 					}
 				}
 			})
@@ -246,7 +246,4 @@ func TestLocalController(t *testing.T) {
 			}
 		}
 	})
-
-	// UNDONE: func (f *ProjectFormatter) Format(ctx context.Context, project Project) (string, error)
-	// UNDONE:  - fullpath, relpath, url, fields(fullpath url host user name), json
 }

@@ -124,14 +124,22 @@ func (l *LocalController) List(ctx context.Context, query string) ([]Project, er
 }
 
 func (l *LocalController) Remove(ctx context.Context, description Description) error {
-	p := Project{root: l.root, Description: description}
-	path := p.FullPath()
-	stat, err := os.Stat(path)
+	p, err := l.Get(ctx, description)
 	if err != nil {
 		return err
 	}
-	if !stat.IsDir() {
-		return errors.New("project is not dir")
+	return os.RemoveAll(p.FullPath())
+}
+
+func (l *LocalController) Get(ctx context.Context, description Description) (*Project, error) {
+	p := &Project{root: l.root, Description: description}
+	path := p.FullPath()
+	stat, err := os.Stat(path)
+	if err != nil {
+		return nil, err
 	}
-	return os.RemoveAll(path)
+	if !stat.IsDir() {
+		return nil, errors.New("project is not dir")
+	}
+	return p, nil
 }
