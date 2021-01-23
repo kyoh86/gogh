@@ -17,39 +17,27 @@ func TestDescriptor(t *testing.T) {
 				expect testtarget.Description
 			}{{
 				source: "kyoh86/gogh",
-				expect: testtarget.Description{
-					Host: "github.com",
-					User: "kyoh86",
-					Name: "gogh",
-				},
+				expect: description(t, "github.com", "kyoh86", "gogh"),
 			}, {
 				source: "github.com/kyoh86/gogh",
-				expect: testtarget.Description{
-					Host: "github.com",
-					User: "kyoh86",
-					Name: "gogh",
-				},
+				expect: description(t, "github.com", "kyoh86", "gogh"),
 			}, {
 				source: "example.com/kyoh86/gogh",
-				expect: testtarget.Description{
-					Host: "example.com",
-					User: "kyoh86",
-					Name: "gogh",
-				},
+				expect: description(t, "example.com", "kyoh86", "gogh"),
 			}} {
 				t.Run(testcase.source, func(t *testing.T) {
 					desc, err := descriptor.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expect.Host != desc.Host {
-						t.Errorf("expect host %q but %q gotten", testcase.expect.Host, desc.Host)
+					if testcase.expect.Host() != desc.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), desc.Host())
 					}
-					if testcase.expect.User != desc.User {
-						t.Errorf("expect user %q but %q gotten", testcase.expect.User, desc.User)
+					if testcase.expect.User() != desc.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expect.User(), desc.User())
 					}
-					if testcase.expect.Name != desc.Name {
-						t.Errorf("expect name %q but %q gotten", testcase.expect.Name, desc.Name)
+					if testcase.expect.Name() != desc.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), desc.Name())
 					}
 				})
 			}
@@ -106,53 +94,33 @@ func TestDescriptor(t *testing.T) {
 			expect testtarget.Description
 		}{{
 			source: "gogh",
-			expect: testtarget.Description{
-				Host: "github.com",
-				User: "kyoh86",
-				Name: "gogh",
-			},
+			expect: description(t, "github.com", "kyoh86", "gogh"),
 		}, {
 			source: "kyoh86/gogh",
-			expect: testtarget.Description{
-				Host: "github.com",
-				User: "kyoh86",
-				Name: "gogh",
-			},
+			expect: description(t, "github.com", "kyoh86", "gogh"),
 		}, {
 			source: "example/gogh",
-			expect: testtarget.Description{
-				Host: "github.com",
-				User: "example",
-				Name: "gogh",
-			},
+			expect: description(t, "github.com", "example", "gogh"),
 		}, {
 			source: "github.com/example/gogh",
-			expect: testtarget.Description{
-				Host: "github.com",
-				User: "example",
-				Name: "gogh",
-			},
+			expect: description(t, "github.com", "example", "gogh"),
 		}, {
 			source: "example.com/example/gogh",
-			expect: testtarget.Description{
-				Host: "example.com",
-				User: "example",
-				Name: "gogh",
-			},
+			expect: description(t, "example.com", "example", "gogh"),
 		}} {
 			t.Run(testcase.source, func(t *testing.T) {
 				desc, err := descriptor.Parse(testcase.source)
 				if err != nil {
 					t.Fatalf("failed to parse %q: %s", testcase.source, err)
 				}
-				if testcase.expect.Host != desc.Host {
-					t.Errorf("expect host %q but %q gotten", testcase.expect.Host, desc.Host)
+				if testcase.expect.Host() != desc.Host() {
+					t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), desc.Host())
 				}
-				if testcase.expect.User != desc.User {
-					t.Errorf("expect user %q but %q gotten", testcase.expect.User, desc.User)
+				if testcase.expect.User() != desc.User() {
+					t.Errorf("expect user %q but %q gotten", testcase.expect.User(), desc.User())
 				}
-				if testcase.expect.Name != desc.Name {
-					t.Errorf("expect name %q but %q gotten", testcase.expect.Name, desc.Name)
+				if testcase.expect.Name() != desc.Name() {
+					t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), desc.Name())
 				}
 			})
 		}

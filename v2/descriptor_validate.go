@@ -74,3 +74,20 @@ func ValidateUser(user string) error {
 	}
 	return nil
 }
+
+func ValidateDescription(host, user, name string) (*Description, error) {
+	if err := ValidateHost(host); err != nil {
+		return nil, err
+	}
+	if err := ValidateUser(user); err != nil {
+		return nil, err
+	}
+	if err := ValidateName(name); err != nil {
+		return nil, err
+	}
+	return &Description{
+		host: host,
+		user: user,
+		name: name,
+	}, nil
+}

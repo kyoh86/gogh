@@ -2,71 +2,41 @@ package gogh
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
+	"strings"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/saracen/walker"
+	"github.com/wacul/ulog"
 )
-
-type Project struct {
-	Root string
-	Description
-}
-
-func (p Project) FullLevels() []string {
-	return []string{p.Root, p.Host, p.User, p.Name}
-}
-
-func (p Project) RelLevels() []string {
-	return []string{p.Host, p.User, p.Name}
-}
-
-func (p Project) FullPath() string {
-	return filepath.Join(p.FullLevels()...)
-}
-
-func (p Project) RelPath() string {
-	return filepath.Join(p.RelLevels()...)
-}
-
-func (p Project) URL() string {
-	return "https://" + path.Join(p.RelLevels()...)
-}
-
-type Description struct {
-	Host string
-	User string
-	Name string
-}
 
 const DefaultRootDirName = "Projects"
 
-func NewLocal(ctx context.Context) (*Local, error) {
+func NewLocalController(ctx context.Context, root string) *LocalController {
+	return &LocalController{root: root}
+}
+
+func DefaultLocalRoot() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return nil, fmt.Errorf("get user home dir: %w", err)
+		return "", fmt.Errorf("get user home dir: %w", err)
 	}
-	return &Local{roots: []string{filepath.Join(home, DefaultRootDirName)}}, nil
+	return filepath.Join(home, DefaultRootDirName), nil
 }
 
-type Local struct {
-	roots []string
+type LocalController struct {
+	// NOTE: v1 -> v2 diferrence
+	// if we wanna manage mulstiple root, create multiple controller instances.
+	root string
 }
 
-func (l *Local) SetRoot(roots ...string) {
-	l.roots = roots
-}
-
-func (l *Local) Roots() []string {
-	return l.roots
-}
-
-func (l *Local) Create(ctx context.Context, d Description) (*Project, error) {
+func (l *LocalController) Create(ctx context.Context, d Description) (*Project, error) {
 	p := &Project{
-		Root:        l.roots[0],
+		root:        l.root,
 		Description: d,
 	}
 
@@ -82,4 +52,73 @@ func (l *Local) Create(ctx context.Context, d Description) (*Project, error) {
 		return nil, err
 	}
 	return p, nil
+}
+
+func (l *LocalController) Clone(ctx context.Context, d Description) (*Project, error) {
+	p := &Project{
+		root:        l.root,
+		Description: d,
+	}
+
+	if _, err := git.PlainCloneContext(ctx, p.FullPath(), false, &git.CloneOptions{
+		URL: p.URL(),
+	}); err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
+
+type LocalListParam struct {
+	Query string
+}
+
+type LocalWalkFunc func(*Project) error
+
+func (l *LocalController) Walk(ctx context.Context, query string, callback LocalWalkFunc) error {
+	return walker.WalkWithContext(ctx, l.root, func(pathname string, info os.FileInfo) (retErr error) {
+		rel, _ := filepath.Rel(l.root, pathname)
+		parts := strings.Split(rel, string(filepath.Separator))
+		if len(parts) < 3 {
+			return nil
+		}
+		defer func() {
+			if retErr == nil {
+				retErr = filepath.SkipDir
+			}
+		}()
+		if !info.IsDir() {
+			return nil
+		}
+		desc, err := ValidateDescription(parts[0], parts[1], parts[2])
+		if err != nil {
+			ulog.Logger(ctx).WithField("error", err).WithField("rel", rel).Debug("invalid path is skipped")
+			return nil
+		}
+		return callback(&Project{root: l.root, Description: *desc})
+	})
+}
+
+func (l *LocalController) List(ctx context.Context, query string) ([]Project, error) {
+	var list []Project
+	if err := l.Walk(ctx, query, func(p *Project) error {
+		list = append(list, *p)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (l *LocalController) Remove(ctx context.Context, description Description) error {
+	p := Project{root: l.root, Description: description}
+	path := p.FullPath()
+	stat, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if !stat.IsDir() {
+		return errors.New("project is not dir")
+	}
+	return os.RemoveAll(path)
 }

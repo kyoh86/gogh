@@ -7,11 +7,19 @@ import (
 
 const DefaultHost = "github.com"
 
+// Descriptor will parse any string as a Description.
+//
+// If it is clear that the string has host, user and name explicitly,
+// use "ValidateDescription" instead to build Description.
 type Descriptor struct {
 	defaultHost string
 	defaultUser string
 }
 
+// Parse a string and build a *Description.
+//
+// If the string does not have a host or a user explicitly, they will be
+// replaced with default values which *Descriptor has.
 func (d *Descriptor) Parse(s string) (*Description, error) {
 	parts := strings.Split(s, "/")
 	var name, user, host string
@@ -25,20 +33,7 @@ func (d *Descriptor) Parse(s string) (*Description, error) {
 	default:
 		return nil, ErrTooManySlashes
 	}
-	if err := ValidateHost(host); err != nil {
-		return nil, err
-	}
-	if err := ValidateUser(user); err != nil {
-		return nil, err
-	}
-	if err := ValidateName(name); err != nil {
-		return nil, err
-	}
-	return &Description{
-		Host: host,
-		User: user,
-		Name: name,
-	}, nil
+	return ValidateDescription(host, user, name)
 }
 
 func (d *Descriptor) SetDefaultUser(user string) error {
