@@ -48,5 +48,5 @@ func (d *Descriptor) SetDefaultUser(user string) error {
 }
 
 func NewDescriptor(ctx context.Context) *Descriptor {
-	return &Descriptor{defaultHost: DefaultHost}
+	return &Descriptor{defaultHost: DefaultGithubHostName}
 }
