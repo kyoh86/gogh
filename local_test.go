@@ -227,7 +227,7 @@ func TestLocalController(t *testing.T) {
 		}
 
 		// check built properties
-		expectRelPath := "github.com/kyoh86-tryouts/bare"
+		expectRelPath := filepath.Clean("github.com/kyoh86-tryouts/bare")
 		if expectRelPath != project.RelPath() {
 			t.Errorf("expect rel-path %q but %q is gotten", expectRelPath, project.RelPath())
 		}
