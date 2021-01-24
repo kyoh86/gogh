@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-const DefaultHost = "github.com"
-
 var (
 	ErrTooManySlashes = errors.New("too many slashes")
 )
