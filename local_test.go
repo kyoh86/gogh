@@ -71,8 +71,6 @@ func TestLocalController(t *testing.T) {
 			}
 			urls := remote.Config().URLs
 			switch len(urls) {
-			case 0:
-				t.Fatal("created repository has no url")
 			default:
 				t.Fatalf("created repository has multiple urls: %+v", urls)
 				fallthrough
@@ -80,6 +78,8 @@ func TestLocalController(t *testing.T) {
 				if expectURL != urls[0] {
 					t.Errorf("expect the repository created for %q but %q actually", expectURL, urls[0])
 				}
+			case 0:
+				t.Fatal("created repository has no url")
 			}
 		})
 
@@ -236,8 +236,6 @@ func TestLocalController(t *testing.T) {
 		}
 		urls := remote.Config().URLs
 		switch len(urls) {
-		case 0:
-			t.Fatal("cloned repository has no url")
 		default:
 			t.Fatalf("cloned repository has multiple urls: %+v", urls)
 			fallthrough
@@ -245,6 +243,8 @@ func TestLocalController(t *testing.T) {
 			if expectURL != urls[0] {
 				t.Errorf("expect the repository cloned for %q but %q actually", expectURL, urls[0])
 			}
+		case 0:
+			t.Fatal("cloned repository has no url")
 		}
 	})
 }
