@@ -46,6 +46,8 @@ func TestDescriptor(t *testing.T) {
 		t.Run("InvalidInput", func(t *testing.T) {
 			for _, source := range []string{
 				"",
+				".",
+				"..",
 				"invalid name",
 
 				"/",

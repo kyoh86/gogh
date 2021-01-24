@@ -2,7 +2,6 @@ package gogh
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,13 +18,14 @@ func NewLocalController(ctx context.Context, root string) *LocalController {
 	return &LocalController{root: root}
 }
 
-func DefaultLocalRoot() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("get user home dir: %w", err)
-	}
-	return filepath.Join(home, DefaultRootDirName), nil
-}
+//UNDONE: provide DefaultLocalRoot for app? mainutil?
+// func DefaultLocalRoot() (string, error) {
+// 	home, err := os.UserHomeDir()
+// 	if err != nil {
+// 		return "", fmt.Errorf("get user home dir: %w", err)
+// 	}
+// 	return filepath.Join(home, DefaultRootDirName), nil
+// }
 
 type LocalController struct {
 	// UNDONE: support fs.FS

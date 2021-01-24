@@ -58,7 +58,7 @@ func ValidateName(name string) error {
 		return ErrorInvalidName("'..' is reserved name")
 	}
 	if name == "" {
-		return ErrorInvalidName("project name is empty")
+		return ErrEmptyName
 	}
 	if invalidNameRegexp.MatchString(name) {
 		return ErrorInvalidName("invalid project name")
