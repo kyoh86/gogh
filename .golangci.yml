@@ -5,7 +5,6 @@ linters:
     - dogsled
     - dupl
     - gocritic
-    - gocyclo
     - godox
     - gofmt
     - goimports
