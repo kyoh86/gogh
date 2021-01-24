@@ -48,7 +48,7 @@ func TestLocalController(t *testing.T) {
 			}
 
 			// check built properties
-			expectRelPath := filepath.Clean("github.com/kyoh86/gogh")
+			expectRelPath := "github.com/kyoh86/gogh"
 			if expectRelPath != project.RelPath() {
 				t.Errorf("expect rel-path %q but %q is gotten", expectRelPath, project.RelPath())
 			}
@@ -56,9 +56,13 @@ func TestLocalController(t *testing.T) {
 			if expectURL != project.URL() {
 				t.Errorf("expect url %q but %q is gotten", expectURL, project.URL())
 			}
+			expectRelFilePath := filepath.Clean("github.com/kyoh86/gogh")
+			if expectRelFilePath != project.RelFilePath() {
+				t.Errorf("expect rel-path %q but %q is gotten", expectRelFilePath, project.RelFilePath())
+			}
 			expectFullPath := filepath.Join(root, "github.com", "kyoh86", "gogh")
-			if expectFullPath != project.FullPath() {
-				t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullPath())
+			if expectFullPath != project.FullFilePath() {
+				t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullFilePath())
 			}
 
 			// check git remote
@@ -97,10 +101,10 @@ func TestLocalController(t *testing.T) {
 	t.Run("PassWalkFnError", func(t *testing.T) {
 		expect := errors.New("error for test")
 		called := false
-		actual := local.Walk(ctx, func(p testtarget.Project) error {
+		actual := local.Walk(ctx, nil, func(p testtarget.Project) error {
 			called = true
 			return expect
-		}, nil)
+		})
 		if !called {
 			t.Fatal("expect that walkFn is called, but not")
 		}
@@ -122,38 +126,38 @@ func TestLocalController(t *testing.T) {
 
 		expect := "https://github.com/kyoh86/gogh"
 
-		// cases
+		// match cases
 		for _, testcase := range []struct {
-			title string
-			param *testtarget.LocalListParam
+			title  string
+			option *testtarget.LocalListOption
 		}{
 			{
-				title: "nil",
-				param: nil,
+				title:  "nil",
+				option: nil,
 			},
 			{
-				title: "empty",
-				param: &testtarget.LocalListParam{Query: ""},
+				title:  "empty",
+				option: &testtarget.LocalListOption{Query: ""},
 			},
 			{
-				title: "matched for name",
-				param: &testtarget.LocalListParam{Query: "gogh"},
+				title:  "matched for name",
+				option: &testtarget.LocalListOption{Query: "gogh"},
 			},
 			{
-				title: "matched for user",
-				param: &testtarget.LocalListParam{Query: "kyoh86"},
+				title:  "matched for user",
+				option: &testtarget.LocalListOption{Query: "kyoh86"},
 			},
 			{
-				title: "matched for user/name",
-				param: &testtarget.LocalListParam{Query: "kyoh86/gogh"},
+				title:  "matched for user/name",
+				option: &testtarget.LocalListOption{Query: "kyoh86/gogh"},
 			},
 			{
-				title: "matched for user/name",
-				param: &testtarget.LocalListParam{Query: "kyoh86/gogh"},
+				title:  "matched for user/name",
+				option: &testtarget.LocalListOption{Query: "kyoh86/gogh"},
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {
-				actual, err := local.List(ctx, testcase.param)
+				actual, err := local.List(ctx, testcase.option)
 				if err != nil {
 					t.Fatalf("failed to get project list: %s", err)
 				}
@@ -167,6 +171,17 @@ func TestLocalController(t *testing.T) {
 				}
 			})
 		}
+
+		// unmatch case
+		t.Run("Unmatch", func(t *testing.T) {
+			actual, err := local.List(ctx, &testtarget.LocalListOption{Query: "dummy"})
+			if err != nil {
+				t.Fatalf("failed to get project list: %s", err)
+			}
+			if len(actual) != 0 {
+				t.Errorf("expect that no project matched, but %d projects are gotten", len(actual))
+			}
+		})
 	})
 
 	t.Run("Remove", func(t *testing.T) {
@@ -231,17 +246,21 @@ func TestLocalController(t *testing.T) {
 		}
 
 		// check built properties
-		expectRelPath := filepath.Clean("github.com/kyoh86-tryouts/bare")
+		expectRelPath := "github.com/kyoh86-tryouts/bare"
 		if expectRelPath != project.RelPath() {
 			t.Errorf("expect rel-path %q but %q is gotten", expectRelPath, project.RelPath())
+		}
+		expectRelFilePath := filepath.Clean("github.com/kyoh86-tryouts/bare")
+		if expectRelFilePath != project.RelFilePath() {
+			t.Errorf("expect rel-path %q but %q is gotten", expectRelFilePath, project.RelFilePath())
 		}
 		expectURL := "https://github.com/kyoh86-tryouts/bare"
 		if expectURL != project.URL() {
 			t.Errorf("expect url %q but %q is gotten", expectURL, project.URL())
 		}
 		expectFullPath := filepath.Join(root, "github.com/kyoh86-tryouts/bare")
-		if expectFullPath != project.FullPath() {
-			t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullPath())
+		if expectFullPath != project.FullFilePath() {
+			t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullFilePath())
 		}
 
 		// check git remote
@@ -293,7 +312,7 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 	if _, err := local.Clone(ctx, d, nil); err == nil {
 		t.Errorf("expect failure to clone")
 	}
-	if err := local.Remove(ctx, d); err == nil {
+	if err := local.Remove(ctx, d, nil); err == nil {
 		t.Errorf("expect failure to remove")
 	}
 }

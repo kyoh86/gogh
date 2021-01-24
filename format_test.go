@@ -26,13 +26,18 @@ func TestFormat(t *testing.T) {
 		expect string
 	}{
 		{
-			title:  "FullPath",
-			format: testtarget.FormatFullPath,
+			title:  "FullFilePath",
+			format: testtarget.FormatFullFilePath,
 			expect: filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "RelPath",
 			format: testtarget.FormatRelPath,
+			expect: "github.com/kyoh86/gogh",
+		},
+		{
+			title:  "RelFilePath",
+			format: testtarget.FormatRelFilePath,
 			expect: filepath.Clean("github.com/kyoh86/gogh"),
 		},
 		{
@@ -45,7 +50,7 @@ func TestFormat(t *testing.T) {
 			format: testtarget.FormatFields(" "),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
-				"https://github.com/kyoh86/gogh",
+				"github.com/kyoh86/gogh",
 				"github.com",
 				"kyoh86",
 				"gogh",
@@ -56,7 +61,7 @@ func TestFormat(t *testing.T) {
 			format: testtarget.FormatFields("<<>>"),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
-				"https://github.com/kyoh86/gogh",
+				"github.com/kyoh86/gogh",
 				"github.com",
 				"kyoh86",
 				"gogh",

@@ -30,12 +30,16 @@ func (p Project) RelLevels() []string {
 	return []string{p.description.host, p.description.user, p.description.name}
 }
 
-func (p Project) FullPath() string {
+func (p Project) FullFilePath() string {
 	return filepath.Join(p.FullLevels()...)
 }
 
-func (p Project) RelPath() string {
+func (p Project) RelFilePath() string {
 	return filepath.Join(p.RelLevels()...)
+}
+
+func (p Project) RelPath() string {
+	return path.Join(p.RelLevels()...)
 }
 
 func (p Project) URL() string {
@@ -44,7 +48,7 @@ func (p Project) URL() string {
 
 // CheckEntity checks the project is exist in the local file-system.
 func (p Project) CheckEntity() error {
-	path := p.FullPath()
+	path := p.FullFilePath()
 	stat, err := os.Stat(path)
 	if err != nil {
 		return err

@@ -37,14 +37,14 @@ type LocalController struct {
 	root string
 }
 
-type CreateOption struct {
+type LocalCreateOption struct {
 	//UNDONE: support isBare
 }
 
-func (l *LocalController) Create(ctx context.Context, d Description, _ *CreateOption) (Project, error) {
+func (l *LocalController) Create(ctx context.Context, d Description, _ *LocalCreateOption) (Project, error) {
 	p := NewProject(l.root, d)
 
-	repo, err := git.PlainInit(p.FullPath(), false)
+	repo, err := git.PlainInit(p.FullFilePath(), false)
 	if err != nil {
 		return Project{}, err
 	}
@@ -58,16 +58,16 @@ func (l *LocalController) Create(ctx context.Context, d Description, _ *CreateOp
 	return p, nil
 }
 
-type CloneOption struct {
+type LocalCloneOption struct {
 	//UNDONE: support authentication
 	//UNDONE: support isBare
 	//UNDONE: support *git.CloneOptions
 }
 
-func (l *LocalController) Clone(ctx context.Context, d Description, _ *CloneOption) (Project, error) {
+func (l *LocalController) Clone(ctx context.Context, d Description, _ *LocalCloneOption) (Project, error) {
 	p := NewProject(l.root, d)
 
-	if _, err := git.PlainCloneContext(ctx, p.FullPath(), false, &git.CloneOptions{
+	if _, err := git.PlainCloneContext(ctx, p.FullFilePath(), false, &git.CloneOptions{
 		URL: p.URL(),
 	}); err != nil {
 		return Project{}, err
@@ -76,13 +76,13 @@ func (l *LocalController) Clone(ctx context.Context, d Description, _ *CloneOpti
 	return p, nil
 }
 
-type LocalListParam struct {
+type LocalWalkFunc func(Project) error
+
+type LocalWalkOption struct {
 	Query string
 }
 
-type LocalWalkFunc func(Project) error
-
-func (l *LocalController) Walk(ctx context.Context, query string, walkFn LocalWalkFunc) error {
+func (l *LocalController) Walk(ctx context.Context, option *LocalWalkOption, walkFn LocalWalkFunc) error {
 	return walker.WalkWithContext(ctx, l.root, func(pathname string, info os.FileInfo) (retErr error) {
 		rel, _ := filepath.Rel(l.root, pathname)
 		parts := strings.Split(rel, string(filepath.Separator))
@@ -101,6 +101,9 @@ func (l *LocalController) Walk(ctx context.Context, query string, walkFn LocalWa
 			ulog.Logger(ctx).WithField("error", err).WithField("rel", rel).Debug("skip invalid entity")
 			return nil
 		}
+		if option != nil && !strings.Contains(p.RelPath(), option.Query) {
+			return nil
+		}
 		return walkFn(p)
 	})
 }
@@ -117,9 +120,17 @@ func (l *LocalController) newProjectFromEntity(parts [3]string, info os.FileInfo
 	return NewProject(l.root, description), nil
 }
 
-func (l *LocalController) List(ctx context.Context, query string) ([]Project, error) {
+type LocalListOption struct {
+	Query string
+}
+
+func (l *LocalController) List(ctx context.Context, option *LocalListOption) ([]Project, error) {
 	var list []Project
-	if err := l.Walk(ctx, query, func(p Project) error {
+	var woption *LocalWalkOption
+	if option != nil {
+		woption = &LocalWalkOption{Query: option.Query}
+	}
+	if err := l.Walk(ctx, woption, func(p Project) error {
 		list = append(list, p)
 		return nil
 	}); err != nil {
@@ -128,10 +139,12 @@ func (l *LocalController) List(ctx context.Context, query string) ([]Project, er
 	return list, nil
 }
 
-func (l *LocalController) Remove(ctx context.Context, description Description) error {
+type LocalRemoveOption struct{}
+
+func (l *LocalController) Remove(ctx context.Context, description Description, _ *LocalRemoveOption) error {
 	p := NewProject(l.root, description)
 	if err := p.CheckEntity(); err != nil {
 		return err
 	}
-	return os.RemoveAll(p.FullPath())
+	return os.RemoveAll(p.FullFilePath())
 }

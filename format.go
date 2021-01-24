@@ -8,12 +8,16 @@ func (f Format) Format(p Project) (string, error) {
 	return f(p)
 }
 
-func FormatFullPath(p Project) (string, error) {
-	return p.FullPath(), nil
+func FormatFullFilePath(p Project) (string, error) {
+	return p.FullFilePath(), nil
 }
 
 func FormatRelPath(p Project) (string, error) {
 	return p.RelPath(), nil
+}
+
+func FormatRelFilePath(p Project) (string, error) {
+	return p.RelFilePath(), nil
 }
 
 func FormatURL(p Project) (string, error) {
@@ -23,8 +27,8 @@ func FormatURL(p Project) (string, error) {
 func FormatFields(s string) Format {
 	return func(p Project) (string, error) {
 		return strings.Join([]string{
-			p.FullPath(),
-			p.URL(),
+			p.FullFilePath(),
+			p.RelPath(),
 			p.Host(),
 			p.User(),
 			p.Name(),
