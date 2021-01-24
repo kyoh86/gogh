@@ -164,6 +164,8 @@ github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNX
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
+github.com/wacul/ptr v1.0.0 h1:FIKu08Wx0YUIf9MNsfF62OCmBSmz5A1Tk65zWhOIL/I=
+github.com/wacul/ptr v1.0.0/go.mod h1:BD0gjsZrCwtoR+yWDB9v2hQ8STlq9tT84qKfa+3txOc=
 github.com/wacul/ulog v0.0.0-20190903030145-8950f45918c4 h1:R1oL2/LuCh+lWZPAjQWc9bgIq77Wqb42op66BgbUbu0=
 github.com/wacul/ulog v0.0.0-20190903030145-8950f45918c4/go.mod h1:wUAFd5D1abzwXuCroMB+33dNKNvmfPD3DOPQoSYphec=
 github.com/xanzy/ssh-agent v0.2.1 h1:TCbipTQL2JiiCprBWx9frJ2eJlCYT00NmctrHxVAr70=

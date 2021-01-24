@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"net/http"
 
 	github "github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
@@ -30,14 +31,22 @@ func (c *genuineAdaptor) DeleteRepositories(ctx context.Context, owner string, r
 	return c.client.Repositories.Delete(ctx, owner, repo)
 }
 
-func NewClient() Adaptor {
+func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
+	return oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))
+}
+
+func NewAdaptor(httpClient *http.Client) Adaptor {
 	return &genuineAdaptor{
-		client: github.NewClient(nil),
+		client: github.NewClient(httpClient),
 	}
 }
 
-func NewAuthClient(ctx context.Context, accessToken string) Adaptor {
-	return &genuineAdaptor{
-		client: github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))),
+func NewEnterpriseAdaptor(ctx context.Context, baseURL string, uploadURL string, httpClient *http.Client) (Adaptor, error) {
+	client, err := github.NewEnterpriseClient(baseURL, uploadURL, httpClient)
+	if err != nil {
+		return nil, err
 	}
+	return &genuineAdaptor{
+		client: client,
+	}, nil
 }

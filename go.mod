@@ -10,6 +10,7 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/google/go-github/v33 v33.0.0
 	github.com/saracen/walker v0.1.1
+	github.com/wacul/ptr v1.0.0 // indirect
 	github.com/wacul/ulog v0.0.0-20190903030145-8950f45918c4
 	golang.org/x/oauth2 v0.0.0-20210113205817-d3ed898aa8a3
 )

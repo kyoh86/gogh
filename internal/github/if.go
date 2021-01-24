@@ -17,3 +17,5 @@ type Adaptor interface {
 
 	DeleteRepositories(ctx context.Context, owner string, repo string) (*github.Response, error)
 }
+
+type Connector func(ctx context.Context, host string) (Adaptor, error)
