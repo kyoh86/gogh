@@ -14,6 +14,16 @@ func TestRemoteController(t *testing.T) {
 		remote := testtarget.NewRemoteController("github.com", "kyoh86")
 
 		t.Run("List", func(t *testing.T) {
+			t.Run("NilOption", func(t *testing.T) {
+				projects, err := remote.List(ctx, nil)
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+				if len(projects) <= 1 {
+					t.Errorf("expect some projects, but %d is gotten", len(projects))
+				}
+			})
+
 			t.Run("EmptyOption", func(t *testing.T) {
 				projects, err := remote.List(ctx, &testtarget.RemoteListOption{})
 				if err != nil {
