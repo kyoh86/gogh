@@ -2,7 +2,6 @@ package gogh
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -41,22 +40,19 @@ type CreateOption struct {
 	//UNDONE: support isBare
 }
 
-func (l *LocalController) Create(ctx context.Context, d Description, _ *CreateOption) (*Project, error) {
-	p := &Project{
-		root:        l.root,
-		Description: d,
-	}
+func (l *LocalController) Create(ctx context.Context, d Description, _ *CreateOption) (Project, error) {
+	p := NewProject(l.root, d)
 
 	repo, err := git.PlainInit(p.FullPath(), false)
 	if err != nil {
-		return nil, err
+		return Project{}, err
 	}
 
 	if _, err := repo.CreateRemote(&config.RemoteConfig{
 		Name: git.DefaultRemoteName,
 		URLs: []string{p.URL()},
 	}); err != nil {
-		return nil, err
+		return Project{}, err
 	}
 	return p, nil
 }
@@ -67,16 +63,13 @@ type CloneOption struct {
 	//UNDONE: support *git.CloneOptions
 }
 
-func (l *LocalController) Clone(ctx context.Context, d Description, _ *CloneOption) (*Project, error) {
-	p := &Project{
-		root:        l.root,
-		Description: d,
-	}
+func (l *LocalController) Clone(ctx context.Context, d Description, _ *CloneOption) (Project, error) {
+	p := NewProject(l.root, d)
 
 	if _, err := git.PlainCloneContext(ctx, p.FullPath(), false, &git.CloneOptions{
 		URL: p.URL(),
 	}); err != nil {
-		return nil, err
+		return Project{}, err
 	}
 
 	return p, nil
@@ -86,7 +79,7 @@ type LocalListParam struct {
 	Query string
 }
 
-type LocalWalkFunc func(*Project) error
+type LocalWalkFunc func(Project) error
 
 func (l *LocalController) Walk(ctx context.Context, query string, callback LocalWalkFunc) error {
 	return walker.WalkWithContext(ctx, l.root, func(pathname string, info os.FileInfo) (retErr error) {
@@ -103,19 +96,20 @@ func (l *LocalController) Walk(ctx context.Context, query string, callback Local
 		if !info.IsDir() {
 			return nil
 		}
-		desc, err := ValidateDescription(parts[0], parts[1], parts[2])
+		// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
+		description, err := NewDescription(parts[0], parts[1], parts[2])
 		if err != nil {
 			ulog.Logger(ctx).WithField("error", err).WithField("rel", rel).Debug("invalid path is skipped")
 			return nil
 		}
-		return callback(&Project{root: l.root, Description: *desc})
+		return callback(NewProject(l.root, description))
 	})
 }
 
 func (l *LocalController) List(ctx context.Context, query string) ([]Project, error) {
 	var list []Project
-	if err := l.Walk(ctx, query, func(p *Project) error {
-		list = append(list, *p)
+	if err := l.Walk(ctx, query, func(p Project) error {
+		list = append(list, p)
 		return nil
 	}); err != nil {
 		return nil, err
@@ -124,22 +118,9 @@ func (l *LocalController) List(ctx context.Context, query string) ([]Project, er
 }
 
 func (l *LocalController) Remove(ctx context.Context, description Description) error {
-	p, err := l.Get(ctx, description)
-	if err != nil {
+	p := NewProject(l.root, description)
+	if err := p.CheckEntity(); err != nil {
 		return err
 	}
 	return os.RemoveAll(p.FullPath())
-}
-
-func (l *LocalController) Get(ctx context.Context, description Description) (*Project, error) {
-	p := &Project{root: l.root, Description: description}
-	path := p.FullPath()
-	stat, err := os.Stat(path)
-	if err != nil {
-		return nil, err
-	}
-	if !stat.IsDir() {
-		return nil, errors.New("project is not dir")
-	}
-	return p, nil
 }

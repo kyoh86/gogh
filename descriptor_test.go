@@ -26,18 +26,18 @@ func TestDescriptor(t *testing.T) {
 				expect: description(t, "example.com", "kyoh86", "gogh"),
 			}} {
 				t.Run(testcase.source, func(t *testing.T) {
-					desc, err := descriptor.Parse(testcase.source)
+					description, err := descriptor.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expect.Host() != desc.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), desc.Host())
+					if testcase.expect.Host() != description.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), description.Host())
 					}
-					if testcase.expect.User() != desc.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expect.User(), desc.User())
+					if testcase.expect.User() != description.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expect.User(), description.User())
 					}
-					if testcase.expect.Name() != desc.Name() {
-						t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), desc.Name())
+					if testcase.expect.Name() != description.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), description.Name())
 					}
 				})
 			}
@@ -70,9 +70,9 @@ func TestDescriptor(t *testing.T) {
 				"gogh", // shortage
 			} {
 				t.Run(source, func(t *testing.T) {
-					desc, err := descriptor.Parse(source)
+					description, err := descriptor.Parse(source)
 					if err == nil {
-						t.Errorf("expect failure for parse %q but parsed to %+v", source, desc)
+						t.Errorf("expect failure for parse %q but parsed to %+v", source, description)
 					}
 				})
 			}
@@ -109,18 +109,18 @@ func TestDescriptor(t *testing.T) {
 			expect: description(t, "example.com", "example", "gogh"),
 		}} {
 			t.Run(testcase.source, func(t *testing.T) {
-				desc, err := descriptor.Parse(testcase.source)
+				description, err := descriptor.Parse(testcase.source)
 				if err != nil {
 					t.Fatalf("failed to parse %q: %s", testcase.source, err)
 				}
-				if testcase.expect.Host() != desc.Host() {
-					t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), desc.Host())
+				if testcase.expect.Host() != description.Host() {
+					t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), description.Host())
 				}
-				if testcase.expect.User() != desc.User() {
-					t.Errorf("expect user %q but %q gotten", testcase.expect.User(), desc.User())
+				if testcase.expect.User() != description.User() {
+					t.Errorf("expect user %q but %q gotten", testcase.expect.User(), description.User())
 				}
-				if testcase.expect.Name() != desc.Name() {
-					t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), desc.Name())
+				if testcase.expect.Name() != description.Name() {
+					t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), description.Name())
 				}
 			})
 		}

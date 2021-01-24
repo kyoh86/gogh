@@ -13,12 +13,13 @@ import (
 
 func description(t *testing.T, host, user, name string) testtarget.Description {
 	t.Helper()
-	d, err := testtarget.ValidateDescription(host, user, name)
+	d, err := testtarget.NewDescription(host, user, name)
 	if err != nil {
 		t.Fatalf("invalid description: %s", err)
 	}
-	return *d
+	return d
 }
+
 func TestLocalController(t *testing.T) {
 	ctx := context.Background()
 

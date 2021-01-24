@@ -2,25 +2,30 @@ package gogh
 
 import (
 	"context"
+	"errors"
 	"strings"
 )
 
 const DefaultHost = "github.com"
 
+var (
+	ErrTooManySlashes = errors.New("too many slashes")
+)
+
 // Descriptor will parse any string as a Description.
 //
 // If it is clear that the string has host, user and name explicitly,
-// use "ValidateDescription" instead to build Description.
+// use "NewDescription" instead to build Description.
 type Descriptor struct {
 	defaultHost string
 	defaultUser string
 }
 
-// Parse a string and build a *Description.
+// Parse a string and build a Description.
 //
 // If the string does not have a host or a user explicitly, they will be
-// replaced with default values which *Descriptor has.
-func (d *Descriptor) Parse(s string) (*Description, error) {
+// replaced with default values which Descriptor has.
+func (d *Descriptor) Parse(s string) (Description, error) {
 	parts := strings.Split(s, "/")
 	var name, user, host string
 	switch len(parts) {
@@ -31,9 +36,9 @@ func (d *Descriptor) Parse(s string) (*Description, error) {
 	case 3:
 		host, user, name = parts[0], parts[1], parts[2]
 	default:
-		return nil, ErrTooManySlashes
+		return Description{}, ErrTooManySlashes
 	}
-	return ValidateDescription(host, user, name)
+	return NewDescription(host, user, name)
 }
 
 func (d *Descriptor) SetDefaultUser(user string) error {

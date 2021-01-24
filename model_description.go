@@ -1,16 +1,25 @@
 package gogh
 
 import (
-	"errors"
 	"net/url"
 	"regexp"
 )
 
+// Description describes which project is in a root.
+type Description struct {
+	host string
+	user string
+	name string
+}
+
+func (d Description) Host() string { return d.host }
+func (d Description) User() string { return d.user }
+func (d Description) Name() string { return d.name }
+
 var (
-	ErrEmptyHost      = ErrorInvalidHost("empty description host")
-	ErrEmptyUser      = ErrorInvalidUser("empty description user")
-	ErrEmptyName      = ErrorInvalidName("empty description name")
-	ErrTooManySlashes = errors.New("too many slashes")
+	ErrEmptyHost = ErrorInvalidHost("empty description host")
+	ErrEmptyUser = ErrorInvalidUser("empty description user")
+	ErrEmptyName = ErrorInvalidName("empty description name")
 )
 
 type ErrorInvalidHost string
@@ -75,17 +84,17 @@ func ValidateUser(user string) error {
 	return nil
 }
 
-func ValidateDescription(host, user, name string) (*Description, error) {
+func NewDescription(host, user, name string) (Description, error) {
 	if err := ValidateHost(host); err != nil {
-		return nil, err
+		return Description{}, err
 	}
 	if err := ValidateUser(user); err != nil {
-		return nil, err
+		return Description{}, err
 	}
 	if err := ValidateName(name); err != nil {
-		return nil, err
+		return Description{}, err
 	}
-	return &Description{
+	return Description{
 		host: host,
 		user: user,
 		name: name,
