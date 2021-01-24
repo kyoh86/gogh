@@ -208,8 +208,7 @@ func TestLocalController(t *testing.T) {
 	})
 
 	t.Run("Clone", func(t *testing.T) {
-		t.Skip("skip remote access")
-		d := description(t, "github.com", "kyoh86", "gogh")
+		d := description(t, "github.com", "kyoh86-tryouts", "bare")
 		project, err := local.Clone(ctx, d, nil)
 		if err != nil {
 			t.Fatalf("failed to clone a project: %s", err)
@@ -228,15 +227,15 @@ func TestLocalController(t *testing.T) {
 		}
 
 		// check built properties
-		expectRelPath := "github.com/kyoh86/gogh"
+		expectRelPath := "github.com/kyoh86-tryouts/bare"
 		if expectRelPath != project.RelPath() {
 			t.Errorf("expect rel-path %q but %q is gotten", expectRelPath, project.RelPath())
 		}
-		expectURL := "https://github.com/kyoh86/gogh"
+		expectURL := "https://github.com/kyoh86-tryouts/bare"
 		if expectURL != project.URL() {
 			t.Errorf("expect url %q but %q is gotten", expectURL, project.URL())
 		}
-		expectFullPath := filepath.Join(root, "github.com/kyoh86/gogh")
+		expectFullPath := filepath.Join(root, "github.com/kyoh86-tryouts/bare")
 		if expectFullPath != project.FullPath() {
 			t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullPath())
 		}
