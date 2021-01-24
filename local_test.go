@@ -97,10 +97,10 @@ func TestLocalController(t *testing.T) {
 	t.Run("PassWalkFnError", func(t *testing.T) {
 		expect := errors.New("error for test")
 		called := false
-		actual := local.Walk(ctx, "", func(p testtarget.Project) error {
+		actual := local.Walk(ctx, func(p testtarget.Project) error {
 			called = true
 			return expect
-		})
+		}, nil)
 		if !called {
 			t.Fatal("expect that walkFn is called, but not")
 		}
@@ -125,31 +125,35 @@ func TestLocalController(t *testing.T) {
 		// cases
 		for _, testcase := range []struct {
 			title string
-			query string
+			param *testtarget.LocalListParam
 		}{
 			{
+				title: "nil",
+				param: nil,
+			},
+			{
 				title: "empty",
-				query: "",
+				param: &testtarget.LocalListParam{Query: ""},
 			},
 			{
 				title: "matched for name",
-				query: "gogh",
+				param: &testtarget.LocalListParam{Query: "gogh"},
 			},
 			{
 				title: "matched for user",
-				query: "kyoh86",
+				param: &testtarget.LocalListParam{Query: "kyoh86"},
 			},
 			{
 				title: "matched for user/name",
-				query: "kyoh86/gogh",
+				param: &testtarget.LocalListParam{Query: "kyoh86/gogh"},
 			},
 			{
 				title: "matched for user/name",
-				query: "kyoh86/gogh",
+				param: &testtarget.LocalListParam{Query: "kyoh86/gogh"},
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {
-				actual, err := local.List(ctx, testcase.query)
+				actual, err := local.List(ctx, testcase.param)
 				if err != nil {
 					t.Fatalf("failed to get project list: %s", err)
 				}
@@ -167,7 +171,7 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Remove", func(t *testing.T) {
 		t.Run("Valid", func(t *testing.T) {
-			if err := local.Remove(ctx, description(t, "github.com", "kyoh86", "gogh")); err != nil {
+			if err := local.Remove(ctx, description(t, "github.com", "kyoh86", "gogh"), nil); err != nil {
 				t.Fatalf("failed to remove project: %s", err)
 			}
 			stat, err := os.Stat(filepath.Join(root, "github.com", "kyoh86", "gogh"))
@@ -199,7 +203,7 @@ func TestLocalController(t *testing.T) {
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {
-				actual := local.Remove(ctx, testcase.description)
+				actual := local.Remove(ctx, testcase.description, nil)
 				if actual == nil {
 					t.Errorf("expect error when the description %s, but not", testcase.title)
 				}
