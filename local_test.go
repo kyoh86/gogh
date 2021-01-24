@@ -262,6 +262,13 @@ func TestLocalController(t *testing.T) {
 			t.Fatal("cloned repository has no url")
 		}
 	})
+
+	t.Run("CloneFailure", func(t *testing.T) {
+		d := description(t, "github.com", "kyoh86-tryouts", "none")
+		if _, err := local.Clone(ctx, d, nil); err == nil {
+			t.Fatalf("expect failure to clone a project: %s", err)
+		}
+	})
 }
 
 func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
