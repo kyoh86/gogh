@@ -4,23 +4,61 @@ import (
 	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	github "github.com/google/go-github/v33/github"
 	testtarget "github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v2/internal/mock_github"
+	"github.com/wacul/ptr"
 )
 
 func TestRemoteController(t *testing.T) {
 	ctx := context.Background()
 
+	// TODO: list -> github.com/kyoh86/gogh, github.com/kyoh86/vim-gogh, github.kyoh86.dev/kyoh86/dotfiles
+	// TODO: list --host github.com --owner kyoh86 -> github.com/kyoh86/gogh, github.com/kyoh86/vim-gogh
+
+	// TODO: create gogh -> github.kyoh86.dev/kyoh86/gogh created (default: host=github.kyoh86.dev, user=kyoh86)
+	// TODO: create kyoh86/gogh -> github.kyoh86.dev/kyoh86/gogh created (default: host=github.kyoh86.dev, user=kyoh86)
+	// TODO: create github.com/kyoh86/gogh -> github.com/kyoh86/gogh created (default: host=github.kyoh86.dev, user=kyoh86)
+	// NOTE: parsing gogh, kyoh86/gogh or github.com/kyoh86/gogh is the respoonsibilities of the "Descriptor" ->
+	// NOTE: remove is the same for create
 	t.Run("Unauthorized", func(t *testing.T) {
-		remote := testtarget.NewRemoteController("github.com", "kyoh86")
+		remote := testtarget.NewRemoteController(testtarget.DefaultHost, "kyoh86")
 
 		t.Run("List", func(t *testing.T) {
 			t.Run("NilOption", func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				defer ctrl.Finish()
+				mock := mock_github.NewMockAdaptor(ctrl)
+				remote.SetAdaptor(mock)
+
+				mock.EXPECT().ListRepositories(ctx, "kyoh86", nil).Return([]*github.Repository{{
+					Owner: &github.User{
+						Login: ptr.String("kyoh86"),
+					},
+					Name: ptr.String("fake-1"),
+				}, {
+					Owner: &github.User{
+						Login: ptr.String("kyoh86"),
+					},
+					Name: ptr.String("fake-2"),
+				}}, nil, nil)
 				projects, err := remote.List(ctx, nil)
 				if err != nil {
 					t.Fatalf("failed to listup: %s", err)
 				}
-				if len(projects) <= 1 {
-					t.Errorf("expect some projects, but %d is gotten", len(projects))
+				if len(projects) != 2 {
+					t.Fatalf("expect some projects, but %d is gotten", len(projects))
+				}
+				expects := []string{
+					"github.com/kyoh86/fake-1",
+					"github.com/kyoh86/fake-2",
+				}
+				for i, expect := range expects {
+					actual := projects[i].RelPath()
+					if expect != actual {
+						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+					}
 				}
 			})
 
