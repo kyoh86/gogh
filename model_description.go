@@ -17,14 +17,14 @@ func (d Description) User() string { return d.user }
 func (d Description) Name() string { return d.name }
 
 var (
-	ErrEmptyHost = ErrorInvalidHost("empty description host")
-	ErrEmptyUser = ErrorInvalidUser("empty description user")
-	ErrEmptyName = ErrorInvalidName("empty description name")
+	ErrEmptyHost = ErrInvalidHost("empty host")
+	ErrEmptyUser = ErrInvalidUser("empty user")
+	ErrEmptyName = ErrInvalidName("empty name")
 )
 
-type ErrorInvalidHost string
+type ErrInvalidHost string
 
-func (e ErrorInvalidHost) Error() string {
+func (e ErrInvalidHost) Error() string {
 	return string(e)
 }
 
@@ -34,14 +34,14 @@ func ValidateHost(h string) error {
 	}
 
 	if _, err := url.ParseRequestURI("https://" + h); err != nil {
-		return ErrorInvalidHost("invalid host: " + h)
+		return ErrInvalidHost("invalid host: " + h)
 	}
 	return nil
 }
 
-type ErrorInvalidName string
+type ErrInvalidName string
 
-func (e ErrorInvalidName) Error() string {
+func (e ErrInvalidName) Error() string {
 	return string(e)
 }
 
@@ -52,23 +52,20 @@ func ValidateName(name string) error {
 		return ErrEmptyName
 	}
 	if name == "." {
-		return ErrorInvalidName("'.' is reserved name")
+		return ErrInvalidName("'.' is reserved name")
 	}
 	if name == ".." {
-		return ErrorInvalidName("'..' is reserved name")
-	}
-	if name == "" {
-		return ErrEmptyName
+		return ErrInvalidName("'..' is reserved name")
 	}
 	if invalidNameRegexp.MatchString(name) {
-		return ErrorInvalidName("invalid project name")
+		return ErrInvalidName("invalid name: " + name)
 	}
 	return nil
 }
 
-type ErrorInvalidUser string
+type ErrInvalidUser string
 
-func (e ErrorInvalidUser) Error() string {
+func (e ErrInvalidUser) Error() string {
 	return string(e)
 }
 
@@ -79,7 +76,7 @@ func ValidateUser(user string) error {
 		return ErrEmptyUser
 	}
 	if !validUserRegexp.MatchString(user) {
-		return ErrorInvalidUser("invalid user name")
+		return ErrInvalidUser("invalid user: " + user)
 	}
 	return nil
 }
