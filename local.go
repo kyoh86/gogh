@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,7 +15,7 @@ import (
 
 const DefaultRootDirName = "Projects"
 
-func NewLocalController(ctx context.Context, root string) *LocalController {
+func NewLocalController(root string) *LocalController {
 	return &LocalController{root: root}
 }
 
@@ -81,10 +82,11 @@ type LocalListParam struct {
 
 type LocalWalkFunc func(Project) error
 
-func (l *LocalController) Walk(ctx context.Context, query string, callback LocalWalkFunc) error {
+func (l *LocalController) Walk(ctx context.Context, query string, walkFn LocalWalkFunc) error {
 	return walker.WalkWithContext(ctx, l.root, func(pathname string, info os.FileInfo) (retErr error) {
 		rel, _ := filepath.Rel(l.root, pathname)
 		parts := strings.Split(rel, string(filepath.Separator))
+
 		if len(parts) < 3 {
 			return nil
 		}
@@ -93,17 +95,26 @@ func (l *LocalController) Walk(ctx context.Context, query string, callback Local
 				retErr = filepath.SkipDir
 			}
 		}()
-		if !info.IsDir() {
-			return nil
-		}
-		// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
-		description, err := NewDescription(parts[0], parts[1], parts[2])
+
+		p, err := l.newProjectFromEntity([3]string{parts[0], parts[1], parts[2]}, info)
 		if err != nil {
-			ulog.Logger(ctx).WithField("error", err).WithField("rel", rel).Debug("invalid path is skipped")
+			ulog.Logger(ctx).WithField("error", err).WithField("rel", rel).Debug("skip invalid entity")
 			return nil
 		}
-		return callback(NewProject(l.root, description))
+		return walkFn(p)
 	})
+}
+
+func (l *LocalController) newProjectFromEntity(parts [3]string, info os.FileInfo) (Project, error) {
+	if !info.IsDir() {
+		return Project{}, errors.New("not directory")
+	}
+	// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
+	description, err := NewDescription(parts[0], parts[1], parts[2])
+	if err != nil {
+		return Project{}, err
+	}
+	return NewProject(l.root, description), nil
 }
 
 func (l *LocalController) List(ctx context.Context, query string) ([]Project, error) {

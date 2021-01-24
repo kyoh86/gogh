@@ -2,6 +2,7 @@ package gogh_test
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -24,7 +25,7 @@ func TestLocalController(t *testing.T) {
 	ctx := context.Background()
 
 	root := t.TempDir()
-	local := testtarget.NewLocalController(ctx, root)
+	local := testtarget.NewLocalController(root)
 
 	t.Run("Create", func(t *testing.T) {
 		d := description(t, "github.com", "kyoh86", "gogh")
@@ -91,6 +92,21 @@ func TestLocalController(t *testing.T) {
 				t.Fatalf("expect failure with cloning a project that has already exist: %s", err)
 			}
 		})
+	})
+
+	t.Run("PassWalkFnError", func(t *testing.T) {
+		expect := errors.New("error for test")
+		called := false
+		actual := local.Walk(ctx, "", func(p testtarget.Project) error {
+			called = true
+			return expect
+		})
+		if !called {
+			t.Fatal("expect that walkFn is called, but not")
+		}
+		if !errors.Is(actual, expect) {
+			t.Fatalf("expect passed through error %v from walkFn, but %v gotten", expect, actual)
+		}
 	})
 
 	t.Run("List", func(t *testing.T) {
@@ -247,4 +263,27 @@ func TestLocalController(t *testing.T) {
 			t.Fatal("cloned repository has no url")
 		}
 	})
+}
+
+func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
+	ctx := context.Background()
+
+	// prepare a file for the root of the test
+	tmp := t.TempDir()
+	file := filepath.Join(tmp, "file")
+	if err := ioutil.WriteFile(file, nil, 0644); err != nil {
+		t.Fatalf("failed to prepare dummy file: %s", err)
+	}
+
+	d := description(t, "example.com", "kyoh86", "gogh")
+	local := testtarget.NewLocalController(file)
+	if _, err := local.Create(ctx, d, nil); err == nil {
+		t.Errorf("expect failure to create")
+	}
+	if _, err := local.Clone(ctx, d, nil); err == nil {
+		t.Errorf("expect failure to clone")
+	}
+	if err := local.Remove(ctx, d); err == nil {
+		t.Errorf("expect failure to remove")
+	}
 }
