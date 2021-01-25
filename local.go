@@ -29,8 +29,8 @@ func NewLocalController(root string) *LocalController {
 // }
 
 type LocalController struct {
-	// TODO: support fs.FS
-	// TODO: support fs.FS
+	// UNDONE: support fs.FS
+	// UNDONE: support fs.FS
 
 	// NOTE: v1 -> v2 diferrence
 	// if we wanna manage mulstiple root, create multiple controller instances.
