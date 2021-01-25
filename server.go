@@ -10,44 +10,30 @@ const (
 	DefaultHost = "github.com"
 )
 
-var (
-	DefaultServer Server
-)
-
-func init() {
-	s, _ := NewServer(DefaultHost)
-	DefaultServer = s
-}
-
+// TODO: support API prefix
+// TODO: support Upload prefix
 type Server struct {
 	t taggedServer
 }
 
-func NewServer(host string) (Server, error) {
+func NewServerFor(host, user string) (Server, error) {
 	if err := ValidateHost(host); err != nil {
 		return Server{}, err
 	}
-	return Server{t: taggedServer{Host: host}}, nil
+	if err := ValidateUser(user); err != nil {
+		return Server{}, err
+	}
+	return Server{t: taggedServer{Host: host, User: user}}, nil
 }
 
-func (s Server) Host() string  { return s.t.Host }
-func (s Server) User() string  { return s.t.User }
-func (s Server) Token() string { return s.t.Token }
+func NewServer(user string) (Server, error) {
+	return NewServerFor(DefaultHost, user)
+}
 
-func (s *Server) SetHost(v string) error {
-	if err := ValidateHost(v); err != nil {
-		return err
-	}
-	s.t.Host = v
-	return nil
-}
-func (s *Server) SetUser(v string) error {
-	if err := ValidateUser(v); err != nil {
-		return err
-	}
-	s.t.User = v
-	return nil
-}
+func (s Server) Host() string { return s.t.Host }
+func (s Server) User() string { return s.t.User }
+
+func (s Server) Token() string            { return s.t.Token }
 func (s *Server) SetToken(v string) error { s.t.Token = v; return nil }
 
 type taggedServer struct {

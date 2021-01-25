@@ -1,7 +1,6 @@
 package gogh
 
 import (
-	"context"
 	"errors"
 	"strings"
 )
@@ -39,14 +38,6 @@ func (d *Descriptor) Parse(s string) (Description, error) {
 	return NewDescription(host, user, name)
 }
 
-func (d *Descriptor) SetDefaultUser(user string) error {
-	if err := ValidateUser(user); err != nil {
-		return err
-	}
-	d.defaultUser = user
-	return nil
-}
-
-func NewDescriptor(ctx context.Context) *Descriptor {
+func NewDescriptor(server ...Server) *Descriptor {
 	return &Descriptor{defaultHost: DefaultHost}
 }

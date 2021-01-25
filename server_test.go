@@ -11,27 +11,21 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	var s testtarget.Server
-	if err := s.SetHost("invalid host"); err == nil {
-		t.Error("expect failure to set invalid host, but not")
-	}
-
 	host := "example.com"
 	user := "kyoh86"
+	s, err := testtarget.NewServerFor(host, user)
+	if err != nil {
+		t.Fatal("failed to create new server")
+	}
+	if host != s.Host() {
+		t.Fatalf("expect host %q but %q", host, s.Host())
+	}
+	if user != s.User() {
+		t.Fatalf("expect user %q but %q", user, s.User())
+	}
+
 	token := "xxxxxxxxxxx"
-	t.Run("SetValidValue", func(t *testing.T) {
-		if err := s.SetHost(host); err != nil {
-			t.Fatalf("failed to set host: %s", err)
-		}
-		if host != s.Host() {
-			t.Errorf("expect host %q but %q", host, s.Host())
-		}
-		if err := s.SetUser(user); err != nil {
-			t.Fatalf("failed to set user: %s", err)
-		}
-		if user != s.User() {
-			t.Errorf("expect user %q but %q", user, s.User())
-		}
+	t.Run("SetValidToken", func(t *testing.T) {
 		if err := s.SetToken(token); err != nil {
 			t.Fatalf("failed to set token: %s", err)
 		}
@@ -82,34 +76,36 @@ func TestServer(t *testing.T) {
 
 	invalidHost := "invalid host"
 	invalidUser := "invalid user"
-	t.Run("SetInvalidValue", func(t *testing.T) {
-		if err := s.SetHost(invalidHost); err == nil {
-			t.Fatalf("expect failure to set invalid host, but not")
+
+	t.Run("NewServer", func(t *testing.T) {
+		if _, err := testtarget.NewServer(invalidUser); err == nil {
+			t.Error("expect failure to create new server with invalid host, but not")
 		}
-		if host != s.Host() { // expect no changing
-			t.Errorf("expect host %q but %q", host, s.Host())
+		s, err := testtarget.NewServer(user)
+		if err != nil {
+			t.Fatal("failed to create new server")
 		}
-		if err := s.SetUser(invalidUser); err == nil {
-			t.Fatalf("expect failure to set invalid user, but not")
-		}
-		if user != s.User() { // expect no changing
+		if user != s.User() {
 			t.Errorf("expect user %q but %q", user, s.User())
 		}
 	})
 
-	t.Run("New", func(t *testing.T) {
-		if _, err := testtarget.NewServer(invalidHost); err == nil {
+	t.Run("NewServerFor", func(t *testing.T) {
+		if _, err := testtarget.NewServerFor(invalidHost, user); err == nil {
 			t.Error("expect failure to create new server with invalid host, but not")
 		}
-		s, err := testtarget.NewServer(testtarget.DefaultHost)
+		if _, err := testtarget.NewServerFor(host, invalidUser); err == nil {
+			t.Error("expect failure to create new server with invalid user, but not")
+		}
+		s, err := testtarget.NewServerFor(host, user)
 		if err != nil {
 			t.Fatal("failed to create new server")
 		}
-		if testtarget.DefaultHost != s.Host() {
-			t.Errorf("expect host %q but %q", testtarget.DefaultHost, s.Host())
+		if host != s.Host() {
+			t.Errorf("expect host %q but %q", host, s.Host())
 		}
-		if testtarget.DefaultHost != testtarget.DefaultServer.Host() {
-			t.Errorf("expect host %q but %q", testtarget.DefaultHost, testtarget.DefaultServer.Host())
+		if user != s.User() {
+			t.Errorf("expect user %q but %q", user, s.User())
 		}
 	})
 

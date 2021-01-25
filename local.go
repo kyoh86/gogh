@@ -29,8 +29,8 @@ func NewLocalController(root string) *LocalController {
 // }
 
 type LocalController struct {
-	// UNDONE: support fs.FS
-	// UNDONE: support fs.FS
+	// TODO: support fs.FS
+	// TODO: support fs.FS
 
 	// NOTE: v1 -> v2 diferrence
 	// if we wanna manage mulstiple root, create multiple controller instances.
@@ -38,7 +38,7 @@ type LocalController struct {
 }
 
 type LocalCreateOption struct {
-	//UNDONE: support isBare
+	// UNDONE: support isBare
 }
 
 func (l *LocalController) Create(ctx context.Context, d Description, _ *LocalCreateOption) (Project, error) {
@@ -59,9 +59,9 @@ func (l *LocalController) Create(ctx context.Context, d Description, _ *LocalCre
 }
 
 type LocalCloneOption struct {
-	//UNDONE: support authentication
-	//UNDONE: support isBare
-	//UNDONE: support *git.CloneOptions
+	// UNDONE: support authentication
+	// UNDONE: support isBare
+	// UNDONE: support *git.CloneOptions
 }
 
 func (l *LocalController) Clone(ctx context.Context, d Description, _ *LocalCloneOption) (Project, error) {
