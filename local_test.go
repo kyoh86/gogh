@@ -297,22 +297,32 @@ func TestLocalController(t *testing.T) {
 func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 	ctx := context.Background()
 
-	// prepare a file for the root of the test
 	tmp := t.TempDir()
-	file := filepath.Join(tmp, "file")
-	if err := ioutil.WriteFile(file, nil, 0644); err != nil {
-		t.Fatalf("failed to prepare dummy file: %s", err)
-	}
+	root := filepath.Join(tmp, "root")
 
 	d := description(t, "example.com", "kyoh86", "gogh")
-	local := testtarget.NewLocalController(file)
-	if _, err := local.Create(ctx, d, nil); err == nil {
-		t.Errorf("expect failure to create")
-	}
-	if _, err := local.Clone(ctx, d, nil); err == nil {
-		t.Errorf("expect failure to clone")
-	}
-	if err := local.Remove(ctx, d, nil); err == nil {
-		t.Errorf("expect failure to remove")
-	}
+	local := testtarget.NewLocalController(root)
+
+	t.Run("NotExit", func(t *testing.T) {
+		if _, err := local.List(ctx, nil); err == nil {
+			t.Errorf("expect failure to list")
+		}
+	})
+
+	t.Run("NotWritable", func(t *testing.T) {
+		// prepare a file for the root of the test
+		if err := ioutil.WriteFile(root, nil, 0644); err != nil {
+			t.Fatalf("failed to prepare dummy file: %s", err)
+		}
+
+		if _, err := local.Create(ctx, d, nil); err == nil {
+			t.Errorf("expect failure to create")
+		}
+		if _, err := local.Clone(ctx, d, nil); err == nil {
+			t.Errorf("expect failure to clone")
+		}
+		if err := local.Remove(ctx, d, nil); err == nil {
+			t.Errorf("expect failure to remove")
+		}
+	})
 }
