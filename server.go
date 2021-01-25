@@ -15,10 +15,7 @@ var (
 )
 
 func init() {
-	s, err := NewServer(DefaultHost)
-	if err != nil {
-		panic(err)
-	}
+	s, _ := NewServer(DefaultHost)
 	DefaultServer = s
 }
 
