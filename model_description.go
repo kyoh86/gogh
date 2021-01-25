@@ -86,13 +86,13 @@ func ValidateUser(user string) error {
 }
 
 func NewDescription(host, user, name string) (Description, error) {
-	if err := ValidateHost(host); err != nil {
+	if err := ValidateName(name); err != nil {
 		return Description{}, err
 	}
 	if err := ValidateUser(user); err != nil {
 		return Description{}, err
 	}
-	if err := ValidateName(name); err != nil {
+	if err := ValidateHost(host); err != nil {
 		return Description{}, err
 	}
 	return Description{

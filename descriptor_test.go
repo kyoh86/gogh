@@ -76,7 +76,7 @@ func TestDescriptor(t *testing.T) {
 				{
 					title:  "empty-user,empty-name",
 					input:  "/",
-					expect: testtarget.ErrEmptyUser,
+					expect: testtarget.ErrEmptyName,
 				},
 				{
 					title:  "empty-user,valid-name",
@@ -142,22 +142,22 @@ func TestDescriptor(t *testing.T) {
 				{
 					title:  "valid-host,empty-user,empty-name",
 					input:  host1 + "//",
-					expect: testtarget.ErrEmptyUser,
+					expect: testtarget.ErrEmptyName,
 				},
 				{
 					title:  "empty-host,valid-user,empty-name",
 					input:  "/" + user1 + "/",
-					expect: testtarget.ErrEmptyHost,
+					expect: testtarget.ErrEmptyName,
 				},
 				{
 					title:  "empty-host,empty-user,valid-name",
 					input:  "//" + name,
-					expect: testtarget.ErrEmptyHost,
+					expect: testtarget.ErrEmptyUser,
 				},
 				{
 					title:  "empty-host,empty-user,empty-name",
 					input:  "//",
-					expect: testtarget.ErrEmptyHost,
+					expect: testtarget.ErrEmptyName,
 				},
 				{
 					title:  "unnecessary-following-slash",
@@ -187,7 +187,7 @@ func TestDescriptor(t *testing.T) {
 	})
 
 	t.Run("WithHost", func(t *testing.T) {
-		server, err := testtarget.NewServerFor(user1, host1)
+		server, err := testtarget.NewServerFor(host1, user1)
 		if err != nil {
 			t.Fatalf("failed to create new server for %s: %v", user1, err)
 		}
@@ -263,7 +263,7 @@ func TestDescriptor(t *testing.T) {
 		}, {
 			title:  "valid-name,valid-user(multiple-server: expect that first one is selected)",
 			source: user2 + "/" + name,
-			expect: description(t, host1, user1, name),
+			expect: description(t, host1, user2, name),
 		}, {
 			title:  "full-name",
 			source: testtarget.DefaultHost + "/" + user2 + "/" + name,
