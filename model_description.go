@@ -33,7 +33,11 @@ func ValidateHost(h string) error {
 		return ErrEmptyHost
 	}
 
-	if _, err := url.ParseRequestURI("https://" + h); err != nil {
+	u, err := url.ParseRequestURI("https://" + h)
+	if err != nil {
+		return ErrInvalidHost("invalid host: " + h)
+	}
+	if u.Host != h {
 		return ErrInvalidHost("invalid host: " + h)
 	}
 	return nil
