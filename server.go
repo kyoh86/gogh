@@ -10,8 +10,8 @@ const (
 	DefaultHost = "github.com"
 )
 
-// TODO: support API prefix
-// TODO: support Upload prefix
+// UNDONE: support API prefix
+// UNDONE: support Upload prefix
 type Server struct {
 	t taggedServer
 }
