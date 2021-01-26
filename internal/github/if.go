@@ -24,5 +24,3 @@ type Adaptor interface {
 
 	RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error)
 }
-
-type Connector func(ctx context.Context, host string) (Adaptor, error)
