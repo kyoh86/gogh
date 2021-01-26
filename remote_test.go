@@ -22,8 +22,16 @@ func TestRemoteController(t *testing.T) {
 	// TODO: create github.com/kyoh86/gogh -> github.com/kyoh86/gogh created (default: host=github.kyoh86.dev, user=kyoh86)
 	// NOTE: parsing gogh, kyoh86/gogh or github.com/kyoh86/gogh is the respoonsibilities of the "Descriptor" ->
 	// NOTE: remove is the same for create
+	// TODO: authorized server
+	// TODO: multiple server
 	t.Run("Unauthorized", func(t *testing.T) {
-		remote := testtarget.NewRemoteController(testtarget.DefaultHost, "kyoh86")
+		host := testtarget.DefaultHost
+		user := "kyoh86"
+		server, err := testtarget.NewServerFor(host, user)
+		if err != nil {
+			t.Fatalf("failed to create a new server: %s", err)
+		}
+		remote := testtarget.NewRemoteController(server)
 
 		t.Run("List", func(t *testing.T) {
 			t.Run("NilOption", func(t *testing.T) {
