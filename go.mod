@@ -8,7 +8,11 @@ require (
 	github.com/alecthomas/units v0.0.0-20201120081800-1786d5ef83d4 // indirect
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/goccy/go-yaml v1.8.5
+	github.com/golang/mock v1.4.4
+	github.com/google/go-github/v33 v33.0.0
 	github.com/saracen/walker v0.1.1
+	github.com/wacul/ptr v1.0.0
 	github.com/wacul/ulog v0.0.0-20190903030145-8950f45918c4
+	golang.org/x/oauth2 v0.0.0-20210125201302-af13f521f196
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 )
