@@ -6,16 +6,23 @@ import (
 	github "github.com/google/go-github/v33/github"
 )
 
+type Repository = github.Repository
+type RepositoryCreateForkOptions = github.RepositoryCreateForkOptions
+type RepositoryListByOrgOptions = github.RepositoryListByOrgOptions
+type RepositoryListOptions = github.RepositoryListOptions
+type Response = github.Response
+type User = github.User
+
 type Adaptor interface {
-	GetUser(ctx context.Context, user string) (*github.User, *github.Response, error)
+	UserGet(ctx context.Context, user string) (*User, *Response, error)
 
-	ListRepositories(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, *github.Response, error)
-	ListRepositoriesByOrg(ctx context.Context, org string, opts *github.RepositoryListByOrgOptions) ([]*github.Repository, *github.Response, error)
+	RepositoryList(ctx context.Context, user string, opts *RepositoryListOptions) ([]*Repository, *Response, error)
+	RepositoryListByOrg(ctx context.Context, org string, opts *RepositoryListByOrgOptions) ([]*Repository, *Response, error)
 
-	CreateRepository(ctx context.Context, org string, repo *github.Repository) (*github.Repository, *github.Response, error)
-	CreateForkRepository(ctx context.Context, owner string, repo string, opts *github.RepositoryCreateForkOptions) (*github.Repository, *github.Response, error)
+	RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error)
+	RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error)
 
-	DeleteRepositories(ctx context.Context, owner string, repo string) (*github.Response, error)
+	RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error)
 }
 
 type Connector func(ctx context.Context, host string) (Adaptor, error)

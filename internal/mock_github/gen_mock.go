@@ -34,97 +34,97 @@ func (m *MockAdaptor) EXPECT() *MockAdaptorMockRecorder {
 	return m.recorder
 }
 
-// GetUser mocks base method
-func (m *MockAdaptor) GetUser(ctx context.Context, user string) (*github.User, *github.Response, error) {
+// UserGet mocks base method
+func (m *MockAdaptor) UserGet(ctx context.Context, user string) (*github.User, *github.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUser", ctx, user)
+	ret := m.ctrl.Call(m, "UserGet", ctx, user)
 	ret0, _ := ret[0].(*github.User)
 	ret1, _ := ret[1].(*github.Response)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// GetUser indicates an expected call of GetUser
-func (mr *MockAdaptorMockRecorder) GetUser(ctx, user interface{}) *gomock.Call {
+// UserGet indicates an expected call of UserGet
+func (mr *MockAdaptorMockRecorder) UserGet(ctx, user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockAdaptor)(nil).GetUser), ctx, user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserGet",
 }
 
-// ListRepositories mocks base method
-func (m *MockAdaptor) ListRepositories(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, *github.Response, error) {
+// RepositoryList mocks base method
+func (m *MockAdaptor) RepositoryList(ctx context.Context, user string, opts *github.RepositoryListOptions) ([]*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListRepositories", ctx, user, opts)
+	ret := m.ctrl.Call(m, "RepositoryList", ctx, user, opts)
 	ret0, _ := ret[0].([]*github.Repository)
 	ret1, _ := ret[1].(*github.Response)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// ListRepositories indicates an expected call of ListRepositories
-func (mr *MockAdaptorMockRecorder) ListRepositories(ctx, user, opts interface{}) *gomock.Call {
+// RepositoryList indicates an expected call of RepositoryList
+func (mr *MockAdaptorMockRecorder) RepositoryList(ctx, user, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRepositories", reflect.TypeOf((*MockAdaptor)(nil).ListRepositories), ctx, user, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryList",
 }
 
-// ListRepositoriesByOrg mocks base method
-func (m *MockAdaptor) ListRepositoriesByOrg(ctx context.Context, org string, opts *github.RepositoryListByOrgOptions) ([]*github.Repository, *github.Response, error) {
+// RepositoryListByOrg mocks base method
+func (m *MockAdaptor) RepositoryListByOrg(ctx context.Context, org string, opts *github.RepositoryListByOrgOptions) ([]*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListRepositoriesByOrg", ctx, org, opts)
+	ret := m.ctrl.Call(m, "RepositoryListByOrg", ctx, org, opts)
 	ret0, _ := ret[0].([]*github.Repository)
 	ret1, _ := ret[1].(*github.Response)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// ListRepositoriesByOrg indicates an expected call of ListRepositoriesByOrg
-func (mr *MockAdaptorMockRecorder) ListRepositoriesByOrg(ctx, org, opts interface{}) *gomock.Call {
+// RepositoryListByOrg indicates an expected call of RepositoryListByOrg
+func (mr *MockAdaptorMockRecorder) RepositoryListByOrg(ctx, org, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRepositoriesByOrg", reflect.TypeOf((*MockAdaptor)(nil).ListRepositoriesByOrg), ctx, org, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryListByOrg",
 }
 
-// CreateRepository mocks base method
-func (m *MockAdaptor) CreateRepository(ctx context.Context, org string, repo *github.Repository) (*github.Repository, *github.Response, error) {
+// RepositoryCreate mocks base method
+func (m *MockAdaptor) RepositoryCreate(ctx context.Context, org string, repo *github.Repository) (*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRepository", ctx, org, repo)
+	ret := m.ctrl.Call(m, "RepositoryCreate", ctx, org, repo)
 	ret0, _ := ret[0].(*github.Repository)
 	ret1, _ := ret[1].(*github.Response)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// CreateRepository indicates an expected call of CreateRepository
-func (mr *MockAdaptorMockRecorder) CreateRepository(ctx, org, repo interface{}) *gomock.Call {
+// RepositoryCreate indicates an expected call of RepositoryCreate
+func (mr *MockAdaptorMockRecorder) RepositoryCreate(ctx, org, repo interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockAdaptor)(nil).CreateRepository), ctx, org, repo)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryCreate",
 }
 
-// CreateForkRepository mocks base method
-func (m *MockAdaptor) CreateForkRepository(ctx context.Context, owner, repo string, opts *github.RepositoryCreateForkOptions) (*github.Repository, *github.Response, error) {
+// RepositoryCreateFork mocks base method
+func (m *MockAdaptor) RepositoryCreateFork(ctx context.Context, owner, repo string, opts *github.RepositoryCreateForkOptions) (*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateForkRepository", ctx, owner, repo, opts)
+	ret := m.ctrl.Call(m, "RepositoryCreateFork", ctx, owner, repo, opts)
 	ret0, _ := ret[0].(*github.Repository)
 	ret1, _ := ret[1].(*github.Response)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// CreateForkRepository indicates an expected call of CreateForkRepository
-func (mr *MockAdaptorMockRecorder) CreateForkRepository(ctx, owner, repo, opts interface{}) *gomock.Call {
+// RepositoryCreateFork indicates an expected call of RepositoryCreateFork
+func (mr *MockAdaptorMockRecorder) RepositoryCreateFork(ctx, owner, repo, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateForkRepository", reflect.TypeOf((*MockAdaptor)(nil).CreateForkRepository), ctx, owner, repo, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock,
 }
 
-// DeleteRepositories mocks base method
-func (m *MockAdaptor) DeleteRepositories(ctx context.Context, owner, repo string) (*github.Response, error) {
+// RepositoryDelete mocks base method
+func (m *MockAdaptor) RepositoryDelete(ctx context.Context, owner, repo string) (*github.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteRepositories", ctx, owner, repo)
+	ret := m.ctrl.Call(m, "RepositoryDelete", ctx, owner, repo)
 	ret0, _ := ret[0].(*github.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DeleteRepositories indicates an expected call of DeleteRepositories
-func (mr *MockAdaptorMockRecorder) DeleteRepositories(ctx, owner, repo interface{}) *gomock.Call {
+// RepositoryDelete indicates an expected call of RepositoryDelete
+func (mr *MockAdaptorMockRecorder) RepositoryDelete(ctx, owner, repo interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRepositories", reflect.TypeOf((*MockAdaptor)(nil).DeleteRepositories), ctx, owner, repo)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryDelete",
 }
