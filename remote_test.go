@@ -11,12 +11,10 @@ import (
 	"github.com/wacul/ptr"
 )
 
-func MockConnector(t *testing.T) (testtarget.Connector, *github_mock.MockAdaptor, func()) {
+func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
 	ctrl := gomock.NewController(t)
 	mock := github_mock.NewMockAdaptor(ctrl)
-	return func(context.Context, testtarget.Server) (github.Adaptor, error) {
-		return mock, nil
-	}, mock, ctrl.Finish
+	return mock, ctrl.Finish
 }
 
 func TestRemoteController(t *testing.T) {
@@ -37,16 +35,175 @@ func TestRemoteController(t *testing.T) {
 		user := "kyoh86"
 		org := "kyoh86-tryouts"
 
-		server, err := testtarget.NewServerFor(host, user)
-		if err != nil {
-			t.Fatalf("failed to create a new server: %s", err)
-		}
+		t.Run("ListByOrg", func(t *testing.T) {
+			t.Run("Nil", func(t *testing.T) {
+				mock, teardown := MockAdaptor(t)
+				defer teardown()
+				remote := testtarget.NewRemoteController(mock)
+				mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-1"),
+				}, {
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-2"),
+				}}, nil, nil)
+
+				projects, err := remote.ListByOrg(ctx, org, nil)
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+				expects := []string{
+					host + "/" + org + "/org-repo-1",
+					host + "/" + org + "/org-repo-2",
+				}
+				for i, expect := range expects {
+					actual := projects[i].RelPath()
+					if expect != actual {
+						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+					}
+				}
+			})
+
+			t.Run("Empty", func(t *testing.T) {
+				mock, teardown := MockAdaptor(t)
+				defer teardown()
+				remote := testtarget.NewRemoteController(mock)
+				mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-1"),
+				}, {
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-2"),
+				}}, nil, nil)
+
+				projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{})
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+				expects := []string{
+					host + "/" + org + "/org-repo-1",
+					host + "/" + org + "/org-repo-2",
+				}
+				for i, expect := range expects {
+					actual := projects[i].RelPath()
+					if expect != actual {
+						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+					}
+				}
+			})
+
+			t.Run("ByOrganizationWithOptions", func(t *testing.T) {
+				mock, teardown := MockAdaptor(t)
+				defer teardown()
+				remote := testtarget.NewRemoteController(mock)
+				mock.EXPECT().RepositoryListByOrg(ctx, org, &github.RepositoryListOptions{
+					Visibility: "public",
+				}).Return([]*github.Repository{{
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-1"),
+				}, {
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-2"),
+				}}, nil, nil)
+
+				projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+					Options: &github.RepositoryListByOrgOptions{
+						Type: "private",
+					},
+				})
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+				expects := []string{
+					host + "/" + org + "/org-repo-1",
+					host + "/" + org + "/org-repo-2",
+				}
+				for i, expect := range expects {
+					actual := projects[i].RelPath()
+					if expect != actual {
+						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+					}
+				}
+			})
+
+			t.Run("ByOrganizationAndQuery", func(t *testing.T) {
+				mock, teardown := MockAdaptor(t)
+				defer teardown()
+				remote := testtarget.NewRemoteController(mock)
+				mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-1"),
+				}, {
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-2"),
+				}}, nil, nil)
+
+				projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+					Query: "repo-1",
+				})
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+				expects := []string{
+					host + "/" + org + "/org-repo-1",
+				}
+				for i, expect := range expects {
+					actual := projects[i].RelPath()
+					if expect != actual {
+						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+					}
+				}
+			})
+
+			t.Run("ByOrganizationAndQueryNoMatch", func(t *testing.T) {
+				mock, teardown := MockAdaptor(t)
+				defer teardown()
+				remote := testtarget.NewRemoteController(mock)
+				mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-1"),
+				}, {
+					Organization: &github.Organization{
+						Login: &org,
+					},
+					Name: ptr.String("org-repo-2"),
+				}}, nil, nil)
+
+				projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+					Query: "no-match",
+				})
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+				if len(projects) > 0 {
+					t.Errorf("expect no project is found but %d projects are found", len(projects))
+				}
+			})
+		})
 
 		t.Run("List", func(t *testing.T) {
 			t.Run("NilOption", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, "", nil).Return([]github.Repository{{
 					Owner: &github.User{
 						Login: &user,
@@ -91,9 +248,9 @@ func TestRemoteController(t *testing.T) {
 			})
 
 			t.Run("EmptyOption", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
 					Owner: &github.User{
 						Login: &user,
@@ -134,44 +291,10 @@ func TestRemoteController(t *testing.T) {
 				}
 			})
 
-			t.Run("ByOrganization", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
-				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
-				mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-1"),
-				}, {
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-2"),
-				}}, nil, nil)
-
-				projects, err := remote.List(ctx, &testtarget.RemoteListOption{
-					Organization: org,
-				})
-				if err != nil {
-					t.Fatalf("failed to listup: %s", err)
-				}
-				expects := []string{
-					host + "/" + org + "/org-repo-1",
-					host + "/" + org + "/org-repo-2",
-				}
-				for i, expect := range expects {
-					actual := projects[i].RelPath()
-					if expect != actual {
-						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
-					}
-				}
-			})
-
 			t.Run("ByUser", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, user, nil).Return([]*github.Repository{{
 					Owner: &github.User{
 						Login: &user,
@@ -203,9 +326,9 @@ func TestRemoteController(t *testing.T) {
 			})
 
 			t.Run("Options", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, "", &github.RepositoryListOptions{
 					Visibility: "public",
 				}).Return([]*github.Repository{{
@@ -252,49 +375,10 @@ func TestRemoteController(t *testing.T) {
 				}
 			})
 
-			t.Run("ByOrganizationWithOptions", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
-				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
-				mock.EXPECT().RepositoryListByOrg(ctx, org, &github.RepositoryListOptions{
-					Visibility: "public",
-				}).Return([]*github.Repository{{
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-1"),
-				}, {
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-2"),
-				}}, nil, nil)
-
-				projects, err := remote.List(ctx, &testtarget.RemoteListOption{
-					Organization: org,
-					Options: &github.RepositoryListOptions{
-						Visibility: "public",
-					},
-				})
-				if err != nil {
-					t.Fatalf("failed to listup: %s", err)
-				}
-				expects := []string{
-					host + "/" + org + "/org-repo-1",
-					host + "/" + org + "/org-repo-2",
-				}
-				for i, expect := range expects {
-					actual := projects[i].RelPath()
-					if expect != actual {
-						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
-					}
-				}
-			})
-
 			t.Run("ByUserWithOptions", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, user, &github.RepositoryListOptions{
 					Visibility: "public",
 				}).Return([]*github.Repository{{
@@ -331,9 +415,9 @@ func TestRemoteController(t *testing.T) {
 			})
 
 			t.Run("Query", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
 					Owner: &github.User{
 						Login: &user,
@@ -375,9 +459,9 @@ func TestRemoteController(t *testing.T) {
 			})
 
 			t.Run("QueryNoMatch", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
 					Owner: &github.User{
 						Login: &user,
@@ -411,72 +495,10 @@ func TestRemoteController(t *testing.T) {
 				}
 			})
 
-			t.Run("ByOrganizationAndQuery", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
-				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
-				mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-1"),
-				}, {
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-2"),
-				}}, nil, nil)
-
-				projects, err := remote.List(ctx, &testtarget.RemoteListOption{
-					Organization: org,
-					Query:        "repo-1",
-				})
-				if err != nil {
-					t.Fatalf("failed to listup: %s", err)
-				}
-				expects := []string{
-					host + "/" + org + "/org-repo-1",
-				}
-				for i, expect := range expects {
-					actual := projects[i].RelPath()
-					if expect != actual {
-						t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
-					}
-				}
-			})
-
-			t.Run("ByOrganizationAndQueryNoMatch", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
-				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
-				mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-1"),
-				}, {
-					Organization: &github.Organization{
-						Login: &org,
-					},
-					Name: ptr.String("org-repo-2"),
-				}}, nil, nil)
-
-				projects, err := remote.List(ctx, &testtarget.RemoteListOption{
-					Organization: org,
-					Query:        "no-match",
-				})
-				if err != nil {
-					t.Fatalf("failed to listup: %s", err)
-				}
-				if len(projects) > 0 {
-					t.Errorf("expect no project is found but %d projects are found", len(projects))
-				}
-			})
-
 			t.Run("ByUserAndQuery", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, user, nil).Return([]*github.Repository{{
 					Owner: &github.User{
 						Login: &user,
@@ -508,9 +530,9 @@ func TestRemoteController(t *testing.T) {
 			})
 
 			t.Run("ByUserAndQueryNoMatch", func(t *testing.T) {
-				connector, mock, teardown := MockConnector(t)
+				mock, teardown := MockAdaptor(t)
 				defer teardown()
-				remote := testtarget.NewRemoteController(connector, server)
+				remote := testtarget.NewRemoteController(mock)
 				mock.EXPECT().RepositoryList(ctx, user, nil).Return([]*github.Repository{{
 					Owner: &github.User{
 						Login: &user,

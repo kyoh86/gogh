@@ -12,6 +12,7 @@ type RepositoryListByOrgOptions = github.RepositoryListByOrgOptions
 type RepositoryListOptions = github.RepositoryListOptions
 type Response = github.Response
 type User = github.User
+type Organization = github.Organization
 
 type Adaptor interface {
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
