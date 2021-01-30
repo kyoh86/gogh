@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 
 	yaml "github.com/goccy/go-yaml"
+	"github.com/kyoh86/gogh/v2/internal/github"
 )
 
 const (
-	DefaultHost = "github.com"
+	DefaultHost = github.DefaultHost
 )
 
-// UNDONE: support baseURL
-// UNDONE: support uploadURL
 type Server struct {
 	t taggedServer
 }

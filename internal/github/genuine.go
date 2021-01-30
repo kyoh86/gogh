@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"net/http"
+	"net/url"
 
 	github "github.com/google/go-github/v33/github"
 	"golang.org/x/oauth2"
@@ -12,13 +13,53 @@ type genuineAdaptor struct {
 	client *github.Client
 }
 
-func NewAdaptor(ctx context.Context, host, token string) (Adaptor, error) {
+const (
+	DefaultHost = "github.com"
+)
+
+type Option func(baseURL *url.URL, uploadURL *url.URL)
+
+func WithScheme(scheme string) Option {
+	return func(baseURL *url.URL, uploadURL *url.URL) {
+		baseURL.Scheme = scheme
+		uploadURL.Scheme = scheme
+	}
+}
+
+func WithBasePath(path string) Option {
+	return func(baseURL *url.URL, _ *url.URL) {
+		baseURL.Path = path
+	}
+}
+
+func WithUploadPath(path string) Option {
+	return func(_ *url.URL, uploadURL *url.URL) {
+		uploadURL.Path = path
+	}
+}
+
+func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Adaptor, error) {
 	var client *http.Client
 	if token != "" {
 		client = NewAuthClient(ctx, token)
 	}
-	//UNDONE: support Enterprise with server.baseURL and server.uploadURL
-	return newGenuineAdaptor(client), nil
+	if host == DefaultHost {
+		return newGenuineAdaptor(client), nil
+	}
+	baseURL := &url.URL{
+		Scheme: "https://",
+		Host:   host,
+		Path:   "/api/v3",
+	}
+	uploadURL := &url.URL{
+		Scheme: "https://",
+		Host:   host,
+		Path:   "/api/uploads",
+	}
+	for _, option := range options {
+		option(baseURL, uploadURL)
+	}
+	return newGenuineEnterpriseAdaptor(ctx, baseURL.String(), uploadURL.String(), client)
 }
 
 func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*github.User, *github.Response, error) {

@@ -8,7 +8,6 @@ linters:
     - gofmt
     - goimports
     - golint
-    - maligned
     - misspell
     - nakedret
     - prealloc
