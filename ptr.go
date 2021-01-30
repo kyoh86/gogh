@@ -10,7 +10,7 @@ func falsePtr(b bool) *bool {
 }
 
 func boolPtr(b bool) *bool {
-	if b == false {
+	if !b {
 		return nil
 	}
 	return &b

@@ -12,13 +12,13 @@ type genuineAdaptor struct {
 	client *github.Client
 }
 
-func GithubAdaptor(ctx context.Context, host, token string) (Adaptor, error) {
+func NewAdaptor(ctx context.Context, host, token string) (Adaptor, error) {
 	var client *http.Client
 	if token != "" {
 		client = NewAuthClient(ctx, token)
 	}
 	//UNDONE: support Enterprise with server.baseURL and server.uploadURL
-	return NewAdaptor(client), nil
+	return newGenuineAdaptor(client), nil
 }
 
 func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*github.User, *github.Response, error) {
@@ -44,13 +44,13 @@ func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
 	return oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))
 }
 
-func NewAdaptor(httpClient *http.Client) Adaptor {
+func newGenuineAdaptor(httpClient *http.Client) Adaptor {
 	return &genuineAdaptor{
 		client: github.NewClient(httpClient),
 	}
 }
 
-func NewEnterpriseAdaptor(ctx context.Context, baseURL string, uploadURL string, httpClient *http.Client) (Adaptor, error) {
+func newGenuineEnterpriseAdaptor(ctx context.Context, baseURL string, uploadURL string, httpClient *http.Client) (Adaptor, error) {
 	client, err := github.NewEnterpriseClient(baseURL, uploadURL, httpClient)
 	if err != nil {
 		return nil, err
