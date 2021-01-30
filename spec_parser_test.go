@@ -305,8 +305,13 @@ func TestSpecParser(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create new server for %s@%s: %q", user2, host1, err)
 		}
+		// kyoh86.dev/anonymous
+		server3, err := testtarget.NewServerFor(testtarget.DefaultHost, user2, "token3")
+		if err != nil {
+			t.Fatalf("failed to create new server for %s@%s: %q", user2, testtarget.DefaultHost, err)
+		}
 
-		parser := testtarget.NewSpecParser(server1, server2)
+		parser := testtarget.NewSpecParser(server1, server2, server3)
 
 		for _, testcase := range []struct {
 			title  string

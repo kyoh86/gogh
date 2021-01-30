@@ -719,14 +719,20 @@ func TestRemoteController(t *testing.T) {
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
 			mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-				Name:     ptr.String("user-repo-1"),
-				Homepage: ptr.String("https://kyoh86.dev"),
+				Name:       ptr.String("user-repo-1"),
+				Homepage:   ptr.String("https://kyoh86.dev"),
+				TeamID:     ptr.Int64(3),
+				HasIssues:  ptr.Bool(false),
+				IsTemplate: ptr.Bool(true),
 			}}).Return(&github.Repository{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
 			spec, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{
-				Homepage: "https://kyoh86.dev",
+				Homepage:      "https://kyoh86.dev",
+				TeamID:        3,
+				DisableIssues: true,
+				IsTemplate:    true,
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
