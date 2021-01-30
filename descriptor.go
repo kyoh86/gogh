@@ -15,49 +15,61 @@ var (
 // use "NewDescription" instead to build Description.
 type Descriptor struct {
 	defaultServer Server
-	hostTokenMap  map[string]string
+	serverMap     map[string]Server
 }
 
 // Parse a string and build a Description.
 //
 // If the string does not have a host or a user explicitly, they will be
 // replaced with a default server.
-func (d *Descriptor) Parse(s string) (Description, string, error) {
+func (d *Descriptor) Parse(s string) (Description, Server, error) {
 	parts := strings.Split(s, "/")
 	var name, user, host string
 
+	var server Server
 	switch len(parts) {
 	case 1:
-		host, user, name = d.defaultServer.Host(), d.defaultServer.User(), parts[0]
+		server = d.defaultServer
+		host, user, name = server.Host(), server.User(), parts[0]
 	case 2:
-		host, user, name = d.defaultServer.Host(), parts[0], parts[1]
+		server = d.defaultServer
+		host, user, name = server.Host(), parts[0], parts[1]
 	case 3:
 		host, user, name = parts[0], parts[1], parts[2]
+		s, ok := d.serverMap[host]
+		if ok {
+			server = s
+		} else {
+			server = Server{taggedServer{
+				Host: host,
+				User: user,
+			}}
+		}
 	default:
-		return Description{}, "", ErrTooManySlashes
+		return Description{}, Server{}, ErrTooManySlashes
 	}
 	desc, err := NewDescription(host, user, name)
 	if err != nil {
-		return Description{}, "", err
+		return Description{}, Server{}, err
 	}
-	return desc, d.hostTokenMap[host], nil
+	return desc, server, nil
 }
 
 // NewDescriptor will build Descriptor with a default server and alternative servers.
 func NewDescriptor(defaultServer Server, servers ...Server) *Descriptor {
 	h := defaultServer.Host()
-	hostTokenMap := map[string]string{
-		h: defaultServer.Token(),
+	serverMap := map[string]Server{
+		h: defaultServer,
 	}
 	for _, s := range servers {
 		h := s.Host()
-		if _, ok := hostTokenMap[h]; ok {
+		if _, ok := serverMap[h]; ok {
 			continue
 		}
-		hostTokenMap[h] = s.Token()
+		serverMap[h] = s
 	}
 	return &Descriptor{
-		hostTokenMap:  hostTokenMap,
+		serverMap:     serverMap,
 		defaultServer: defaultServer,
 	}
 }

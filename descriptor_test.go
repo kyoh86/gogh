@@ -24,43 +24,50 @@ func TestDescriptor(t *testing.T) {
 		descriptor := testtarget.NewDescriptor(server)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
-				title       string
-				source      string
-				expectHost  string
-				expectUser  string
-				expectName  string
-				expectToken string
+				title  string
+				source string
+
+				expectHost string
+				expectUser string
+				expectName string
+
+				expectServerUser string
+				expectToken      string
 			}{{
-				title:       "valid-name",
-				source:      name,
-				expectHost:  testtarget.DefaultHost,
-				expectUser:  user1,
-				expectName:  name,
-				expectToken: "token",
+				title:            "valid-name",
+				source:           name,
+				expectHost:       testtarget.DefaultHost,
+				expectUser:       user1,
+				expectName:       name,
+				expectServerUser: user1,
+				expectToken:      "token",
 			}, {
-				title:       "default-user,valid-name",
-				source:      user1 + "/" + name,
-				expectHost:  testtarget.DefaultHost,
-				expectUser:  user1,
-				expectName:  name,
-				expectToken: "token",
+				title:            "default-user,valid-name",
+				source:           user1 + "/" + name,
+				expectHost:       testtarget.DefaultHost,
+				expectUser:       user1,
+				expectName:       name,
+				expectServerUser: user1,
+				expectToken:      "token",
 			}, {
-				title:       "default-host,default-user,valid-name",
-				source:      testtarget.DefaultHost + "/" + user1 + "/" + name,
-				expectHost:  testtarget.DefaultHost,
-				expectUser:  user1,
-				expectName:  name,
-				expectToken: "token",
+				title:            "default-host,default-user,valid-name",
+				source:           testtarget.DefaultHost + "/" + user1 + "/" + name,
+				expectHost:       testtarget.DefaultHost,
+				expectUser:       user1,
+				expectName:       name,
+				expectServerUser: user1,
+				expectToken:      "token",
 			}, {
-				title:       "valid-host,valid-user,valid-name",
-				source:      host1 + "/" + user2 + "/" + name,
-				expectHost:  host1,
-				expectUser:  user2,
-				expectName:  name,
-				expectToken: "",
+				title:            "valid-host,valid-user,valid-name",
+				source:           host1 + "/" + user2 + "/" + name,
+				expectHost:       host1,
+				expectUser:       user2,
+				expectName:       name,
+				expectServerUser: user2,
+				expectToken:      "",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, token, err := descriptor.Parse(testcase.source)
+					description, server, err := descriptor.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
@@ -73,8 +80,14 @@ func TestDescriptor(t *testing.T) {
 					if testcase.expectName != description.Name() {
 						t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
 					}
-					if testcase.expectToken != token {
-						t.Errorf("expect token %q but %q gotten", testcase.expectToken, token)
+					if testcase.expectHost != server.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
+					}
+					if testcase.expectServerUser != server.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expectServerUser, server.User())
+					}
+					if testcase.expectToken != server.Token() {
+						t.Errorf("expect token %q but %q gotten", testcase.expectToken, server.Token())
 					}
 				})
 			}
@@ -212,42 +225,49 @@ func TestDescriptor(t *testing.T) {
 		descriptor := testtarget.NewDescriptor(server)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
-				title       string
-				source      string
-				expectHost  string
-				expectUser  string
-				expectName  string
-				expectToken string
+				title  string
+				source string
+
+				expectHost string
+				expectUser string
+				expectName string
+
+				expectServerUser string
+				expectToken      string
 			}{{
-				title:       "valid-name",
-				source:      name,
-				expectHost:  host1,
-				expectUser:  user1,
-				expectName:  name,
-				expectToken: "token",
+				title:            "valid-name",
+				source:           name,
+				expectHost:       host1,
+				expectUser:       user1,
+				expectName:       name,
+				expectServerUser: user1,
+				expectToken:      "token",
 			}, {
-				title:       "default-user,valid-name",
-				source:      user1 + "/" + name,
-				expectHost:  host1,
-				expectUser:  user1,
-				expectName:  name,
-				expectToken: "token",
+				title:            "default-user,valid-name",
+				source:           user1 + "/" + name,
+				expectHost:       host1,
+				expectUser:       user1,
+				expectName:       name,
+				expectServerUser: user1,
+				expectToken:      "token",
 			}, {
-				title:       "default-host,default-user,valid-name",
-				source:      host1 + "/" + user1 + "/" + name,
-				expectHost:  host1,
-				expectUser:  user1,
-				expectName:  name,
-				expectToken: "token",
+				title:            "default-host,default-user,valid-name",
+				source:           host1 + "/" + user1 + "/" + name,
+				expectHost:       host1,
+				expectUser:       user1,
+				expectName:       name,
+				expectServerUser: user1,
+				expectToken:      "token",
 			}, {
-				title:      "valid-host,valid-user,valid-name",
-				source:     host2 + "/" + user2 + "/" + name,
-				expectHost: host2,
-				expectUser: user2,
-				expectName: name,
+				title:            "valid-host,valid-user,valid-name",
+				source:           host2 + "/" + user2 + "/" + name,
+				expectHost:       host2,
+				expectUser:       user2,
+				expectServerUser: user2,
+				expectName:       name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, token, err := descriptor.Parse(testcase.source)
+					description, server, err := descriptor.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
@@ -260,8 +280,14 @@ func TestDescriptor(t *testing.T) {
 					if testcase.expectName != description.Name() {
 						t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
 					}
-					if testcase.expectToken != token {
-						t.Errorf("expect token %q but %q gotten", testcase.expectToken, token)
+					if testcase.expectHost != server.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
+					}
+					if testcase.expectServerUser != server.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expectServerUser, server.User())
+					}
+					if testcase.expectToken != server.Token() {
+						t.Errorf("expect token %q but %q gotten", testcase.expectToken, server.Token())
 					}
 				})
 			}
@@ -283,49 +309,58 @@ func TestDescriptor(t *testing.T) {
 		descriptor := testtarget.NewDescriptor(server1, server2)
 
 		for _, testcase := range []struct {
-			title       string
-			source      string
-			expectHost  string
-			expectUser  string
-			expectName  string
-			expectToken string
+			title  string
+			source string
+
+			expectHost string
+			expectUser string
+			expectName string
+
+			expectServerUser string
+			expectToken      string
 		}{{
-			title:       "valid-name",
-			source:      name,
-			expectHost:  testtarget.DefaultHost,
-			expectUser:  user1,
-			expectName:  name,
-			expectToken: "token1",
+			title:            "valid-name",
+			source:           name,
+			expectHost:       testtarget.DefaultHost,
+			expectUser:       user1,
+			expectName:       name,
+			expectServerUser: user1,
+			expectToken:      "token1",
 		}, {
-			title:       "valid-name,valid-user",
-			source:      user2 + "/" + name,
-			expectHost:  testtarget.DefaultHost,
-			expectUser:  user2,
-			expectName:  name,
-			expectToken: "token1",
+			title:            "valid-name,valid-user",
+			source:           user2 + "/" + name,
+			expectHost:       testtarget.DefaultHost,
+			expectUser:       user2,
+			expectServerUser: user1,
+			expectName:       name,
+			expectToken:      "token1",
 		}, {
-			title:       "full-name",
-			source:      testtarget.DefaultHost + "/" + user2 + "/" + name,
-			expectHost:  testtarget.DefaultHost,
-			expectUser:  user2,
-			expectName:  name,
-			expectToken: "token1",
+			title:            "full-name",
+			source:           testtarget.DefaultHost + "/" + user2 + "/" + name,
+			expectHost:       testtarget.DefaultHost,
+			expectUser:       user2,
+			expectName:       name,
+			expectServerUser: user1,
+			expectToken:      "token1",
 		}, {
-			title:       "other-host",
-			source:      host1 + "/" + user2 + "/" + name,
-			expectHost:  host1,
-			expectUser:  user2,
-			expectName:  name,
-			expectToken: "token2",
+			title:            "other-host",
+			source:           host1 + "/" + user2 + "/" + name,
+			expectHost:       host1,
+			expectUser:       user2,
+			expectName:       name,
+			expectServerUser: user2,
+			expectToken:      "token2",
 		}, {
-			title:      "not-matched",
-			source:     host2 + "/" + user2 + "/" + name,
-			expectHost: host2,
-			expectUser: user2,
-			expectName: name,
+			title:            "not-matched",
+			source:           host2 + "/" + user2 + "/" + name,
+			expectHost:       host2,
+			expectUser:       user2,
+			expectServerUser: user2,
+			expectName:       name,
+			expectToken:      "",
 		}} {
 			t.Run(testcase.title, func(t *testing.T) {
-				description, token, err := descriptor.Parse(testcase.source)
+				description, server, err := descriptor.Parse(testcase.source)
 				if err != nil {
 					t.Fatalf("failed to parse %q: %s", testcase.source, err)
 				}
@@ -338,8 +373,14 @@ func TestDescriptor(t *testing.T) {
 				if testcase.expectName != description.Name() {
 					t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
 				}
-				if testcase.expectToken != token {
-					t.Errorf("expect token %q but %q gotten", testcase.expectToken, token)
+				if testcase.expectHost != server.Host() {
+					t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
+				}
+				if testcase.expectServerUser != server.User() {
+					t.Errorf("expect user %q but %q gotten", testcase.expectServerUser, server.User())
+				}
+				if testcase.expectToken != server.Token() {
+					t.Errorf("expect token %q but %q gotten", testcase.expectToken, server.Token())
 				}
 			})
 		}
