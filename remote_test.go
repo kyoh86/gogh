@@ -41,12 +41,12 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.ListByOrg(ctx, org, nil)
+			specs, err := remote.ListByOrg(ctx, org, nil)
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 2 {
-				t.Fatalf("expect 2 descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 2 {
+				t.Fatalf("expect 2 specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -61,7 +61,7 @@ func TestRemoteController(t *testing.T) {
 				user: org,
 				name: "org-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -90,12 +90,12 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{})
+			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 2 {
-				t.Fatalf("expect 2 descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 2 {
+				t.Fatalf("expect 2 specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -110,7 +110,7 @@ func TestRemoteController(t *testing.T) {
 				user: org,
 				name: "org-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -141,7 +141,7 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Options: &github.RepositoryListByOrgOptions{
 					Type: "private",
 				},
@@ -149,8 +149,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 2 {
-				t.Fatalf("expect 2 descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 2 {
+				t.Fatalf("expect 2 specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -165,7 +165,7 @@ func TestRemoteController(t *testing.T) {
 				user: org,
 				name: "org-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -194,14 +194,14 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Query: "repo-1",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 1 {
-				t.Fatalf("expect a description, but %d is gotten", len(descriptions))
+			if len(specs) != 1 {
+				t.Fatalf("expect a spec, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -212,7 +212,7 @@ func TestRemoteController(t *testing.T) {
 				user: org,
 				name: "org-repo-1",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -241,14 +241,14 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Query: "no-match",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) > 0 {
-				t.Errorf("expect no description is found but %d descriptions are found", len(descriptions))
+			if len(specs) > 0 {
+				t.Errorf("expect no spec is found but %d specs are found", len(specs))
 			}
 		})
 	})
@@ -280,12 +280,12 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, nil)
+			specs, err := remote.List(ctx, nil)
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 4 {
-				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 4 {
+				t.Fatalf("expect some specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -308,7 +308,7 @@ func TestRemoteController(t *testing.T) {
 				user: org,
 				name: "org-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -347,12 +347,12 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{})
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 4 {
-				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 4 {
+				t.Fatalf("expect some specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -375,7 +375,7 @@ func TestRemoteController(t *testing.T) {
 				user: org,
 				name: "org-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -404,14 +404,14 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User: user,
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 2 {
-				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 2 {
+				t.Fatalf("expect some specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -426,7 +426,7 @@ func TestRemoteController(t *testing.T) {
 				user: user,
 				name: "user-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -467,7 +467,7 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Options: &github.RepositoryListOptions{
 					Visibility: "public",
 				},
@@ -475,8 +475,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 2 {
-				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 2 {
+				t.Fatalf("expect some specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -491,7 +491,7 @@ func TestRemoteController(t *testing.T) {
 				user: user,
 				name: "user-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -522,7 +522,7 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User: user,
 				Options: &github.RepositoryListOptions{
 					Visibility: "public",
@@ -531,8 +531,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 2 {
-				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 2 {
+				t.Fatalf("expect some specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -547,7 +547,7 @@ func TestRemoteController(t *testing.T) {
 				user: user,
 				name: "user-repo-2",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -586,14 +586,14 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Query: "repo-1",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 2 {
-				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
+			if len(specs) != 2 {
+				t.Fatalf("expect some specs, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -608,7 +608,7 @@ func TestRemoteController(t *testing.T) {
 				user: org,
 				name: "org-repo-1",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -647,14 +647,14 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Query: "no-match",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) > 1 {
-				t.Fatalf("expect no description is matched, but %d is gotten", len(descriptions))
+			if len(specs) > 1 {
+				t.Fatalf("expect no spec is matched, but %d is gotten", len(specs))
 			}
 		})
 
@@ -674,15 +674,15 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User:  user,
 				Query: "repo-1",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) != 1 {
-				t.Fatalf("expect one description, but %d is gotten", len(descriptions))
+			if len(specs) != 1 {
+				t.Fatalf("expect one spec, but %d is gotten", len(specs))
 			}
 			for i, expect := range []struct {
 				host string
@@ -693,7 +693,7 @@ func TestRemoteController(t *testing.T) {
 				user: user,
 				name: "user-repo-1",
 			}} {
-				actual := descriptions[i]
+				actual := specs[i]
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
@@ -722,15 +722,15 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
+			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User:  user,
 				Query: "no-match",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(descriptions) > 0 {
-				t.Errorf("expect no description is found but %d descriptions are found", len(descriptions))
+			if len(specs) > 0 {
+				t.Errorf("expect no spec is found but %d specs are found", len(specs))
 			}
 		})
 	})
@@ -748,15 +748,15 @@ func TestRemoteController(t *testing.T) {
 				},
 				Name: ptr.String("gogh"),
 			}, nil, nil)
-			description, err := remote.Create(ctx, "gogh", nil)
+			spec, err := remote.Create(ctx, "gogh", nil)
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if description.User() != user {
-				t.Errorf("expect that a description be created with user %q, but actual %q", user, description.User())
+			if spec.User() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.User())
 			}
-			if description.Name() != "gogh" {
-				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			if spec.Name() != "gogh" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "gogh", spec.Name())
 			}
 		})
 		t.Run("EmptyOption", func(t *testing.T) {
@@ -772,15 +772,15 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-1"),
 			}, nil, nil)
 
-			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{})
+			spec, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if description.User() != user {
-				t.Errorf("expect that a description be created with user %q, but actual %q", user, description.User())
+			if spec.User() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.User())
 			}
-			if description.Name() != "gogh" {
-				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			if spec.Name() != "gogh" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "gogh", spec.Name())
 			}
 		})
 
@@ -798,17 +798,17 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-1"),
 			}, nil, nil)
 
-			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
+			spec, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
 				Homepage: "https://kyoh86.dev",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if description.User() != user {
-				t.Errorf("expect that a description be created with user %q, but actual %q", user, description.User())
+			if spec.User() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.User())
 			}
-			if description.Name() != "gogh" {
-				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			if spec.Name() != "gogh" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "gogh", spec.Name())
 			}
 		})
 
@@ -825,17 +825,17 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-1"),
 			}, nil, nil)
 
-			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
+			spec, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
 				Organization: "kyoh86-tryouts",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if description.User() != "kyoh86-tryouts" {
-				t.Errorf("expect that a description be created with user %q, but actual %q", "kyoh86-tryouts", description.User())
+			if spec.User() != "kyoh86-tryouts" {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", "kyoh86-tryouts", spec.User())
 			}
-			if description.Name() != "gogh" {
-				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			if spec.Name() != "gogh" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "gogh", spec.Name())
 			}
 		})
 
@@ -853,18 +853,18 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-1"),
 			}, nil, nil)
 
-			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
+			spec, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
 				Organization: "kyoh86-tryouts",
 				Homepage:     "https://kyoh86.dev",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if description.User() != "kyoh86-tryouts" {
-				t.Errorf("expect that a description be created with user %q, but actual %q", "kyoh86-tryouts", description.User())
+			if spec.User() != "kyoh86-tryouts" {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", "kyoh86-tryouts", spec.User())
 			}
-			if description.Name() != "gogh" {
-				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			if spec.Name() != "gogh" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "gogh", spec.Name())
 			}
 		})
 	})

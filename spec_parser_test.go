@@ -7,7 +7,7 @@ import (
 	testtarget "github.com/kyoh86/gogh/v2"
 )
 
-func TestDescriptor(t *testing.T) {
+func TestSpecParser(t *testing.T) {
 	const (
 		user1 = "kyoh86"
 		user2 = "anonymous"
@@ -21,7 +21,7 @@ func TestDescriptor(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create new server for %s: %v", user1, err)
 		}
-		descriptor := testtarget.NewDescriptor(server)
+		parser := testtarget.NewSpecParser(server)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -67,18 +67,18 @@ func TestDescriptor(t *testing.T) {
 				expectToken:      "",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, server, err := descriptor.Parse(testcase.source)
+					spec, server, err := parser.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expectHost != description.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expectHost, description.Host())
+					if testcase.expectHost != spec.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
 					}
-					if testcase.expectUser != description.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expectUser, description.User())
+					if testcase.expectUser != spec.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expectUser, spec.User())
 					}
-					if testcase.expectName != description.Name() {
-						t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
+					if testcase.expectName != spec.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
 					}
 					if testcase.expectHost != server.Host() {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
@@ -202,9 +202,9 @@ func TestDescriptor(t *testing.T) {
 				},
 			} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, _, err := descriptor.Parse(testcase.input)
+					spec, _, err := parser.Parse(testcase.input)
 					if err == nil {
-						t.Fatalf("expect failure to parse %q but parsed to %+v", testcase.input, description)
+						t.Fatalf("expect failure to parse %q but parsed to %+v", testcase.input, spec)
 					}
 					if reflect.TypeOf(testcase.expect) != reflect.TypeOf(err) {
 						t.Fatalf("expect error %t to parse %q but %t gotten", testcase.expect, testcase.input, err)
@@ -222,7 +222,7 @@ func TestDescriptor(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create new server for %s: %v", user1, err)
 		}
-		descriptor := testtarget.NewDescriptor(server)
+		parser := testtarget.NewSpecParser(server)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -267,18 +267,18 @@ func TestDescriptor(t *testing.T) {
 				expectName:       name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, server, err := descriptor.Parse(testcase.source)
+					spec, server, err := parser.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expectHost != description.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expectHost, description.Host())
+					if testcase.expectHost != spec.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
 					}
-					if testcase.expectUser != description.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expectUser, description.User())
+					if testcase.expectUser != spec.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expectUser, spec.User())
 					}
-					if testcase.expectName != description.Name() {
-						t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
+					if testcase.expectName != spec.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
 					}
 					if testcase.expectHost != server.Host() {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
@@ -306,7 +306,7 @@ func TestDescriptor(t *testing.T) {
 			t.Fatalf("failed to create new server for %s@%s: %q", user2, host1, err)
 		}
 
-		descriptor := testtarget.NewDescriptor(server1, server2)
+		parser := testtarget.NewSpecParser(server1, server2)
 
 		for _, testcase := range []struct {
 			title  string
@@ -360,18 +360,18 @@ func TestDescriptor(t *testing.T) {
 			expectToken:      "",
 		}} {
 			t.Run(testcase.title, func(t *testing.T) {
-				description, server, err := descriptor.Parse(testcase.source)
+				spec, server, err := parser.Parse(testcase.source)
 				if err != nil {
 					t.Fatalf("failed to parse %q: %s", testcase.source, err)
 				}
-				if testcase.expectHost != description.Host() {
-					t.Errorf("expect host %q but %q gotten", testcase.expectHost, description.Host())
+				if testcase.expectHost != spec.Host() {
+					t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
 				}
-				if testcase.expectUser != description.User() {
-					t.Errorf("expect user %q but %q gotten", testcase.expectUser, description.User())
+				if testcase.expectUser != spec.User() {
+					t.Errorf("expect user %q but %q gotten", testcase.expectUser, spec.User())
 				}
-				if testcase.expectName != description.Name() {
-					t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
+				if testcase.expectName != spec.Name() {
+					t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
 				}
 				if testcase.expectHost != server.Host() {
 					t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())

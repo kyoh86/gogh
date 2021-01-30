@@ -37,7 +37,7 @@ type RemoteListOption struct {
 	Options *github.RepositoryListOptions
 }
 
-func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) ([]Description, error) {
+func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) ([]Spec, error) {
 	// UNDONE: implement
 	return nil, nil
 }
@@ -47,7 +47,7 @@ type RemoteListByOrgOption struct {
 	Options *github.RepositoryListByOrgOptions
 }
 
-func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) ([]Description, error) {
+func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) ([]Spec, error) {
 	// UNDONE: implement
 	return nil, nil
 }
@@ -148,18 +148,18 @@ func (o *RemoteCreateOption) buildRepository(name string) *github.Repository {
 	}
 }
 
-func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Description, error) {
+func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Spec, error) {
 	repo, _, err := c.adaptor.RepositoryCreate(ctx, option.Organization, option.buildRepository(name))
 	if err != nil {
-		return Description{}, fmt.Errorf("create a repository: %w", err)
+		return Spec{}, fmt.Errorf("create a repository: %w", err)
 	}
 	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
 	u, err := url.Parse(rawURL)
 	if err != nil {
-		return Description{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
+		return Spec{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
 	}
 	user, name := path.Split(u.Path)
-	return NewDescription(u.Host, user, name)
+	return NewSpec(u.Host, user, name)
 }
 
 type RemoteDeleteOption struct{}

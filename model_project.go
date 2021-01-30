@@ -10,24 +10,24 @@ import (
 // Project is the location of a repository in the local.
 // It is a valid location, that never means "exist".
 type Project struct {
-	root        string
-	description Description
+	root string
+	spec Spec
 }
 
 func (p Project) Root() string {
 	return p.root
 }
 
-func (p Project) Host() string { return p.description.host }
-func (p Project) User() string { return p.description.user }
-func (p Project) Name() string { return p.description.name }
+func (p Project) Host() string { return p.spec.host }
+func (p Project) User() string { return p.spec.user }
+func (p Project) Name() string { return p.spec.name }
 
 func (p Project) FullLevels() []string {
-	return []string{p.root, p.description.host, p.description.user, p.description.name}
+	return []string{p.root, p.spec.host, p.spec.user, p.spec.name}
 }
 
 func (p Project) RelLevels() []string {
-	return []string{p.description.host, p.description.user, p.description.name}
+	return []string{p.spec.host, p.spec.user, p.spec.name}
 }
 
 func (p Project) FullFilePath() string {
@@ -61,6 +61,6 @@ func (p Project) CheckEntity() error {
 
 // UNDONE: CheckEntityInFileSystem() support fs.FS
 
-func NewProject(root string, description Description) Project {
-	return Project{root: root, description: description}
+func NewProject(root string, spec Spec) Project {
+	return Project{root: root, spec: spec}
 }

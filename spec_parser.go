@@ -9,34 +9,34 @@ var (
 	ErrTooManySlashes = errors.New("too many slashes")
 )
 
-// Descriptor will parse any string as a Description.
+// SpecParser will parse any string as a Spec.
 //
 // If it is clear that the string has host, user and name explicitly,
-// use "NewDescription" instead to build Description.
-type Descriptor struct {
+// use "NewSpec" instead to build Spec.
+type SpecParser struct {
 	defaultServer Server
 	serverMap     map[string]Server
 }
 
-// Parse a string and build a Description.
+// Parse a string and build a Spec.
 //
 // If the string does not have a host or a user explicitly, they will be
 // replaced with a default server.
-func (d *Descriptor) Parse(s string) (Description, Server, error) {
+func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 	parts := strings.Split(s, "/")
 	var name, user, host string
 
 	var server Server
 	switch len(parts) {
 	case 1:
-		server = d.defaultServer
+		server = p.defaultServer
 		host, user, name = server.Host(), server.User(), parts[0]
 	case 2:
-		server = d.defaultServer
+		server = p.defaultServer
 		host, user, name = server.Host(), parts[0], parts[1]
 	case 3:
 		host, user, name = parts[0], parts[1], parts[2]
-		s, ok := d.serverMap[host]
+		s, ok := p.serverMap[host]
 		if ok {
 			server = s
 		} else {
@@ -46,17 +46,17 @@ func (d *Descriptor) Parse(s string) (Description, Server, error) {
 			}}
 		}
 	default:
-		return Description{}, Server{}, ErrTooManySlashes
+		return Spec{}, Server{}, ErrTooManySlashes
 	}
-	desc, err := NewDescription(host, user, name)
+	spec, err := NewSpec(host, user, name)
 	if err != nil {
-		return Description{}, Server{}, err
+		return Spec{}, Server{}, err
 	}
-	return desc, server, nil
+	return spec, server, nil
 }
 
-// NewDescriptor will build Descriptor with a default server and alternative servers.
-func NewDescriptor(defaultServer Server, servers ...Server) *Descriptor {
+// NewSpecParser will build Spec with a default server and alternative servers.
+func NewSpecParser(defaultServer Server, servers ...Server) *SpecParser {
 	h := defaultServer.Host()
 	serverMap := map[string]Server{
 		h: defaultServer,
@@ -68,7 +68,7 @@ func NewDescriptor(defaultServer Server, servers ...Server) *Descriptor {
 		}
 		serverMap[h] = s
 	}
-	return &Descriptor{
+	return &SpecParser{
 		serverMap:     serverMap,
 		defaultServer: defaultServer,
 	}

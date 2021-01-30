@@ -12,13 +12,13 @@ import (
 	testtarget "github.com/kyoh86/gogh/v2"
 )
 
-func description(t *testing.T, host, user, name string) testtarget.Description {
+func mustSpec(t *testing.T, host, user, name string) testtarget.Spec {
 	t.Helper()
-	d, err := testtarget.NewDescription(host, user, name)
+	spec, err := testtarget.NewSpec(host, user, name)
 	if err != nil {
-		t.Fatalf("invalid description: %s", err)
+		t.Fatalf("invalid spec: %s", err)
 	}
-	return d
+	return spec
 }
 
 func TestLocalController(t *testing.T) {
@@ -28,23 +28,23 @@ func TestLocalController(t *testing.T) {
 	local := testtarget.NewLocalController(root)
 
 	t.Run("Create", func(t *testing.T) {
-		d := description(t, "github.com", "kyoh86", "gogh")
+		spec := mustSpec(t, "github.com", "kyoh86", "gogh")
 		t.Run("First", func(t *testing.T) {
-			project, err := local.Create(ctx, d, nil)
+			project, err := local.Create(ctx, spec, nil)
 			if err != nil {
 				t.Fatalf("failed to create a project: %s", err)
 			}
 			if root != project.Root() {
 				t.Errorf("expect root %q but %q is gotten", root, project.Root())
 			}
-			if d.Host() != project.Host() {
-				t.Errorf("expect host %q but %q is gotten", d.Host(), project.Host())
+			if spec.Host() != project.Host() {
+				t.Errorf("expect host %q but %q is gotten", spec.Host(), project.Host())
 			}
-			if d.User() != project.User() {
-				t.Errorf("expect user %q but %q is gotten", d.User(), project.User())
+			if spec.User() != project.User() {
+				t.Errorf("expect user %q but %q is gotten", spec.User(), project.User())
 			}
-			if d.Name() != project.Name() {
-				t.Errorf("expect name %q but %q is gotten", d.Name(), project.Name())
+			if spec.Name() != project.Name() {
+				t.Errorf("expect name %q but %q is gotten", spec.Name(), project.Name())
 			}
 
 			// check built properties
@@ -89,10 +89,10 @@ func TestLocalController(t *testing.T) {
 		})
 
 		t.Run("Duplicated", func(t *testing.T) {
-			if _, err := local.Create(ctx, d, nil); err == nil {
+			if _, err := local.Create(ctx, spec, nil); err == nil {
 				t.Fatalf("expect failure with creating a project that has already exist: %s", err)
 			}
-			if _, err := local.Clone(ctx, d, nil); err == nil {
+			if _, err := local.Clone(ctx, spec, nil); err == nil {
 				t.Fatalf("expect failure with cloning a project that has already exist: %s", err)
 			}
 		})
@@ -186,7 +186,7 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Remove", func(t *testing.T) {
 		t.Run("Valid", func(t *testing.T) {
-			if err := local.Remove(ctx, description(t, "github.com", "kyoh86", "gogh"), nil); err != nil {
+			if err := local.Remove(ctx, mustSpec(t, "github.com", "kyoh86", "gogh"), nil); err != nil {
 				t.Fatalf("failed to remove project: %s", err)
 			}
 			stat, err := os.Stat(filepath.Join(root, "github.com", "kyoh86", "gogh"))
@@ -205,44 +205,44 @@ func TestLocalController(t *testing.T) {
 			t.Fatalf("failed to create unmanaged project: %s", err)
 		}
 		for _, testcase := range []struct {
-			title       string
-			description testtarget.Description
+			title string
+			spec  testtarget.Spec
 		}{
 			{
-				title:       "not exist",
-				description: description(t, "github.com", "kyoh86", "not-exist"),
+				title: "not exist",
+				spec:  mustSpec(t, "github.com", "kyoh86", "not-exist"),
 			},
 			{
-				title:       "instance is not a dir",
-				description: description(t, "github.com", "kyoh86", "file"),
+				title: "instance is not a dir",
+				spec:  mustSpec(t, "github.com", "kyoh86", "file"),
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {
-				actual := local.Remove(ctx, testcase.description, nil)
+				actual := local.Remove(ctx, testcase.spec, nil)
 				if actual == nil {
-					t.Errorf("expect error when the description %s, but not", testcase.title)
+					t.Errorf("expect error when the spec %s, but not", testcase.title)
 				}
 			})
 		}
 	})
 
 	t.Run("Clone", func(t *testing.T) {
-		d := description(t, "github.com", "kyoh86-tryouts", "bare")
-		project, err := local.Clone(ctx, d, nil)
+		spec := mustSpec(t, "github.com", "kyoh86-tryouts", "bare")
+		project, err := local.Clone(ctx, spec, nil)
 		if err != nil {
 			t.Fatalf("failed to clone a project: %s", err)
 		}
 		if root != project.Root() {
 			t.Errorf("expect root %q but %q is gotten", root, project.Root())
 		}
-		if d.Host() != project.Host() {
-			t.Errorf("expect host %q but %q is gotten", d.Host(), project.Host())
+		if spec.Host() != project.Host() {
+			t.Errorf("expect host %q but %q is gotten", spec.Host(), project.Host())
 		}
-		if d.User() != project.User() {
-			t.Errorf("expect user %q but %q is gotten", d.User(), project.User())
+		if spec.User() != project.User() {
+			t.Errorf("expect user %q but %q is gotten", spec.User(), project.User())
 		}
-		if d.Name() != project.Name() {
-			t.Errorf("expect name %q but %q is gotten", d.Name(), project.Name())
+		if spec.Name() != project.Name() {
+			t.Errorf("expect name %q but %q is gotten", spec.Name(), project.Name())
 		}
 
 		// check built properties
@@ -287,8 +287,8 @@ func TestLocalController(t *testing.T) {
 	})
 
 	t.Run("CloneFailure", func(t *testing.T) {
-		d := description(t, "github.com", "kyoh86-tryouts", "none")
-		if _, err := local.Clone(ctx, d, nil); err == nil {
+		spec := mustSpec(t, "github.com", "kyoh86-tryouts", "none")
+		if _, err := local.Clone(ctx, spec, nil); err == nil {
 			t.Fatalf("expect failure to clone a project: %s", err)
 		}
 	})
@@ -300,7 +300,7 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "root")
 
-	d := description(t, "example.com", "kyoh86", "gogh")
+	spec := mustSpec(t, "example.com", "kyoh86", "gogh")
 	local := testtarget.NewLocalController(root)
 
 	t.Run("NotExit", func(t *testing.T) {
@@ -315,13 +315,13 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 			t.Fatalf("failed to prepare dummy file: %s", err)
 		}
 
-		if _, err := local.Create(ctx, d, nil); err == nil {
+		if _, err := local.Create(ctx, spec, nil); err == nil {
 			t.Errorf("expect failure to create")
 		}
-		if _, err := local.Clone(ctx, d, nil); err == nil {
+		if _, err := local.Clone(ctx, spec, nil); err == nil {
 			t.Errorf("expect failure to clone")
 		}
-		if err := local.Remove(ctx, d, nil); err == nil {
+		if err := local.Remove(ctx, spec, nil); err == nil {
 			t.Errorf("expect failure to remove")
 		}
 	})

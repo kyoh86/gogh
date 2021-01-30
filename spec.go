@@ -6,19 +6,19 @@ import (
 	"regexp"
 )
 
-// Description describes which project is in a root.
-type Description struct {
+// Spec describes which project is in a root.
+type Spec struct {
 	host string
 	user string
 	name string
 }
 
-func (d Description) Host() string { return d.host }
-func (d Description) User() string { return d.user }
-func (d Description) Name() string { return d.name }
+func (s Spec) Host() string { return s.host }
+func (s Spec) User() string { return s.user }
+func (s Spec) Name() string { return s.name }
 
-func (d Description) String() string {
-	return path.Join(d.Host(), d.User(), d.Name())
+func (s Spec) String() string {
+	return path.Join(s.Host(), s.User(), s.Name())
 }
 
 var (
@@ -90,17 +90,17 @@ func ValidateUser(user string) error {
 	return nil
 }
 
-func NewDescription(host, user, name string) (Description, error) {
+func NewSpec(host, user, name string) (Spec, error) {
 	if err := ValidateName(name); err != nil {
-		return Description{}, err
+		return Spec{}, err
 	}
 	if err := ValidateUser(user); err != nil {
-		return Description{}, err
+		return Spec{}, err
 	}
 	if err := ValidateHost(host); err != nil {
-		return Description{}, err
+		return Spec{}, err
 	}
-	return Description{
+	return Spec{
 		host: host,
 		user: user,
 		name: name,

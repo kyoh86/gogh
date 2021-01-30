@@ -6,7 +6,7 @@ import (
 	testtarget "github.com/kyoh86/gogh/v2"
 )
 
-func TestDescription(t *testing.T) {
+func TestSpec(t *testing.T) {
 	const (
 		validHost = "example.com"
 		validUser = "kyoh86"
@@ -112,23 +112,23 @@ func TestDescription(t *testing.T) {
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
-			d, err := testtarget.NewDescription(testcase.host, testcase.user, testcase.name)
+			spec, err := testtarget.NewSpec(testcase.host, testcase.user, testcase.name)
 			if testcase.expect == nil {
 				if err != nil {
-					t.Fatalf("failed to create new description: %s", err)
+					t.Fatalf("failed to create new spec: %s", err)
 				}
-				if testcase.host != d.Host() {
-					t.Errorf("expect host %q but %q gotten", testcase.host, d.Host())
+				if testcase.host != spec.Host() {
+					t.Errorf("expect host %q but %q gotten", testcase.host, spec.Host())
 				}
-				if testcase.user != d.User() {
-					t.Errorf("expect user %q but %q gotten", testcase.user, d.User())
+				if testcase.user != spec.User() {
+					t.Errorf("expect user %q but %q gotten", testcase.user, spec.User())
 				}
-				if testcase.name != d.Name() {
-					t.Errorf("expect name %q but %q gotten", testcase.name, d.Name())
+				if testcase.name != spec.Name() {
+					t.Errorf("expect name %q but %q gotten", testcase.name, spec.Name())
 				}
 			} else {
 				if err == nil {
-					t.Fatal("expect failure to create new description, but not")
+					t.Fatal("expect failure to create new spec, but not")
 				}
 				if testcase.expect.Error() != err.Error() {
 					t.Fatalf("expect error %s, but actual %s is gottten", testcase.expect, err)

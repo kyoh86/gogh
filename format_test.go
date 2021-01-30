@@ -9,13 +9,13 @@ import (
 )
 
 func TestFormat(t *testing.T) {
-	description, err := testtarget.NewDescription("github.com", "kyoh86", "gogh")
+	spec, err := testtarget.NewSpec("github.com", "kyoh86", "gogh")
 	if err != nil {
-		t.Fatalf("failed to init Description: %s", err)
+		t.Fatalf("failed to init Spec: %s", err)
 	}
-	project := testtarget.NewProject("/tmp", description)
+	project := testtarget.NewProject("/tmp", spec)
 	if err != nil {
-		t.Fatalf("failed to get project from Description: %s", err)
+		t.Fatalf("failed to get project from Spec: %s", err)
 	}
 
 	// NOTE: When the path is checked, it should be passed with filepath.Clean.

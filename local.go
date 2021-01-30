@@ -41,8 +41,8 @@ type LocalCreateOption struct {
 	// UNDONE: support isBare
 }
 
-func (l *LocalController) Create(ctx context.Context, d Description, _ *LocalCreateOption) (Project, error) {
-	p := NewProject(l.root, d)
+func (l *LocalController) Create(ctx context.Context, spec Spec, _ *LocalCreateOption) (Project, error) {
+	p := NewProject(l.root, spec)
 
 	repo, err := git.PlainInit(p.FullFilePath(), false)
 	if err != nil {
@@ -64,8 +64,8 @@ type LocalCloneOption struct {
 	// UNDONE: support *git.CloneOptions
 }
 
-func (l *LocalController) Clone(ctx context.Context, d Description, _ *LocalCloneOption) (Project, error) {
-	p := NewProject(l.root, d)
+func (l *LocalController) Clone(ctx context.Context, spec Spec, _ *LocalCloneOption) (Project, error) {
+	p := NewProject(l.root, spec)
 
 	if _, err := git.PlainCloneContext(ctx, p.FullFilePath(), false, &git.CloneOptions{
 		URL: p.URL(),
@@ -113,11 +113,11 @@ func (l *LocalController) newProjectFromEntity(parts [3]string, info os.FileInfo
 		return Project{}, errors.New("not directory")
 	}
 	// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
-	description, err := NewDescription(parts[0], parts[1], parts[2])
+	spec, err := NewSpec(parts[0], parts[1], parts[2])
 	if err != nil {
 		return Project{}, err
 	}
-	return NewProject(l.root, description), nil
+	return NewProject(l.root, spec), nil
 }
 
 type LocalListOption struct {
@@ -141,8 +141,8 @@ func (l *LocalController) List(ctx context.Context, option *LocalListOption) ([]
 
 type LocalRemoveOption struct{}
 
-func (l *LocalController) Remove(ctx context.Context, description Description, _ *LocalRemoveOption) error {
-	p := NewProject(l.root, description)
+func (l *LocalController) Remove(ctx context.Context, spec Spec, _ *LocalRemoveOption) error {
+	p := NewProject(l.root, spec)
 	if err := p.CheckEntity(); err != nil {
 		return err
 	}
