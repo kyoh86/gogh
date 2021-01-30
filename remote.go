@@ -209,9 +209,21 @@ func (c *RemoteController) Create(ctx context.Context, name string, option *Remo
 	return c.repoSpec(repo)
 }
 
-type RemoteDeleteOption struct{}
+type RemoteDeleteOption struct {
+	// Organization is the name of the organization that owns the repository.
+	Organization string
+}
 
-func (c *RemoteController) Delete(ctx context.Context, name string, _ *RemoteDeleteOption) error {
-	// UNDONE: implement
+func (o *RemoteDeleteOption) GetOrganization() string {
+	if o == nil {
+		return ""
+	}
+	return o.Organization
+}
+
+func (c *RemoteController) Delete(ctx context.Context, name string, option *RemoteDeleteOption) error {
+	if _, err := c.adaptor.RepositoryDelete(ctx, option.GetOrganization(), name); err != nil {
+		return fmt.Errorf("create a repository: %w", err)
+	}
 	return nil
 }

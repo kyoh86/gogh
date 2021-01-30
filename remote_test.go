@@ -789,7 +789,53 @@ func TestRemoteController(t *testing.T) {
 			}
 		})
 	})
-	t.Run("Remove", func(t *testing.T) {
-		// TODO: remove github.com/kyoh86/gogh -> github.com/kyoh86/gogh removed
+
+	t.Run("Delete", func(t *testing.T) {
+		t.Run("Error", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			internalError := errors.New("test error")
+			mock.EXPECT().RepositoryDelete(ctx, "", "gogh").Return(nil, internalError)
+
+			if err := remote.Delete(ctx, "gogh", nil); !errors.Is(err, internalError) {
+				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+			}
+		})
+
+		t.Run("NilOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryDelete(ctx, "", "gogh").Return(nil, nil)
+
+			if err := remote.Delete(ctx, "gogh", nil); err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+		})
+
+		t.Run("EmptyOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryDelete(ctx, "", "user-repo-1").Return(nil, nil)
+
+			if err := remote.Delete(ctx, "user-repo-1", &testtarget.RemoteDeleteOption{}); err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+		})
+
+		t.Run("WithOrganization", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryDelete(ctx, org, "org-repo-1").Return(nil, nil)
+
+			if err := remote.Delete(ctx, "org-repo-1", &testtarget.RemoteDeleteOption{
+				Organization: org,
+			}); err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+		})
 	})
 }
