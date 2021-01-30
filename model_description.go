@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"net/url"
+	"path"
 	"regexp"
 )
 
@@ -15,6 +16,10 @@ type Description struct {
 func (d Description) Host() string { return d.host }
 func (d Description) User() string { return d.user }
 func (d Description) Name() string { return d.name }
+
+func (d Description) String() string {
+	return path.Join(d.Host(), d.User(), d.Name())
+}
 
 var (
 	ErrEmptyHost = ErrInvalidHost("empty host")

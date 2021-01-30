@@ -20,10 +20,6 @@ func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
 func TestRemoteController(t *testing.T) {
 	ctx := context.Background()
 
-	// TODO: authorized server
-	// TODO: create github.com/kyoh86/gogh -> github.com/kyoh86/gogh created
-	// TODO: remove github.com/kyoh86/gogh -> github.com/kyoh86/gogh removed
-
 	host := testtarget.DefaultHost
 	user := "kyoh86"
 	org := "kyoh86-tryouts"
@@ -45,18 +41,35 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.ListByOrg(ctx, org, nil)
+			descriptions, err := remote.ListByOrg(ctx, org, nil)
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + org + "/org-repo-1",
-				host + "/" + org + "/org-repo-2",
+			if len(descriptions) != 2 {
+				t.Fatalf("expect 2 descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -77,18 +90,35 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{})
+			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + org + "/org-repo-1",
-				host + "/" + org + "/org-repo-2",
+			if len(descriptions) != 2 {
+				t.Fatalf("expect 2 descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -111,7 +141,7 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Options: &github.RepositoryListByOrgOptions{
 					Type: "private",
 				},
@@ -119,14 +149,31 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + org + "/org-repo-1",
-				host + "/" + org + "/org-repo-2",
+			if len(descriptions) != 2 {
+				t.Fatalf("expect 2 descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -147,19 +194,33 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Query: "repo-1",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + org + "/org-repo-1",
+			if len(descriptions) != 1 {
+				t.Fatalf("expect a description, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -180,14 +241,14 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
+			descriptions, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Query: "no-match",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(projects) > 0 {
-				t.Errorf("expect no project is found but %d projects are found", len(projects))
+			if len(descriptions) > 0 {
+				t.Errorf("expect no description is found but %d descriptions are found", len(descriptions))
 			}
 		})
 	})
@@ -219,23 +280,43 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, nil)
+			descriptions, err := remote.List(ctx, nil)
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(projects) != 2 {
-				t.Fatalf("expect some projects, but %d is gotten", len(projects))
+			if len(descriptions) != 4 {
+				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
 			}
-			expects := []string{
-				host + "/" + user + "/user-repo-1",
-				host + "/" + user + "/user-repo-2",
-				host + "/" + org + "/org-repo-1",
-				host + "/" + org + "/org-repo-2",
-			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}, {
+				host: host,
+				user: user,
+				name: "user-repo-2",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -266,20 +347,43 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{})
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + user + "/user-repo-1",
-				host + "/" + user + "/user-repo-2",
-				host + "/" + org + "/org-repo-1",
-				host + "/" + org + "/org-repo-2",
+			if len(descriptions) != 4 {
+				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}, {
+				host: host,
+				user: user,
+				name: "user-repo-2",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -300,20 +404,37 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User: user,
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + user + "/user-repo-1",
-				host + "/" + user + "/user-repo-2",
+			if len(descriptions) != 2 {
+				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}, {
+				host: host,
+				user: user,
+				name: "user-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -346,7 +467,7 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Options: &github.RepositoryListOptions{
 					Visibility: "public",
 				},
@@ -354,16 +475,31 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + user + "/user-repo-1",
-				host + "/" + user + "/user-repo-2",
-				host + "/" + org + "/org-repo-1",
-				host + "/" + org + "/org-repo-2",
+			if len(descriptions) != 2 {
+				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}, {
+				host: host,
+				user: user,
+				name: "user-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -386,7 +522,7 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User: user,
 				Options: &github.RepositoryListOptions{
 					Visibility: "public",
@@ -395,14 +531,31 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + user + "/user-repo-1",
-				host + "/" + user + "/user-repo-2",
+			if len(descriptions) != 2 {
+				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}, {
+				host: host,
+				user: user,
+				name: "user-repo-2",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -433,20 +586,37 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Query: "repo-1",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + user + "/user-repo-1",
-				host + "/" + org + "/org-repo-1",
+			if len(descriptions) != 2 {
+				t.Fatalf("expect some descriptions, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -477,14 +647,14 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("org-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Query: "no-match",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(projects) == 1 {
-				t.Fatalf("expect one project, but %d is gotten", len(projects))
+			if len(descriptions) > 1 {
+				t.Fatalf("expect no description is matched, but %d is gotten", len(descriptions))
 			}
 		})
 
@@ -504,20 +674,34 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User:  user,
 				Query: "repo-1",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			expects := []string{
-				host + "/" + user + "/user-repo-1",
+			if len(descriptions) != 1 {
+				t.Fatalf("expect one description, but %d is gotten", len(descriptions))
 			}
-			for i, expect := range expects {
-				actual := projects[i].RelPath()
-				if expect != actual {
-					t.Errorf("expect project %q at %d but %q is gotten", expect, i, actual)
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}} {
+				actual := descriptions[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
 				}
 			}
 		})
@@ -538,68 +722,153 @@ func TestRemoteController(t *testing.T) {
 				Name: ptr.String("user-repo-2"),
 			}}, nil, nil)
 
-			projects, err := remote.List(ctx, &testtarget.RemoteListOption{
+			descriptions, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User:  user,
 				Query: "no-match",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if len(projects) > 0 {
-				t.Errorf("expect no project is found but %d projects are found", len(projects))
+			if len(descriptions) > 0 {
+				t.Errorf("expect no description is found but %d descriptions are found", len(descriptions))
 			}
 		})
 	})
 
-	/*
-		t.Run("Create", func(t *testing.T) {
-			t.Run("NilOption", func(t *testing.T) {
-				mock, teardown := MockAdaptor(t)
-				defer teardown()
-				remote := testtarget.NewRemoteController(mock)
-				mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{
-					Name: ptr.String("gogh"),
-				}).Return(&github.Repository{
-					Owner: &github.User{
-						Login: &user,
-					},
-					Name: ptr.String("gogh"),
-				}, nil, nil)
-				project, err := remote.Create(ctx, "gogh", nil)
-				if err != nil {
-					t.Fatalf("failed to listup: %s", err)
-				}
-				if project.Name() != "gogh" {
-					t.Errorf("expect that a project be created with name %q, but actual %q", "gogh", project.Name())
-				}
-			})
-			t.Run("EmptyOption", func(t *testing.T) {
-				mock, teardown := MockAdaptor(t)
-				defer teardown()
-				remote := testtarget.NewRemoteController(mock)
-				mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{}).Return([]*github.Repository{{
-					Owner: &github.User{
-						Login: &user,
-					},
-					Name: ptr.String("user-repo-1"),
-				}, {
-					Owner: &github.User{
-						Login: &user,
-					},
-					Name: ptr.String("user-repo-2"),
-				}}, nil, nil)
+	t.Run("Create", func(t *testing.T) {
+		t.Run("NilOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{
+				Name: ptr.String("gogh"),
+			}).Return(&github.Repository{
+				Owner: &github.User{
+					Login: &user,
+				},
+				Name: ptr.String("gogh"),
+			}, nil, nil)
+			description, err := remote.Create(ctx, "gogh", nil)
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if description.User() != user {
+				t.Errorf("expect that a description be created with user %q, but actual %q", user, description.User())
+			}
+			if description.Name() != "gogh" {
+				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			}
+		})
+		t.Run("EmptyOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{
+				Name: ptr.String("gogh"),
+			}).Return(&github.Repository{
+				Owner: &github.User{
+					Login: &user,
+				},
+				Name: ptr.String("user-repo-1"),
+			}, nil, nil)
 
-				projects, err := remote.Create(ctx, &testtarget.RemoteCreateOption{
-					User:  user,
-					Query: "no-match",
-				})
-				if err != nil {
-					t.Fatalf("failed to listup: %s", err)
-				}
+			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{})
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if description.User() != user {
+				t.Errorf("expect that a description be created with user %q, but actual %q", user, description.User())
+			}
+			if description.Name() != "gogh" {
+				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			}
+		})
+
+		t.Run("WithOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{
+				Name:     ptr.String("gogh"),
+				Homepage: ptr.String("https://kyoh86.dev"),
+			}).Return(&github.Repository{
+				Owner: &github.User{
+					Login: &user,
+				},
+				Name: ptr.String("user-repo-1"),
+			}, nil, nil)
+
+			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
+				Homepage: "https://kyoh86.dev",
 			})
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if description.User() != user {
+				t.Errorf("expect that a description be created with user %q, but actual %q", user, description.User())
+			}
+			if description.Name() != "gogh" {
+				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			}
 		})
-		t.Run("Remove", func(t *testing.T) {
-			// TODO: remove github.com/kyoh86/gogh -> github.com/kyoh86/gogh removed
+
+		t.Run("WithOrganization", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreate(ctx, "kyoh86-tryouts", &github.Repository{
+				Name: ptr.String("gogh"),
+			}).Return(&github.Repository{
+				Organization: &github.Organization{
+					Login: ptr.String("kyoh86-tryouts"),
+				},
+				Name: ptr.String("user-repo-1"),
+			}, nil, nil)
+
+			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
+				Organization: "kyoh86-tryouts",
+			})
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if description.User() != "kyoh86-tryouts" {
+				t.Errorf("expect that a description be created with user %q, but actual %q", "kyoh86-tryouts", description.User())
+			}
+			if description.Name() != "gogh" {
+				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			}
 		})
-	*/
+
+		t.Run("WithOrganizationAndOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreate(ctx, "kyoh86-tryouts", &github.Repository{
+				Name:     ptr.String("gogh"),
+				Homepage: ptr.String("https://kyoh86.dev"),
+			}).Return(&github.Repository{
+				Organization: &github.Organization{
+					Login: ptr.String("kyoh86-tryouts"),
+				},
+				Name: ptr.String("user-repo-1"),
+			}, nil, nil)
+
+			description, err := remote.Create(ctx, "gogh", &testtarget.RemoteCreateOption{
+				Organization: "kyoh86-tryouts",
+				Homepage:     "https://kyoh86.dev",
+			})
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if description.User() != "kyoh86-tryouts" {
+				t.Errorf("expect that a description be created with user %q, but actual %q", "kyoh86-tryouts", description.User())
+			}
+			if description.Name() != "gogh" {
+				t.Errorf("expect that a description be created with name %q, but actual %q", "gogh", description.Name())
+			}
+		})
+	})
+	t.Run("Remove", func(t *testing.T) {
+		// TODO: remove github.com/kyoh86/gogh -> github.com/kyoh86/gogh removed
+	})
 }
