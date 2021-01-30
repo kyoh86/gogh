@@ -12,6 +12,15 @@ type genuineAdaptor struct {
 	client *github.Client
 }
 
+func GithubAdaptor(ctx context.Context, host, token string) (Adaptor, error) {
+	var client *http.Client
+	if token != "" {
+		client = NewAuthClient(ctx, token)
+	}
+	//UNDONE: support Enterprise with server.baseURL and server.uploadURL
+	return NewAdaptor(client), nil
+}
+
 func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*github.User, *github.Response, error) {
 	return c.client.Users.Get(ctx, user)
 }

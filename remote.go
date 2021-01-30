@@ -3,26 +3,15 @@ package gogh
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"path"
 	"strings"
 
 	"github.com/kyoh86/gogh/v2/internal/github"
-	"github.com/wacul/ptr"
 )
 
 type RemoteController struct {
 	adaptor github.Adaptor
-}
-
-func GithubAdaptor(ctx context.Context, server Server) (github.Adaptor, error) {
-	var client *http.Client
-	if server.Token() != "" {
-		client = github.NewAuthClient(ctx, server.Token())
-	}
-	//UNDONE: support Enterprise with server.baseURL and server.uploadURL
-	return github.NewAdaptor(client), nil
 }
 
 func NewRemoteController(adaptor github.Adaptor) *RemoteController {
@@ -31,15 +20,63 @@ func NewRemoteController(adaptor github.Adaptor) *RemoteController {
 	}
 }
 
+func (c *RemoteController) repoSpec(repo *github.Repository) (Spec, error) {
+	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return Spec{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
+	}
+	user, name := path.Split(u.Path)
+	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(user, "/"), "/"), name)
+}
+
+func (c *RemoteController) repoListSpecList(query string, repos []*github.Repository) (specs []Spec, _ error) {
+	for _, repo := range repos {
+		spec, err := c.repoSpec(repo)
+		if err != nil {
+			return nil, err
+		}
+		if !strings.Contains(spec.String(), query) {
+			continue
+		}
+		specs = append(specs, spec)
+	}
+	return
+}
+
 type RemoteListOption struct {
 	User    string
 	Query   string
 	Options *github.RepositoryListOptions
 }
 
+func (o *RemoteListOption) GetUser() string {
+	if o == nil {
+		return ""
+	}
+	return o.User
+}
+
+func (o *RemoteListOption) GetQuery() string {
+	if o == nil {
+		return ""
+	}
+	return o.Query
+}
+
+func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
+	if o == nil {
+		return nil
+	}
+	return o.Options
+}
+
 func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) ([]Spec, error) {
-	// UNDONE: implement
-	return nil, nil
+	repos, _, err := c.adaptor.RepositoryList(ctx, option.GetUser(), option.GetOptions())
+	if err != nil {
+		return nil, err
+	}
+	return c.repoListSpecList(option.GetQuery(), repos)
 }
 
 type RemoteListByOrgOption struct {
@@ -47,9 +84,26 @@ type RemoteListByOrgOption struct {
 	Options *github.RepositoryListByOrgOptions
 }
 
+func (o *RemoteListByOrgOption) GetQuery() string {
+	if o == nil {
+		return ""
+	}
+	return o.Query
+}
+
+func (o *RemoteListByOrgOption) GetOptions() *github.RepositoryListByOrgOptions {
+	if o == nil {
+		return nil
+	}
+	return o.Options
+}
+
 func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) ([]Spec, error) {
-	// UNDONE: implement
-	return nil, nil
+	repos, _, err := c.adaptor.RepositoryListByOrg(ctx, org, option.GetOptions())
+	if err != nil {
+		return nil, err
+	}
+	return c.repoListSpecList(option.GetQuery(), repos)
 }
 
 type RemoteCreateOption struct {
@@ -115,51 +169,44 @@ type RemoteCreateOption struct {
 	DeleteBranchOnMerge bool
 }
 
-// falsePtr converts bool (default: false) to *bool (default: nil as true)
-func falsePtr(b bool) *bool {
-	if b {
-		return ptr.Bool(false)
-	}
-	return nil // == ptr.Bool(true)
-}
-
 func (o *RemoteCreateOption) buildRepository(name string) *github.Repository {
 	if o == nil {
 		return &github.Repository{Name: &name}
 	}
 	return &github.Repository{
-		Name:                &name,
-		Description:         &o.Description,
-		Homepage:            &o.Homepage,
-		Visibility:          &o.Visibility,
+		Name:                stringPtr(name),
+		Description:         stringPtr(o.Description),
+		Homepage:            stringPtr(o.Homepage),
+		Visibility:          stringPtr(o.Visibility),
 		HasIssues:           falsePtr(o.DisableIssues),
 		HasProjects:         falsePtr(o.DisableProjects),
 		HasWiki:             falsePtr(o.DisableWiki),
 		HasDownloads:        falsePtr(o.DisableDownloads),
-		IsTemplate:          &o.IsTemplate,
-		TeamID:              &o.TeamID,
-		AutoInit:            &o.AutoInit,
-		GitignoreTemplate:   &o.GitignoreTemplate,
-		LicenseTemplate:     &o.LicenseTemplate,
+		IsTemplate:          boolPtr(o.IsTemplate),
+		TeamID:              int64Ptr(o.TeamID),
+		AutoInit:            boolPtr(o.AutoInit),
+		GitignoreTemplate:   stringPtr(o.GitignoreTemplate),
+		LicenseTemplate:     stringPtr(o.LicenseTemplate),
 		AllowSquashMerge:    falsePtr(o.PreventSquashMerge),
 		AllowMergeCommit:    falsePtr(o.PreventMergeCommit),
 		AllowRebaseMerge:    falsePtr(o.PreventRebaseMerge),
-		DeleteBranchOnMerge: &o.DeleteBranchOnMerge,
+		DeleteBranchOnMerge: boolPtr(o.DeleteBranchOnMerge),
 	}
 }
 
+func (o *RemoteCreateOption) GetOrganization() string {
+	if o == nil {
+		return ""
+	}
+	return o.Organization
+}
+
 func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Spec, error) {
-	repo, _, err := c.adaptor.RepositoryCreate(ctx, option.Organization, option.buildRepository(name))
+	repo, _, err := c.adaptor.RepositoryCreate(ctx, option.GetOrganization(), option.buildRepository(name))
 	if err != nil {
 		return Spec{}, fmt.Errorf("create a repository: %w", err)
 	}
-	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return Spec{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
-	}
-	user, name := path.Split(u.Path)
-	return NewSpec(u.Host, user, name)
+	return c.repoSpec(repo)
 }
 
 type RemoteDeleteOption struct{}
