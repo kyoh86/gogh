@@ -59,7 +59,7 @@ func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Ada
 	for _, option := range options {
 		option(baseURL, uploadURL)
 	}
-	return newGenuineEnterpriseAdaptor(ctx, baseURL.String(), uploadURL.String(), client)
+	return newGenuineEnterpriseAdaptor(baseURL.String(), uploadURL.String(), client)
 }
 
 func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*github.User, *github.Response, error) {
@@ -91,7 +91,7 @@ func newGenuineAdaptor(httpClient *http.Client) Adaptor {
 	}
 }
 
-func newGenuineEnterpriseAdaptor(ctx context.Context, baseURL string, uploadURL string, httpClient *http.Client) (Adaptor, error) {
+func newGenuineEnterpriseAdaptor(baseURL string, uploadURL string, httpClient *http.Client) (Adaptor, error) {
 	client, err := github.NewEnterpriseClient(baseURL, uploadURL, httpClient)
 	if err != nil {
 		return nil, err
