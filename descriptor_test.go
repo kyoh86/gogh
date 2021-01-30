@@ -17,46 +17,64 @@ func TestDescriptor(t *testing.T) {
 	)
 
 	t.Run("DefaultHost", func(t *testing.T) {
-		server, err := testtarget.NewServer(user1)
+		server, err := testtarget.NewServer(user1, "token")
 		if err != nil {
 			t.Fatalf("failed to create new server for %s: %v", user1, err)
 		}
 		descriptor := testtarget.NewDescriptor(server)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
-				title  string
-				source string
-				expect testtarget.Description
+				title       string
+				source      string
+				expectHost  string
+				expectUser  string
+				expectName  string
+				expectToken string
 			}{{
-				title:  "valid-name",
-				source: name,
-				expect: description(t, testtarget.DefaultHost, user1, name),
+				title:       "valid-name",
+				source:      name,
+				expectHost:  testtarget.DefaultHost,
+				expectUser:  user1,
+				expectName:  name,
+				expectToken: "token",
 			}, {
-				title:  "default-user,valid-name",
-				source: user1 + "/" + name,
-				expect: description(t, testtarget.DefaultHost, user1, name),
+				title:       "default-user,valid-name",
+				source:      user1 + "/" + name,
+				expectHost:  testtarget.DefaultHost,
+				expectUser:  user1,
+				expectName:  name,
+				expectToken: "token",
 			}, {
-				title:  "default-host,default-user,valid-name",
-				source: testtarget.DefaultHost + "/" + user1 + "/" + name,
-				expect: description(t, testtarget.DefaultHost, user1, name),
+				title:       "default-host,default-user,valid-name",
+				source:      testtarget.DefaultHost + "/" + user1 + "/" + name,
+				expectHost:  testtarget.DefaultHost,
+				expectUser:  user1,
+				expectName:  name,
+				expectToken: "token",
 			}, {
-				title:  "valid-host,valid-user,valid-name",
-				source: host1 + "/" + user2 + "/" + name,
-				expect: description(t, host1, user2, name),
+				title:       "valid-host,valid-user,valid-name",
+				source:      host1 + "/" + user2 + "/" + name,
+				expectHost:  host1,
+				expectUser:  user2,
+				expectName:  name,
+				expectToken: "",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, err := descriptor.Parse(testcase.source)
+					description, token, err := descriptor.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expect.Host() != description.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), description.Host())
+					if testcase.expectHost != description.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, description.Host())
 					}
-					if testcase.expect.User() != description.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expect.User(), description.User())
+					if testcase.expectUser != description.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expectUser, description.User())
 					}
-					if testcase.expect.Name() != description.Name() {
-						t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), description.Name())
+					if testcase.expectName != description.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
+					}
+					if testcase.expectToken != token {
+						t.Errorf("expect token %q but %q gotten", testcase.expectToken, token)
 					}
 				})
 			}
@@ -171,7 +189,7 @@ func TestDescriptor(t *testing.T) {
 				},
 			} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, err := descriptor.Parse(testcase.input)
+					description, _, err := descriptor.Parse(testcase.input)
 					if err == nil {
 						t.Fatalf("expect failure to parse %q but parsed to %+v", testcase.input, description)
 					}
@@ -187,46 +205,63 @@ func TestDescriptor(t *testing.T) {
 	})
 
 	t.Run("WithHost", func(t *testing.T) {
-		server, err := testtarget.NewServerFor(host1, user1)
+		server, err := testtarget.NewServerFor(host1, user1, "token")
 		if err != nil {
 			t.Fatalf("failed to create new server for %s: %v", user1, err)
 		}
 		descriptor := testtarget.NewDescriptor(server)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
-				title  string
-				source string
-				expect testtarget.Description
+				title       string
+				source      string
+				expectHost  string
+				expectUser  string
+				expectName  string
+				expectToken string
 			}{{
-				title:  "valid-name",
-				source: name,
-				expect: description(t, host1, user1, name),
+				title:       "valid-name",
+				source:      name,
+				expectHost:  host1,
+				expectUser:  user1,
+				expectName:  name,
+				expectToken: "token",
 			}, {
-				title:  "default-user,valid-name",
-				source: user1 + "/" + name,
-				expect: description(t, host1, user1, name),
+				title:       "default-user,valid-name",
+				source:      user1 + "/" + name,
+				expectHost:  host1,
+				expectUser:  user1,
+				expectName:  name,
+				expectToken: "token",
 			}, {
-				title:  "default-host,default-user,valid-name",
-				source: host1 + "/" + user1 + "/" + name,
-				expect: description(t, host1, user1, name),
+				title:       "default-host,default-user,valid-name",
+				source:      host1 + "/" + user1 + "/" + name,
+				expectHost:  host1,
+				expectUser:  user1,
+				expectName:  name,
+				expectToken: "token",
 			}, {
-				title:  "valid-host,valid-user,valid-name",
-				source: host2 + "/" + user2 + "/" + name,
-				expect: description(t, host2, user2, name),
+				title:      "valid-host,valid-user,valid-name",
+				source:     host2 + "/" + user2 + "/" + name,
+				expectHost: host2,
+				expectUser: user2,
+				expectName: name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					description, err := descriptor.Parse(testcase.source)
+					description, token, err := descriptor.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expect.Host() != description.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), description.Host())
+					if testcase.expectHost != description.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, description.Host())
 					}
-					if testcase.expect.User() != description.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expect.User(), description.User())
+					if testcase.expectUser != description.User() {
+						t.Errorf("expect user %q but %q gotten", testcase.expectUser, description.User())
 					}
-					if testcase.expect.Name() != description.Name() {
-						t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), description.Name())
+					if testcase.expectName != description.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
+					}
+					if testcase.expectToken != token {
+						t.Errorf("expect token %q but %q gotten", testcase.expectToken, token)
 					}
 				})
 			}
@@ -235,57 +270,76 @@ func TestDescriptor(t *testing.T) {
 
 	t.Run("WithMultipeServers", func(t *testing.T) {
 		// (default) github.com/kyoh86
-		server1, err := testtarget.NewServerFor(testtarget.DefaultHost, user1)
+		server1, err := testtarget.NewServerFor(testtarget.DefaultHost, user1, "token1")
 		if err != nil {
 			t.Fatalf("failed to create new server for %s@%s: %q", user1, testtarget.DefaultHost, err)
 		}
 		// example.com/anonymous
-		server2, err := testtarget.NewServerFor(host1, user2)
+		server2, err := testtarget.NewServerFor(host1, user2, "token2")
 		if err != nil {
 			t.Fatalf("failed to create new server for %s@%s: %q", user2, host1, err)
 		}
-		// github.com/anonymous
-		server3, err := testtarget.NewServerFor(testtarget.DefaultHost, user2)
-		if err != nil {
-			t.Fatalf("failed to create new server for %s@%s: %q", user2, testtarget.DefaultHost, err)
-		}
 
-		descriptor := testtarget.NewDescriptor(server1, server2, server3)
+		descriptor := testtarget.NewDescriptor(server1, server2)
 
 		for _, testcase := range []struct {
-			title  string
-			source string
-			expect testtarget.Description
+			title       string
+			source      string
+			expectHost  string
+			expectUser  string
+			expectName  string
+			expectToken string
 		}{{
-			title:  "valid-name(expect that first one is selected)",
-			source: name,
-			expect: description(t, testtarget.DefaultHost, user1, name),
+			title:       "valid-name",
+			source:      name,
+			expectHost:  testtarget.DefaultHost,
+			expectUser:  user1,
+			expectName:  name,
+			expectToken: "token1",
 		}, {
-			title:  "valid-name,valid-user(multiple-server: expect that first one is selected)",
-			source: user2 + "/" + name,
-			expect: description(t, host1, user2, name),
+			title:       "valid-name,valid-user",
+			source:      user2 + "/" + name,
+			expectHost:  testtarget.DefaultHost,
+			expectUser:  user2,
+			expectName:  name,
+			expectToken: "token1",
 		}, {
-			title:  "full-name",
-			source: testtarget.DefaultHost + "/" + user2 + "/" + name,
-			expect: description(t, testtarget.DefaultHost, user2, name),
+			title:       "full-name",
+			source:      testtarget.DefaultHost + "/" + user2 + "/" + name,
+			expectHost:  testtarget.DefaultHost,
+			expectUser:  user2,
+			expectName:  name,
+			expectToken: "token1",
 		}, {
-			title:  "not-matched",
-			source: host2 + "/" + user2 + "/" + name,
-			expect: description(t, host2, user2, name),
+			title:       "other-host",
+			source:      host1 + "/" + user2 + "/" + name,
+			expectHost:  host1,
+			expectUser:  user2,
+			expectName:  name,
+			expectToken: "token2",
+		}, {
+			title:      "not-matched",
+			source:     host2 + "/" + user2 + "/" + name,
+			expectHost: host2,
+			expectUser: user2,
+			expectName: name,
 		}} {
 			t.Run(testcase.title, func(t *testing.T) {
-				description, err := descriptor.Parse(testcase.source)
+				description, token, err := descriptor.Parse(testcase.source)
 				if err != nil {
 					t.Fatalf("failed to parse %q: %s", testcase.source, err)
 				}
-				if testcase.expect.Host() != description.Host() {
-					t.Errorf("expect host %q but %q gotten", testcase.expect.Host(), description.Host())
+				if testcase.expectHost != description.Host() {
+					t.Errorf("expect host %q but %q gotten", testcase.expectHost, description.Host())
 				}
-				if testcase.expect.User() != description.User() {
-					t.Errorf("expect user %q but %q gotten", testcase.expect.User(), description.User())
+				if testcase.expectUser != description.User() {
+					t.Errorf("expect user %q but %q gotten", testcase.expectUser, description.User())
 				}
-				if testcase.expect.Name() != description.Name() {
-					t.Errorf("expect name %q but %q gotten", testcase.expect.Name(), description.Name())
+				if testcase.expectName != description.Name() {
+					t.Errorf("expect name %q but %q gotten", testcase.expectName, description.Name())
+				}
+				if testcase.expectToken != token {
+					t.Errorf("expect token %q but %q gotten", testcase.expectToken, token)
 				}
 			})
 		}

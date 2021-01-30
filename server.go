@@ -16,25 +16,24 @@ type Server struct {
 	t taggedServer
 }
 
-func NewServerFor(host, user string) (Server, error) {
+func NewServerFor(host, user, token string) (Server, error) {
 	if err := ValidateHost(host); err != nil {
 		return Server{}, err
 	}
 	if err := ValidateUser(user); err != nil {
 		return Server{}, err
 	}
-	return Server{t: taggedServer{Host: host, User: user}}, nil
+	return Server{t: taggedServer{Host: host, User: user, Token: token}}, nil
 }
 
-func NewServer(user string) (Server, error) {
-	return NewServerFor(DefaultHost, user)
+func NewServer(user, token string) (Server, error) {
+	return NewServerFor(DefaultHost, user, token)
 }
 
 func (s Server) Host() string { return s.t.Host }
 func (s Server) User() string { return s.t.User }
 
-func (s Server) Token() string            { return s.t.Token }
-func (s *Server) SetToken(v string) error { s.t.Token = v; return nil }
+func (s Server) Token() string { return s.t.Token }
 
 type taggedServer struct {
 	Host  string `json:"host" yaml:"host"`

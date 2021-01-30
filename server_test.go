@@ -13,7 +13,8 @@ import (
 func TestServer(t *testing.T) {
 	host := "example.com"
 	user := "kyoh86"
-	s, err := testtarget.NewServerFor(host, user)
+	token := "xxxxxxxxxxx"
+	s, err := testtarget.NewServerFor(host, user, token)
 	if err != nil {
 		t.Fatal("failed to create new server")
 	}
@@ -23,16 +24,9 @@ func TestServer(t *testing.T) {
 	if user != s.User() {
 		t.Fatalf("expect user %q but %q", user, s.User())
 	}
-
-	token := "xxxxxxxxxxx"
-	t.Run("SetValidToken", func(t *testing.T) {
-		if err := s.SetToken(token); err != nil {
-			t.Fatalf("failed to set token: %s", err)
-		}
-		if token != s.Token() {
-			t.Errorf("expect token %q but %q", token, s.Token())
-		}
-	})
+	if token != s.Token() {
+		t.Errorf("expect token %q but %q", token, s.Token())
+	}
 
 	t.Run("YAML", func(t *testing.T) {
 		buf, err := yaml.Marshal(s)
@@ -78,26 +72,29 @@ func TestServer(t *testing.T) {
 	invalidUser := "invalid user"
 
 	t.Run("NewServer", func(t *testing.T) {
-		if _, err := testtarget.NewServer(invalidUser); err == nil {
+		if _, err := testtarget.NewServer(invalidUser, token); err == nil {
 			t.Error("expect failure to create new server with invalid host, but not")
 		}
-		s, err := testtarget.NewServer(user)
+		s, err := testtarget.NewServer(user, token)
 		if err != nil {
 			t.Fatal("failed to create new server")
 		}
 		if user != s.User() {
 			t.Errorf("expect user %q but %q", user, s.User())
 		}
+		if token != s.Token() {
+			t.Errorf("expect token %q but %q", token, s.Token())
+		}
 	})
 
 	t.Run("NewServerFor", func(t *testing.T) {
-		if _, err := testtarget.NewServerFor(invalidHost, user); err == nil {
+		if _, err := testtarget.NewServerFor(invalidHost, user, token); err == nil {
 			t.Error("expect failure to create new server with invalid host, but not")
 		}
-		if _, err := testtarget.NewServerFor(host, invalidUser); err == nil {
+		if _, err := testtarget.NewServerFor(host, invalidUser, token); err == nil {
 			t.Error("expect failure to create new server with invalid user, but not")
 		}
-		s, err := testtarget.NewServerFor(host, user)
+		s, err := testtarget.NewServerFor(host, user, token)
 		if err != nil {
 			t.Fatal("failed to create new server")
 		}
@@ -106,6 +103,9 @@ func TestServer(t *testing.T) {
 		}
 		if user != s.User() {
 			t.Errorf("expect user %q but %q", user, s.User())
+		}
+		if token != s.Token() {
+			t.Errorf("expect token %q but %q", token, s.Token())
 		}
 	})
 

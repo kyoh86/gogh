@@ -551,31 +551,55 @@ func TestRemoteController(t *testing.T) {
 		})
 	})
 
-	t.Run("Create", func(t *testing.T) {
-		mock, teardown := MockAdaptor(t)
-		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{}).Return([]*github.Repository{{
-			Owner: &github.User{
-				Login: &user,
-			},
-			Name: ptr.String("user-repo-1"),
-		}, {
-			Owner: &github.User{
-				Login: &user,
-			},
-			Name: ptr.String("user-repo-2"),
-		}}, nil, nil)
+	/*
+		t.Run("Create", func(t *testing.T) {
+			t.Run("NilOption", func(t *testing.T) {
+				mock, teardown := MockAdaptor(t)
+				defer teardown()
+				remote := testtarget.NewRemoteController(mock)
+				mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{
+					Name: ptr.String("gogh"),
+				}).Return(&github.Repository{
+					Owner: &github.User{
+						Login: &user,
+					},
+					Name: ptr.String("gogh"),
+				}, nil, nil)
+				project, err := remote.Create(ctx, "gogh", nil)
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+				if project.Name() != "gogh" {
+					t.Errorf("expect that a project be created with name %q, but actual %q", "gogh", project.Name())
+				}
+			})
+			t.Run("EmptyOption", func(t *testing.T) {
+				mock, teardown := MockAdaptor(t)
+				defer teardown()
+				remote := testtarget.NewRemoteController(mock)
+				mock.EXPECT().RepositoryCreate(ctx, "", &github.Repository{}).Return([]*github.Repository{{
+					Owner: &github.User{
+						Login: &user,
+					},
+					Name: ptr.String("user-repo-1"),
+				}, {
+					Owner: &github.User{
+						Login: &user,
+					},
+					Name: ptr.String("user-repo-2"),
+				}}, nil, nil)
 
-		projects, err := remote.Create(ctx, &testtarget.RemoteListOption{
-			User:  user,
-			Query: "no-match",
+				projects, err := remote.Create(ctx, &testtarget.RemoteCreateOption{
+					User:  user,
+					Query: "no-match",
+				})
+				if err != nil {
+					t.Fatalf("failed to listup: %s", err)
+				}
+			})
 		})
-		if err != nil {
-			t.Fatalf("failed to listup: %s", err)
-		}
-	})
-	t.Run("Remove", func(t *testing.T) {
-		// TODO: remove github.com/kyoh86/gogh -> github.com/kyoh86/gogh removed
-	})
+		t.Run("Remove", func(t *testing.T) {
+			// TODO: remove github.com/kyoh86/gogh -> github.com/kyoh86/gogh removed
+		})
+	*/
 }
