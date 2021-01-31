@@ -43,9 +43,14 @@ func TestServersYAML(t *testing.T) {
 			expect error
 		}{
 			{
-				title:  "invalid-json",
+				title:  "invalid-yaml",
 				input:  "NaN",
 				expect: errors.New("String node found where MapNode is expected"),
+			},
+			{
+				title:  "invalid-value",
+				input:  fmt.Sprintf(`{"%s":1}`, invalidHost),
+				expect: testtarget.ErrInvalidHost("invalid value: 1"),
 			},
 			{
 				title:  "invalid-host",
@@ -194,6 +199,17 @@ kyoh86.dev:
 		}
 		if strings.TrimSpace(data) != strings.TrimSpace(buffer.String()) {
 			t.Errorf("expect marshalled data: %v, actual: %v", data, buffer.String())
+		}
+	})
+	t.Run("MarshalEmpty", func(t *testing.T) {
+		var empty testtarget.Servers
+		var buffer bytes.Buffer
+		encoder := yaml.NewEncoder(&buffer, yaml.Indent(2))
+		if err := encoder.Encode(&empty); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if "null" != strings.TrimSpace(buffer.String()) {
+			t.Errorf("expect marshalled data: %v, actual: %v", "null", buffer.String())
 		}
 	})
 }

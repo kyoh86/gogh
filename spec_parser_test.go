@@ -15,6 +15,25 @@ func TestSpecParser(t *testing.T) {
 		host2 = "kyoh86.dev"  // host a not default
 		name  = "gogh"
 	)
+	t.Run("Empty", func(t *testing.T) {
+		var parser testtarget.SpecParser
+		for _, testcase := range []struct {
+			title  string
+			source string
+		}{{
+			title:  "valid-name",
+			source: name,
+		}, {
+			title:  "default-user,valid-name",
+			source: user1 + "/" + name,
+		}} {
+			t.Run(testcase.title, func(t *testing.T) {
+				if _, _, err := parser.Parse(testcase.source); err == nil {
+					t.Fatal("expect error, but nil")
+				}
+			})
+		}
+	})
 
 	t.Run("DefaultHost", func(t *testing.T) {
 		server, err := testtarget.NewServer(user1, "token")

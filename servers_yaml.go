@@ -56,8 +56,18 @@ func (s *Servers) MarshalYAML() (interface{}, error) {
 		return nil, nil
 	}
 
-	var slice yaml.MapSlice
+	slice := yaml.MapSlice{{
+		Key: s.defaultServer.Host(),
+		Value: yaml.MapSlice{
+			{Key: "user", Value: s.defaultServer.User()},
+			{Key: "token", Value: s.defaultServer.Token()},
+		},
+	}}
+
 	for _, server := range s.serverMap {
+		if server.Host() == s.defaultServer.Host() {
+			continue
+		}
 		slice = append(slice, yaml.MapItem{
 			Key: server.Host(),
 			Value: yaml.MapSlice{
