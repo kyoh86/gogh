@@ -208,7 +208,7 @@ kyoh86.dev:
 		if err := encoder.Encode(&empty); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if "null" != strings.TrimSpace(buffer.String()) {
+		if strings.TrimSpace(buffer.String()) != "null" {
 			t.Errorf("expect marshalled data: %v, actual: %v", "null", buffer.String())
 		}
 	})
