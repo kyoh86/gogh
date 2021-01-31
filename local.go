@@ -9,6 +9,8 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/saracen/walker"
 	"github.com/wacul/ulog"
 )
@@ -59,16 +61,23 @@ func (l *LocalController) Create(ctx context.Context, spec Spec, _ *LocalCreateO
 }
 
 type LocalCloneOption struct {
-	// UNDONE: support authentication
 	// UNDONE: support isBare
 	// UNDONE: support *git.CloneOptions
 }
 
-func (l *LocalController) Clone(ctx context.Context, spec Spec, _ *LocalCloneOption) (Project, error) {
+func (l *LocalController) Clone(ctx context.Context, spec Spec, server Server, _ *LocalCloneOption) (Project, error) {
 	p := NewProject(l.root, spec)
 
+	var auth transport.AuthMethod
+	if token := server.Token(); token != "" {
+		auth = &http.BasicAuth{
+			Username: server.User(),
+			Password: server.Token(),
+		}
+	}
 	if _, err := git.PlainCloneContext(ctx, p.FullFilePath(), false, &git.CloneOptions{
-		URL: p.URL(),
+		URL:  p.URL(),
+		Auth: auth,
 	}); err != nil {
 		return Project{}, err
 	}

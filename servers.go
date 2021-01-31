@@ -2,7 +2,6 @@ package gogh
 
 import (
 	"errors"
-	"sync"
 )
 
 var (
@@ -12,7 +11,6 @@ var (
 )
 
 type Servers struct {
-	mutex         sync.Mutex
 	defaultServer *Server
 	serverMap     map[string]Server
 }
@@ -42,8 +40,6 @@ func (s *Servers) init() {
 }
 
 func (s *Servers) Set(host, user, token string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	s.init()
 
 	server, err := NewServerFor(host, user, token)
@@ -58,9 +54,6 @@ func (s *Servers) Set(host, user, token string) error {
 }
 
 func (s *Servers) Find(host string) (Server, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	if len(s.serverMap) == 0 {
 		return Server{}, ErrNoServer
 	}
@@ -72,8 +65,6 @@ func (s *Servers) Find(host string) (Server, error) {
 }
 
 func (s *Servers) SetDefault(host string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	s.init()
 
 	server, ok := s.serverMap[host]
@@ -108,8 +99,6 @@ func (s *Servers) List() (list []Server, _ error) {
 }
 
 func (s *Servers) Remove(host string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	s.init()
 
 	if _, ok := s.serverMap[host]; !ok {

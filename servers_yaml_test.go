@@ -194,7 +194,7 @@ kyoh86.dev:
 
 		var buffer bytes.Buffer
 		encoder := yaml.NewEncoder(&buffer, yaml.Indent(2))
-		if err := encoder.Encode(&servers); err != nil {
+		if err := encoder.Encode(servers); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		if strings.TrimSpace(data) != strings.TrimSpace(buffer.String()) {
@@ -205,7 +205,7 @@ kyoh86.dev:
 		var empty testtarget.Servers
 		var buffer bytes.Buffer
 		encoder := yaml.NewEncoder(&buffer, yaml.Indent(2))
-		if err := encoder.Encode(&empty); err != nil {
+		if err := encoder.Encode(empty); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		if strings.TrimSpace(buffer.String()) != "null" {

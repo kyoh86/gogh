@@ -42,16 +42,13 @@ func (s *Servers) UnmarshalYAML(unmarshaler func(interface{}) error) error {
 		m[host] = server
 	}
 
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	s.defaultServer = d
 	s.serverMap = m
 
 	return nil
 }
 
-func (s *Servers) MarshalYAML() (interface{}, error) {
+func (s Servers) MarshalYAML() (interface{}, error) {
 	if s.defaultServer == nil {
 		return nil, nil
 	}

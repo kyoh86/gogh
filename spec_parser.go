@@ -64,8 +64,6 @@ func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 }
 
 // NewSpecParser will build Spec with a default server and alternative servers.
-func NewSpecParser(defaultServer Server, alternatives ...Server) *SpecParser {
-	return &SpecParser{
-		servers: NewServers(defaultServer, alternatives...),
-	}
+func NewSpecParser(servers Servers) *SpecParser {
+	return &SpecParser{servers: servers}
 }

@@ -92,7 +92,11 @@ func TestLocalController(t *testing.T) {
 			if _, err := local.Create(ctx, spec, nil); err == nil {
 				t.Fatalf("expect failure with creating a project that has already exist: %s", err)
 			}
-			if _, err := local.Clone(ctx, spec, nil); err == nil {
+			server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if _, err := local.Clone(ctx, spec, server, nil); err == nil {
 				t.Fatalf("expect failure with cloning a project that has already exist: %s", err)
 			}
 		})
@@ -228,7 +232,11 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Clone", func(t *testing.T) {
 		spec := mustSpec(t, "github.com", "kyoh86-tryouts", "bare")
-		project, err := local.Clone(ctx, spec, nil)
+		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		project, err := local.Clone(ctx, spec, server, nil)
 		if err != nil {
 			t.Fatalf("failed to clone a project: %s", err)
 		}
@@ -288,7 +296,11 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("CloneFailure", func(t *testing.T) {
 		spec := mustSpec(t, "github.com", "kyoh86-tryouts", "none")
-		if _, err := local.Clone(ctx, spec, nil); err == nil {
+		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		if _, err := local.Clone(ctx, spec, server, nil); err == nil {
 			t.Fatalf("expect failure to clone a project: %s", err)
 		}
 	})
@@ -318,7 +330,11 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 		if _, err := local.Create(ctx, spec, nil); err == nil {
 			t.Errorf("expect failure to create")
 		}
-		if _, err := local.Clone(ctx, spec, nil); err == nil {
+		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		if _, err := local.Clone(ctx, spec, server, nil); err == nil {
 			t.Errorf("expect failure to clone")
 		}
 		if err := local.Delete(ctx, spec, nil); err == nil {

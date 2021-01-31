@@ -40,7 +40,7 @@ func TestSpecParser(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create new server for %s: %v", user1, err)
 		}
-		parser := testtarget.NewSpecParser(server)
+		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -241,7 +241,7 @@ func TestSpecParser(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create new server for %s: %v", user1, err)
 		}
-		parser := testtarget.NewSpecParser(server)
+		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -330,7 +330,7 @@ func TestSpecParser(t *testing.T) {
 			t.Fatalf("failed to create new server for %s@%s: %q", user2, testtarget.DefaultHost, err)
 		}
 
-		parser := testtarget.NewSpecParser(server1, server2, server3)
+		parser := testtarget.NewSpecParser(testtarget.NewServers(server1, server2, server3))
 
 		for _, testcase := range []struct {
 			title  string
