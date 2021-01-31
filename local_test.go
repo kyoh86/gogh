@@ -295,8 +295,8 @@ func TestLocalController(t *testing.T) {
 	})
 
 	t.Run("CloneFailure", func(t *testing.T) {
-		spec := mustSpec(t, "github.com", "kyoh86-tryouts", "none")
-		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+		spec := mustSpec(t, "github.com", "kyoh86", "gogh")
+		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "invalid-token")
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
