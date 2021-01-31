@@ -139,9 +139,9 @@ func (l *LocalController) List(ctx context.Context, option *LocalListOption) ([]
 	return list, nil
 }
 
-type LocalRemoveOption struct{}
+type LocalDeleteOption struct{}
 
-func (l *LocalController) Remove(ctx context.Context, spec Spec, _ *LocalRemoveOption) error {
+func (l *LocalController) Delete(ctx context.Context, spec Spec, _ *LocalDeleteOption) error {
 	p := NewProject(l.root, spec)
 	if err := p.CheckEntity(); err != nil {
 		return err

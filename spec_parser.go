@@ -40,10 +40,10 @@ func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 		if ok {
 			server = s
 		} else {
-			server = Server{taggedServer{
-				Host: host,
-				User: user,
-			}}
+			server = Server{
+				host: host,
+				user: user,
+			}
 		}
 	default:
 		return Spec{}, Server{}, ErrTooManySlashes

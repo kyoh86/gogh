@@ -184,9 +184,9 @@ func TestLocalController(t *testing.T) {
 		})
 	})
 
-	t.Run("Remove", func(t *testing.T) {
+	t.Run("Delete", func(t *testing.T) {
 		t.Run("Valid", func(t *testing.T) {
-			if err := local.Remove(ctx, mustSpec(t, "github.com", "kyoh86", "gogh"), nil); err != nil {
+			if err := local.Delete(ctx, mustSpec(t, "github.com", "kyoh86", "gogh"), nil); err != nil {
 				t.Fatalf("failed to remove project: %s", err)
 			}
 			stat, err := os.Stat(filepath.Join(root, "github.com", "kyoh86", "gogh"))
@@ -218,7 +218,7 @@ func TestLocalController(t *testing.T) {
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {
-				actual := local.Remove(ctx, testcase.spec, nil)
+				actual := local.Delete(ctx, testcase.spec, nil)
 				if actual == nil {
 					t.Errorf("expect error when the spec %s, but not", testcase.title)
 				}
@@ -321,7 +321,7 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 		if _, err := local.Clone(ctx, spec, nil); err == nil {
 			t.Errorf("expect failure to clone")
 		}
-		if err := local.Remove(ctx, spec, nil); err == nil {
+		if err := local.Delete(ctx, spec, nil); err == nil {
 			t.Errorf("expect failure to remove")
 		}
 	})
