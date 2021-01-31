@@ -13,32 +13,27 @@ GO GitHub project manager
 
 **`gogh` is forked from [ghq](https://github.com/motemen/ghq).**
 
-`gogh` provides a way to organize remote repository clones, like `go get` does.
-When you clone a remote repository by `gogh get`, gogh makes a directory under a specific root directory (by default `~/go/src`) using the remote repository URL's host and path.
-And creating new one by `gogh new`, gogh make both of a local project and a remote repository.
+`gogh` provides a way to organize remote repository clones, like `go get` does.  When you clone a remote repository by
+`gogh get`, gogh makes a directory under a specific root directory (by default `~/go/src`) using the remote repository
+URL's host and path.  And creating new one by `gogh new`, gogh make both of a local project and a remote repository.
 
 ```
 $ gogh get https://github.com/kyoh86/gogh
 # Runs `git clone https://github.com/kyoh86/gogh ~/go/src/github.com/kyoh86/gogh`
 ```
 
-You can also list projects (local repositories) (`gogh list`), find a project (`gogh find`).
+You can also list projects (local repositories) (`gogh list`).
 
 ## SYNOPSIS
 
 ```
 gogh list
-gogh dump
-gogh find
-gogh where
-gogh repos
-
-gogh get
-gogh bulk-get
-gogh pipe-get
+gogh clone
 gogh create
+gogh delete
+
+gogh repos
 gogh fork
-gogh remove
 ```
 
 See `gogh --help-long` for details.
