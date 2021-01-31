@@ -296,20 +296,20 @@ func (c *RemoteController) Create(ctx context.Context, name string, option *Remo
 	return c.repoSpec(repo)
 }
 
-type RemoteDeleteOption struct {
-	// Organization is the name of the organization that owns the repository.
-	Organization string
-}
+type RemoteGetOption struct{}
 
-func (o *RemoteDeleteOption) GetOrganization() string {
-	if o == nil {
-		return ""
+func (c *RemoteController) Get(ctx context.Context, owner string, name string, _ *RemoteGetOption) (Spec, error) {
+	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
+	if err != nil {
+		return Spec{}, fmt.Errorf("create a repository: %w", err)
 	}
-	return o.Organization
+	return c.repoSpec(repo)
 }
 
-func (c *RemoteController) Delete(ctx context.Context, name string, option *RemoteDeleteOption) error {
-	if _, err := c.adaptor.RepositoryDelete(ctx, option.GetOrganization(), name); err != nil {
+type RemoteDeleteOption struct{}
+
+func (c *RemoteController) Delete(ctx context.Context, owner string, name string, _ *RemoteDeleteOption) error {
+	if _, err := c.adaptor.RepositoryDelete(ctx, owner, name); err != nil {
 		return fmt.Errorf("create a repository: %w", err)
 	}
 	return nil
