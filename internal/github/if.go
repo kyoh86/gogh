@@ -25,4 +25,5 @@ type Adaptor interface {
 	RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error)
 
 	RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error)
+	RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error)
 }

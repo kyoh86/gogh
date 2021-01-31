@@ -128,3 +128,19 @@ func (mr *MockAdaptorMockRecorder) RepositoryDelete(ctx, owner, repo interface{}
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryDelete", reflect.TypeOf((*MockAdaptor)(nil).RepositoryDelete), ctx, owner, repo)
 }
+
+// RepositoryGet mocks base method
+func (m *MockAdaptor) RepositoryGet(ctx context.Context, owner, repo string) (*github.Repository, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RepositoryGet", ctx, owner, repo)
+	ret0, _ := ret[0].(*github.Repository)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// RepositoryGet indicates an expected call of RepositoryGet
+func (mr *MockAdaptorMockRecorder) RepositoryGet(ctx, owner, repo interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryGet", reflect.TypeOf((*MockAdaptor)(nil).RepositoryGet), ctx, owner, repo)
+}

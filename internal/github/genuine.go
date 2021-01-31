@@ -77,6 +77,9 @@ func (c *genuineAdaptor) RepositoryCreate(ctx context.Context, org string, repo 
 func (c *genuineAdaptor) RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *github.RepositoryCreateForkOptions) (*github.Repository, *github.Response, error) {
 	return c.client.Repositories.CreateFork(ctx, owner, repo, opts)
 }
+func (c *genuineAdaptor) RepositoryGet(ctx context.Context, owner string, repo string) (*github.Repository, *github.Response, error) {
+	return c.client.Repositories.Get(ctx, owner, repo)
+}
 func (c *genuineAdaptor) RepositoryDelete(ctx context.Context, owner string, repo string) (*github.Response, error) {
 	return c.client.Repositories.Delete(ctx, owner, repo)
 }
