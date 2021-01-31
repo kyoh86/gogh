@@ -91,6 +91,22 @@ func (s *Servers) Default() (Server, error) {
 	return Server{}, ErrNoServer
 }
 
+func (s *Servers) List() (list []Server, _ error) {
+	d := s.defaultServer
+	if d == nil {
+		return nil, nil
+	}
+	list = append(list, *d)
+
+	for _, server := range s.serverMap {
+		if server.Host() == d.Host() {
+			continue
+		}
+		list = append(list, server)
+	}
+	return list, nil
+}
+
 func (s *Servers) Remove(host string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()

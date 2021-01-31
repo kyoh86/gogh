@@ -23,6 +23,14 @@ func TestServers(t *testing.T) {
 		if !errors.Is(err, testtarget.ErrNoServer) {
 			t.Errorf("expect error: %v, acutal: %v", testtarget.ErrNoServer, err)
 		}
+
+		list, err := servers.List()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(list) != 0 {
+			t.Fatalf("length mismatch: -want +got\n -%d\n +%d", 0, len(list))
+		}
 	})
 
 	t.Run("Manipulate", func(t *testing.T) {
@@ -83,6 +91,37 @@ func TestServers(t *testing.T) {
 				}
 			})
 		}
+
+		t.Run("List", func(t *testing.T) {
+			list, err := servers.List()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(list) != 2 {
+				t.Fatalf("length mismatch: -want +got\n -%d\n +%d", 2, len(list))
+			}
+			first := list[0]
+			if first.Host() != host1 {
+				t.Errorf("expect host %q, actual: %q", host1, first.Host())
+			}
+			if first.User() != user1 {
+				t.Errorf("expect user %q, actual: %q", user1, first.User())
+			}
+			if first.Token() != token1 {
+				t.Errorf("expect token %q, actual: %q", token1, first.Token())
+			}
+
+			second := list[1]
+			if second.Host() != host2 {
+				t.Errorf("expect host %q, actual: %q", host2, second.Host())
+			}
+			if second.User() != user2 {
+				t.Errorf("expect user %q, actual: %q", user2, second.User())
+			}
+			if second.Token() != token2 {
+				t.Errorf("expect token %q, actual: %q", token2, second.Token())
+			}
+		})
 
 		t.Run("SetDefault", func(t *testing.T) {
 			if err := servers.SetDefault("unknown.dev"); !errors.Is(err, testtarget.ErrServerNotFound) {
