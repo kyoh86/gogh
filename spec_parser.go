@@ -14,8 +14,7 @@ var (
 // If it is clear that the string has host, user and name explicitly,
 // use "NewSpec" instead to build Spec.
 type SpecParser struct {
-	defaultServer Server
-	serverMap     map[string]Server
+	servers Servers
 }
 
 // Parse a string and build a Spec.
@@ -29,22 +28,31 @@ func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 	var server Server
 	switch len(parts) {
 	case 1:
-		server = p.defaultServer
+		s, err := p.servers.Default()
+		if err != nil {
+			return Spec{}, Server{}, err
+		}
+		server = s
 		host, user, name = server.Host(), server.User(), parts[0]
 	case 2:
-		server = p.defaultServer
+		s, err := p.servers.Default()
+		if err != nil {
+			return Spec{}, Server{}, err
+		}
+		server = s
 		host, user, name = server.Host(), parts[0], parts[1]
 	case 3:
 		host, user, name = parts[0], parts[1], parts[2]
-		s, ok := p.serverMap[host]
-		if ok {
+		s, err := p.servers.Find(host)
+		if err == nil {
 			server = s
-		} else {
+		} else if errors.Is(err, ErrNoServer) || errors.Is(err, ErrServerNotFound) {
 			server = Server{
 				host: host,
 				user: user,
 			}
 		}
+
 	default:
 		return Spec{}, Server{}, ErrTooManySlashes
 	}
@@ -56,20 +64,8 @@ func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 }
 
 // NewSpecParser will build Spec with a default server and alternative servers.
-func NewSpecParser(defaultServer Server, servers ...Server) *SpecParser {
-	h := defaultServer.Host()
-	serverMap := map[string]Server{
-		h: defaultServer,
-	}
-	for _, s := range servers {
-		h := s.Host()
-		if _, ok := serverMap[h]; ok {
-			continue
-		}
-		serverMap[h] = s
-	}
+func NewSpecParser(defaultServer Server, alternatives ...Server) *SpecParser {
 	return &SpecParser{
-		serverMap:     serverMap,
-		defaultServer: defaultServer,
+		servers: NewServers(defaultServer, alternatives...),
 	}
 }
