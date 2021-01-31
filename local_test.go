@@ -89,15 +89,15 @@ func TestLocalController(t *testing.T) {
 		})
 
 		t.Run("Duplicated", func(t *testing.T) {
-			if _, err := local.Create(ctx, spec, nil); err == nil {
-				t.Fatalf("expect failure with creating a project that has already exist: %s", err)
+			if _, err := local.Create(ctx, spec, nil); err != git.ErrRepositoryAlreadyExists {
+				t.Fatalf("error mismatch: -want +got\n -%v\n +%v", git.ErrRepositoryAlreadyExists, err)
 			}
 			server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
-			if _, err := local.Clone(ctx, spec, server, nil); err == nil {
-				t.Fatalf("expect failure with cloning a project that has already exist: %s", err)
+			if _, err := local.Clone(ctx, spec, server, nil); err != git.ErrRepositoryAlreadyExists {
+				t.Fatalf("error mismatch: -want +got\n -%v\n +%v", git.ErrRepositoryAlreadyExists, err)
 			}
 		})
 	})
