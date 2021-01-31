@@ -45,9 +45,37 @@ func (c *RemoteController) repoListSpecList(query string, repos []*github.Reposi
 }
 
 type RemoteListOption struct {
-	User    string
-	Query   string
-	Options *github.RepositoryListOptions
+	User  string
+	Query string
+
+	// Visibility of repositories to list. Can be one of all, public, or private.
+	// Default: all
+	Visibility string
+
+	// List repos of given affiliation[s].
+	// Comma-separated list of values. Can include:
+	// * owner: Repositories that are owned by the authenticated user.
+	// * collaborator: Repositories that the user has been added to as a
+	//   collaborator.
+	// * organization_member: Repositories that the user has access to through
+	//   being a member of an organization. This includes every repository on
+	//   every team that the user is on.
+	// Default: owner,collaborator,organization_member
+	Affiliation string
+
+	// Type of repositories to list.
+	// Can be one of all, owner, public, private, member. Default: all
+	// Will cause a 422 error if used in the same request as visibility or
+	// affiliation.
+	Type string
+
+	// How to sort the repository list. Can be one of created, updated, pushed,
+	// full_name. Default: full_name
+	Sort string
+
+	// Direction in which to sort repositories. Can be one of asc or desc.
+	// Default: when using full_name: asc; otherwise desc
+	Direction string
 }
 
 func (o *RemoteListOption) GetUser() string {
@@ -66,22 +94,58 @@ func (o *RemoteListOption) GetQuery() string {
 
 func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	if o == nil {
-		return nil
+		return &github.RepositoryListOptions{
+			ListOptions: github.ListOptions{
+				PerPage: 100,
+			},
+		}
 	}
-	return o.Options
+	return &github.RepositoryListOptions{
+		Visibility:  o.Visibility,
+		Affiliation: o.Affiliation,
+		Type:        o.Type,
+		Sort:        o.Sort,
+		Direction:   o.Direction,
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+		},
+	}
 }
 
-func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) ([]Spec, error) {
-	repos, _, err := c.adaptor.RepositoryList(ctx, option.GetUser(), option.GetOptions())
-	if err != nil {
-		return nil, err
+func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Spec, _ error) {
+	opt := option.GetOptions()
+	for {
+		repos, resp, err := c.adaptor.RepositoryList(ctx, option.GetUser(), opt)
+		if err != nil {
+			return nil, err
+		}
+		specs, err := c.repoListSpecList(option.GetQuery(), repos)
+		if err != nil {
+			return nil, err
+		}
+		allSpecs = append(allSpecs, specs...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
 	}
-	return c.repoListSpecList(option.GetQuery(), repos)
+	return allSpecs, nil
 }
 
 type RemoteListByOrgOption struct {
-	Query   string
-	Options *github.RepositoryListByOrgOptions
+	Query string
+
+	// Type of repositories to list. Possible values are: all, public, private,
+	// forks, sources, member. Default is "all".
+	Type string
+
+	// How to sort the repository list. Can be one of created, updated, pushed,
+	// full_name. Default is "created".
+	Sort string
+
+	// Direction in which to sort repositories. Can be one of asc or desc.
+	// Default when using full_name: asc; otherwise desc.
+	Direction string
 }
 
 func (o *RemoteListByOrgOption) GetQuery() string {
@@ -93,17 +157,40 @@ func (o *RemoteListByOrgOption) GetQuery() string {
 
 func (o *RemoteListByOrgOption) GetOptions() *github.RepositoryListByOrgOptions {
 	if o == nil {
-		return nil
+		return &github.RepositoryListByOrgOptions{
+			ListOptions: github.ListOptions{
+				PerPage: 100,
+			},
+		}
 	}
-	return o.Options
+	return &github.RepositoryListByOrgOptions{
+		Type:      o.Type,
+		Sort:      o.Sort,
+		Direction: o.Direction,
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+		},
+	}
 }
 
-func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) ([]Spec, error) {
-	repos, _, err := c.adaptor.RepositoryListByOrg(ctx, org, option.GetOptions())
-	if err != nil {
-		return nil, err
+func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) (allSpecs []Spec, _ error) {
+	opt := option.GetOptions()
+	for {
+		repos, resp, err := c.adaptor.RepositoryListByOrg(ctx, org, opt)
+		if err != nil {
+			return nil, err
+		}
+		specs, err := c.repoListSpecList(option.GetQuery(), repos)
+		if err != nil {
+			return nil, err
+		}
+		allSpecs = append(allSpecs, specs...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
 	}
-	return c.repoListSpecList(option.GetQuery(), repos)
+	return allSpecs, nil
 }
 
 type RemoteCreateOption struct {

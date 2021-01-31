@@ -10,6 +10,7 @@ type Repository = github.Repository
 type RepositoryCreateForkOptions = github.RepositoryCreateForkOptions
 type RepositoryListByOrgOptions = github.RepositoryListByOrgOptions
 type RepositoryListOptions = github.RepositoryListOptions
+type ListOptions = github.ListOptions
 type Response = github.Response
 type User = github.User
 type Organization = github.Organization

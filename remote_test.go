@@ -31,10 +31,31 @@ func TestRemoteController(t *testing.T) {
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
 			internalError := errors.New("test error")
-			mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return(nil, nil, internalError)
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return(nil, nil, internalError)
 
 			if _, err := remote.ListByOrg(ctx, org, nil); !errors.Is(err, internalError) {
 				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+			}
+		})
+
+		t.Run("InvalidRepo", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
+				CloneURL: ptr.String("://invalid//url"),
+			}}, &github.Response{NextPage: 1}, nil)
+
+			if _, err := remote.ListByOrg(ctx, org, nil); err == nil {
+				t.Fatal("expect failure to listup but not")
 			}
 		})
 
@@ -42,11 +63,15 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.ListByOrg(ctx, org, nil)
 			if err != nil {
@@ -81,15 +106,71 @@ func TestRemoteController(t *testing.T) {
 			}
 		})
 
+		t.Run("Paging", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
+				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
+			}}, &github.Response{NextPage: 1}, nil)
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					Page:    1,
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
+				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
+			}}, &github.Response{NextPage: 0}, nil)
+
+			specs, err := remote.ListByOrg(ctx, org, nil)
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if len(specs) != 2 {
+				t.Fatalf("expect 2 specs, but %d is gotten", len(specs))
+			}
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-2",
+			}} {
+				actual := specs[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
+				}
+			}
+		})
 		t.Run("EmptyOption", func(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{})
 			if err != nil {
@@ -130,16 +211,17 @@ func TestRemoteController(t *testing.T) {
 			remote := testtarget.NewRemoteController(mock)
 			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
 				Type: "private",
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
 			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
-				Options: &github.RepositoryListByOrgOptions{
-					Type: "private",
-				},
+				Type: "private",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
@@ -177,11 +259,15 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Query: "repo-1",
@@ -218,11 +304,15 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryListByOrg(ctx, org, nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.ListByOrg(ctx, org, &testtarget.RemoteListByOrgOption{
 				Query: "no-match",
@@ -242,7 +332,11 @@ func TestRemoteController(t *testing.T) {
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
 			internalError := errors.New("test error")
-			mock.EXPECT().RepositoryList(ctx, "", nil).Return(nil, nil, internalError)
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return(nil, nil, internalError)
 
 			if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
 				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
@@ -253,9 +347,13 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("://invalid//url"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 1}, nil)
 
 			if _, err := remote.List(ctx, nil); err == nil {
 				t.Fatal("expect failure to listup but not")
@@ -266,7 +364,11 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
@@ -274,7 +376,72 @@ func TestRemoteController(t *testing.T) {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
+
+			specs, err := remote.List(ctx, nil)
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if len(specs) != 4 {
+				t.Fatalf("expect some specs, but %d is gotten", len(specs))
+			}
+			for i, expect := range []struct {
+				host string
+				user string
+				name string
+			}{{
+				host: host,
+				user: user,
+				name: "user-repo-1",
+			}, {
+				host: host,
+				user: user,
+				name: "user-repo-2",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-1",
+			}, {
+				host: host,
+				user: org,
+				name: "org-repo-2",
+			}} {
+				actual := specs[i]
+				if expect.host != actual.Host() {
+					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
+				}
+				if expect.user != actual.User() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				}
+				if expect.name != actual.Name() {
+					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
+				}
+			}
+		})
+
+		t.Run("Paging", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
+				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+			}, {
+				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
+			}}, &github.Response{NextPage: 1}, nil)
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					Page:    1,
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
+				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
+			}, {
+				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, nil)
 			if err != nil {
@@ -321,7 +488,11 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
@@ -329,7 +500,7 @@ func TestRemoteController(t *testing.T) {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{})
 			if err != nil {
@@ -376,11 +547,15 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, user, nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, user, jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User: user,
@@ -423,16 +598,17 @@ func TestRemoteController(t *testing.T) {
 			remote := testtarget.NewRemoteController(mock)
 			mock.EXPECT().RepositoryList(ctx, "", &github.RepositoryListOptions{
 				Visibility: "public",
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
 			}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
-				Options: &github.RepositoryListOptions{
-					Visibility: "public",
-				},
+				Visibility: "public",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
@@ -472,17 +648,18 @@ func TestRemoteController(t *testing.T) {
 			remote := testtarget.NewRemoteController(mock)
 			mock.EXPECT().RepositoryList(ctx, user, &github.RepositoryListOptions{
 				Visibility: "public",
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
 			}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
-				User: user,
-				Options: &github.RepositoryListOptions{
-					Visibility: "public",
-				},
+				User:       user,
+				Visibility: "public",
 			})
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
@@ -520,7 +697,11 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
@@ -528,7 +709,7 @@ func TestRemoteController(t *testing.T) {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Query: "repo-1",
@@ -569,7 +750,11 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, "", nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
@@ -577,7 +762,7 @@ func TestRemoteController(t *testing.T) {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				Query: "no-match",
@@ -594,11 +779,15 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, user, nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, user, jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User:  user,
@@ -636,11 +825,15 @@ func TestRemoteController(t *testing.T) {
 			mock, teardown := MockAdaptor(t)
 			defer teardown()
 			remote := testtarget.NewRemoteController(mock)
-			mock.EXPECT().RepositoryList(ctx, user, nil).Return([]*github.Repository{{
+			mock.EXPECT().RepositoryList(ctx, user, jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).Return([]*github.Repository{{
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 			}, {
 				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
-			}}, nil, nil)
+			}}, &github.Response{NextPage: 0}, nil)
 
 			specs, err := remote.List(ctx, &testtarget.RemoteListOption{
 				User:  user,
