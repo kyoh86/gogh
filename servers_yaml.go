@@ -51,7 +51,7 @@ func (s *Servers) UnmarshalYAML(unmarshaler func(interface{}) error) error {
 	return nil
 }
 
-func (s Servers) MarshalYAML() (interface{}, error) {
+func (s *Servers) MarshalYAML() (interface{}, error) {
 	if s.defaultServer == nil {
 		return nil, nil
 	}
