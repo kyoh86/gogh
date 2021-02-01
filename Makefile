@@ -29,5 +29,5 @@ install: test
 .PHONY: install
 
 man:
-	go run . --help-man > gogh.1
+	go run ./cmd/gogh --help-man > gogh.1
 .PHONY: man
