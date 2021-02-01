@@ -9,7 +9,6 @@ brews:
     homepage: https://github.com/kyoh86/gogh
     description: GO GitHub project manager
 builds:
-  main: ./cmd/gogh
   - goos:
       - linux
       - darwin
@@ -19,6 +18,7 @@ builds:
       - arm
       - arm64
       - "386"
+    main: ./cmd/gogh
     hooks:
       post: make man
 archives:
