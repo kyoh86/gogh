@@ -9,6 +9,7 @@ brews:
     homepage: https://github.com/kyoh86/gogh
     description: GO GitHub project manager
 builds:
+  main: ./cmd/gogh
   - goos:
       - linux
       - darwin
