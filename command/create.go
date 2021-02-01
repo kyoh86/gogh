@@ -24,23 +24,25 @@ func Create(ctx context.Context, root string, servers gogh.Servers, rawSpec stri
 		}
 	}
 
-	var org string
-	if server.User() != spec.User() {
-		org = spec.User()
-	}
-
 	adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
 	if err != nil {
 		return err
 	}
 	remote := gogh.NewRemoteController(adaptor)
+
+	// check repo has already existed
+	if _, err := remote.Get(ctx, spec.User(), spec.Name(), nil); err == nil {
+		return nil
+	}
+
+	var org string
+	if server.User() != spec.User() {
+		org = spec.User()
+	}
 	if _, err := remote.Create(ctx, spec.Name(), &gogh.RemoteCreateOption{
 		Organization: org,
 	}); err != nil {
-		//UNDONE: check remote existance error
 		return err
 	}
-
-	//UNDONE: set remote
 	return nil
 }
