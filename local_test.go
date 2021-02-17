@@ -316,8 +316,8 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 	local := testtarget.NewLocalController(root)
 
 	t.Run("NotExit", func(t *testing.T) {
-		if _, err := local.List(ctx, nil); err == nil {
-			t.Errorf("expect failure to list")
+		if _, err := local.List(ctx, nil); err != nil {
+			t.Fatalf("failed to list not found root: %s", err)
 		}
 	})
 

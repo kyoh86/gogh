@@ -92,6 +92,12 @@ type LocalWalkOption struct {
 }
 
 func (l *LocalController) Walk(ctx context.Context, option *LocalWalkOption, walkFn LocalWalkFunc) error {
+	if _, err := os.Lstat(l.root); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
 	return walker.WalkWithContext(ctx, l.root, func(pathname string, info os.FileInfo) (retErr error) {
 		rel, _ := filepath.Rel(l.root, pathname)
 		parts := strings.Split(rel, string(filepath.Separator))
