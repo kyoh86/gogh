@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-
 	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/command"
 	"github.com/spf13/cobra"
@@ -16,12 +14,12 @@ var listFlags struct {
 var listCommand = &cobra.Command{
 	Use:   "list",
 	Short: "List local projects",
-	RunE: func(*cobra.Command, []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
 		f, err := listFlags.format.Formatter()
 		if err != nil {
 			return err
 		}
-		return command.LocalList(context.Background(), app.Roots(), listFlags.query, f)
+		return command.LocalList(cmd.Context(), app.Roots(), listFlags.query, f)
 	},
 }
 

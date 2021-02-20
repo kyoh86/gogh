@@ -9,7 +9,7 @@ import (
 	"github.com/kyoh86/gogh/v2/internal/github"
 )
 
-func Create(ctx context.Context, root string, servers gogh.Servers, rawSpec string, lopt *gogh.LocalCreateOption, ropt *gogh.RemoteCreateOption) error {
+func Create(ctx context.Context, root string, servers *gogh.Servers, rawSpec string, _ *gogh.LocalCreateOption, _ *gogh.RemoteCreateOption) error {
 	parser := gogh.NewSpecParser(servers)
 	spec, server, err := parser.Parse(rawSpec)
 	if err != nil {

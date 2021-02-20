@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/wacul/ulog"
 )
 
 func LocalList(ctx context.Context, roots []string, query string, format gogh.Format) error {
@@ -18,7 +18,10 @@ func LocalList(ctx context.Context, roots []string, query string, format gogh.Fo
 		for _, project := range projects {
 			str, err := format(project)
 			if err != nil {
-				ulog.Logger(ctx).Infof("failed to format %s: %s", project.FullFilePath(), err)
+				log.FromContext(ctx).WithFields(log.Fields{
+					"error":  err,
+					"format": project.FullFilePath(),
+				}).Info("failed to format")
 			}
 			fmt.Println(str)
 		}

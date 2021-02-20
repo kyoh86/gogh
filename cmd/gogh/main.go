@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
 	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +27,11 @@ var facadeCommand = &cobra.Command{
 }
 
 func main() {
-	if err := facadeCommand.Execute(); err != nil {
+	ctx := log.NewContext(context.Background(), &log.Logger{
+		Handler: cli.New(os.Stderr),
+		Level:   log.InfoLevel,
+	})
+	if err := facadeCommand.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

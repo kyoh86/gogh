@@ -14,7 +14,7 @@ var (
 // If it is clear that the string has host, user and name explicitly,
 // use "NewSpec" instead to build Spec.
 type SpecParser struct {
-	servers Servers
+	servers *Servers
 }
 
 // Parse a string and build a Spec.
@@ -64,6 +64,6 @@ func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 }
 
 // NewSpecParser will build Spec with a default server and alternative servers.
-func NewSpecParser(servers Servers) *SpecParser {
+func NewSpecParser(servers *Servers) *SpecParser {
 	return &SpecParser{servers: servers}
 }

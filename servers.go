@@ -16,7 +16,7 @@ type Servers struct {
 }
 
 // NewServers will build Spec with a default server and alternative servers.
-func NewServers(defaultServer Server, alternatives ...Server) Servers {
+func NewServers(defaultServer Server, alternatives ...Server) *Servers {
 	h := defaultServer.Host()
 	serverMap := map[string]Server{
 		h: defaultServer,
@@ -28,7 +28,7 @@ func NewServers(defaultServer Server, alternatives ...Server) Servers {
 		}
 		serverMap[h] = s
 	}
-	return Servers{
+	return &Servers{
 		serverMap:     serverMap,
 		defaultServer: &defaultServer,
 	}
@@ -76,8 +76,10 @@ func (s *Servers) SetDefault(host string) error {
 }
 
 func (s *Servers) Default() (Server, error) {
-	if server := s.defaultServer; server != nil {
-		return *server, nil
+	if s != nil {
+		if server := s.defaultServer; server != nil {
+			return *server, nil
+		}
 	}
 	return Server{}, ErrNoServer
 }

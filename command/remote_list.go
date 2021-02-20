@@ -8,7 +8,7 @@ import (
 	"github.com/kyoh86/gogh/v2/internal/github"
 )
 
-func RemoteList(ctx context.Context, servers gogh.Servers, query string) error {
+func RemoteList(ctx context.Context, servers *gogh.Servers, query string) error {
 	list, err := servers.List()
 	if err != nil {
 		return err

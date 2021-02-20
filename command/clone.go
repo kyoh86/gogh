@@ -6,7 +6,7 @@ import (
 	"github.com/kyoh86/gogh/v2"
 )
 
-func Clone(ctx context.Context, root string, servers gogh.Servers, rawSpec string, opt *gogh.LocalCloneOption) error {
+func Clone(ctx context.Context, root string, servers *gogh.Servers, rawSpec string, opt *gogh.LocalCloneOption) error {
 	parser := gogh.NewSpecParser(servers)
 	spec, server, err := parser.Parse(rawSpec)
 	if err != nil {

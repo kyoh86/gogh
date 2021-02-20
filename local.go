@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/apex/log"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/saracen/walker"
-	"github.com/wacul/ulog"
 )
 
 const DefaultRootDirName = "Projects"
@@ -113,7 +113,11 @@ func (l *LocalController) Walk(ctx context.Context, option *LocalWalkOption, wal
 
 		p, err := l.newProjectFromEntity([3]string{parts[0], parts[1], parts[2]}, info)
 		if err != nil {
-			ulog.Logger(ctx).WithField("error", err).WithField("rel", rel).Debug("skip invalid entity")
+			log.FromContext(ctx).WithFields(log.Fields{
+				"error": err,
+				"rel":   rel,
+			}).
+				Debug("skip invalid entity")
 			return nil
 		}
 		if option != nil && !strings.Contains(p.RelPath(), option.Query) {

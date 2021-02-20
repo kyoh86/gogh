@@ -1,42 +1,22 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/kyoh86/gogh/v2"
-	"github.com/spf13/viper"
+	"github.com/goccy/go-yaml"
 )
 
 const (
 	Name = "gogh"
 )
 
-var homeDir string
-var config struct {
-	Roots []string
-}
-var servers gogh.Servers
-
-func Servers() *gogh.Servers {
-	return &servers
-}
-
-func Roots() []string {
-	roots := make([]string, 0, len(config.Roots))
-	for _, r := range config.Roots {
-		r = os.ExpandEnv(r)
-
-		runes := []rune(r)
-		if runes[0] == '~' && (runes[1] == filepath.Separator || runes[1] == '/') {
-			r = filepath.Join(homeDir, string(runes[2:]))
-		}
-		roots = append(roots, r)
-	}
-	return roots
-}
+var (
+	homeDir   string
+	configDir string
+	cacheDir  string
+)
 
 func Setup() error {
 	{
@@ -46,37 +26,56 @@ func Setup() error {
 		}
 		homeDir = dir
 	}
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return fmt.Errorf("search user config dir: %w", err)
+	{
+		dir, err := os.UserConfigDir()
+		if err != nil {
+			return fmt.Errorf("search user config dir: %w", err)
+		}
+		configDir = dir
 	}
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		return fmt.Errorf("search user cache dir: %w", err)
-	}
-
-	var notFound viper.ConfigFileNotFoundError
-	copt := viper.New()
-	copt.SetConfigName("config")
-	copt.AddConfigPath(filepath.Join(configDir, Name))
-	copt.SetConfigType("yaml")
-	copt.SetEnvPrefix(Name)
-	if err := copt.ReadInConfig(); err != nil && !errors.As(err, &notFound) {
-		return fmt.Errorf("read in user config: %w", err)
-	}
-	if err := copt.Unmarshal(&config); err != nil {
-		return fmt.Errorf("unmarshal cached servers: %w", err)
+	{
+		dir, err := os.UserCacheDir()
+		if err != nil {
+			return fmt.Errorf("search user cache dir: %w", err)
+		}
+		cacheDir = dir
 	}
 
-	sopt := viper.New()
-	sopt.SetConfigName("servers")
-	sopt.AddConfigPath(filepath.Join(cacheDir, Name))
-	sopt.SetConfigType("yaml")
-	if err := sopt.ReadInConfig(); err != nil && !errors.As(err, &notFound) {
-		return fmt.Errorf("read in cached servers: %#v, %w", err, err)
+	if err := setupConfig(); err != nil {
+		return err
 	}
-	if err := sopt.Unmarshal(&servers); err != nil {
-		return fmt.Errorf("unmarshal cached servers: %w", err)
+
+	if err := setupServers(); err != nil {
+		return err
 	}
+
 	return nil
+}
+
+func loadYAML(path string, obj interface{}) error {
+	file, err := os.Open(path)
+	switch {
+	case err == nil:
+		//noop
+	case os.IsNotExist(err):
+		return nil
+	default:
+		return err
+	}
+	defer file.Close()
+	dec := yaml.NewDecoder(file)
+	return dec.Decode(obj)
+}
+
+func saveYAML(path string, obj interface{}) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	enc := yaml.NewEncoder(file)
+	return enc.Encode(obj)
 }
