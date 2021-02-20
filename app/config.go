@@ -25,6 +25,33 @@ func Roots() []string {
 	return roots
 }
 
+func SetDefaultRoot(r string) {
+	roots := make([]string, 0, len(config.Roots))
+	roots = append(roots, r)
+	for _, root := range config.Roots {
+		if root == r {
+			continue
+		}
+		roots = append(roots, root)
+	}
+	config.Roots = roots
+}
+
+func AddRoots(roots []string) {
+	config.Roots = append(config.Roots, roots...)
+}
+
+func RemoveRoot(r string) {
+	roots := make([]string, 0, len(config.Roots))
+	for _, root := range config.Roots {
+		if root == r {
+			continue
+		}
+		roots = append(roots, root)
+	}
+	config.Roots = roots
+}
+
 func expandPath(p string) string {
 	p = os.ExpandEnv(p)
 	runes := []rune(p)

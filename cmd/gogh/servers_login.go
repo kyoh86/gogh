@@ -22,11 +22,7 @@ var loginCommand = &cobra.Command{
 		if err := getParams(); err != nil {
 			return err
 		}
-		servers := app.Servers()
-		if err := servers.Set(loginFlags.Host, loginFlags.User, loginFlags.Password); err != nil {
-			return err
-		}
-		return app.SaveServers()
+		return app.Servers().Set(loginFlags.Host, loginFlags.User, loginFlags.Password)
 	},
 }
 
@@ -75,5 +71,5 @@ func init() {
 	loginCommand.Flags().StringVarP(&loginFlags.Host, "host", "", gogh.DefaultHost, "Host name to login")
 	loginCommand.Flags().StringVarP(&loginFlags.User, "user", "", "", "User name to login")
 	loginCommand.Flags().StringVarP(&loginFlags.Password, "password", "", "", "Password or developer private token")
-	facadeCommand.AddCommand(loginCommand)
+	serversCommand.AddCommand(loginCommand)
 }

@@ -41,10 +41,10 @@ var logoutCommand = &cobra.Command{
 				return err
 			}
 		}
-		return app.SaveServers()
+		return nil
 	},
 }
 
 func init() {
-	facadeCommand.AddCommand(logoutCommand)
+	serversCommand.AddCommand(logoutCommand)
 }
