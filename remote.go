@@ -296,6 +296,35 @@ func (c *RemoteController) Create(ctx context.Context, name string, option *Remo
 	return c.repoSpec(repo)
 }
 
+type RemoteForkOption struct {
+	// Organization is the name of the organization that owns the repository.
+	Organization string
+}
+
+func (o *RemoteForkOption) GetOrganization() string {
+	if o == nil {
+		return ""
+	}
+	return o.Organization
+}
+
+func (o *RemoteForkOption) GetOptions() *github.RepositoryCreateForkOptions {
+	if o == nil {
+		return nil
+	}
+	return &github.RepositoryCreateForkOptions{
+		Organization: o.Organization,
+	}
+}
+
+func (c *RemoteController) Fork(ctx context.Context, owner string, name string, option *RemoteForkOption) (Spec, error) {
+	repo, _, err := c.adaptor.RepositoryCreateFork(ctx, owner, name, option.GetOptions())
+	if err != nil {
+		return Spec{}, fmt.Errorf("fork a repository: %w", err)
+	}
+	return c.repoSpec(repo)
+}
+
 type RemoteGetOption struct{}
 
 func (c *RemoteController) Get(ctx context.Context, owner string, name string, _ *RemoteGetOption) (Spec, error) {
