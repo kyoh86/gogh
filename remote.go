@@ -26,8 +26,8 @@ func (c *RemoteController) repoSpec(repo *github.Repository) (Spec, error) {
 	if err != nil {
 		return Spec{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
 	}
-	user, name := path.Split(u.Path)
-	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(user, "/"), "/"), name)
+	owner, name := path.Split(u.Path)
+	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
 func (c *RemoteController) repoListSpecList(query string, repos []*github.Repository) (specs []Spec, _ error) {

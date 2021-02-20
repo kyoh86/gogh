@@ -26,7 +26,7 @@ func (s *Servers) UnmarshalYAML(unmarshaler func(interface{}) error) error {
 
 		user, ok := info["user"].(string)
 		if !ok {
-			return fmt.Errorf("invalid user: %v", info["user"])
+			return fmt.Errorf("invalid user-type: %v", info["user"])
 		}
 		token, ok := info["token"].(string)
 		if !ok {

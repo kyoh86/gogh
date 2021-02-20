@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
 
@@ -13,13 +14,13 @@ var (
 	date    = "snapshot"
 )
 
-const appname = "gogh"
-
 var facadeCommand = &cobra.Command{
-	Use:               appname,
-	Short:             "GO GitHub project manager",
-	Version:           fmt.Sprintf("%s-%s (%s)", version, commit, date),
-	PersistentPreRunE: setupConfig,
+	Use:     app.Name,
+	Short:   "GO GitHub project manager",
+	Version: fmt.Sprintf("%s-%s (%s)", version, commit, date),
+	PersistentPreRunE: func(*cobra.Command, []string) error {
+		return app.Setup()
+	},
 }
 
 func main() {

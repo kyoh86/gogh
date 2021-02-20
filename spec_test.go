@@ -8,111 +8,111 @@ import (
 
 func TestSpec(t *testing.T) {
 	const (
-		validHost = "example.com"
-		validUser = "kyoh86"
-		validName = "gogh"
+		validHost  = "example.com"
+		validOwner = "kyoh86"
+		validName  = "gogh"
 	)
 	for _, testcase := range []struct {
 		title  string
 		host   string
-		user   string
+		owner  string
 		name   string
 		expect error
 	}{
 		{
 			title:  "valid",
 			host:   validHost,
-			user:   validUser,
+			owner:  validOwner,
 			name:   validName,
 			expect: nil,
 		},
 		{
 			title:  "empty-name",
 			host:   validHost,
-			user:   validUser,
+			owner:  validOwner,
 			name:   "",
 			expect: testtarget.ErrEmptyName,
 		},
 		{
-			title:  "empty-user",
+			title:  "empty-owner",
 			host:   validHost,
-			user:   "",
+			owner:  "",
 			name:   validName,
-			expect: testtarget.ErrEmptyUser,
+			expect: testtarget.ErrEmptyOwner,
 		},
 		{
 			title:  "empty-host",
 			host:   "",
-			user:   validUser,
+			owner:  validOwner,
 			name:   validName,
 			expect: testtarget.ErrEmptyHost,
 		},
 		{
 			title:  "slashed-name",
 			host:   validHost,
-			user:   validUser,
+			owner:  validOwner,
 			name:   "go/gh",
 			expect: testtarget.ErrInvalidName("invalid name: go/gh"),
 		},
 		{
-			title:  "slashed-user",
+			title:  "slashed-owner",
 			host:   validHost,
-			user:   "kyoh/86",
+			owner:  "kyoh/86",
 			name:   validName,
-			expect: testtarget.ErrInvalidUser("invalid user: kyoh/86"),
+			expect: testtarget.ErrInvalidOwner("invalid owner: kyoh/86"),
 		},
 		{
 			title:  "slashed-host",
 			host:   "example.com/example",
-			user:   validUser,
+			owner:  validOwner,
 			name:   validName,
 			expect: testtarget.ErrInvalidHost("invalid host: example.com/example"),
 		},
 		{
-			title:  "dotted-user",
+			title:  "dotted-owner",
 			host:   validHost,
-			user:   "kyoh.86",
+			owner:  "kyoh.86",
 			name:   validName,
-			expect: testtarget.ErrInvalidUser("invalid user: kyoh.86"),
+			expect: testtarget.ErrInvalidOwner("invalid owner: kyoh.86"),
 		},
 		{
 			title:  "dot-name",
 			host:   validHost,
-			user:   validUser,
+			owner:  validOwner,
 			name:   ".",
 			expect: testtarget.ErrInvalidName("'.' is reserved name"),
 		},
 		{
-			title:  "dot-user",
+			title:  "dot-owner",
 			host:   validHost,
-			user:   ".",
+			owner:  ".",
 			name:   validName,
-			expect: testtarget.ErrInvalidUser("invalid user: ."),
+			expect: testtarget.ErrInvalidOwner("invalid owner: ."),
 		},
 		{
 			title:  "dotdot-name",
 			host:   validHost,
-			user:   validUser,
+			owner:  validOwner,
 			name:   "..",
 			expect: testtarget.ErrInvalidName("'..' is reserved name"),
 		},
 		{
-			title:  "dotdot-user",
+			title:  "dotdot-owner",
 			host:   validHost,
-			user:   "..",
+			owner:  "..",
 			name:   validName,
-			expect: testtarget.ErrInvalidUser("invalid user: .."),
+			expect: testtarget.ErrInvalidOwner("invalid owner: .."),
 		},
 		{
 			title:  "ported-host",
 			host:   "127.0.0.1:9000",
-			user:   validUser,
+			owner:  validOwner,
 			name:   validName,
 			expect: nil,
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
-			spec, err := testtarget.NewSpec(testcase.host, testcase.user, testcase.name)
+			spec, err := testtarget.NewSpec(testcase.host, testcase.owner, testcase.name)
 			if testcase.expect == nil {
 				if err != nil {
 					t.Fatalf("failed to create new spec: %s", err)
@@ -120,8 +120,8 @@ func TestSpec(t *testing.T) {
 				if testcase.host != spec.Host() {
 					t.Errorf("expect host %q but %q gotten", testcase.host, spec.Host())
 				}
-				if testcase.user != spec.User() {
-					t.Errorf("expect user %q but %q gotten", testcase.user, spec.User())
+				if testcase.owner != spec.Owner() {
+					t.Errorf("expect owner %q but %q gotten", testcase.owner, spec.Owner())
 				}
 				if testcase.name != spec.Name() {
 					t.Errorf("expect name %q but %q gotten", testcase.name, spec.Name())

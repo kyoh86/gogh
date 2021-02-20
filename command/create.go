@@ -15,7 +15,6 @@ func Create(ctx context.Context, root string, servers gogh.Servers, rawSpec stri
 	if err != nil {
 		return err
 	}
-	_ = server
 
 	local := gogh.NewLocalController(root)
 	if _, err = local.Create(ctx, spec, nil); err != nil {
@@ -31,13 +30,13 @@ func Create(ctx context.Context, root string, servers gogh.Servers, rawSpec stri
 	remote := gogh.NewRemoteController(adaptor)
 
 	// check repo has already existed
-	if _, err := remote.Get(ctx, spec.User(), spec.Name(), nil); err == nil {
+	if _, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil); err == nil {
 		return nil
 	}
 
 	var org string
-	if server.User() != spec.User() {
-		org = spec.User()
+	if server.User() != spec.Owner() {
+		org = spec.Owner()
 	}
 	if _, err := remote.Create(ctx, spec.Name(), &gogh.RemoteCreateOption{
 		Organization: org,

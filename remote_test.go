@@ -51,8 +51,8 @@ func TestRemoteController(t *testing.T) {
 			if host != actual.Host() {
 				t.Errorf("expect host %q but %q gotten", host, actual.Host())
 			}
-			if user != actual.User() {
-				t.Errorf("expect user %q but %q gotten", user, actual.User())
+			if user != actual.Owner() {
+				t.Errorf("expect user %q but %q gotten", user, actual.Owner())
 			}
 			if actual.Name() != "gogh" {
 				t.Errorf("expect name %q but %q gotten", "gogh", actual.Name())
@@ -132,8 +132,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -185,8 +185,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -231,8 +231,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -281,8 +281,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -326,8 +326,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -445,8 +445,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -510,8 +510,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -569,8 +569,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -618,8 +618,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -668,8 +668,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -719,8 +719,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -772,8 +772,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -847,8 +847,8 @@ func TestRemoteController(t *testing.T) {
 				if expect.host != actual.Host() {
 					t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 				}
-				if expect.user != actual.User() {
-					t.Errorf("expect user %q but %q gotten", expect.user, actual.User())
+				if expect.user != actual.Owner() {
+					t.Errorf("expect user %q but %q gotten", expect.user, actual.Owner())
 				}
 				if expect.name != actual.Name() {
 					t.Errorf("expect name %q but %q gotten", expect.name, actual.Name())
@@ -912,8 +912,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if spec.User() != user {
-				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.User())
+			if spec.Owner() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.Owner())
 			}
 			if spec.Name() != "gogh" {
 				t.Errorf("expect that a spec be created with name %q, but actual %q", "gogh", spec.Name())
@@ -934,8 +934,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if spec.User() != user {
-				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.User())
+			if spec.Owner() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.Owner())
 			}
 			if spec.Name() != "user-repo-1" {
 				t.Errorf("expect that a spec be created with name %q, but actual %q", "user-repo-1", spec.Name())
@@ -965,8 +965,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if spec.User() != user {
-				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.User())
+			if spec.Owner() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.Owner())
 			}
 			if spec.Name() != "user-repo-1" {
 				t.Errorf("expect that a spec be created with name %q, but actual %q", "user-repo-1", spec.Name())
@@ -989,8 +989,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if spec.User() != org {
-				t.Errorf("expect that a spec be created with user %q, but actual %q", org, spec.User())
+			if spec.Owner() != org {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", org, spec.Owner())
 			}
 			if spec.Name() != "org-repo-1" {
 				t.Errorf("expect that a spec be created with name %q, but actual %q", "org-repo-1", spec.Name())
@@ -1015,8 +1015,8 @@ func TestRemoteController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to listup: %s", err)
 			}
-			if spec.User() != org {
-				t.Errorf("expect that a spec be created with user %q, but actual %q", org, spec.User())
+			if spec.Owner() != org {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", org, spec.Owner())
 			}
 			if spec.Name() != "org-repo-1" {
 				t.Errorf("expect that a spec be created with name %q, but actual %q", "org-repo-1", spec.Name())

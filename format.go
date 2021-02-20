@@ -30,7 +30,7 @@ func FormatFields(s string) Format {
 			p.FullFilePath(),
 			p.RelPath(),
 			p.Host(),
-			p.User(),
+			p.Owner(),
 			p.Name(),
 		}, s), nil
 	}

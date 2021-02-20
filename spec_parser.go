@@ -23,7 +23,7 @@ type SpecParser struct {
 // replaced with a default server.
 func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 	parts := strings.Split(s, "/")
-	var name, user, host string
+	var name, owner, host string
 
 	var server Server
 	switch len(parts) {
@@ -33,30 +33,30 @@ func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 			return Spec{}, Server{}, err
 		}
 		server = s
-		host, user, name = server.Host(), server.User(), parts[0]
+		host, owner, name = server.Host(), server.User(), parts[0]
 	case 2:
 		s, err := p.servers.Default()
 		if err != nil {
 			return Spec{}, Server{}, err
 		}
 		server = s
-		host, user, name = server.Host(), parts[0], parts[1]
+		host, owner, name = server.Host(), parts[0], parts[1]
 	case 3:
-		host, user, name = parts[0], parts[1], parts[2]
+		host, owner, name = parts[0], parts[1], parts[2]
 		s, err := p.servers.Find(host)
 		if err == nil {
 			server = s
 		} else if errors.Is(err, ErrNoServer) || errors.Is(err, ErrServerNotFound) {
 			server = Server{
 				host: host,
-				user: user,
+				user: owner,
 			}
 		}
 
 	default:
 		return Spec{}, Server{}, ErrTooManySlashes
 	}
-	spec, err := NewSpec(host, user, name)
+	spec, err := NewSpec(host, owner, name)
 	if err != nil {
 		return Spec{}, Server{}, err
 	}

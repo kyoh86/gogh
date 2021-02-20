@@ -65,17 +65,17 @@ func TestServersYAML(t *testing.T) {
 			{
 				title:  "invalid-user",
 				input:  fmt.Sprintf(`{"%s":{"user":"%s","token":"%s"}}`, host1, invalidUser, token1),
-				expect: testtarget.ErrInvalidUser("invalid user: " + invalidUser),
+				expect: testtarget.ErrInvalidOwner("invalid owner: " + invalidUser),
 			},
 			{
 				title:  "invalid-user-type",
 				input:  fmt.Sprintf(`{"%s":{"user":1,"token":"%s"}}`, host1, token1),
-				expect: testtarget.ErrInvalidUser("invalid user: 1"),
+				expect: testtarget.ErrInvalidOwner("invalid user-type: 1"),
 			},
 			{
 				title:  "invalid-token-type",
 				input:  fmt.Sprintf(`{"%s":{"user":"%s","token":1}}`, host1, user1),
-				expect: testtarget.ErrInvalidUser("invalid token: 1"),
+				expect: testtarget.ErrInvalidOwner("invalid token: 1"),
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {

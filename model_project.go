@@ -18,16 +18,16 @@ func (p Project) Root() string {
 	return p.root
 }
 
-func (p Project) Host() string { return p.spec.host }
-func (p Project) User() string { return p.spec.user }
-func (p Project) Name() string { return p.spec.name }
+func (p Project) Host() string  { return p.spec.host }
+func (p Project) Owner() string { return p.spec.owner }
+func (p Project) Name() string  { return p.spec.name }
 
 func (p Project) FullLevels() []string {
-	return []string{p.root, p.spec.host, p.spec.user, p.spec.name}
+	return []string{p.root, p.spec.host, p.spec.owner, p.spec.name}
 }
 
 func (p Project) RelLevels() []string {
-	return []string{p.spec.host, p.spec.user, p.spec.name}
+	return []string{p.spec.host, p.spec.owner, p.spec.name}
 }
 
 func (p Project) FullFilePath() string {

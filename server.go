@@ -18,7 +18,7 @@ func NewServerFor(host, user, token string) (Server, error) {
 	if err := ValidateHost(host); err != nil {
 		return Server{}, err
 	}
-	if err := ValidateUser(user); err != nil {
+	if err := ValidateOwner(user); err != nil {
 		return Server{}, err
 	}
 	return Server{host: host, user: user, token: token}, nil

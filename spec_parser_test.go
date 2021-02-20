@@ -9,11 +9,11 @@ import (
 
 func TestSpecParser(t *testing.T) {
 	const (
-		user1 = "kyoh86"
-		user2 = "anonymous"
-		host1 = "example.com" // host a not default
-		host2 = "kyoh86.dev"  // host a not default
-		name  = "gogh"
+		owner1 = "kyoh86"
+		owner2 = "anonymous"
+		host1  = "example.com" // host a not default
+		host2  = "kyoh86.dev"  // host a not default
+		name   = "gogh"
 	)
 	t.Run("Empty", func(t *testing.T) {
 		var parser testtarget.SpecParser
@@ -24,8 +24,8 @@ func TestSpecParser(t *testing.T) {
 			title:  "valid-name",
 			source: name,
 		}, {
-			title:  "default-user,valid-name",
-			source: user1 + "/" + name,
+			title:  "default-owner,valid-name",
+			source: owner1 + "/" + name,
 		}} {
 			t.Run(testcase.title, func(t *testing.T) {
 				if _, _, err := parser.Parse(testcase.source); err == nil {
@@ -36,9 +36,9 @@ func TestSpecParser(t *testing.T) {
 	})
 
 	t.Run("DefaultHost", func(t *testing.T) {
-		server, err := testtarget.NewServer(user1, "token")
+		server, err := testtarget.NewServer(owner1, "token")
 		if err != nil {
-			t.Fatalf("failed to create new server for %s: %v", user1, err)
+			t.Fatalf("failed to create new server for %s: %v", owner1, err)
 		}
 		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
 		t.Run("ValidInput", func(t *testing.T) {
@@ -56,33 +56,33 @@ func TestSpecParser(t *testing.T) {
 				title:            "valid-name",
 				source:           name,
 				expectHost:       testtarget.DefaultHost,
-				expectUser:       user1,
+				expectUser:       owner1,
 				expectName:       name,
-				expectServerUser: user1,
+				expectServerUser: owner1,
 				expectToken:      "token",
 			}, {
-				title:            "default-user,valid-name",
-				source:           user1 + "/" + name,
+				title:            "default-owner,valid-name",
+				source:           owner1 + "/" + name,
 				expectHost:       testtarget.DefaultHost,
-				expectUser:       user1,
+				expectUser:       owner1,
 				expectName:       name,
-				expectServerUser: user1,
+				expectServerUser: owner1,
 				expectToken:      "token",
 			}, {
-				title:            "default-host,default-user,valid-name",
-				source:           testtarget.DefaultHost + "/" + user1 + "/" + name,
+				title:            "default-host,default-owner,valid-name",
+				source:           testtarget.DefaultHost + "/" + owner1 + "/" + name,
 				expectHost:       testtarget.DefaultHost,
-				expectUser:       user1,
+				expectUser:       owner1,
 				expectName:       name,
-				expectServerUser: user1,
+				expectServerUser: owner1,
 				expectToken:      "token",
 			}, {
-				title:            "valid-host,valid-user,valid-name",
-				source:           host1 + "/" + user2 + "/" + name,
+				title:            "valid-host,valid-owner,valid-name",
+				source:           host1 + "/" + owner2 + "/" + name,
 				expectHost:       host1,
-				expectUser:       user2,
+				expectUser:       owner2,
 				expectName:       name,
-				expectServerUser: user2,
+				expectServerUser: owner2,
 				expectToken:      "",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
@@ -93,8 +93,8 @@ func TestSpecParser(t *testing.T) {
 					if testcase.expectHost != spec.Host() {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
 					}
-					if testcase.expectUser != spec.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expectUser, spec.User())
+					if testcase.expectUser != spec.Owner() {
+						t.Errorf("expect owner %q but %q gotten", testcase.expectUser, spec.Owner())
 					}
 					if testcase.expectName != spec.Name() {
 						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
@@ -103,7 +103,7 @@ func TestSpecParser(t *testing.T) {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
 					}
 					if testcase.expectServerUser != server.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expectServerUser, server.User())
+						t.Errorf("expect owner %q but %q gotten", testcase.expectServerUser, server.User())
 					}
 					if testcase.expectToken != server.Token() {
 						t.Errorf("expect token %q but %q gotten", testcase.expectToken, server.Token())
@@ -124,99 +124,99 @@ func TestSpecParser(t *testing.T) {
 					expect: testtarget.ErrEmptyName,
 				},
 				{
-					title:  "empty-user,empty-name",
+					title:  "empty-owner,empty-name",
 					input:  "/",
 					expect: testtarget.ErrEmptyName,
 				},
 				{
-					title:  "empty-user,valid-name",
+					title:  "empty-owner,valid-name",
 					input:  "/" + name,
-					expect: testtarget.ErrEmptyUser,
+					expect: testtarget.ErrEmptyOwner,
 				},
 				{
-					title:  "valid-user,dot",
-					input:  user1 + "/.",
+					title:  "valid-owner,dot",
+					input:  owner1 + "/.",
 					expect: testtarget.ErrInvalidName("'.' is reserved name"),
 				},
 				{
-					title:  "valid-user,dotdot",
-					input:  user1 + "/..",
+					title:  "valid-owner,dotdot",
+					input:  owner1 + "/..",
 					expect: testtarget.ErrInvalidName("'..' is reserved name"),
 				},
 				{
-					title:  "invalid-user,valid-name",
-					input:  "space in the user/" + name,
-					expect: testtarget.ErrInvalidUser("invalid user: space in the user"),
+					title:  "invalid-owner,valid-name",
+					input:  "space in the owner/" + name,
+					expect: testtarget.ErrInvalidOwner("invalid owner: space in the owner"),
 				},
 				{
-					title:  "valid-user,empty-name",
-					input:  user1 + "/",
+					title:  "valid-owner,empty-name",
+					input:  owner1 + "/",
 					expect: testtarget.ErrEmptyName,
 				},
 				{
-					title:  "valid-user,invalid-name",
-					input:  user1 + "/space in the name",
+					title:  "valid-owner,invalid-name",
+					input:  owner1 + "/space in the name",
 					expect: testtarget.ErrInvalidName("invalid name: space in the name"),
 				},
 
 				{
-					title:  "empty-host,valid-user,valid-name",
-					input:  "/" + user1 + "/" + name,
+					title:  "empty-host,valid-owner,valid-name",
+					input:  "/" + owner1 + "/" + name,
 					expect: testtarget.ErrEmptyHost,
 				},
 				{
-					title:  "invalid-host,valid-user,valid-name",
-					input:  "space in the host/" + user1 + "/" + name,
+					title:  "invalid-host,valid-owner,valid-name",
+					input:  "space in the host/" + owner1 + "/" + name,
 					expect: testtarget.ErrInvalidHost("invalid host: space in the host"),
 				},
 				{
-					title:  "valid-host,empty-user,valid-name",
+					title:  "valid-host,empty-owner,valid-name",
 					input:  host1 + "//" + name,
-					expect: testtarget.ErrEmptyUser,
+					expect: testtarget.ErrEmptyOwner,
 				},
 				{
-					title:  "valid-host,invalid-user,valid-name",
-					input:  host1 + "/space in the user/" + name,
-					expect: testtarget.ErrInvalidUser("invalid user: space in the user"),
+					title:  "valid-host,invalid-owner,valid-name",
+					input:  host1 + "/space in the owner/" + name,
+					expect: testtarget.ErrInvalidOwner("invalid owner: space in the owner"),
 				},
 				{
-					title:  "valid-host,valid-user,empty-name",
-					input:  host1 + "/" + user1 + "/",
+					title:  "valid-host,valid-owner,empty-name",
+					input:  host1 + "/" + owner1 + "/",
 					expect: testtarget.ErrEmptyName,
 				},
 				{
-					title:  "valid-host,valid-user,invalid-name",
-					input:  host1 + "/" + user1 + "/space in the name",
+					title:  "valid-host,valid-owner,invalid-name",
+					input:  host1 + "/" + owner1 + "/space in the name",
 					expect: testtarget.ErrInvalidName("invalid name: space in the name"),
 				},
 				{
-					title:  "valid-host,empty-user,empty-name",
+					title:  "valid-host,empty-owner,empty-name",
 					input:  host1 + "//",
 					expect: testtarget.ErrEmptyName,
 				},
 				{
-					title:  "empty-host,valid-user,empty-name",
-					input:  "/" + user1 + "/",
+					title:  "empty-host,valid-owner,empty-name",
+					input:  "/" + owner1 + "/",
 					expect: testtarget.ErrEmptyName,
 				},
 				{
-					title:  "empty-host,empty-user,valid-name",
+					title:  "empty-host,empty-owner,valid-name",
 					input:  "//" + name,
-					expect: testtarget.ErrEmptyUser,
+					expect: testtarget.ErrEmptyOwner,
 				},
 				{
-					title:  "empty-host,empty-user,empty-name",
+					title:  "empty-host,empty-owner,empty-name",
 					input:  "//",
 					expect: testtarget.ErrEmptyName,
 				},
 				{
 					title:  "unnecessary-following-slash",
-					input:  host1 + "/" + user1 + "/" + name + "/",
+					input:  host1 + "/" + owner1 + "/" + name + "/",
 					expect: testtarget.ErrTooManySlashes,
 				},
 				{
 					title:  "unnecessary-heading-slash",
-					input:  "/" + host1 + "/" + user1 + "/" + name + "/",
+					input:  "/" + host1 + "/" + owner1 + "/" + name + "/",
 					expect: testtarget.ErrTooManySlashes,
 				},
 			} {
@@ -237,9 +237,9 @@ func TestSpecParser(t *testing.T) {
 	})
 
 	t.Run("WithHost", func(t *testing.T) {
-		server, err := testtarget.NewServerFor(host1, user1, "token")
+		server, err := testtarget.NewServerFor(host1, owner1, "token")
 		if err != nil {
-			t.Fatalf("failed to create new server for %s: %v", user1, err)
+			t.Fatalf("failed to create new server for %s: %v", owner1, err)
 		}
 		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
 		t.Run("ValidInput", func(t *testing.T) {
@@ -257,32 +257,32 @@ func TestSpecParser(t *testing.T) {
 				title:            "valid-name",
 				source:           name,
 				expectHost:       host1,
-				expectUser:       user1,
+				expectUser:       owner1,
 				expectName:       name,
-				expectServerUser: user1,
+				expectServerUser: owner1,
 				expectToken:      "token",
 			}, {
-				title:            "default-user,valid-name",
-				source:           user1 + "/" + name,
+				title:            "default-owner,valid-name",
+				source:           owner1 + "/" + name,
 				expectHost:       host1,
-				expectUser:       user1,
+				expectUser:       owner1,
 				expectName:       name,
-				expectServerUser: user1,
+				expectServerUser: owner1,
 				expectToken:      "token",
 			}, {
-				title:            "default-host,default-user,valid-name",
-				source:           host1 + "/" + user1 + "/" + name,
+				title:            "default-host,default-owner,valid-name",
+				source:           host1 + "/" + owner1 + "/" + name,
 				expectHost:       host1,
-				expectUser:       user1,
+				expectUser:       owner1,
 				expectName:       name,
-				expectServerUser: user1,
+				expectServerUser: owner1,
 				expectToken:      "token",
 			}, {
-				title:            "valid-host,valid-user,valid-name",
-				source:           host2 + "/" + user2 + "/" + name,
+				title:            "valid-host,valid-owner,valid-name",
+				source:           host2 + "/" + owner2 + "/" + name,
 				expectHost:       host2,
-				expectUser:       user2,
-				expectServerUser: user2,
+				expectUser:       owner2,
+				expectServerUser: owner2,
 				expectName:       name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
@@ -293,8 +293,8 @@ func TestSpecParser(t *testing.T) {
 					if testcase.expectHost != spec.Host() {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
 					}
-					if testcase.expectUser != spec.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expectUser, spec.User())
+					if testcase.expectUser != spec.Owner() {
+						t.Errorf("expect owner %q but %q gotten", testcase.expectUser, spec.Owner())
 					}
 					if testcase.expectName != spec.Name() {
 						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
@@ -303,7 +303,7 @@ func TestSpecParser(t *testing.T) {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
 					}
 					if testcase.expectServerUser != server.User() {
-						t.Errorf("expect user %q but %q gotten", testcase.expectServerUser, server.User())
+						t.Errorf("expect owner %q but %q gotten", testcase.expectServerUser, server.User())
 					}
 					if testcase.expectToken != server.Token() {
 						t.Errorf("expect token %q but %q gotten", testcase.expectToken, server.Token())
@@ -315,19 +315,19 @@ func TestSpecParser(t *testing.T) {
 
 	t.Run("WithMultipeServers", func(t *testing.T) {
 		// (default) github.com/kyoh86
-		server1, err := testtarget.NewServerFor(testtarget.DefaultHost, user1, "token1")
+		server1, err := testtarget.NewServerFor(testtarget.DefaultHost, owner1, "token1")
 		if err != nil {
-			t.Fatalf("failed to create new server for %s@%s: %q", user1, testtarget.DefaultHost, err)
+			t.Fatalf("failed to create new server for %s@%s: %q", owner1, testtarget.DefaultHost, err)
 		}
 		// example.com/anonymous
-		server2, err := testtarget.NewServerFor(host1, user2, "token2")
+		server2, err := testtarget.NewServerFor(host1, owner2, "token2")
 		if err != nil {
-			t.Fatalf("failed to create new server for %s@%s: %q", user2, host1, err)
+			t.Fatalf("failed to create new server for %s@%s: %q", owner2, host1, err)
 		}
 		// kyoh86.dev/anonymous
-		server3, err := testtarget.NewServerFor(testtarget.DefaultHost, user2, "token3")
+		server3, err := testtarget.NewServerFor(testtarget.DefaultHost, owner2, "token3")
 		if err != nil {
-			t.Fatalf("failed to create new server for %s@%s: %q", user2, testtarget.DefaultHost, err)
+			t.Fatalf("failed to create new server for %s@%s: %q", owner2, testtarget.DefaultHost, err)
 		}
 
 		parser := testtarget.NewSpecParser(testtarget.NewServers(server1, server2, server3))
@@ -346,40 +346,40 @@ func TestSpecParser(t *testing.T) {
 			title:            "valid-name",
 			source:           name,
 			expectHost:       testtarget.DefaultHost,
-			expectUser:       user1,
+			expectUser:       owner1,
 			expectName:       name,
-			expectServerUser: user1,
+			expectServerUser: owner1,
 			expectToken:      "token1",
 		}, {
-			title:            "valid-name,valid-user",
-			source:           user2 + "/" + name,
+			title:            "valid-name,valid-owner",
+			source:           owner2 + "/" + name,
 			expectHost:       testtarget.DefaultHost,
-			expectUser:       user2,
-			expectServerUser: user1,
+			expectUser:       owner2,
+			expectServerUser: owner1,
 			expectName:       name,
 			expectToken:      "token1",
 		}, {
 			title:            "full-name",
-			source:           testtarget.DefaultHost + "/" + user2 + "/" + name,
+			source:           testtarget.DefaultHost + "/" + owner2 + "/" + name,
 			expectHost:       testtarget.DefaultHost,
-			expectUser:       user2,
+			expectUser:       owner2,
 			expectName:       name,
-			expectServerUser: user1,
+			expectServerUser: owner1,
 			expectToken:      "token1",
 		}, {
 			title:            "other-host",
-			source:           host1 + "/" + user2 + "/" + name,
+			source:           host1 + "/" + owner2 + "/" + name,
 			expectHost:       host1,
-			expectUser:       user2,
+			expectUser:       owner2,
 			expectName:       name,
-			expectServerUser: user2,
+			expectServerUser: owner2,
 			expectToken:      "token2",
 		}, {
 			title:            "not-matched",
-			source:           host2 + "/" + user2 + "/" + name,
+			source:           host2 + "/" + owner2 + "/" + name,
 			expectHost:       host2,
-			expectUser:       user2,
-			expectServerUser: user2,
+			expectUser:       owner2,
+			expectServerUser: owner2,
 			expectName:       name,
 			expectToken:      "",
 		}} {
@@ -391,8 +391,8 @@ func TestSpecParser(t *testing.T) {
 				if testcase.expectHost != spec.Host() {
 					t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
 				}
-				if testcase.expectUser != spec.User() {
-					t.Errorf("expect user %q but %q gotten", testcase.expectUser, spec.User())
+				if testcase.expectUser != spec.Owner() {
+					t.Errorf("expect owner %q but %q gotten", testcase.expectUser, spec.Owner())
 				}
 				if testcase.expectName != spec.Name() {
 					t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
@@ -401,7 +401,7 @@ func TestSpecParser(t *testing.T) {
 					t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
 				}
 				if testcase.expectServerUser != server.User() {
-					t.Errorf("expect user %q but %q gotten", testcase.expectServerUser, server.User())
+					t.Errorf("expect owner %q but %q gotten", testcase.expectServerUser, server.User())
 				}
 				if testcase.expectToken != server.Token() {
 					t.Errorf("expect token %q but %q gotten", testcase.expectToken, server.Token())

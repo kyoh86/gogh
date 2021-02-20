@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 
+	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/command"
 	"github.com/spf13/cobra"
 )
 
 var listFlags struct {
 	query  string
-	format ProjectFormat
+	format app.ProjectFormat
 }
 
 var listCommand = &cobra.Command{
@@ -20,7 +21,7 @@ var listCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return command.LocalList(context.Background(), GetRoots(), listFlags.query, f)
+		return command.LocalList(context.Background(), app.Roots(), listFlags.query, f)
 	},
 }
 

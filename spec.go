@@ -8,23 +8,23 @@ import (
 
 // Spec describes which project is in a root.
 type Spec struct {
-	host string
-	user string
-	name string
+	host  string
+	owner string
+	name  string
 }
 
-func (s Spec) Host() string { return s.host }
-func (s Spec) User() string { return s.user }
-func (s Spec) Name() string { return s.name }
+func (s Spec) Host() string  { return s.host }
+func (s Spec) Owner() string { return s.owner }
+func (s Spec) Name() string  { return s.name }
 
 func (s Spec) String() string {
-	return path.Join(s.Host(), s.User(), s.Name())
+	return path.Join(s.Host(), s.Owner(), s.Name())
 }
 
 var (
-	ErrEmptyHost = ErrInvalidHost("empty host")
-	ErrEmptyUser = ErrInvalidUser("empty user")
-	ErrEmptyName = ErrInvalidName("empty name")
+	ErrEmptyHost  = ErrInvalidHost("empty host")
+	ErrEmptyOwner = ErrInvalidOwner("empty owner")
+	ErrEmptyName  = ErrInvalidName("empty name")
 )
 
 type ErrInvalidHost string
@@ -72,37 +72,37 @@ func ValidateName(name string) error {
 	return nil
 }
 
-type ErrInvalidUser string
+type ErrInvalidOwner string
 
-func (e ErrInvalidUser) Error() string {
+func (e ErrInvalidOwner) Error() string {
 	return string(e)
 }
 
-var validUserRegexp = regexp.MustCompile(`^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$`)
+var validOwnerRegexp = regexp.MustCompile(`^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$`)
 
-func ValidateUser(user string) error {
-	if user == "" {
-		return ErrEmptyUser
+func ValidateOwner(owner string) error {
+	if owner == "" {
+		return ErrEmptyOwner
 	}
-	if !validUserRegexp.MatchString(user) {
-		return ErrInvalidUser("invalid user: " + user)
+	if !validOwnerRegexp.MatchString(owner) {
+		return ErrInvalidOwner("invalid owner: " + owner)
 	}
 	return nil
 }
 
-func NewSpec(host, user, name string) (Spec, error) {
+func NewSpec(host, owner, name string) (Spec, error) {
 	if err := ValidateName(name); err != nil {
 		return Spec{}, err
 	}
-	if err := ValidateUser(user); err != nil {
+	if err := ValidateOwner(owner); err != nil {
 		return Spec{}, err
 	}
 	if err := ValidateHost(host); err != nil {
 		return Spec{}, err
 	}
 	return Spec{
-		host: host,
-		user: user,
-		name: name,
+		host:  host,
+		owner: owner,
+		name:  name,
 	}, nil
 }

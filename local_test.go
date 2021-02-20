@@ -12,9 +12,9 @@ import (
 	testtarget "github.com/kyoh86/gogh/v2"
 )
 
-func mustSpec(t *testing.T, host, user, name string) testtarget.Spec {
+func mustSpec(t *testing.T, host, owner, name string) testtarget.Spec {
 	t.Helper()
-	spec, err := testtarget.NewSpec(host, user, name)
+	spec, err := testtarget.NewSpec(host, owner, name)
 	if err != nil {
 		t.Fatalf("invalid spec: %s", err)
 	}
@@ -40,8 +40,8 @@ func TestLocalController(t *testing.T) {
 			if spec.Host() != project.Host() {
 				t.Errorf("expect host %q but %q is gotten", spec.Host(), project.Host())
 			}
-			if spec.User() != project.User() {
-				t.Errorf("expect user %q but %q is gotten", spec.User(), project.User())
+			if spec.Owner() != project.Owner() {
+				t.Errorf("expect owner %q but %q is gotten", spec.Owner(), project.Owner())
 			}
 			if spec.Name() != project.Name() {
 				t.Errorf("expect name %q but %q is gotten", spec.Name(), project.Name())
@@ -92,7 +92,7 @@ func TestLocalController(t *testing.T) {
 			if _, err := local.Create(ctx, spec, nil); err != git.ErrRepositoryAlreadyExists {
 				t.Fatalf("error mismatch: -want +got\n -%v\n +%v", git.ErrRepositoryAlreadyExists, err)
 			}
-			server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+			server, err := testtarget.NewServerFor(spec.Host(), spec.Owner(), "")
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
@@ -148,15 +148,15 @@ func TestLocalController(t *testing.T) {
 				option: &testtarget.LocalListOption{Query: "gogh"},
 			},
 			{
-				title:  "matched for user",
+				title:  "matched for owner",
 				option: &testtarget.LocalListOption{Query: "kyoh86"},
 			},
 			{
-				title:  "matched for user/name",
+				title:  "matched for owner/name",
 				option: &testtarget.LocalListOption{Query: "kyoh86/gogh"},
 			},
 			{
-				title:  "matched for user/name",
+				title:  "matched for owner/name",
 				option: &testtarget.LocalListOption{Query: "kyoh86/gogh"},
 			},
 		} {
@@ -232,7 +232,7 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Clone", func(t *testing.T) {
 		spec := mustSpec(t, "github.com", "kyoh86-tryouts", "bare")
-		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+		server, err := testtarget.NewServerFor(spec.Host(), spec.Owner(), "")
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
@@ -246,8 +246,8 @@ func TestLocalController(t *testing.T) {
 		if spec.Host() != project.Host() {
 			t.Errorf("expect host %q but %q is gotten", spec.Host(), project.Host())
 		}
-		if spec.User() != project.User() {
-			t.Errorf("expect user %q but %q is gotten", spec.User(), project.User())
+		if spec.Owner() != project.Owner() {
+			t.Errorf("expect owner %q but %q is gotten", spec.Owner(), project.Owner())
 		}
 		if spec.Name() != project.Name() {
 			t.Errorf("expect name %q but %q is gotten", spec.Name(), project.Name())
@@ -296,7 +296,7 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("CloneFailure", func(t *testing.T) {
 		spec := mustSpec(t, "github.com", "kyoh86", "gogh")
-		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "invalid-token")
+		server, err := testtarget.NewServerFor(spec.Host(), spec.Owner(), "invalid-token")
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
@@ -330,7 +330,7 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 		if _, err := local.Create(ctx, spec, nil); err == nil {
 			t.Errorf("expect failure to create")
 		}
-		server, err := testtarget.NewServerFor(spec.Host(), spec.User(), "")
+		server, err := testtarget.NewServerFor(spec.Host(), spec.Owner(), "")
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
