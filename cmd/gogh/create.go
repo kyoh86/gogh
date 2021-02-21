@@ -4,9 +4,10 @@ import (
 	"errors"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
-	"github.com/kyoh86/gogh/v2/command"
+	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 )
 
@@ -46,7 +47,38 @@ var createCommand = &cobra.Command{
 		} else {
 			selected = specs[0]
 		}
-		return command.Create(cmd.Context(), app.DefaultRoot(), app.Servers(), selected, nil, nil)
+
+		ctx := cmd.Context()
+		parser := gogh.NewSpecParser(servers)
+		spec, server, err := parser.Parse(selected)
+		if err != nil {
+			return err
+		}
+
+		local := gogh.NewLocalController(app.DefaultRoot())
+		if _, err = local.Create(ctx, spec, nil); err != nil {
+			if !errors.Is(err, git.ErrRepositoryAlreadyExists) {
+				return err
+			}
+		}
+
+		adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+		if err != nil {
+			return err
+		}
+		remote := gogh.NewRemoteController(adaptor)
+
+		// check repo has already existed
+		if _, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil); err == nil {
+			return nil
+		}
+
+		var ropt *gogh.RemoteCreateOption
+		if server.User() != spec.Owner() {
+			ropt = &gogh.RemoteCreateOption{Organization: spec.Owner()}
+		}
+		_, err = remote.Create(ctx, spec.Name(), ropt)
+		return err
 	},
 }
 

@@ -4,7 +4,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
-	"github.com/kyoh86/gogh/v2/command"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 )
@@ -45,7 +44,15 @@ var cloneCommand = &cobra.Command{
 		} else {
 			selected = specs[0]
 		}
-		return command.Clone(ctx, app.DefaultRoot(), servers, selected, nil)
+		parser := gogh.NewSpecParser(servers)
+		spec, server, err := parser.Parse(selected)
+		if err != nil {
+			return err
+		}
+
+		local := gogh.NewLocalController(app.DefaultRoot())
+		_, err = local.Clone(ctx, spec, server, nil)
+		return err
 	},
 }
 

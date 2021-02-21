@@ -21,15 +21,6 @@ func NewLocalController(root string) *LocalController {
 	return &LocalController{root: root}
 }
 
-//UNDONE: provide DefaultLocalRoot for app? mainutil?
-// func DefaultLocalRoot() (string, error) {
-// 	home, err := os.UserHomeDir()
-// 	if err != nil {
-// 		return "", fmt.Errorf("get user home dir: %w", err)
-// 	}
-// 	return filepath.Join(home, DefaultRootDirName), nil
-// }
-
 type LocalController struct {
 	// UNDONE: support fs.FS
 	// UNDONE: support fs.FS
@@ -58,6 +49,39 @@ func (l *LocalController) Create(ctx context.Context, spec Spec, _ *LocalCreateO
 		return Project{}, err
 	}
 	return p, nil
+}
+
+func (l *LocalController) SetRemoteURLs(ctx context.Context, spec Spec, remotes map[string][]string) error {
+	p := NewProject(l.root, spec)
+	repo, err := git.PlainOpen(p.FullFilePath())
+	if err != nil {
+		return err
+	}
+	cfg, err := repo.Config()
+	if err != nil {
+		return err
+	}
+	cfg.Remotes = map[string]*config.RemoteConfig{}
+	for name, urls := range remotes {
+		cfg.Remotes[name] = &config.RemoteConfig{
+			Name: name,
+			URLs: urls,
+		}
+	}
+	return repo.SetConfig(cfg)
+}
+
+func (l *LocalController) GetRemoteURLs(ctx context.Context, spec Spec, name string) ([]string, error) {
+	p := NewProject(l.root, spec)
+	repo, err := git.PlainOpen(p.FullFilePath())
+	if err != nil {
+		return nil, err
+	}
+	remote, err := repo.Remote(name)
+	if err != nil {
+		return nil, err
+	}
+	return remote.Config().URLs, nil
 }
 
 type LocalCloneOption struct {

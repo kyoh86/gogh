@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
-	"github.com/kyoh86/gogh/v2/command"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 )
@@ -45,7 +47,25 @@ var deleteCommand = &cobra.Command{
 		} else {
 			selected = specs[0]
 		}
-		return command.Delete(ctx, app.DefaultRoot(), servers, selected, nil, nil)
+
+		parser := gogh.NewSpecParser(servers)
+		spec, server, err := parser.Parse(selected)
+		if err != nil {
+			return err
+		}
+
+		local := gogh.NewLocalController(app.DefaultRoot())
+		if err := local.Delete(ctx, spec, nil); err != nil {
+			if !os.IsNotExist(err) {
+				return fmt.Errorf("delete local: %w", err)
+			}
+		}
+
+		adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+		if err != nil {
+			return err
+		}
+		return gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil)
 	},
 }
 

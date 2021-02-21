@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
-	"github.com/kyoh86/gogh/v2/command"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +22,26 @@ var listCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return command.LocalList(cmd.Context(), app.Roots(), listFlags.query, f)
+
+		ctx := cmd.Context()
+		for _, root := range app.Roots() {
+			local := gogh.NewLocalController(root)
+			projects, err := local.List(ctx, &gogh.LocalListOption{Query: listFlags.query})
+			if err != nil {
+				return err
+			}
+			for _, project := range projects {
+				str, err := f(project)
+				if err != nil {
+					log.FromContext(ctx).WithFields(log.Fields{
+						"error":  err,
+						"format": project.FullFilePath(),
+					}).Info("failed to format")
+				}
+				fmt.Println(str)
+			}
+		}
+		return nil
 	},
 }
 

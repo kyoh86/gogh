@@ -10,6 +10,7 @@ require (
 	github.com/goccy/go-yaml v1.8.8
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.4.3 // indirect
+	github.com/google/go-cmp v0.5.4
 	github.com/google/go-github/v33 v33.0.0
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect

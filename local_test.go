@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	git "github.com/go-git/go-git/v5"
+	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v2"
 )
 
@@ -66,25 +67,13 @@ func TestLocalController(t *testing.T) {
 			}
 
 			// check git remote
-			repo, err := git.PlainOpen(expectFullPath)
+			got, err := local.GetRemoteURLs(ctx, spec, git.DefaultRemoteName)
 			if err != nil {
-				t.Fatalf("failed to open git repository in created project: %s", err)
+				t.Fatalf("failed to get remote urls from created project: %s", err)
 			}
-			remote, err := repo.Remote(git.DefaultRemoteName)
-			if err != nil {
-				t.Fatalf("failed to get remote %s: %s", git.DefaultRemoteName, err)
-			}
-			urls := remote.Config().URLs
-			switch len(urls) {
-			default:
-				t.Fatalf("created repository has multiple urls: %+v", urls)
-				fallthrough
-			case 1:
-				if expectURL != urls[0] {
-					t.Errorf("expect the repository created for %q but %q actually", expectURL, urls[0])
-				}
-			case 0:
-				t.Fatal("created repository has no url")
+			want := []string{expectURL}
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("remote urls mismatch (-want +got):\n%s", diff)
 			}
 		})
 
@@ -115,6 +104,54 @@ func TestLocalController(t *testing.T) {
 		if !errors.Is(actual, expect) {
 			t.Fatalf("expect passed through error %v from walkFn, but %v gotten", expect, actual)
 		}
+	})
+
+	t.Run("SetRemotes", func(t *testing.T) {
+		spec := mustSpec(t, "github.com", "kyoh86", "gogh")
+		name := "upstream"
+		t.Run("First", func(t *testing.T) {
+			url := "https://github.com/kyoh86/gogh-upstream"
+
+			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: []string{url}}); err != nil {
+				t.Fatalf("failed to set remotes: %s", err)
+			}
+			// check git remote
+			got, err := local.GetRemoteURLs(ctx, spec, name)
+			if err != nil {
+				t.Fatalf("failed to get remote urls from a project which is set remote: %s", err)
+			}
+			want := []string{url}
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("remote urls mismatch (-want +got):\n%s", diff)
+			}
+		})
+		t.Run("Overwrite", func(t *testing.T) {
+			url := "https://github.com/kyoh86/gogh-overwrite"
+
+			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: []string{url}}); err != nil {
+				t.Fatalf("failed to set remotes: %s", err)
+			}
+			// check git remote
+			got, err := local.GetRemoteURLs(ctx, spec, name)
+			if err != nil {
+				t.Fatalf("failed to get remote urls from a project which is set remote: %s", err)
+			}
+			want := []string{url}
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("remote urls mismatch (-want +got):\n%s", diff)
+			}
+		})
+		t.Run("NotFound", func(t *testing.T) {
+			if err := local.SetRemoteURLs(ctx, mustSpec(t, "github.com", "kyoh86", "unknown"), nil); err == nil {
+				t.Error("expect that SetRemoteURLs is failed, but not")
+			}
+			if _, err := local.GetRemoteURLs(ctx, mustSpec(t, "github.com", "kyoh86", "unknown"), git.DefaultRemoteName); err == nil {
+				t.Error("expect that GetRemoteURLs is failed, but not")
+			}
+			if _, err := local.GetRemoteURLs(ctx, spec, "unknown"); err == nil {
+				t.Error("expect that GetRemoteURLs is failed, but not")
+			}
+		})
 	})
 
 	t.Run("List", func(t *testing.T) {

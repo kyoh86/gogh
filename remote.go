@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -320,7 +321,10 @@ func (o *RemoteForkOption) GetOptions() *github.RepositoryCreateForkOptions {
 func (c *RemoteController) Fork(ctx context.Context, owner string, name string, option *RemoteForkOption) (Spec, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFork(ctx, owner, name, option.GetOptions())
 	if err != nil {
-		return Spec{}, fmt.Errorf("fork a repository: %w", err)
+		var acc *github.AcceptedError
+		if !errors.As(err, &acc) {
+			return Spec{}, fmt.Errorf("fork a repository: %w", err)
+		}
 	}
 	return c.repoSpec(repo)
 }
