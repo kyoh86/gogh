@@ -56,7 +56,7 @@ func loadYAML(path string, obj interface{}) error {
 	file, err := os.Open(path)
 	switch {
 	case err == nil:
-		//noop
+		// noop
 	case os.IsNotExist(err):
 		return nil
 	default:

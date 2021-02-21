@@ -19,18 +19,6 @@ var createCommand = &cobra.Command{
 		servers := app.Servers()
 		var selected string
 		if len(specs) == 0 {
-			configured, err := servers.List()
-			if err != nil {
-				return err
-			}
-			if len(configured) == 0 {
-				return nil
-			}
-			specs = make([]string, 0, len(configured))
-			for _, c := range configured {
-				specs = append(specs, c.Host())
-			}
-
 			parser := gogh.NewSpecParser(servers)
 			if err := survey.AskOne(&survey.Input{
 				Message: "A spec of repository name to create",

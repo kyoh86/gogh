@@ -112,7 +112,7 @@ func TestLocalController(t *testing.T) {
 		t.Run("First", func(t *testing.T) {
 			url := "https://github.com/kyoh86/gogh-upstream"
 
-			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: []string{url}}); err != nil {
+			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: {url}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
@@ -128,7 +128,7 @@ func TestLocalController(t *testing.T) {
 		t.Run("Overwrite", func(t *testing.T) {
 			url := "https://github.com/kyoh86/gogh-overwrite"
 
-			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: []string{url}}); err != nil {
+			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: {url}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
