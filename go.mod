@@ -11,9 +11,14 @@ require (
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.4
+	github.com/google/go-github/v25 v25.0.1 // indirect
 	github.com/google/go-github/v33 v33.0.0
+	github.com/goreleaser/goreleaser v0.157.0 // indirect
+	github.com/goreleaser/nfpm v0.11.0 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
+	github.com/kamilsk/retry/v4 v4.0.0 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
+	github.com/mattn/go-zglob v0.0.0-20180803001819-2ea3427bfa53 // indirect
 	github.com/saracen/walker v0.1.1
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
