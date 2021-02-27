@@ -28,6 +28,8 @@ func FormatFields(s string) Format {
 	return func(p Project) (string, error) {
 		return strings.Join([]string{
 			p.FullFilePath(),
+			p.RelFilePath(),
+			p.URL(),
 			p.RelPath(),
 			p.Host(),
 			p.Owner(),

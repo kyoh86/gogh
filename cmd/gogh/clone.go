@@ -10,7 +10,7 @@ import (
 
 var cloneCommand = &cobra.Command{
 	Use:   "clone",
-	Short: "Clone a repository",
+	Short: "Clone a repository to local",
 	Args:  cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()

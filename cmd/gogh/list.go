@@ -45,8 +45,13 @@ var listCommand = &cobra.Command{
 	},
 }
 
+const formatShortUsage = `
+Print each project in a given format, where <format> can be one of "rel-path", "rel-file-path",
+"full-file-path", "url", "fields" and "fields:<separator>".
+`
+
 func init() {
 	listCommand.Flags().StringVarP(&listFlags.query, "query", "", "", "Query for selecting projects")
-	listCommand.Flags().VarP(&listFlags.format, "format", "f", "Output format")
+	listCommand.Flags().VarP(&listFlags.format, "format", "f", formatShortUsage)
 	facadeCommand.AddCommand(listCommand)
 }

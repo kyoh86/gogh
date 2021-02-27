@@ -27,7 +27,3 @@ test: lint
 install: test
 	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./...
 .PHONY: install
-
-man:
-	go run ./cmd/gogh --help-man > gogh.1
-.PHONY: man
