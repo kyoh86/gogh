@@ -18,8 +18,11 @@ func (f ProjectFormat) String() string {
 
 func (f *ProjectFormat) Set(v string) error {
 	_, err := formatter(v)
+	if err != nil {
+		return fmt.Errorf("parse project format: %w", err)
+	}
 	*f = ProjectFormat(v)
-	return fmt.Errorf("parse project format: %w", err)
+	return nil
 }
 
 func (f ProjectFormat) Type() string {
