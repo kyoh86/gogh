@@ -54,10 +54,7 @@ var manCommand = &cobra.Command{
 			Title:   "GOGH",
 			Section: "1",
 		}
-		if err := os.MkdirAll("./man", 0755); err != nil {
-			return err
-		}
-		if err := doc.GenManTree(facadeCommand, header, "./man"); err != nil {
+		if err := doc.GenManTree(facadeCommand, header, "."); err != nil {
 			return err
 		}
 		if err := os.MkdirAll("./usage", 0755); err != nil {

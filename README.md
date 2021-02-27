@@ -112,7 +112,7 @@ Manual: [usage/gogh.md](./usage/gogh.md).
 Local projects are placed under `gogh.roots` with named `*host*/*user*/*repo*.
 
 ```
-~/go/src
+~/Projects
 +-- github.com/
 |-- google/
 |   +-- go-github/
@@ -126,5 +126,5 @@ Local projects are placed under `gogh.roots` with named `*host*/*user*/*repo*.
 
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](http://www.opensource.org/licenses/MIT)
 
-This software is released under the [MIT License](http://www.opensource.org/licenses/MIT), see LICENSE.
-And this software is based on [ghq](https://github.com/motemen/ghq).
+This software is released under the [MIT License](http://www.opensource.org/licenses/MIT), see
+LICENSE.  And this software is based on [ghq](https://github.com/motemen/ghq).
