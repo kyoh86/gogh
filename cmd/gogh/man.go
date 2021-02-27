@@ -52,12 +52,16 @@ var manCommand = &cobra.Command{
 			Title:   "GOGH",
 			Section: "1",
 		}
-		if err := doc.GenManTree(facadeCommand, header, "."); err != nil {
+		if err := doc.GenManTree(facadeCommand, header, "./man"); err != nil {
 			return err
 		}
-		if err := doc.GenMarkdownTree(facadeCommand, "."); err != nil {
+		if err := doc.GenMarkdownTree(facadeCommand, "./usage"); err != nil {
 			return err
 		}
 		return nil
 	},
+}
+
+func init() {
+	facadeCommand.AddCommand(manCommand)
 }
