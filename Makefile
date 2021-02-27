@@ -20,14 +20,14 @@ lint: gen
 	golangci-lint run
 .PHONY: lint
 
-test: lint
-	go test -tags mock -v --race ./...
+test: gen
+	go test -tags man -v --race ./...
 .PHONY: test
 
-install: test
-	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./...
-.PHONY: install
-
-man:
-	go run . --help-man > gogh.1
+man: gen
+	go run -tags man -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
 .PHONY: man
+
+install: test
+	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh/...
+.PHONY: install
