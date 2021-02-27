@@ -52,6 +52,7 @@ You can also list projects (local repositories) (`gogh list`).
 | `gogh help`    | Help about any command   |
 
 Use `gogh [command] --help` for more information about a command.
+Or see the manual in [usage/gogh.md](./usage/gogh.md).
 
 ## Install
 
@@ -104,48 +105,7 @@ Amonguas repository names will be interpolated:
 
 ## Commands
 
-See `gogh <command> --help` for details.
-
-### `list [<query>]`
-
-List locally projects.  If a query argument is given, only repositories whose names contain that
-query text are listed.  `-f` (`--format`) specifies format of the item. Default: `relative`.
-
-* `-f=full` is given, the full paths to the repository will be printed.
-* `-f=relative` is given, the relative paths from gogh root to the repository will be printed.
-* `-f=url` is given, the urls of the repository will be printed.
-
-### `repos`
-
-List remote repositories for a user.
-
-### `get`
-
-Clone a remote repository under gogh root directory (see [DIRECTORY STRUCTURES](#DIRECTORY+STRUCTURES) below).
-If the repository is already cloned to local project, nothing will happen unless `-u` (`--update`) flag is supplied,
-in which case the project (local repository) is updated (`git pull --ff-only` eg.).
-When you use `--ssh` option, the repository is cloned via SSH protocol.
-
-If there are multiple `gogh.roots`, existing local clones are searched first.
-Then a new repository clone is created under the primary root if none is found.
-
-With `--shallow` option, a "shallow clone" will be performed (for Git repositories only, `git clone --depth 1 ...` eg.).
-Be careful that a shallow-cloned repository cannot be pushed to remote.
-
-Currently Git and Mercurial repositories are supported.
-
-### `create`
-
-Create a new repository on remote GitHub and clone it into local project.
-
-### `fork`
-
-Clone a remote repository under gogh root direcotry if the project is not exist in local.
-And fork int on remote GitHub repository with calling `hub fork`
-
-### `remove`
-
-Remove a repository on remote GitHub and local project.
+Manual: [usage/gogh.md](./usage/gogh.md).
 
 ## Directory structures
 
@@ -161,27 +121,6 @@ Local projects are placed under `gogh.roots` with named `*host*/*user*/*repo*.
 +-- alecthomas/
   +-- kingpin/
 ```
-
-## SHELL EXTENTIONS
-
-To be enabled shell extentions (for zsh / bash), set up gogh in your shell-rc file (`.bashrc` / `.zshrc`).
-
-* `gogo cd` command
-  * shorthand for `cd $(gogh find <project name>)`
-* `gogo get --cd` option
-* auto-completions
-
-```
-eval "$(gogh init)"
-```
-
-If you have not set `SHELL` envar right, tell your shell explicitly.
-
-```
-eval "$(gogh init --shell bash)"
-```
-
-NOTE: Now gogh supports `bash` or `zsh` only.
 
 # LICENSE
 

@@ -50,6 +50,8 @@ func TestFormat(t *testing.T) {
 			format: testtarget.FormatFields(" "),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
+				filepath.Clean("github.com/kyoh86/gogh"),
+				"https://github.com/kyoh86/gogh",
 				"github.com/kyoh86/gogh",
 				"github.com",
 				"kyoh86",
@@ -61,6 +63,8 @@ func TestFormat(t *testing.T) {
 			format: testtarget.FormatFields("<<>>"),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
+				filepath.Clean("github.com/kyoh86/gogh"),
+				"https://github.com/kyoh86/gogh",
 				"github.com/kyoh86/gogh",
 				"github.com",
 				"kyoh86",

@@ -24,6 +24,10 @@ test: lint
 	go test -tags mock -v --race ./...
 .PHONY: test
 
+man: test
+	go run -tags man -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
+.PHONY: man
+
 install: test
-	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./...
+	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh/...
 .PHONY: install

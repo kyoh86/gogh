@@ -2,7 +2,7 @@
 /dist
 
 # for man file
-/gogh.1
+/man
 
 # Binaries for programs and plugins
 *.exe

@@ -1,8 +1,10 @@
-//// +build man
+// +build man
 
 package main
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
@@ -52,7 +54,13 @@ var manCommand = &cobra.Command{
 			Title:   "GOGH",
 			Section: "1",
 		}
+		if err := os.MkdirAll("./man", 0755); err != nil {
+			return err
+		}
 		if err := doc.GenManTree(facadeCommand, header, "./man"); err != nil {
+			return err
+		}
+		if err := os.MkdirAll("./usage", 0755); err != nil {
 			return err
 		}
 		if err := doc.GenMarkdownTree(facadeCommand, "./usage"); err != nil {
