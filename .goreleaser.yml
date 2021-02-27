@@ -1,7 +1,7 @@
 brews:
   - install: |
       bin.install "gogh"
-      man.install "gogh*.1"
+      man1.install Dir.glob('gogh*.1')
     tap:
       owner: kyoh86
       name: homebrew-tap
