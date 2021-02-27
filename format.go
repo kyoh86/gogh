@@ -1,6 +1,9 @@
 package gogh
 
-import "strings"
+import (
+	"encoding/json"
+	"strings"
+)
 
 type Format func(Project) (string, error)
 
@@ -22,6 +25,22 @@ func FormatRelFilePath(p Project) (string, error) {
 
 func FormatURL(p Project) (string, error) {
 	return p.URL(), nil
+}
+
+func FormatJSON(p Project) (string, error) {
+	buf, err := json.Marshal(map[string]interface{}{
+		"fullFilePath": p.FullFilePath(),
+		"relFilePath":  p.RelFilePath(),
+		"url":          p.URL(),
+		"relPath":      p.RelPath(),
+		"host":         p.Host(),
+		"owner":        p.Owner(),
+		"name":         p.Name(),
+	})
+	if err != nil {
+		return "", err
+	}
+	return string(buf), nil
 }
 
 func FormatFields(s string) Format {

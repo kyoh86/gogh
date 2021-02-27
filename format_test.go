@@ -1,10 +1,12 @@
 package gogh_test
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v2"
 )
 
@@ -82,5 +84,28 @@ func TestFormat(t *testing.T) {
 			}
 		})
 	}
-	// UNDONE: Test JSON Formatter: it should be checked with assert.JSONEq
+
+	t.Run("JSON", func(t *testing.T) {
+		formatted, err := testtarget.FormatJSON(project)
+		if err != nil {
+			t.Fatalf("failed to format: %s", err)
+		}
+		var got map[string]interface{}
+		if err := json.Unmarshal([]byte(formatted), &got); err != nil {
+			t.Fatalf("failed to unmarshal JSON formatted: %s", err)
+		}
+		want := map[string]interface{}{
+			"fullFilePath": filepath.Clean("/tmp/github.com/kyoh86/gogh"),
+			"relFilePath":  filepath.Clean("github.com/kyoh86/gogh"),
+			"url":          "https://github.com/kyoh86/gogh",
+			"relPath":      "github.com/kyoh86/gogh",
+			"host":         "github.com",
+			"owner":        "kyoh86",
+			"name":         "gogh",
+		}
+
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("json obj mismatch (-want +got):\n%s", diff)
+		}
+	})
 }

@@ -41,6 +41,8 @@ func formatter(v string) (gogh.Format, error) {
 		return gogh.FormatRelFilePath, nil
 	case "full-file-path":
 		return gogh.FormatFullFilePath, nil
+	case "json":
+		return gogh.FormatJSON, nil
 	case "url":
 		return gogh.FormatURL, nil
 	case "fields":
