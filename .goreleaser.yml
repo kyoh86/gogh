@@ -20,9 +20,9 @@ builds:
       - "386"
     main: ./cmd/gogh
     hooks:
-      post: |
-        go get github.com/kyoh86/git-vertag
-        make man
+      post:
+        - go get github.com/kyoh86/git-vertag
+        - make man
 archives:
   - id: gzip
     format: tar.gz
