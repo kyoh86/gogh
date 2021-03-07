@@ -21,6 +21,7 @@ var rootsCommand = &cobra.Command{
 var rootsListCommand = &cobra.Command{
 	Use:   "list",
 	Short: "List all of the roots",
+	Args:  cobra.ExactArgs(0),
 	Run: func(*cobra.Command, []string) {
 		for _, root := range app.Roots() {
 			fmt.Println(root)
@@ -31,6 +32,7 @@ var rootsListCommand = &cobra.Command{
 var rootsAddCommand = &cobra.Command{
 	Use:   "add",
 	Short: "Add directories into the roots",
+	Args:  cobra.ExactArgs(1),
 	Run: func(_ *cobra.Command, roots []string) {
 		app.AddRoots(roots)
 	},

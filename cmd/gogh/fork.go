@@ -11,7 +11,7 @@ import (
 var forkCommand = &cobra.Command{
 	Use:   "fork",
 	Short: "Fork a repository",
-	Args:  cobra.RangeArgs(1, 1),
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
 		servers := app.Servers()

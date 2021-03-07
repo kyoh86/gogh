@@ -16,6 +16,7 @@ var reposFlags struct {
 var reposCommand = &cobra.Command{
 	Use:   "repos",
 	Short: "List remote repositories",
+	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		list, err := app.Servers().List()
 		if err != nil {
@@ -43,6 +44,6 @@ var reposCommand = &cobra.Command{
 }
 
 func init() {
-	reposCommand.Flags().StringVarP(&listFlags.query, "query", "", "", "Query for selecting projects")
+	reposCommand.Flags().StringVarP(&reposFlags.query, "query", "", "", "Query for selecting projects")
 	facadeCommand.AddCommand(reposCommand)
 }

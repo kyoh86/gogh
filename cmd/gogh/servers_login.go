@@ -18,6 +18,7 @@ var loginFlags struct {
 var loginCommand = &cobra.Command{
 	Use:   "login",
 	Short: "Login for a server",
+	Args:  cobra.ExactArgs(0),
 	RunE: func(*cobra.Command, []string) error {
 		if err := getParams(); err != nil {
 			return err

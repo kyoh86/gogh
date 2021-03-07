@@ -48,6 +48,7 @@ var manCommand = &cobra.Command{
 	Use:    "man",
 	Short:  "Generate manual",
 	Hidden: true,
+	Args:   cobra.ExactArgs(0),
 	RunE: func(*cobra.Command, []string) error {
 		listCommand.Flag("format").Usage = formatLongUsage
 		header := &doc.GenManHeader{
