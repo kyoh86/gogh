@@ -10,8 +10,9 @@ import (
 )
 
 var listFlags struct {
-	query  string
-	format app.ProjectFormat
+	query   string
+	primary bool
+	format  app.ProjectFormat
 }
 
 var listCommand = &cobra.Command{
@@ -25,7 +26,11 @@ var listCommand = &cobra.Command{
 		}
 
 		ctx := cmd.Context()
-		for _, root := range app.Roots() {
+		roots := app.Roots()
+		if listFlags.primary && len(roots) > 1 {
+			roots = roots[0:1]
+		}
+		for _, root := range roots {
 			local := gogh.NewLocalController(root)
 			projects, err := local.List(ctx, &gogh.LocalListOption{Query: listFlags.query})
 			if err != nil {
@@ -53,6 +58,7 @@ Print each project in a given format, where <format> can be one of "rel-path", "
 
 func init() {
 	listCommand.Flags().StringVarP(&listFlags.query, "query", "", "", "Query for selecting projects")
+	listCommand.Flags().BoolVarP(&listFlags.primary, "primary", "", false, "List up projects in just a primary root")
 	listCommand.Flags().VarP(&listFlags.format, "format", "f", formatShortUsage)
 	facadeCommand.AddCommand(listCommand)
 }
