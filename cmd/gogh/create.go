@@ -12,9 +12,10 @@ import (
 )
 
 var createCommand = &cobra.Command{
-	Use:   "create",
-	Short: "Create a new project with a remote repository",
-	Args:  cobra.RangeArgs(0, 1),
+	Use:     "create",
+	Aliases: []string{"new"},
+	Short:   "Create a new project with a remote repository",
+	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		servers := app.Servers()
 		var selected string

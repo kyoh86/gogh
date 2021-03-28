@@ -16,9 +16,10 @@ var listFlags struct {
 }
 
 var listCommand = &cobra.Command{
-	Use:   "list",
-	Short: "List local projects",
-	Args:  cobra.ExactArgs(0),
+	Use:     "list",
+	Aliases: []string{"ls"},
+	Short:   "List local projects",
+	Args:    cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		f, err := listFlags.format.Formatter()
 		if err != nil {

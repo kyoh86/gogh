@@ -12,9 +12,10 @@ import (
 )
 
 var deleteCommand = &cobra.Command{
-	Use:   "delete",
-	Short: "Delete a repository with a remote repository",
-	Args:  cobra.RangeArgs(0, 1),
+	Use:     "delete",
+	Aliases: []string{"remove"},
+	Short:   "Delete a repository with a remote repository",
+	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
 		servers := app.Servers()
