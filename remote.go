@@ -31,18 +31,18 @@ func (c *RemoteController) repoSpec(repo *github.Repository) (Spec, error) {
 	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
-func (c *RemoteController) repoListSpecList(query string, repos []*github.Repository) (specs []Spec, _ error) {
+func (c *RemoteController) repoListSpecList(query string, repos []*github.Repository, ch chan<- Spec) error {
 	for _, repo := range repos {
 		spec, err := c.repoSpec(repo)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if !strings.Contains(spec.String(), query) {
 			continue
 		}
-		specs = append(specs, spec)
+		ch <- spec
 	}
-	return
+	return nil
 }
 
 type RemoteListOption struct {
@@ -114,23 +114,50 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 }
 
 func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Spec, _ error) {
-	opt := option.GetOptions()
+	sch, ech := c.ListAsync(ctx, option)
 	for {
-		repos, resp, err := c.adaptor.RepositoryList(ctx, option.GetUser(), opt)
-		if err != nil {
-			return nil, err
+		select {
+		case spec, more := <-sch:
+			if !more {
+				return
+			}
+			allSpecs = append(allSpecs, spec)
+		case err := <-ech:
+			if err != nil {
+				return nil, err
+			}
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
 		}
-		specs, err := c.repoListSpecList(option.GetQuery(), repos)
-		if err != nil {
-			return nil, err
-		}
-		allSpecs = append(allSpecs, specs...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opt.Page = resp.NextPage
 	}
-	return allSpecs, nil
+}
+
+func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOption) (<-chan Spec, <-chan error) {
+	opt := option.GetOptions()
+	sch := make(chan Spec, 1)
+	ech := make(chan error, 1)
+	go func() {
+		defer close(sch)
+		defer close(ech)
+		for {
+			repos, resp, err := c.adaptor.RepositoryList(ctx, option.GetUser(), opt)
+			if err != nil {
+				ech <- err
+				return
+			}
+			if err := c.repoListSpecList(option.GetQuery(), repos, sch); err != nil {
+				ech <- err
+				return
+			}
+			if resp.NextPage == 0 {
+				return
+			}
+			opt.Page = resp.NextPage
+		}
+	}()
+	return sch, ech
 }
 
 type RemoteListByOrgOption struct {
@@ -175,23 +202,50 @@ func (o *RemoteListByOrgOption) GetOptions() *github.RepositoryListByOrgOptions 
 }
 
 func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) (allSpecs []Spec, _ error) {
-	opt := option.GetOptions()
+	sch, ech := c.ListByOrgAsync(ctx, org, option)
 	for {
-		repos, resp, err := c.adaptor.RepositoryListByOrg(ctx, org, opt)
-		if err != nil {
-			return nil, err
+		select {
+		case spec, more := <-sch:
+			if !more {
+				return
+			}
+			allSpecs = append(allSpecs, spec)
+		case err := <-ech:
+			if err != nil {
+				return nil, err
+			}
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
 		}
-		specs, err := c.repoListSpecList(option.GetQuery(), repos)
-		if err != nil {
-			return nil, err
-		}
-		allSpecs = append(allSpecs, specs...)
-		if resp.NextPage == 0 {
-			break
-		}
-		opt.Page = resp.NextPage
 	}
-	return allSpecs, nil
+}
+
+func (c *RemoteController) ListByOrgAsync(ctx context.Context, org string, option *RemoteListByOrgOption) (<-chan Spec, <-chan error) {
+	opt := option.GetOptions()
+	sch := make(chan Spec, 1)
+	ech := make(chan error, 1)
+	go func() {
+		defer close(sch)
+		defer close(ech)
+		for {
+			repos, resp, err := c.adaptor.RepositoryListByOrg(ctx, org, opt)
+			if err != nil {
+				ech <- err
+				return
+			}
+			if err := c.repoListSpecList(option.GetQuery(), repos, sch); err != nil {
+				ech <- err
+				return
+			}
+			if resp.NextPage == 0 {
+				return
+			}
+			opt.Page = resp.NextPage
+		}
+	}()
+	return sch, ech
 }
 
 type RemoteCreateOption struct {

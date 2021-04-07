@@ -55,6 +55,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210326220855-61e056675ecf // indirect
 	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210326220804-49726bf1d181 // indirect
 	golang.org/x/term v0.0.0-20210317153231-de623e64d2a6 // indirect
 	golang.org/x/text v0.3.5 // indirect
