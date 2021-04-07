@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
@@ -8,15 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var cloneFlags struct {
+	dryrun bool
+}
+
 var cloneCommand = &cobra.Command{
 	Use:     "clone",
 	Aliases: []string{"get"},
 	Short:   "Clone a repository to local",
-	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
 		servers := app.Servers()
-		var selected string
 		if len(specs) == 0 {
 			servers, err := servers.List()
 			if err != nil {
@@ -36,27 +40,38 @@ var cloneCommand = &cobra.Command{
 					specs = append(specs, s.String())
 				}
 			}
-			if err := survey.AskOne(&survey.Select{
+			if err := survey.AskOne(&survey.MultiSelect{
 				Message: "A repository to clone",
 				Options: specs,
-			}, &selected); err != nil {
+			}, &specs); err != nil {
 				return err
 			}
-		} else {
-			selected = specs[0]
+		}
+		var local *gogh.LocalController
+		if !cloneFlags.dryrun {
+			local = gogh.NewLocalController(app.DefaultRoot())
 		}
 		parser := gogh.NewSpecParser(servers)
-		spec, server, err := parser.Parse(selected)
-		if err != nil {
-			return err
-		}
+		for _, s := range specs {
+			spec, server, err := parser.Parse(s)
+			if err != nil {
+				return err
+			}
 
-		local := gogh.NewLocalController(app.DefaultRoot())
-		_, err = local.Clone(ctx, spec, server, nil)
-		return err
+			if cloneFlags.dryrun {
+				p := gogh.NewProject(app.DefaultRoot(), spec)
+				fmt.Printf("git clone %q\n", p.URL())
+			} else {
+				if _, err = local.Clone(ctx, spec, server, nil); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	},
 }
 
 func init() {
+	cloneCommand.Flags().BoolVarP(&cloneFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(cloneCommand)
 }
