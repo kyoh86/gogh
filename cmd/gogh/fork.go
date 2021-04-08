@@ -9,7 +9,7 @@ import (
 )
 
 var forkCommand = &cobra.Command{
-	Use:   "fork",
+	Use:   "fork [flags] OWNER/NAME",
 	Short: "Fork a repository",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, specs []string) error {

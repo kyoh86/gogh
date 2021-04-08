@@ -12,7 +12,7 @@ import (
 )
 
 var deleteCommand = &cobra.Command{
-	Use:     "delete",
+	Use:     "delete [flags] [[OWNER/]NAME]",
 	Aliases: []string{"remove"},
 	Short:   "Delete a repository with a remote repository",
 	Args:    cobra.RangeArgs(0, 1),

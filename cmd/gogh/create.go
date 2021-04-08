@@ -12,7 +12,7 @@ import (
 )
 
 var createCommand = &cobra.Command{
-	Use:     "create",
+	Use:     "create [flags] [[OWNER/]NAME]",
 	Aliases: []string{"new"},
 	Short:   "Create a new project with a remote repository",
 	Args:    cobra.RangeArgs(0, 1),

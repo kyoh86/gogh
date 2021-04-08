@@ -19,9 +19,29 @@ var cloneFlags struct {
 }
 
 var cloneCommand = &cobra.Command{
-	Use:     "clone",
+	Use:     "clone [flags] [[OWNER/]NAME[=ALIAS]]...",
 	Aliases: []string{"get"},
-	Short:   "Clone a repository to local",
+	Short:   "Clone repositories to local",
+	Example: `  It accepts a shortly notation for a repository
+  (for example, "github.com/kyoh86/example") like below.
+    - "NAME": e.g. "example"; 
+    - "OWNER/NAME": e.g. "kyoh86/example"
+  They'll be filled with a server-spec set by "servers login".
+
+  It accepts an alias for each repository.
+  For example:
+    - "kyoh86/example=sample"
+    - "kyoh86/example=kyoh86-tryouts/tryout"
+  For each them will be cloned from "github.com/kyoh86/example"
+  into the local as:
+    - "$(gogh root)/github.com/kyoh86/sample"
+    - "$(gogh root)/github.com/kyoh86-tryouts/tryout"
+
+  Note that a host name in the alias is ignored:
+    "github.com/kyoh86/example=example.com/kyoh86-tryouts/sample"
+      will be placed in
+    "$(gogh root)/github.com/kyoh86-tryouts/sample"`,
+
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
 		servers := app.Servers()
