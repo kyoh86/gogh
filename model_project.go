@@ -18,6 +18,8 @@ func (p Project) Root() string {
 	return p.root
 }
 
+func (p Project) Spec() Spec { return p.spec }
+
 func (p Project) Host() string  { return p.spec.host }
 func (p Project) Owner() string { return p.spec.owner }
 func (p Project) Name() string  { return p.spec.name }
