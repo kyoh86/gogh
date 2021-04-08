@@ -1,6 +1,10 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"strings"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
@@ -58,36 +62,56 @@ var cloneCommand = &cobra.Command{
 				p := gogh.NewProject(app.DefaultRoot(), spec)
 				log.FromContext(ctx).Infof("git clone %q", p.URL())
 			}
-		} else {
-			local := gogh.NewLocalController(app.DefaultRoot())
-			eg, ctx := errgroup.WithContext(ctx)
-			for _, s := range specs {
-				s := s
-				eg.Go(func() error {
-					spec, server, err := parser.Parse(s)
-					if err != nil {
-						return err
-					}
-
-					log.FromContext(ctx).WithFields(log.Fields{
-						"server": server,
-						"spec":   spec,
-					}).Info("cloning")
-					if _, err = local.Clone(ctx, spec, server, nil); err != nil {
-						log.FromContext(ctx).WithField("error", err).Warn("failed to get repository")
-						return nil
-					}
-					log.FromContext(ctx).WithFields(log.Fields{
-						"server": server,
-						"spec":   spec,
-					}).Info("finished")
-					return nil
-				})
-			}
-			return eg.Wait()
+			return nil
 		}
-		return nil
+
+		local := gogh.NewLocalController(app.DefaultRoot())
+		if len(specs) == 1 {
+			return cloneOne(ctx, local, parser, specs[0])()
+		}
+
+		eg, ctx := errgroup.WithContext(ctx)
+		for _, s := range specs {
+			eg.Go(cloneOne(ctx, local, parser, s))
+		}
+		return eg.Wait()
 	},
+}
+
+func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.SpecParser, s string) func() error {
+	return func() error {
+		var alias *gogh.Spec
+		part := strings.Split(s, "=")
+		switch len(part) {
+		case 1:
+			// noop
+		case 2:
+			as, _, err := parser.Parse(part[1])
+			if err != nil {
+				return err
+			}
+			alias = &as
+			s = part[0]
+		default:
+			return fmt.Errorf("invalid spec: %s", s)
+		}
+		spec, server, err := parser.Parse(s)
+		if err != nil {
+			return err
+		}
+
+		l := log.FromContext(ctx).WithFields(log.Fields{
+			"server": server,
+			"spec":   spec,
+		})
+		l.Info("cloning")
+		if _, err = local.Clone(ctx, spec, server, &gogh.LocalCloneOption{Alias: alias}); err != nil {
+			l.WithField("error", err).Warn("failed to get repository")
+			return nil
+		}
+		l.Info("finished")
+		return nil
+	}
 }
 
 func init() {

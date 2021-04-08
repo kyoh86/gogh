@@ -85,11 +85,12 @@ func (l *LocalController) GetRemoteURLs(ctx context.Context, spec Spec, name str
 }
 
 type LocalCloneOption struct {
+	Alias *Spec
 	// UNDONE: support isBare
 	// UNDONE: support *git.CloneOptions
 }
 
-func (l *LocalController) Clone(ctx context.Context, spec Spec, server Server, _ *LocalCloneOption) (Project, error) {
+func (l *LocalController) Clone(ctx context.Context, spec Spec, server Server, opt *LocalCloneOption) (Project, error) {
 	p := NewProject(l.root, spec)
 
 	var auth transport.AuthMethod
@@ -99,7 +100,12 @@ func (l *LocalController) Clone(ctx context.Context, spec Spec, server Server, _
 			Password: server.Token(),
 		}
 	}
-	if _, err := git.PlainCloneContext(ctx, p.FullFilePath(), false, &git.CloneOptions{
+	path := p.FullFilePath()
+	if opt != nil && opt.Alias != nil {
+		alias := NewProject(l.root, *opt.Alias)
+		path = alias.FullFilePath()
+	}
+	if _, err := git.PlainCloneContext(ctx, path, false, &git.CloneOptions{
 		URL:  p.URL(),
 		Auth: auth,
 	}); err != nil {
