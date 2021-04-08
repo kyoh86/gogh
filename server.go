@@ -1,6 +1,8 @@
 package gogh
 
 import (
+	"fmt"
+
 	"github.com/kyoh86/gogh/v2/internal/github"
 )
 
@@ -12,6 +14,10 @@ type Server struct {
 	host  string
 	user  string
 	token string
+}
+
+func (s Server) String() string {
+	return fmt.Sprintf("%s@%s", s.user, s.host)
 }
 
 func NewServerFor(host, user, token string) (Server, error) {

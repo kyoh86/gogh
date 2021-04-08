@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 )
 
 var cloneFlags struct {
@@ -47,25 +47,44 @@ var cloneCommand = &cobra.Command{
 				return err
 			}
 		}
-		var local *gogh.LocalController
-		if !cloneFlags.dryrun {
-			local = gogh.NewLocalController(app.DefaultRoot())
-		}
 		parser := gogh.NewSpecParser(servers)
-		for _, s := range specs {
-			spec, server, err := parser.Parse(s)
-			if err != nil {
-				return err
-			}
-
-			if cloneFlags.dryrun {
-				p := gogh.NewProject(app.DefaultRoot(), spec)
-				fmt.Printf("git clone %q\n", p.URL())
-			} else {
-				if _, err = local.Clone(ctx, spec, server, nil); err != nil {
+		if cloneFlags.dryrun {
+			for _, s := range specs {
+				spec, _, err := parser.Parse(s)
+				if err != nil {
 					return err
 				}
+
+				p := gogh.NewProject(app.DefaultRoot(), spec)
+				log.FromContext(ctx).Infof("git clone %q", p.URL())
 			}
+		} else {
+			local := gogh.NewLocalController(app.DefaultRoot())
+			eg, ctx := errgroup.WithContext(ctx)
+			for _, s := range specs {
+				s := s
+				eg.Go(func() error {
+					spec, server, err := parser.Parse(s)
+					if err != nil {
+						return err
+					}
+
+					log.FromContext(ctx).WithFields(log.Fields{
+						"server": server,
+						"spec":   spec,
+					}).Info("cloning")
+					if _, err = local.Clone(ctx, spec, server, nil); err != nil {
+						log.FromContext(ctx).WithField("error", err).Warn("failed to get repository")
+						return nil
+					}
+					log.FromContext(ctx).WithFields(log.Fields{
+						"server": server,
+						"spec":   spec,
+					}).Info("finished")
+					return nil
+				})
+			}
+			return eg.Wait()
 		}
 		return nil
 	},
