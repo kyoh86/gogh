@@ -119,6 +119,21 @@ func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.Spe
 		if err != nil {
 			return err
 		}
+		if alias == nil {
+			// check forked
+			adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+			if err != nil {
+				return err
+			}
+			remote := gogh.NewRemoteController(adaptor)
+			source, err := remote.GetSource(ctx, spec.Owner(), spec.Name(), nil)
+			if err != nil {
+				return err
+			}
+			if source.String() != spec.String() {
+				alias = &source
+			}
+		}
 
 		l := log.FromContext(ctx).WithFields(log.Fields{
 			"server": server,
