@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var bundleDumpFlags struct{}
-
 var bundleDumpCommand = &cobra.Command{
 	Use:     "dump",
 	Aliases: []string{"export"},
