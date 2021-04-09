@@ -7,6 +7,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
+	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
@@ -79,8 +80,7 @@ var cloneCommand = &cobra.Command{
 					return err
 				}
 
-				p := gogh.NewProject(app.DefaultRoot(), spec)
-				log.FromContext(ctx).Infof("git clone %q", p.URL())
+				log.FromContext(ctx).Infof("git clone %q", spec.URL())
 			}
 			return nil
 		}
@@ -119,20 +119,16 @@ func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.Spe
 		if err != nil {
 			return err
 		}
-		if alias == nil {
-			// check forked
-			adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
-			if err != nil {
-				return err
-			}
-			remote := gogh.NewRemoteController(adaptor)
-			source, err := remote.GetSource(ctx, spec.Owner(), spec.Name(), nil)
-			if err != nil {
-				return err
-			}
-			if source.String() != spec.String() {
-				alias = &source
-			}
+
+		// check forked
+		adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+		if err != nil {
+			return err
+		}
+		remote := gogh.NewRemoteController(adaptor)
+		parent, err := remote.GetParent(ctx, spec.Owner(), spec.Name(), nil)
+		if err != nil {
+			return err
 		}
 
 		l := log.FromContext(ctx).WithFields(log.Fields{
@@ -143,6 +139,14 @@ func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.Spe
 		if _, err = local.Clone(ctx, spec, server, &gogh.LocalCloneOption{Alias: alias}); err != nil {
 			l.WithField("error", err).Warn("failed to get repository")
 			return nil
+		}
+		if parent.String() != spec.String() {
+			if err := local.SetRemoteSpecs(ctx, spec, map[string][]gogh.Spec{
+				git.DefaultRemoteName: {spec},
+				"upstream":            {parent},
+			}); err != nil {
+				return err
+			}
 		}
 		l.Info("finished")
 		return nil

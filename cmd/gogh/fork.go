@@ -32,14 +32,12 @@ var forkCommand = &cobra.Command{
 
 		root := app.DefaultRoot()
 		local := gogh.NewLocalController(root)
-		upstream, err := local.Clone(ctx, spec, server, nil)
-		if err != nil {
+		if _, err := local.Clone(ctx, spec, server, nil); err != nil {
 			return err
 		}
-		origin := gogh.NewProject(root, forked)
-		return local.SetRemoteURLs(ctx, spec, map[string][]string{
-			git.DefaultRemoteName: {origin.URL()},
-			"upstream":            {upstream.URL()},
+		return local.SetRemoteSpecs(ctx, spec, map[string][]gogh.Spec{
+			git.DefaultRemoteName: {forked},
+			"upstream":            {spec},
 		})
 	},
 }

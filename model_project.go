@@ -29,7 +29,7 @@ func (p Project) FullLevels() []string {
 }
 
 func (p Project) RelLevels() []string {
-	return []string{p.spec.host, p.spec.owner, p.spec.name}
+	return p.spec.RelLevels()
 }
 
 func (p Project) FullFilePath() string {
@@ -45,7 +45,7 @@ func (p Project) RelPath() string {
 }
 
 func (p Project) URL() string {
-	return "https://" + path.Join(p.RelLevels()...)
+	return p.spec.URL()
 }
 
 // CheckEntity checks the project is exist in the local file-system.

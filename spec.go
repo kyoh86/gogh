@@ -17,8 +17,16 @@ func (s Spec) Host() string  { return s.host }
 func (s Spec) Owner() string { return s.owner }
 func (s Spec) Name() string  { return s.name }
 
+func (s Spec) RelLevels() []string {
+	return []string{s.host, s.owner, s.name}
+}
+
+func (s Spec) URL() string {
+	return "https://" + path.Join(s.RelLevels()...)
+}
+
 func (s Spec) String() string {
-	return path.Join(s.Host(), s.Owner(), s.Name())
+	return path.Join(s.RelLevels()...)
 }
 
 var (

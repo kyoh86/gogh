@@ -406,6 +406,19 @@ func (c *RemoteController) GetSource(ctx context.Context, owner string, name str
 	return c.repoSpec(repo)
 }
 
+type RemoteParentOption struct{}
+
+func (c *RemoteController) GetParent(ctx context.Context, owner string, name string, _ *RemoteParentOption) (Spec, error) {
+	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
+	if err != nil {
+		return Spec{}, fmt.Errorf("get a repository: %w", err)
+	}
+	if parent := repo.GetParent(); parent != nil {
+		return c.repoSpec(parent)
+	}
+	return c.repoSpec(repo)
+}
+
 type RemoteDeleteOption struct{}
 
 func (c *RemoteController) Delete(ctx context.Context, owner string, name string, _ *RemoteDeleteOption) error {

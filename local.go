@@ -51,6 +51,16 @@ func (l *LocalController) Create(ctx context.Context, spec Spec, _ *LocalCreateO
 	return p, nil
 }
 
+func (l *LocalController) SetRemoteSpecs(ctx context.Context, spec Spec, remotes map[string][]Spec) error {
+	urls := map[string][]string{}
+	for name, specs := range remotes {
+		for _, spec := range specs {
+			urls[name] = append(urls[name], spec.URL())
+		}
+	}
+	return l.SetRemoteURLs(ctx, spec, urls)
+}
+
 func (l *LocalController) SetRemoteURLs(ctx context.Context, spec Spec, remotes map[string][]string) error {
 	p := NewProject(l.root, spec)
 	repo, err := git.PlainOpen(p.FullFilePath())
