@@ -10,8 +10,8 @@ import (
 )
 
 const formatLongUsage = `
-Print each project in a given format, where <format> can be one of "rel-path", "rel-file-path",
-"full-file-path", "url", "fields" and "fields:<separator>".
+Print each project in a given format, where [format] can be one of "rel-path", "rel-file-path",
+"full-file-path", "url", "fields" and "fields:[separator]".
 
 - rel-path:
 
@@ -35,9 +35,9 @@ Print each project in a given format, where <format> can be one of "rel-path", "
 - fields
 
 	Tab separated all formats and properties of the project.
-	i.e. <full-file-path>\t<rel-file-path>\t<url>\t<rel-path>\t<host>\t<owner>\t<name>
+	i.e. [full-file-path]\t[rel-file-path]\t[url]\t[rel-path]\t[host]\t[owner]\t[name]
 
-- fields:<separator>
+- fields:[separator]
 
 	Like "fields" but with the explicit separator.
 `

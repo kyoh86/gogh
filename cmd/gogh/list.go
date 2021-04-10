@@ -53,8 +53,8 @@ var listCommand = &cobra.Command{
 }
 
 const formatShortUsage = `
-Print each project in a given format, where <format> can be one of "rel-path", "rel-file-path",
-"full-file-path", "url", "fields" and "fields:<separator>".
+Print each project in a given format, where [format] can be one of "rel-path", "rel-file-path",
+"full-file-path", "url", "fields" and "fields:[separator]".
 `
 
 func init() {

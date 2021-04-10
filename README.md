@@ -49,6 +49,7 @@ You can also list projects (local repositories) (`gogh list`).
 | --             | --                       |
 | `gogh roots`   | Manage roots             |
 | `gogh servers` | Manage servers           |
+| `gogh bundle`  | Manage bundle            |
 | `gogh help`    | Help about any command   |
 
 Use `gogh [command] --help` for more information about a command.
