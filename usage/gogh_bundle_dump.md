@@ -9,7 +9,7 @@ gogh bundle dump [flags]
 ### Options
 
 ```
-      --file string   Read the file as input
+      --file string   A file to output
   -h, --help          help for dump
 ```
 
