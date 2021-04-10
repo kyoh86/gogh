@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	testtarget "github.com/kyoh86/gogh/v2"
@@ -71,6 +72,34 @@ func TestRemoteController(t *testing.T) {
 					PerPage: 100,
 				},
 			}}).Return(nil, nil, internalError)
+
+			if _, err := remote.ListByOrg(ctx, org, nil); !errors.Is(err, internalError) {
+				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+			}
+		})
+
+		t.Run("Timeout", func(t *testing.T) {
+			timeout := 500 * time.Millisecond
+			sleep := 2 * time.Second
+			ctx, cancel := context.WithTimeout(ctx, timeout)
+			defer cancel()
+			internalError := context.DeadlineExceeded
+
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryListByOrg(ctx, org, jsonMatcher{&github.RepositoryListByOrgOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).DoAndReturn(func(_ context.Context, _ string, _ *github.RepositoryListByOrgOptions) ([]*github.Repository, *github.Response, error) {
+				<-time.After(sleep)
+				return []*github.Repository{{
+					CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
+				}, {
+					CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
+				}}, &github.Response{NextPage: 0}, nil
+			})
 
 			if _, err := remote.ListByOrg(ctx, org, nil); !errors.Is(err, internalError) {
 				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
@@ -372,6 +401,34 @@ func TestRemoteController(t *testing.T) {
 					PerPage: 100,
 				},
 			}}).Return(nil, nil, internalError)
+
+			if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
+				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+			}
+		})
+
+		t.Run("Timeout", func(t *testing.T) {
+			timeout := 500 * time.Millisecond
+			sleep := 2 * time.Second
+			ctx, cancel := context.WithTimeout(ctx, timeout)
+			defer cancel()
+			internalError := context.DeadlineExceeded
+
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryList(ctx, "", jsonMatcher{&github.RepositoryListOptions{
+				ListOptions: github.ListOptions{
+					PerPage: 100,
+				},
+			}}).DoAndReturn(func(_ context.Context, _ string, _ *github.RepositoryListOptions) ([]*github.Repository, *github.Response, error) {
+				<-time.After(sleep)
+				return []*github.Repository{{
+					CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
+				}, {
+					CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
+				}}, &github.Response{NextPage: 0}, nil
+			})
 
 			if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
 				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
@@ -1020,6 +1077,200 @@ func TestRemoteController(t *testing.T) {
 			}
 			if spec.Name() != "org-repo-1" {
 				t.Errorf("expect that a spec be created with name %q, but actual %q", "org-repo-1", spec.Name())
+			}
+		})
+	})
+
+	t.Run("Fork", func(t *testing.T) {
+		t.Run("Error", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			internalError := errors.New("test error")
+
+			mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", nil).Return(nil, nil, internalError)
+
+			if _, err := remote.Fork(ctx, user, "user-repo-1", nil); !errors.Is(err, internalError) {
+				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+			}
+		})
+
+		t.Run("NilOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", nil).Return(&github.Repository{
+				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+			}, nil, nil)
+			spec, err := remote.Fork(ctx, user, "user-repo-1", nil)
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if spec.Owner() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.Owner())
+			}
+			if spec.Name() != "user-repo-1" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "user-repo-1", spec.Name())
+			}
+		})
+
+		t.Run("EmptyOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", jsonMatcher{&github.RepositoryCreateForkOptions{}}).Return(&github.Repository{
+				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+			}, nil, nil)
+
+			spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{})
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if spec.Owner() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.Owner())
+			}
+			if spec.Name() != "user-repo-1" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "user-repo-1", spec.Name())
+			}
+		})
+
+		t.Run("WithOption", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", jsonMatcher{&github.RepositoryCreateForkOptions{
+				Organization: org,
+			}}).Return(&github.Repository{
+				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+			}, nil, nil)
+
+			spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{
+				Organization: org,
+			})
+			if err != nil {
+				t.Fatalf("failed to listup: %s", err)
+			}
+			if spec.Owner() != user {
+				t.Errorf("expect that a spec be created with user %q, but actual %q", user, spec.Owner())
+			}
+			if spec.Name() != "user-repo-1" {
+				t.Errorf("expect that a spec be created with name %q, but actual %q", "user-repo-1", spec.Name())
+			}
+		})
+	})
+
+	t.Run("GetSource", func(t *testing.T) {
+		t.Run("Error", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			internalError := errors.New("test error")
+			mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(nil, nil, internalError)
+			if _, err := remote.GetSource(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
+				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+			}
+		})
+		t.Run("NotForked", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(&github.Repository{
+				CloneURL: ptr.String("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
+			}, nil, nil)
+			actual, err := remote.GetSource(ctx, user, "gogh", nil)
+			if err != nil {
+				t.Fatalf("failed to get: %s", err)
+			}
+			if host != actual.Host() {
+				t.Errorf("expect host %q but %q gotten", host, actual.Host())
+			}
+			if user != actual.Owner() {
+				t.Errorf("expect user %q but %q gotten", user, actual.Owner())
+			}
+			if actual.Name() != "gogh" {
+				t.Errorf("expect name %q but %q gotten", "gogh", actual.Name())
+			}
+		})
+		t.Run("Success", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(&github.Repository{
+				CloneURL: ptr.String("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
+				Source: &github.Repository{
+					CloneURL: ptr.String("https://" + testtarget.DefaultHost + "/" + org + "/gogh"),
+				},
+			}, nil, nil)
+			actual, err := remote.GetSource(ctx, user, "gogh", nil)
+			if err != nil {
+				t.Fatalf("failed to get: %s", err)
+			}
+			if host != actual.Host() {
+				t.Errorf("expect host %q but %q gotten", host, actual.Host())
+			}
+			if org != actual.Owner() {
+				t.Errorf("expect org %q but %q gotten", org, actual.Owner())
+			}
+			if actual.Name() != "gogh" {
+				t.Errorf("expect name %q but %q gotten", "gogh", actual.Name())
+			}
+		})
+	})
+
+	t.Run("GetParent", func(t *testing.T) {
+		t.Run("Error", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			internalError := errors.New("test error")
+			mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(nil, nil, internalError)
+			if _, err := remote.GetParent(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
+				t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+			}
+		})
+		t.Run("NotForked", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(&github.Repository{
+				CloneURL: ptr.String("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
+			}, nil, nil)
+			actual, err := remote.GetParent(ctx, user, "gogh", nil)
+			if err != nil {
+				t.Fatalf("failed to get: %s", err)
+			}
+			if host != actual.Host() {
+				t.Errorf("expect host %q but %q gotten", host, actual.Host())
+			}
+			if user != actual.Owner() {
+				t.Errorf("expect user %q but %q gotten", user, actual.Owner())
+			}
+			if actual.Name() != "gogh" {
+				t.Errorf("expect name %q but %q gotten", "gogh", actual.Name())
+			}
+		})
+		t.Run("Success", func(t *testing.T) {
+			mock, teardown := MockAdaptor(t)
+			defer teardown()
+			remote := testtarget.NewRemoteController(mock)
+			mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(&github.Repository{
+				CloneURL: ptr.String("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
+				Parent: &github.Repository{
+					CloneURL: ptr.String("https://" + testtarget.DefaultHost + "/" + org + "/gogh"),
+				},
+			}, nil, nil)
+			actual, err := remote.GetParent(ctx, user, "gogh", nil)
+			if err != nil {
+				t.Fatalf("failed to get: %s", err)
+			}
+			if host != actual.Host() {
+				t.Errorf("expect host %q but %q gotten", host, actual.Host())
+			}
+			if org != actual.Owner() {
+				t.Errorf("expect org %q but %q gotten", org, actual.Owner())
+			}
+			if actual.Name() != "gogh" {
+				t.Errorf("expect name %q but %q gotten", "gogh", actual.Name())
 			}
 		})
 	})

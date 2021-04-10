@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -15,6 +16,38 @@ var (
 // use "NewSpec" instead to build Spec.
 type SpecParser struct {
 	servers *Servers
+}
+
+// ParseWithAlias parses string as a Spec and following alias.
+// We can specify an alias with following '='(equal) and the alias.
+//
+// If it's not specified, alias will be nil value.
+// If it's specified a value which equals to the spec, alias will be nil value.
+func (p *SpecParser) ParseWithAlias(s string) (Spec, *Spec, Server, error) {
+	var alias *Spec
+	part := strings.Split(s, "=")
+	switch len(part) {
+	case 1:
+		// noop
+	case 2:
+		as, _, err := p.Parse(part[1])
+		if err != nil {
+			return Spec{}, nil, Server{}, err
+		}
+		alias = &as
+		s = part[0]
+	default:
+		return Spec{}, nil, Server{}, fmt.Errorf("invalid spec: %s", s)
+	}
+	spec, server, err := p.Parse(s)
+	if err != nil {
+		return Spec{}, nil, Server{}, err
+	}
+	if alias != nil && alias.String() == spec.String() {
+		alias = nil
+	}
+
+	return spec, alias, server, err
 }
 
 // Parse a string and build a Spec.

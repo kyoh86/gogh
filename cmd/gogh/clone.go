@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
@@ -36,12 +34,7 @@ var cloneCommand = &cobra.Command{
   For each them will be cloned from "github.com/kyoh86/example"
   into the local as:
     - "$(gogh root)/github.com/kyoh86/sample"
-    - "$(gogh root)/github.com/kyoh86-tryouts/tryout"
-
-  Note that a host name in the alias is ignored:
-    "github.com/kyoh86/example=example.com/kyoh86-tryouts/sample"
-      will be placed in
-    "$(gogh root)/github.com/kyoh86-tryouts/sample"`,
+    - "$(gogh root)/github.com/kyoh86-tryouts/tryout"`,
 
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
@@ -80,12 +73,16 @@ func cloneAll(ctx context.Context, servers *gogh.Servers, specs []string, dryrun
 	parser := gogh.NewSpecParser(servers)
 	if dryrun {
 		for _, s := range specs {
-			spec, _, err := parser.Parse(s)
+			spec, alias, _, err := parser.ParseWithAlias(s)
 			if err != nil {
 				return err
 			}
 
-			log.FromContext(ctx).Infof("git clone %q", spec.URL())
+			if alias == nil {
+				log.FromContext(ctx).Infof("git clone %q", spec.URL())
+			} else {
+				log.FromContext(ctx).Infof("git clone %q into %q", spec.URL(), alias.String())
+			}
 		}
 		return nil
 	}
@@ -104,22 +101,7 @@ func cloneAll(ctx context.Context, servers *gogh.Servers, specs []string, dryrun
 
 func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.SpecParser, s string) func() error {
 	return func() error {
-		var alias *gogh.Spec
-		part := strings.Split(s, "=")
-		switch len(part) {
-		case 1:
-			// noop
-		case 2:
-			as, _, err := parser.Parse(part[1])
-			if err != nil {
-				return err
-			}
-			alias = &as
-			s = part[0]
-		default:
-			return fmt.Errorf("invalid spec: %s", s)
-		}
-		spec, server, err := parser.Parse(s)
+		spec, alias, server, err := parser.ParseWithAlias(s)
 		if err != nil {
 			return err
 		}

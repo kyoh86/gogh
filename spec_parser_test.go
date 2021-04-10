@@ -221,7 +221,7 @@ func TestSpecParser(t *testing.T) {
 				},
 			} {
 				t.Run(testcase.title, func(t *testing.T) {
-					spec, _, err := parser.Parse(testcase.input)
+					spec, _, _, err := parser.ParseWithAlias(testcase.input)
 					if err == nil {
 						t.Fatalf("expect failure to parse %q but parsed to %+v", testcase.input, spec)
 					}
@@ -408,5 +408,111 @@ func TestSpecParser(t *testing.T) {
 				}
 			})
 		}
+	})
+
+	t.Run("ParseWithAlias", func(t *testing.T) {
+		server, err := testtarget.NewServerFor(host1, owner1, "token")
+		if err != nil {
+			t.Fatalf("failed to create new server for %s: %v", owner1, err)
+		}
+		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
+		t.Run("WithoutAlias", func(t *testing.T) {
+			for _, testcase := range []struct {
+				title  string
+				source string
+			}{{
+				title:  "without-alias",
+				source: name,
+			}, {
+				title:  "same-name",
+				source: name + "=" + name,
+			}} {
+				_, alias, _, err := parser.ParseWithAlias(testcase.source)
+				if err != nil {
+					t.Fatalf("failed to parse %q: %s", testcase.source, err)
+				}
+				if alias != nil {
+					t.Errorf("want alias is nil but %#v gotten", *alias)
+				}
+			}
+		})
+
+		t.Run("WithValidAlias", func(t *testing.T) {
+			for _, testcase := range []struct {
+				title  string
+				source string
+
+				wantHost string
+				wantUser string
+				wantName string
+			}{{
+				title:    "with-alias-name",
+				source:   host1 + "/" + owner1 + "/" + name + "=alias",
+				wantHost: host1,
+				wantUser: owner1,
+				wantName: "alias",
+			}, {
+				title:    "with-alias-owner",
+				source:   host1 + "/" + owner1 + "/" + name + "=" + owner2 + "/alias",
+				wantHost: host1,
+				wantUser: owner2,
+				wantName: "alias",
+			}, {
+				title:    "with-alias-host",
+				source:   host1 + "/" + owner1 + "/" + name + "=" + host2 + "/" + owner2 + "/alias",
+				wantHost: host2,
+				wantUser: owner2,
+				wantName: "alias",
+			}} {
+				t.Run(testcase.title, func(t *testing.T) {
+					_, alias, _, err := parser.ParseWithAlias(testcase.source)
+					if err != nil {
+						t.Fatalf("failed to parse %q: %s", testcase.source, err)
+					}
+					if alias == nil {
+						t.Fatal("want valid alisa but got nil")
+					}
+					if testcase.wantHost != alias.Host() {
+						t.Errorf("want host %q but %q gotten", testcase.wantHost, alias.Host())
+					}
+					if testcase.wantUser != alias.Owner() {
+						t.Errorf("want owner %q but %q gotten", testcase.wantUser, alias.Owner())
+					}
+					if testcase.wantName != alias.Name() {
+						t.Errorf("want name %q but %q gotten", testcase.wantName, alias.Name())
+					}
+					if testcase.wantHost != alias.Host() {
+						t.Errorf("want host %q but %q gotten", testcase.wantHost, alias.Host())
+					}
+				})
+			}
+		})
+
+		t.Run("WithInvalidAlias", func(t *testing.T) {
+			for _, testcase := range []struct {
+				title  string
+				source string
+			}{{
+				title:  "empty",
+				source: name + "=",
+			}, {
+				title:  "space",
+				source: name + "= ",
+			}, {
+				title:  "space-in-the-alias",
+				source: name + "=splitted name",
+			}, {
+				title:  "double-alias",
+				source: name + "=alias1=alias2",
+			}} {
+				t.Run(testcase.title, func(t *testing.T) {
+					_, _, _, err := parser.ParseWithAlias(testcase.source)
+					if err == nil {
+						t.Fatal("want error, but got nil")
+					}
+					t.Log(err)
+				})
+			}
+		})
 	})
 }

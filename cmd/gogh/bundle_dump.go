@@ -49,7 +49,7 @@ var bundleDumpCommand = &cobra.Command{
 					return err
 				}
 				remoteSpec := strings.TrimSuffix(uobj.Path, ".git")
-				fmt.Fprintf(out, "%s=%s\n", strings.TrimPrefix(remoteSpec, "/"), localSpec.String())
+				fmt.Fprintf(out, "%s/%s=%s\n", uobj.Host, strings.TrimPrefix(remoteSpec, "/"), localSpec.String())
 				return nil
 			}
 			fmt.Fprintln(out, localSpec.String())

@@ -110,9 +110,10 @@ func TestLocalController(t *testing.T) {
 		spec := mustSpec(t, "github.com", "kyoh86", "gogh")
 		name := "upstream"
 		t.Run("First", func(t *testing.T) {
+			newSpec := mustSpec(t, "github.com", "kyoh86", "gogh-upstream")
 			url := "https://github.com/kyoh86/gogh-upstream"
 
-			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: {url}}); err != nil {
+			if err := local.SetRemoteSpecs(ctx, spec, map[string][]testtarget.Spec{name: {newSpec}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
@@ -126,9 +127,10 @@ func TestLocalController(t *testing.T) {
 			}
 		})
 		t.Run("Overwrite", func(t *testing.T) {
+			newSpec := mustSpec(t, "github.com", "kyoh86", "gogh-overwrite")
 			url := "https://github.com/kyoh86/gogh-overwrite"
 
-			if err := local.SetRemoteURLs(ctx, spec, map[string][]string{name: {url}}); err != nil {
+			if err := local.SetRemoteSpecs(ctx, spec, map[string][]testtarget.Spec{name: {newSpec}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
@@ -325,6 +327,74 @@ func TestLocalController(t *testing.T) {
 		case 1:
 			if expectURL != urls[0] {
 				t.Errorf("expect the repository cloned for %q but %q actually", expectURL, urls[0])
+			}
+		case 0:
+			t.Fatal("cloned repository has no url")
+		}
+	})
+
+	t.Run("Alias", func(t *testing.T) {
+		spec := mustSpec(t, "github.com", "kyoh86-tryouts", "bare")
+		server, err := testtarget.NewServerFor(spec.Host(), spec.Owner(), "")
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		alias := mustSpec(t, "example.com", "kyoh86", "alias")
+		project, err := local.Clone(ctx, spec, server, &testtarget.LocalCloneOption{
+			Alias: &alias,
+		})
+		if err != nil {
+			t.Fatalf("failed to clone a project: %s", err)
+		}
+		if root != project.Root() {
+			t.Errorf("expect root %q but %q is gotten", root, project.Root())
+		}
+		if spec.Host() != project.Host() {
+			t.Errorf("expect host %q but %q is gotten", spec.Host(), project.Host())
+		}
+		if alias.Owner() != project.Owner() {
+			t.Errorf("expect owner %q but %q is gotten", alias.Owner(), project.Owner())
+		}
+		if alias.Name() != project.Name() {
+			t.Errorf("expect name %q but %q is gotten", alias.Name(), project.Name())
+		}
+
+		// check built properties
+		wantRelPath := "github.com/kyoh86/alias"
+		if wantRelPath != project.RelPath() {
+			t.Errorf("want rel-path %q but %q is gotten", wantRelPath, project.RelPath())
+		}
+		wantRelFilePath := filepath.Clean("github.com/kyoh86/alias")
+		if wantRelFilePath != project.RelFilePath() {
+			t.Errorf("want rel-path %q but %q is gotten", wantRelFilePath, project.RelFilePath())
+		}
+		aliasURL := "https://github.com/kyoh86/alias"
+		if aliasURL != project.URL() {
+			t.Errorf("want url %q but %q is gotten", aliasURL, project.URL())
+		}
+		wantFullPath := filepath.Join(root, "github.com/kyoh86/alias")
+		if wantFullPath != project.FullFilePath() {
+			t.Errorf("want full-path %q but %q is gotten", wantFullPath, project.FullFilePath())
+		}
+
+		// check git remote
+		repo, err := git.PlainOpen(wantFullPath)
+		if err != nil {
+			t.Fatalf("failed to open git repository in cloned project: %s", err)
+		}
+		remote, err := repo.Remote(git.DefaultRemoteName)
+		if err != nil {
+			t.Fatalf("failed to get remote %s: %s", git.DefaultRemoteName, err)
+		}
+		urls := remote.Config().URLs
+		switch len(urls) {
+		default:
+			t.Fatalf("cloned repository has multiple urls: %+v", urls)
+			fallthrough
+		case 1:
+			sourceURL := "https://github.com/kyoh86-tryouts/bare"
+			if sourceURL != urls[0] {
+				t.Errorf("expect the repository cloned for %q but %q actually", sourceURL, urls[0])
 			}
 		case 0:
 			t.Fatal("cloned repository has no url")

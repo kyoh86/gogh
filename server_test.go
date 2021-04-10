@@ -1,6 +1,7 @@
 package gogh_test
 
 import (
+	"fmt"
 	"testing"
 
 	testtarget "github.com/kyoh86/gogh/v2"
@@ -22,6 +23,14 @@ func TestServer(t *testing.T) {
 	}
 	if token != s.Token() {
 		t.Errorf("expect token %q but %q", token, s.Token())
+	}
+	wantStr := "kyoh86@example.com"
+	if wantStr != s.String() {
+		t.Errorf("expect the string notation %s, but %q", wantStr, s.String())
+	}
+	wantFormatted := "server: kyoh86@example.com"
+	if wantFormatted != fmt.Sprintf("server: %s", s) {
+		t.Errorf("expect hide the token in the string notation, but %q", s.String())
 	}
 	invalidHost := "invalid host"
 	invalidUser := "invalid user"

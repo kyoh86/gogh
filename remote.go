@@ -356,13 +356,6 @@ type RemoteForkOption struct {
 	Organization string
 }
 
-func (o *RemoteForkOption) GetOrganization() string {
-	if o == nil {
-		return ""
-	}
-	return o.Organization
-}
-
 func (o *RemoteForkOption) GetOptions() *github.RepositoryCreateForkOptions {
 	if o == nil {
 		return nil

@@ -101,8 +101,6 @@ type LocalCloneOption struct {
 }
 
 func (l *LocalController) Clone(ctx context.Context, spec Spec, server Server, opt *LocalCloneOption) (Project, error) {
-	p := NewProject(l.root, spec)
-
 	var auth transport.AuthMethod
 	if token := server.Token(); token != "" {
 		auth = &http.BasicAuth{
@@ -110,13 +108,18 @@ func (l *LocalController) Clone(ctx context.Context, spec Spec, server Server, o
 			Password: server.Token(),
 		}
 	}
+
+	p := NewProject(l.root, spec)
 	path := p.FullFilePath()
+	url := p.URL()
 	if opt != nil && opt.Alias != nil {
 		alias := NewProject(l.root, *opt.Alias)
+		alias.spec.host = p.spec.host
 		path = alias.FullFilePath()
+		p = alias
 	}
 	if _, err := git.PlainCloneContext(ctx, path, false, &git.CloneOptions{
-		URL:  p.URL(),
+		URL:  url,
 		Auth: auth,
 	}); err != nil {
 		return Project{}, err
