@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
@@ -11,12 +12,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var bundleDumpFlags struct {
+	file string
+}
+
 var bundleDumpCommand = &cobra.Command{
 	Use:     "dump",
 	Aliases: []string{"export"},
 	Short:   "Export current local projects",
 	Args:    cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, _ []string) error {
+		out := os.Stdout
+		if bundleDumpFlags.file != "" {
+			f, err := os.OpenFile(bundleDumpFlags.file, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			out = f
+		}
 		ctx := cmd.Context()
 		roots := app.Roots()
 		if len(roots) == 0 {
@@ -35,10 +49,10 @@ var bundleDumpCommand = &cobra.Command{
 					return err
 				}
 				remoteSpec := strings.TrimSuffix(uobj.Path, ".git")
-				fmt.Printf("%s=%s\n", localSpec.String(), strings.TrimPrefix(remoteSpec, "/"))
+				fmt.Fprintf(out, "%s=%s\n", strings.TrimPrefix(remoteSpec, "/"), localSpec.String())
 				return nil
 			}
-			fmt.Println(localSpec.String())
+			fmt.Fprintln(out, localSpec.String())
 			return nil
 		}); err != nil {
 			return err
@@ -48,5 +62,6 @@ var bundleDumpCommand = &cobra.Command{
 }
 
 func init() {
+	bundleDumpCommand.Flags().StringVarP(&bundleDumpFlags.file, "file", "", "", "Read the file as input")
 	bundleCommand.AddCommand(bundleDumpCommand)
 }

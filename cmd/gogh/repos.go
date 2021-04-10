@@ -28,6 +28,7 @@ var reposCommand = &cobra.Command{
 		defer cancel()
 		eg, ctx := errgroup.WithContext(ctx)
 		for _, server := range list {
+			server := server
 			eg.Go(func() error {
 				adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
 				if err != nil {
