@@ -31,7 +31,7 @@ man: gen
 PKGBUILD: pkgbuild.template.sh
 	envsubst '$$VERSION' < $< > $@
 
-pkg: PKGBULD
+pkg: PKGBUILD
 	updpkgsums
 	makepkg -f
 	namcap
