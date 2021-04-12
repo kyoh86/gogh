@@ -22,6 +22,7 @@ builds:
     hooks:
       post:
         - make man VERSION={{ .Version }} COMMIT={{ .Commit }} DATE={{ .Date }}
+        - make PKGBUILD VERSION={{ .Version }}
 archives:
   - id: gzip
     format: tar.gz

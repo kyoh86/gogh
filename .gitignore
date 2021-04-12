@@ -1,5 +1,7 @@
 # for goreleaser output with .goreleaser.yml
 /dist
+# for makepkg
+/PKGBUILD
 
 # for man file
 /gogh*.1

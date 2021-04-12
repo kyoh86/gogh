@@ -28,6 +28,15 @@ man: gen
 	go run -tags man -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
 .PHONY: man
 
+PKGBUILD: pkgbuild.template.sh
+	envsubst '$$VERSION' < $< > $@
+	updpkgsums
+
+pkg: PKGBULD
+	makepkg -f
+	namcap
+.PHONY: pkg
+
 install: test
 	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh/...
 
