@@ -30,9 +30,9 @@ man: gen
 
 PKGBUILD: pkgbuild.template.sh
 	envsubst '$$VERSION' < $< > $@
-	updpkgsums
 
 pkg: PKGBULD
+	updpkgsums
 	makepkg -f
 	namcap
 .PHONY: pkg
