@@ -21,8 +21,7 @@ builds:
     main: ./cmd/gogh
     hooks:
       post:
-        - go get github.com/kyoh86/git-vertag
-        - make man
+        - make man VERSION={{ .Version }} COMMIT={{ .Commit }} DATE={{ .Date }}
 archives:
   - id: gzip
     format: tar.gz
