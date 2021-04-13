@@ -53,14 +53,11 @@ if [ -n "${INPUT_AURDEPS:-}" ]; then
 	sudo -H -u builder yay --sync --noconfirm "${PKGDEPS[@]}"
 fi
 
-function create_pkgbuild() {
-  export VERSION="${GITHUB_REF##*/v}"
-  export COMMIT="${GITHUB_SHA}"
-  envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh > PKGBUILD
-  updpkgsums
-}
-
-sudo -H -u builder create_pkgbuild
+export VERSION="${GITHUB_REF##*/v}"
+export COMMIT="${GITHUB_SHA}"
+sudo -H -u builder envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh \
+  | sudo -H -u builder tee PKGBUILD >/dev/null
+sudo -H -u builder updpkgsums
 
 # Build packages
 # INPUT_MAKEPKGARGS is intentionally unquoted to allow arg splitting
