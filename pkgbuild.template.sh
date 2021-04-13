@@ -21,7 +21,14 @@ build() {
   export CGO_CXXFLAGS="${CXXFLAGS}"
   export CGO_LDFLAGS="${LDFLAGS}"
   export LDF="-linkmode=external -s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=$(date)"
-  go build -ldflags="${LDF}" -buildmode=pie -trimpath -mod=readonly -modcacherw -o build ./cmd/...
+  set -ex
+  go build \
+    -trimpath \
+    -buildmode=pie \
+    -mod=readonly \
+    -modcacherw \
+    -ldflags="${LDF}" \
+    -o build ./cmd/...
   go run -ldflags="${LDF}" -tags man ./cmd/gogh man
 }
 check() {
