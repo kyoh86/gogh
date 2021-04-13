@@ -32,7 +32,7 @@ if [ -n "${EMAIL}" ]; then
 fi
 export DESCRIPTION
 export LICENSE
-envsubst "\$VERSION \$COMMIT \$NAME \$DESCRIPTION \$LICENSE \$OWNER \$REPOSITORY \$SERVER_URL \$EMAIL" < PKGBUILD.tmpl > PKGBUILD
+envsubst "\$VERSION \$COMMIT \$NAME \$DESCRIPTION \$LICENSE \$OWNER \$REPOSITORY \$SERVER_URL \$EMAIL" < /PKGBUILD.tmpl > PKGBUILD
 chmod 777 PKGBUILD
 sudo -H -u builder updpkgsums PKGBUILD
 sudo -H -u builder makepkg --printsrcinfo PKGBUILD | sudo -H -u builder tee .SRCINFO
