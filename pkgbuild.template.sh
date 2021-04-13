@@ -16,13 +16,13 @@ prepare(){
 }
 build() {
   cd "$pkgname-$pkgver"
-  export LDFLAGS="-linkmode=external -s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=$(date)"
   export CGO_CPPFLAGS="${CPPFLAGS}"
   export CGO_CFLAGS="${CFLAGS}"
   export CGO_CXXFLAGS="${CXXFLAGS}"
   export CGO_LDFLAGS="${LDFLAGS}"
-  go build -ldflags="${LDFLAGS}" -buildmode=pie -trimpath -mod=readonly -modcacherw -o build ./cmd/...
-  go run -ldflags="${LDFLAGS}" -tags man ./cmd/gogh man
+  export LDF="-linkmode=external -s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=$(date)"
+  go build -ldflags="${LDF}" -buildmode=pie -trimpath -mod=readonly -modcacherw -o build ./cmd/...
+  go run -ldflags="${LDF}" -tags man ./cmd/gogh man
 }
 check() {
   cd "$pkgname-$pkgver"
