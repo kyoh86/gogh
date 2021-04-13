@@ -61,7 +61,7 @@ else
 fi
 export COMMIT="${GITHUB_SHA}"
 envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh > PKGBUILD
-chown builder updpkgsums
+chown builder PKGBUILD
 cat PKGBUILD
 sudo -H -u builder updpkgsums
 
