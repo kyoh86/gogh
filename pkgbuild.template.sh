@@ -1,3 +1,4 @@
+# Maintainer: kyoh86 <me@kyoh86.dev>
 pkgname=gogh
 pkgver=$VERSION
 pkgrel=1
@@ -33,7 +34,7 @@ build() {
 }
 check() {
   cd "$pkgname-$pkgver"
-  make test
+  go test ./...
 }
 package() {
   cd "$pkgname-$pkgver"
