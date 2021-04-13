@@ -16,19 +16,25 @@ prepare(){
 }
 build() {
   cd "$pkgname-$pkgver"
+  export LDFLAGS="-linkmode=external -s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=$(date)"
   export CGO_CPPFLAGS="${CPPFLAGS}"
   export CGO_CFLAGS="${CFLAGS}"
   export CGO_CXXFLAGS="${CXXFLAGS}"
   export CGO_LDFLAGS="${LDFLAGS}"
-  go build -buildmode=pie -trimpath -ldflags="-linkmode=external -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}" -mod=readonly -modcacherw -o build ./cmd/...
+  go build -ldflags="${LDFLAGS}" -buildmode=pie -trimpath -mod=readonly -modcacherw -o build ./cmd/...
+  go run -ldflags="${LDFLAGS}" -tags man ./cmd/gogh man
 }
 check() {
   cd "$pkgname-$pkgver"
-  go test ./...
+  make test
 }
 package() {
   cd "$pkgname-$pkgver"
   install -Dm755 build/$pkgname "$pkgdir/usr/bin/$pkgname"
-  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
-  install -Dm644 "$pkgname.1" "$pkgdir/usr/share/man/man1/$pkgname.1"
+  if [ -f LICENSE ]; then
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  fi
+  if [ -f "$pkgname.1" ]; then
+    install -Dm644 "$pkgname.1" "$pkgdir/usr/share/man/man1/$pkgname.1"
+  fi
 }

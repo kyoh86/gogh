@@ -41,6 +41,23 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           args: release --rm-dist --skip-publish --snapshot
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+
+  test-package:
+    name: Test releases
+    runs-on: ubuntu-latest
+    needs: test-release
+    container:
+      image: archlinux:latest
+      volumes:
+        - .:/var/build
+      options: --cpus 1
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+      - name: Make PKGBUILD
+        run: make pkg
       - name: Check PKGBUILD
         uses: edlanglois/pkgbuild-action@v1
 
