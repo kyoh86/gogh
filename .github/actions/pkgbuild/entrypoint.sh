@@ -54,7 +54,7 @@ if [ -n "${INPUT_AURDEPS:-}" ]; then
 fi
 
 export VERSION="${GITHUB_REF##*/v}"
-if [[ "${VERSION}" =~ "^([0-9]+)\.([0-9]+)\.([0-9]+)$" ]]; then
+if [[ "${VERSION}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
   :
 else
   export VERSION="2.0.1"
