@@ -11,14 +11,14 @@ depends=('glibc')
 source=("$url/archive/refs/tags/v$pkgver.tar.gz")
 options=('zipman')
 sha256sums=(.)
-echo "${pkgname}" "${pkgver}" "${pkgrel}" "${pkgdesc}" "${url}"
-echo "${arch[@]}"
-echo "${license[@]}"
-echo "${makedepends[@]}"
-echo "${depends[@]}"
-echo "${source[@]}"
-echo "${options[@]}"
-echo "${sha256sums[@]}"
+: "${pkgname}" "${pkgver}" "${pkgrel}" "${pkgdesc}" "${url}"
+: "${arch[@]}"
+: "${license[@]}"
+: "${makedepends[@]}"
+: "${depends[@]}"
+: "${source[@]}"
+: "${options[@]}"
+: "${sha256sums[@]}"
 prepare(){
   cd "$pkgname-$pkgver" || exit 1
   mkdir -p build/
