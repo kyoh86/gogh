@@ -20,7 +20,7 @@ build() {
   export CGO_CFLAGS="${CFLAGS}"
   export CGO_CXXFLAGS="${CXXFLAGS}"
   export CGO_LDFLAGS="${LDFLAGS}"
-  export LDF="-linkmode=external -s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=$(date)"
+  export LDF="-linkmode=external -s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=$(date --iso-8601=seconds)"
   set -ex
   go build \
     -trimpath \
