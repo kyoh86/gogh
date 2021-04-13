@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -exuo pipefail
 
 FILE="$(basename "$0")"
 
@@ -53,6 +53,7 @@ if [ -n "${INPUT_AURDEPS:-}" ]; then
 	sudo -H -u builder yay --sync --noconfirm "${PKGDEPS[@]}"
 fi
 
+echo "hoge"
 export VERSION="${GITHUB_REF##*/v}"
 export COMMIT="${GITHUB_SHA}"
 sudo -H -u builder envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh \
