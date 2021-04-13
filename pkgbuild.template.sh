@@ -45,7 +45,6 @@ check() {
 }
 package() {
   cd "$pkgname-$pkgver" || exit 1
-  declare pkgdir
   install -Dm755 build/$pkgname "$pkgdir/usr/bin/$pkgname"
   if [ -f LICENSE ]; then
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
