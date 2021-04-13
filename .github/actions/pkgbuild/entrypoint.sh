@@ -13,4 +13,5 @@ fi
 export COMMIT="${GITHUB_SHA}"
 envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh > PKGBUILD
 chmod 777 PKGBUILD
-sudo -H -u builder updpkgsums
+updpkgsums
+cat PKGBUILD
