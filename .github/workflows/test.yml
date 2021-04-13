@@ -16,7 +16,7 @@ jobs:
       - name: Check PKGBUILD
         uses: edlanglois/pkgbuild-action@v1
         with:
-          path: ./build
+          pkgdir: ./build
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
