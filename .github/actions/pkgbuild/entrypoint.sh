@@ -54,6 +54,11 @@ if [ -n "${INPUT_AURDEPS:-}" ]; then
 fi
 
 export VERSION="${GITHUB_REF##*/v}"
+if [[ "${VERSION}" =~ "^([0-9]+)\.([0-9]+)\.([0-9]+)$" ]]; then
+  :
+else
+  export VERSION="0.0.0"
+fi
 export COMMIT="${GITHUB_SHA}"
 envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh > PKGBUILD
 cat PKGBUILD
