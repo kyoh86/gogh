@@ -57,7 +57,7 @@ export VERSION="${GITHUB_REF##*/v}"
 if [[ "${VERSION}" =~ "^([0-9]+)\.([0-9]+)\.([0-9]+)$" ]]; then
   :
 else
-  export VERSION="0.0.0"
+  export VERSION="2.0.1"
 fi
 export COMMIT="${GITHUB_SHA}"
 envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh > PKGBUILD
