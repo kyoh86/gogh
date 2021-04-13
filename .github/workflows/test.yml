@@ -13,6 +13,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Make PKGBUILD
         uses: ./.github/actions/pkgbuild
+        env:
+          DESCRIPTION: GO GitHub project manager
+          LICENSE: MIT
+          EMAIL: me@kyoh86.dev
       - name: Check PKGBUILD
         uses: edlanglois/pkgbuild-action@v1
       - name: Upload artifact
