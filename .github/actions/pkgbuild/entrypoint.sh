@@ -24,6 +24,7 @@ else
 fi
 export COMMIT="${GITHUB_SHA}"
 mkdir -p build
+chmod 777 build
 cd build
 envsubst "\$VERSION \$COMMIT" < ../pkgbuild.template.sh > PKGBUILD
 chmod 777 PKGBUILD
