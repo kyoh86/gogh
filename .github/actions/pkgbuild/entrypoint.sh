@@ -25,7 +25,7 @@ fi
 export COMMIT="${GITHUB_SHA}"
 mkdir -p build
 cd build
-envsubst "\$VERSION \$COMMIT" < pkgbuild.template.sh > PKGBUILD
+envsubst "\$VERSION \$COMMIT" < ../pkgbuild.template.sh > PKGBUILD
 chmod 777 PKGBUILD
 sudo -H -u builder updpkgsums PKGBUILD
 sudo -H -u builder makepkg --printsrcinfo PKGBUILD | sudo -H -u builder tee .SRCINFO
