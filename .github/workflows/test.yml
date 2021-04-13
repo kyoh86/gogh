@@ -15,10 +15,10 @@ jobs:
         uses: ./.github/actions/pkgbuild
       - name: Check PKGBUILD
         uses: edlanglois/pkgbuild-action@v1
-        with:
-          pkgdir: ./build
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: package-tested
-          path: ./build
+          path: |
+            ./PKGBUILD
+            ./.SRCINFO
