@@ -1,0 +1,9 @@
+name: Generate PKGBUILD for a go package
+author: kyoh86
+description: Generate PKGBUILD for a go package
+branding:
+  color: blue
+  icon: chevron-up
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

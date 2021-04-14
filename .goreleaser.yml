@@ -21,7 +21,7 @@ builds:
     main: ./cmd/gogh
     hooks:
       post:
-        - make man VERSION={{ .Version }} COMMIT={{ .Commit }} DATE={{ .Date }}
+        - make man VERSION={{.Version}} COMMIT={{.ShortCommit}} DATE={{.Date}}
 archives:
   - id: gzip
     format: tar.gz
