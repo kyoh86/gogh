@@ -23,6 +23,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: package-tested
-          path: |
-            ./PKGBUILD
-            ./.SRCINFO
+          path: ./*_*_PKGBUILD.tar.gz
