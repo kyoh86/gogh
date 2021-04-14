@@ -2,7 +2,6 @@ package gogh
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -159,28 +158,18 @@ func (l *LocalController) Walk(ctx context.Context, option *LocalWalkOption, wal
 			return nil
 		}
 
-		p, err := l.newProjectFromEntity([3]string{parts[0], parts[1], parts[2]}, info)
+		// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
+		spec, err := NewSpec(parts[0], parts[1], parts[2])
 		if err != nil {
 			log.FromContext(ctx).WithFields(log.Fields{"error": err, "rel": rel}).Debug("skip invalid entity")
 			return nil
 		}
+		p := NewProject(l.root, spec)
 		if option != nil && !strings.Contains(p.RelPath(), option.Query) {
 			return nil
 		}
 		return walkFn(p)
 	})
-}
-
-func (l *LocalController) newProjectFromEntity(parts [3]string, info os.FileInfo) (Project, error) {
-	if !info.IsDir() {
-		return Project{}, errors.New("not directory")
-	}
-	// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
-	spec, err := NewSpec(parts[0], parts[1], parts[2])
-	if err != nil {
-		return Project{}, err
-	}
-	return NewProject(l.root, spec), nil
 }
 
 type LocalListOption struct {
