@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var deleteFlags struct {
+	force bool
+}
+
 var deleteCommand = &cobra.Command{
 	Use:     "delete [flags] [[OWNER/]NAME]",
 	Aliases: []string{"remove"},
@@ -56,6 +60,17 @@ var deleteCommand = &cobra.Command{
 		}
 
 		local := gogh.NewLocalController(app.DefaultRoot())
+		if !deleteFlags.force {
+			var confirmed bool
+			if err := survey.AskOne(&survey.Confirm{
+				Message: fmt.Sprintf("Are you sure you want to delete local-project %s?", spec.String()),
+			}, &confirmed); err != nil {
+				return err
+			}
+			if !confirmed {
+				return nil
+			}
+		}
 		if err := local.Delete(ctx, spec, nil); err != nil {
 			if !os.IsNotExist(err) {
 				return fmt.Errorf("delete local: %w", err)
@@ -66,10 +81,22 @@ var deleteCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		if !deleteFlags.force {
+			var confirmed bool
+			if err := survey.AskOne(&survey.Confirm{
+				Message: fmt.Sprintf("Are you sure you want to delete remote-repository %s?", spec.String()),
+			}, &confirmed); err != nil {
+				return err
+			}
+			if !confirmed {
+				return nil
+			}
+		}
 		return gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil)
 	},
 }
 
 func init() {
+	deleteCommand.Flags().BoolVarP(&deleteFlags.force, "force", "", false, "Do NOT confirm to delete.")
 	facadeCommand.AddCommand(deleteCommand)
 }
