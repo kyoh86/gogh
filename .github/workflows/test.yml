@@ -21,7 +21,7 @@ jobs:
         with:
           go-version: 1.15
       - name: Test Go
-        run: 	go test -v --race ./...
+        run: go test -v --race ./...
 
   test-release:
     name: Test releases
@@ -56,13 +56,6 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.32
-      - name: Take coverage
-        run: go test -coverprofile=coverage.txt -covermode=atomic ./...
-      - name: Send coverage
-        uses: codecov/codecov-action@v1
-        with:
-          fail_ci_if_error: true
-          file: coverage.txt
 
   test-status:
     name: Test status
