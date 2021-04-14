@@ -26,11 +26,11 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: "*_*_PKGBUILD.tar.gz"
+          files: "*_PKGBUILD.tar.gz"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload PKGBUILD for an artifact
         uses: actions/upload-artifact@v2
         with:
           name: package
-          path: "*_*_PKGBUILD.tar.gz"
+          path: "*_PKGBUILD.tar.gz"

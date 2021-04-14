@@ -13,17 +13,45 @@ GO GitHub project manager
 
 **`gogh` is forked from [ghq](https://github.com/motemen/ghq).**
 
+```console
+$ gogh list
+github.com/kyoh86/git-branches
+github.com/kyoh86/gogh
+github.com/kyoh86/vim-wipeout
+github.com/kyoh86-tryouts/bare
+github.com/nvim-telescope/telescope.nvim
+...
+```
+
 `gogh` provides a way to organize remote repository clones, like `go get` does.  When you clone a
 remote repository by `gogh get`, gogh makes a directory under a specific root directory (by default
 `~/go/src`) using the remote repository URL's host and path.  And creating new one by `gogh new`,
 gogh make both of a local project and a remote repository.
 
-```
+```console
 $ gogh get https://github.com/kyoh86/gogh
 # Runs `git clone https://github.com/kyoh86/gogh ~/go/src/github.com/kyoh86/gogh`
 ```
 
 You can also list projects (local repositories) (`gogh list`).
+
+## Install
+
+### Homebrew/Linuxbrew
+
+```console
+$ brew tap kyoh86/tap
+$ brew install kyoh86/tap/gogh
+```
+
+### Makepkg
+
+```console
+$ mkdir -p gogh_build && \
+  cd gogh_build && \
+  curl -L --silent https://github.com/kyoh86/gogh/releases/latest/download/gogh_PKGBUILD.tar.gz | tar -xvz
+$ makepkg -i
+```
 
 ## Available commands
 
