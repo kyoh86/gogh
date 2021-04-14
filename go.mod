@@ -1,6 +1,6 @@
 module github.com/kyoh86/gogh/v2
 
-go 1.15
+go 1.16
 
 require (
 	cloud.google.com/go/storage v1.14.0 // indirect
