@@ -37,10 +37,17 @@ You can also list projects (local repositories) (`gogh list`).
 
 ## Install
 
+### For Golang developers
+
+```console
+$ go get github.com/kyoh86/gogh/cmd/gogh
+```
+
 ### Homebrew/Linuxbrew
 
 ```console
 $ brew tap kyoh86/tap
+$ brew update
 $ brew install kyoh86/tap/gogh
 ```
 
@@ -82,22 +89,6 @@ $ makepkg -i
 
 Use `gogh [command] --help` for more information about a command.
 Or see the manual in [usage/gogh.md](./usage/gogh.md).
-
-## Install
-
-For Golang developers:
-
-```
-go get github.com/kyoh86/gogh/cmd/gogh
-```
-
-For [Homebrew](https://brew.sh/) users:
-
-```
-brew tap kyoh86/tap
-brew update
-brew install gogh
-```
 
 ## Roots
 
