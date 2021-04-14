@@ -20,7 +20,9 @@ export VERSION="${GITHUB_REF##*/v}"
 if [[ "${VERSION}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
   :
 else
-  export VERSION="2.0.1"
+  FILE="$(basename "$0")"
+  echo "::error file=$FILE,line=$LINENO::Ref ${GITHUB_REF} mismatched as a tag for the semantic-version"
+  exit 1
 fi
 export COMMIT="${GITHUB_SHA}"
 export NAME="${GITHUB_REPOSITORY#*/}"
