@@ -36,4 +36,4 @@ envsubst "\$VERSION \$COMMIT \$NAME \$DESCRIPTION \$LICENSE \$OWNER \$REPOSITORY
 chmod 777 PKGBUILD
 sudo -H -u builder updpkgsums PKGBUILD
 sudo -H -u builder makepkg --printsrcinfo PKGBUILD | sudo -H -u builder tee .SRCINFO
-sudo -H -u builder tar -cvzf "${NAME}_${VERSION}_PKGBUILD.tar.gz" ./PKGBUILD ./.SRCINFO
+sudo -H -u builder tar -cvzf "${NAME}_${VERSION}_PKGBUILD.tar.gz" PKGBUILD .SRCINFO
