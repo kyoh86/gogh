@@ -155,21 +155,13 @@ func (l *LocalController) Walk(ctx context.Context, option *LocalWalkOption, wal
 		}()
 
 		if _, err := git.PlainOpen(pathname); err != nil {
-			log.FromContext(ctx).WithFields(log.Fields{
-				"error": err,
-				"rel":   rel,
-			}).
-				Debug("skip a dir that is not a git directory")
+			log.FromContext(ctx).WithFields(log.Fields{"error": err, "rel": rel}).Debug("skip a dir that is not a git directory")
 			return nil
 		}
 
 		p, err := l.newProjectFromEntity([3]string{parts[0], parts[1], parts[2]}, info)
 		if err != nil {
-			log.FromContext(ctx).WithFields(log.Fields{
-				"error": err,
-				"rel":   rel,
-			}).
-				Debug("skip invalid entity")
+			log.FromContext(ctx).WithFields(log.Fields{"error": err, "rel": rel}).Debug("skip invalid entity")
 			return nil
 		}
 		if option != nil && !strings.Contains(p.RelPath(), option.Query) {
