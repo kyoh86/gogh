@@ -24,30 +24,41 @@ type SpecParser struct {
 // If it's not specified, alias will be nil value.
 // If it's specified a value which equals to the spec, alias will be nil value.
 func (p *SpecParser) ParseWithAlias(s string) (Spec, *Spec, Server, error) {
-	var alias *Spec
-	part := strings.Split(s, "=")
-	switch len(part) {
+	switch parts := strings.Split(s, "="); len(parts) {
 	case 1:
-		// noop
+		spec, server, err := p.Parse(s)
+		return spec, nil, server, err
 	case 2:
-		as, _, err := p.Parse(part[1])
+		s = parts[0]
+
+		spec, server, err := p.Parse(s)
 		if err != nil {
 			return Spec{}, nil, Server{}, err
 		}
-		alias = &as
-		s = part[0]
+
+		var host, owner, name string
+		parts := strings.Split(parts[1], "/")
+		switch len(parts) {
+		case 1:
+			host, owner, name = spec.Host(), spec.Owner(), parts[0]
+		case 2:
+			host, owner, name = spec.Host(), parts[0], parts[1]
+		case 3:
+			host, owner, name = parts[0], parts[1], parts[2]
+		default:
+			return Spec{}, nil, Server{}, ErrTooManySlashes
+		}
+		alias, err := NewSpec(host, owner, name)
+		if err != nil {
+			return Spec{}, nil, Server{}, err
+		}
+		if alias.String() == spec.String() {
+			return spec, nil, server, err
+		}
+		return spec, &alias, server, err
 	default:
 		return Spec{}, nil, Server{}, fmt.Errorf("invalid spec: %s", s)
 	}
-	spec, server, err := p.Parse(s)
-	if err != nil {
-		return Spec{}, nil, Server{}, err
-	}
-	if alias != nil && alias.String() == spec.String() {
-		alias = nil
-	}
-
-	return spec, alias, server, err
 }
 
 // Parse a string and build a Spec.
@@ -56,8 +67,7 @@ func (p *SpecParser) ParseWithAlias(s string) (Spec, *Spec, Server, error) {
 // replaced with a default server.
 func (p *SpecParser) Parse(s string) (Spec, Server, error) {
 	parts := strings.Split(s, "/")
-	var name, owner, host string
-
+	var host, owner, name string
 	var server Server
 	switch len(parts) {
 	case 1:

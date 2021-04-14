@@ -452,6 +452,12 @@ func TestSpecParser(t *testing.T) {
 				wantUser: owner1,
 				wantName: "alias",
 			}, {
+				title:    "with-not-default-repo-with-alias-name",
+				source:   host2 + "/" + owner2 + "/" + name + "=alias",
+				wantHost: host2,
+				wantUser: owner2,
+				wantName: "alias",
+			}, {
 				title:    "with-alias-owner",
 				source:   host1 + "/" + owner1 + "/" + name + "=" + owner2 + "/alias",
 				wantHost: host1,
@@ -488,15 +494,18 @@ func TestSpecParser(t *testing.T) {
 			}
 		})
 
-		t.Run("WithInvalidAlias", func(t *testing.T) {
+		t.Run("WithInvalid", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
 				source string
 			}{{
-				title:  "empty",
+				title:  "invalid-name",
+				source: ".=",
+			}, {
+				title:  "empty-alias",
 				source: name + "=",
 			}, {
-				title:  "space",
+				title:  "space-alias",
 				source: name + "= ",
 			}, {
 				title:  "space-in-the-alias",
@@ -504,6 +513,9 @@ func TestSpecParser(t *testing.T) {
 			}, {
 				title:  "double-alias",
 				source: name + "=alias1=alias2",
+			}, {
+				title:  "too-many-shashes",
+				source: name + "=foo/bar/baz/many",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
 					_, _, _, err := parser.ParseWithAlias(testcase.source)
