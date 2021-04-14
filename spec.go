@@ -8,14 +8,18 @@ import (
 
 // Spec describes which project is in a root.
 type Spec struct {
-	host  string
-	owner string
-	name  string
+	explicitHost  string
+	explicitOwner string
+	host          string
+	owner         string
+	name          string
 }
 
-func (s Spec) Host() string  { return s.host }
-func (s Spec) Owner() string { return s.owner }
-func (s Spec) Name() string  { return s.name }
+func (s Spec) ExplicitHost() string  { return s.explicitHost }
+func (s Spec) ExplicitOwner() string { return s.explicitOwner }
+func (s Spec) Host() string          { return s.host }
+func (s Spec) Owner() string         { return s.owner }
+func (s Spec) Name() string          { return s.name }
 
 func (s Spec) RelLevels() []string {
 	return []string{s.host, s.owner, s.name}
