@@ -163,8 +163,13 @@ func TestLocalController(t *testing.T) {
 			t.Fatalf("failed to create dummy file: %s", err)
 		}
 		// invalid name
-		if err := os.MkdirAll(filepath.Join(root, "github.com", "kyoh86", "invalid name"), 0755); err != nil {
+		invalidPath := filepath.Join(root, "github.com", "kyoh86", "invalid name")
+		if err := os.MkdirAll(invalidPath, 0755); err != nil {
 			t.Fatalf("failed to create dummy directory: %s", err)
+		}
+		_, err := git.PlainInit(invalidPath, false)
+		if err != nil {
+			t.Fatalf("failed to init dummy repository: %s", err)
 		}
 
 		expect := "https://github.com/kyoh86/gogh"
