@@ -11,6 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var createFlags struct {
+	template string
+	dryrun   bool
+}
+
 var createCommand = &cobra.Command{
 	Use:     "create [flags] [[OWNER/]NAME]",
 	Aliases: []string{"new"},
@@ -18,12 +23,12 @@ var createCommand = &cobra.Command{
 	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		servers := app.Servers()
-		var selected string
+		var name string
 		if len(specs) == 0 {
 			parser := gogh.NewSpecParser(servers)
 			if err := survey.AskOne(&survey.Input{
 				Message: "A spec of repository name to create",
-			}, &selected, survey.WithValidator(func(input interface{}) error {
+			}, &name, survey.WithValidator(func(input interface{}) error {
 				s, ok := input.(string)
 				if !ok {
 					return errors.New("invalid type")
@@ -34,12 +39,12 @@ var createCommand = &cobra.Command{
 				return err
 			}
 		} else {
-			selected = specs[0]
+			name = specs[0]
 		}
 
 		ctx := cmd.Context()
 		parser := gogh.NewSpecParser(servers)
-		spec, server, err := parser.Parse(selected)
+		spec, server, err := parser.Parse(name)
 		if err != nil {
 			return err
 		}
@@ -62,15 +67,30 @@ var createCommand = &cobra.Command{
 			return nil
 		}
 
-		var ropt *gogh.RemoteCreateOption
-		if server.User() != spec.Owner() {
-			ropt = &gogh.RemoteCreateOption{Organization: spec.Owner()}
+		if createFlags.template == "" {
+			var ropt *gogh.RemoteCreateOption
+			if server.User() != spec.Owner() {
+				ropt = &gogh.RemoteCreateOption{Organization: spec.Owner()}
+			}
+			_, err = remote.Create(ctx, spec.Name(), ropt)
+			return err
 		}
-		_, err = remote.Create(ctx, spec.Name(), ropt)
+
+		from, err := gogh.ParseSiblingSpec(spec, createFlags.template)
+		if err != nil {
+			return err
+		}
+		var ropt *gogh.RemoteCreateFromTemplateOption
+		if server.User() != spec.Owner() {
+			ropt = &gogh.RemoteCreateFromTemplateOption{Owner: spec.Owner()}
+		}
+		_, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt)
 		return err
 	},
 }
 
 func init() {
+	createCommand.Flags().BoolVarP(&createFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	createCommand.Flags().StringVarP(&createFlags.template, "template", "", "", "Create new repository from the template")
 	facadeCommand.AddCommand(createCommand)
 }

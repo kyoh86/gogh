@@ -29,36 +29,41 @@ func (p *SpecParser) ParseWithAlias(s string) (Spec, *Spec, Server, error) {
 		spec, server, err := p.Parse(s)
 		return spec, nil, server, err
 	case 2:
-		s = parts[0]
-
-		spec, server, err := p.Parse(s)
+		spec, server, err := p.Parse(parts[0])
 		if err != nil {
 			return Spec{}, nil, Server{}, err
 		}
-
-		var host, owner, name string
-		parts := strings.Split(parts[1], "/")
-		switch len(parts) {
-		case 1:
-			host, owner, name = spec.Host(), spec.Owner(), parts[0]
-		case 2:
-			host, owner, name = spec.Host(), parts[0], parts[1]
-		case 3:
-			host, owner, name = parts[0], parts[1], parts[2]
-		default:
-			return Spec{}, nil, Server{}, ErrTooManySlashes
-		}
-		alias, err := NewSpec(host, owner, name)
+		alias, err := ParseSiblingSpec(spec, parts[1])
 		if err != nil {
 			return Spec{}, nil, Server{}, err
 		}
 		if alias.String() == spec.String() {
 			return spec, nil, server, err
 		}
-		return spec, &alias, server, err
+		return spec, &alias, server, nil
 	default:
 		return Spec{}, nil, Server{}, fmt.Errorf("invalid spec: %s", s)
 	}
+}
+
+// ParseSiblingSpec parses string as a repository specification
+// in the same host and same owner.
+func ParseSiblingSpec(base Spec, s string) (Spec, error) {
+	parts := strings.Split(s, "/")
+	var owner, name string
+	switch len(parts) {
+	case 1:
+		owner, name = base.Owner(), parts[0]
+	case 2:
+		owner, name = parts[0], parts[1]
+	default:
+		return Spec{}, ErrTooManySlashes
+	}
+	alias, err := NewSpec(base.Host(), owner, name)
+	if err != nil {
+		return Spec{}, err
+	}
+	return alias, nil
 }
 
 // Parse a string and build a Spec.

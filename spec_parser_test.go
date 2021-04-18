@@ -463,12 +463,6 @@ func TestSpecParser(t *testing.T) {
 				wantHost: host1,
 				wantUser: owner2,
 				wantName: "alias",
-			}, {
-				title:    "with-alias-host",
-				source:   host1 + "/" + owner1 + "/" + name + "=" + host2 + "/" + owner2 + "/alias",
-				wantHost: host2,
-				wantUser: owner2,
-				wantName: "alias",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
 					_, alias, _, err := parser.ParseWithAlias(testcase.source)
@@ -515,7 +509,7 @@ func TestSpecParser(t *testing.T) {
 				source: name + "=alias1=alias2",
 			}, {
 				title:  "too-many-shashes",
-				source: name + "=foo/bar/baz/many",
+				source: name + "=example.com/baz/many",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
 					_, _, _, err := parser.ParseWithAlias(testcase.source)
