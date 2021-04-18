@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
@@ -77,10 +80,6 @@ var deleteCommand = &cobra.Command{
 			}
 		}
 
-		adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
-		if err != nil {
-			return err
-		}
 		if !deleteFlags.force {
 			var confirmed bool
 			if err := survey.AskOne(&survey.Confirm{
@@ -92,7 +91,20 @@ var deleteCommand = &cobra.Command{
 				return nil
 			}
 		}
-		return gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil)
+		adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+		if err != nil {
+			return err
+		}
+		if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
+			var gherr *github.ErrorResponse
+			if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
+				log.FromContext(ctx).Errorf("Failed to delete a repository: there is no permission to delete %q", spec.URL())
+				log.FromContext(ctx).Errorf(`Add scope "delete_repo" for the token for %q`, server.String())
+			} else {
+				return err
+			}
+		}
+		return nil
 	},
 }
 

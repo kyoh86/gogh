@@ -15,7 +15,6 @@ type ListOptions = github.ListOptions
 type Response = github.Response
 type User = github.User
 type Organization = github.Organization
-type AcceptedError = github.AcceptedError
 
 type Adaptor interface {
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
