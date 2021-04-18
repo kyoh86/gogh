@@ -351,6 +351,32 @@ func (c *RemoteController) Create(ctx context.Context, name string, option *Remo
 	return c.repoSpec(repo)
 }
 
+type RemoteCreateFromTemplateOption struct {
+	Owner       string `json:"owner,omitempty"`
+	Description string `json:"description,omitempty"`
+	Private     bool   `json:"private,omitempty"`
+}
+
+func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(name string) *github.TemplateRepoRequest {
+	if o == nil {
+		return &github.TemplateRepoRequest{Name: &name}
+	}
+	return &github.TemplateRepoRequest{
+		Name:        stringPtr(name),
+		Owner:       stringPtr(o.Owner),
+		Description: stringPtr(o.Description),
+		Private:     falsePtr(o.Private),
+	}
+}
+
+func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner, templateName, name string, option *RemoteCreateFromTemplateOption) (Spec, error) {
+	repo, _, err := c.adaptor.RepositoryCreateFromTemplate(ctx, templateOwner, templateName, option.buildTemplateRepoRequest(name))
+	if err != nil {
+		return Spec{}, fmt.Errorf("create a repository from template: %w", err)
+	}
+	return c.repoSpec(repo)
+}
+
 type RemoteForkOption struct {
 	// Organization is the name of the organization that owns the repository.
 	Organization string

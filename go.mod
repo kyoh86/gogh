@@ -17,7 +17,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.5
-	github.com/google/go-github/v34 v34.0.0
+	github.com/google/go-github/v35 v35.0.0
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/rpmpack v0.0.0-20210410105602-e20c988a6f5a // indirect
 	github.com/google/uuid v1.2.0 // indirect

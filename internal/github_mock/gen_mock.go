@@ -67,6 +67,22 @@ func (mr *MockAdaptorMockRecorder) RepositoryCreateFork(ctx, owner, repo, opts i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryCreateFork", reflect.TypeOf((*MockAdaptor)(nil).RepositoryCreateFork), ctx, owner, repo, opts)
 }
 
+// RepositoryCreateFromTemplate mocks base method.
+func (m *MockAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *github.TemplateRepoRequest) (*github.Repository, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RepositoryCreateFromTemplate", ctx, templateOwner, templateRepo, templateRepoReq)
+	ret0, _ := ret[0].(*github.Repository)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// RepositoryCreateFromTemplate indicates an expected call of RepositoryCreateFromTemplate.
+func (mr *MockAdaptorMockRecorder) RepositoryCreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryCreateFromTemplate", reflect.TypeOf((*MockAdaptor)(nil).RepositoryCreateFromTemplate), ctx, templateOwner, templateRepo, templateRepoReq)
+}
+
 // RepositoryDelete mocks base method.
 func (m *MockAdaptor) RepositoryDelete(ctx context.Context, owner, repo string) (*github.Response, error) {
 	m.ctrl.T.Helper()

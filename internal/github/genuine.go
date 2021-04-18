@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	github "github.com/google/go-github/v34/github"
+	github "github.com/google/go-github/v35/github"
 	"golang.org/x/oauth2"
 )
 
@@ -82,6 +82,9 @@ func (c *genuineAdaptor) RepositoryGet(ctx context.Context, owner string, repo s
 }
 func (c *genuineAdaptor) RepositoryDelete(ctx context.Context, owner string, repo string) (*github.Response, error) {
 	return c.client.Repositories.Delete(ctx, owner, repo)
+}
+func (c *genuineAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error) {
+	return c.client.Repositories.CreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq)
 }
 
 func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
