@@ -43,16 +43,17 @@ var bundleDumpCommand = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			if project.URL() != urls[0] {
-				uobj, err := url.Parse(urls[0])
-				if err != nil {
-					return err
-				}
-				remoteSpec := strings.TrimSuffix(uobj.Path, ".git")
-				fmt.Fprintf(out, "%s/%s=%s\n", uobj.Host, strings.TrimPrefix(remoteSpec, "/"), localSpec.String())
+			uobj, err := url.Parse(urls[0])
+			if err != nil {
+				return err
+			}
+			remoteName := strings.Join([]string{uobj.Host, strings.TrimPrefix(strings.TrimSuffix(uobj.Path, ".git"), "/")}, "/")
+			localName := localSpec.String()
+			if remoteName == localName {
+				fmt.Fprintln(out, localName)
 				return nil
 			}
-			fmt.Fprintln(out, localSpec.String())
+			fmt.Fprintf(out, "%s=%s\n", remoteName, localName)
 			return nil
 		}); err != nil {
 			return err
