@@ -1,0 +1,12 @@
+query ListRepoUrls($repositoryCursor: String) { 
+  viewer { 
+    repositories(first:30, after:$repositoryCursor) {
+      edges {
+        node {
+          url
+        }
+        cursor
+      }
+    }
+  }
+}

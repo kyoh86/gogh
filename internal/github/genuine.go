@@ -14,7 +14,8 @@ type genuineAdaptor struct {
 }
 
 const (
-	DefaultHost = "github.com"
+	DefaultHost    = "github.com"
+	DefaultAPIHost = "api.github.com"
 )
 
 type Option func(baseURL *url.URL, uploadURL *url.URL)
@@ -43,7 +44,7 @@ func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Ada
 	if token != "" {
 		client = NewAuthClient(ctx, token)
 	}
-	if host == DefaultHost {
+	if host == DefaultHost || host == DefaultAPIHost {
 		return newGenuineAdaptor(client), nil
 	}
 	baseURL := &url.URL{

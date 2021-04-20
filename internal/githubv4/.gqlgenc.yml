@@ -1,0 +1,17 @@
+model:
+  package: githubv4
+  filename: ./models_gen.go
+client:
+  package: githubv4
+  filename: ./client.go
+models:
+  Int:
+    model: github.com/99designs/gqlgen/graphql.Int64
+  Date:
+    model: github.com/99designs/gqlgen/graphql.Time
+endpoint:
+  url: https://api.github.com/graphql
+  headers:
+    Authorization: "Bearer ${GITHUB_TOKEN}" 
+query:
+  - ./*.graphql
