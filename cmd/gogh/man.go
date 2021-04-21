@@ -61,6 +61,7 @@ var manCommand = &cobra.Command{
 		if err := os.MkdirAll("./usage", 0755); err != nil {
 			return err
 		}
+		facadeCommand.DisableAutoGenTag = true
 		if err := doc.GenMarkdownTree(facadeCommand, "./usage"); err != nil {
 			return err
 		}
