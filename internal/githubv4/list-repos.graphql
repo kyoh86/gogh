@@ -1,0 +1,54 @@
+query ListRepos($repositoryCursor: String) { 
+  viewer { 
+    repositories(first:30, after:$repositoryCursor) {
+      edges {
+        node {
+          url
+          owner {
+            login
+          }
+          name
+          createdAt
+          description
+          diskUsage
+          isArchived
+          isDisabled
+          isEmpty
+          isFork
+          isInOrganization
+          isLocked
+          isPrivate
+          isTemplate
+          licenseInfo {
+            name
+            key
+          }
+          parent {
+            owner {
+              id
+              login
+            }
+            name
+          }
+          primaryLanguage {
+            name
+          }
+          pushedAt
+          repositoryTopics(first:30) {
+            edges {
+              node {
+                topic {
+                  name
+                }
+              }
+            }
+          }
+          resourcePath
+          stargazerCount
+          updatedAt
+        }
+        cursor
+      }
+    }
+  }
+}

@@ -185,6 +185,37 @@ type Mutation struct {
 	UpdateTopics                                                *UpdateTopicsPayload                                                "json:\"updateTopics\" graphql:\"updateTopics\""
 	VerifyVerifiableDomain                                      *VerifyVerifiableDomainPayload                                      "json:\"verifyVerifiableDomain\" graphql:\"verifyVerifiableDomain\""
 }
+type CreateNewRepository struct {
+	CreateRepository *struct {
+		Repository *struct {
+			Name string "json:\"name\" graphql:\"name\""
+			URL  string "json:\"url\" graphql:\"url\""
+		} "json:\"repository\" graphql:\"repository\""
+	} "json:\"createRepository\" graphql:\"createRepository\""
+}
+type GetUserID struct {
+	User *struct {
+		ID string "json:\"id\" graphql:\"id\""
+	} "json:\"user\" graphql:\"user\""
+}
+type GetViewerID struct {
+	Viewer struct {
+		ID string "json:\"id\" graphql:\"id\""
+	} "json:\"viewer\" graphql:\"viewer\""
+}
+type ListMyOrganizations struct {
+	Viewer struct {
+		Organizations struct {
+			Edges []*struct {
+				Node *struct {
+					Login string "json:\"login\" graphql:\"login\""
+					ID    string "json:\"id\" graphql:\"id\""
+				} "json:\"node\" graphql:\"node\""
+				Cursor string "json:\"cursor\" graphql:\"cursor\""
+			} "json:\"edges\" graphql:\"edges\""
+		} "json:\"organizations\" graphql:\"organizations\""
+	} "json:\"viewer\" graphql:\"viewer\""
+}
 type ListRepoUrls struct {
 	Viewer struct {
 		Repositories struct {
@@ -196,6 +227,97 @@ type ListRepoUrls struct {
 			} "json:\"edges\" graphql:\"edges\""
 		} "json:\"repositories\" graphql:\"repositories\""
 	} "json:\"viewer\" graphql:\"viewer\""
+}
+
+const CreateNewRepositoryDocument = `mutation CreateNewRepository ($name: String!, $visibility: RepositoryVisibility!, $ownerId: ID) {
+	createRepository(input: {name:$name,visibility:$visibility,ownerId:$ownerId}) {
+		repository {
+			name
+			url
+		}
+	}
+}
+`
+
+func (c *Client) CreateNewRepository(ctx context.Context, name string, visibility RepositoryVisibility, ownerID *string, httpRequestOptions ...client.HTTPRequestOption) (*CreateNewRepository, error) {
+	vars := map[string]interface{}{
+		"name":       name,
+		"visibility": visibility,
+		"ownerId":    ownerID,
+	}
+
+	var res CreateNewRepository
+	if err := c.Client.Post(ctx, "CreateNewRepository", CreateNewRepositoryDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetUserIDDocument = `query GetUserId ($login: String!) {
+	user(login: $login) {
+		id
+	}
+}
+`
+
+func (c *Client) GetUserID(ctx context.Context, login string, httpRequestOptions ...client.HTTPRequestOption) (*GetUserID, error) {
+	vars := map[string]interface{}{
+		"login": login,
+	}
+
+	var res GetUserID
+	if err := c.Client.Post(ctx, "GetUserId", GetUserIDDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetViewerIDDocument = `query GetViewerId {
+	viewer {
+		id
+	}
+}
+`
+
+func (c *Client) GetViewerID(ctx context.Context, httpRequestOptions ...client.HTTPRequestOption) (*GetViewerID, error) {
+	vars := map[string]interface{}{}
+
+	var res GetViewerID
+	if err := c.Client.Post(ctx, "GetViewerId", GetViewerIDDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const ListMyOrganizationsDocument = `query ListMyOrganizations ($organizationCursor: String) {
+	viewer {
+		organizations(after: $organizationCursor, first: 100) {
+			edges {
+				node {
+					login
+					id
+				}
+				cursor
+			}
+		}
+	}
+}
+`
+
+func (c *Client) ListMyOrganizations(ctx context.Context, organizationCursor *string, httpRequestOptions ...client.HTTPRequestOption) (*ListMyOrganizations, error) {
+	vars := map[string]interface{}{
+		"organizationCursor": organizationCursor,
+	}
+
+	var res ListMyOrganizations
+	if err := c.Client.Post(ctx, "ListMyOrganizations", ListMyOrganizationsDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 const ListRepoUrlsDocument = `query ListRepoUrls ($repositoryCursor: String) {

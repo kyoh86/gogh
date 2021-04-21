@@ -1,4 +1,4 @@
-mutation CreateNewRepository($name: String!, $visibility: RepositoryVisibility!, $ownerId:ID) {
+mutation CreateRepository($name: String!, $visibility: RepositoryVisibility = PUBLIC, $ownerId:ID) {
   createRepository(input:{
     name: $name,
     visibility: $visibility,
