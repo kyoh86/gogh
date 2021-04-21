@@ -1,6 +1,6 @@
 model:
   package: githubv4
-  filename: ./models_gen.go
+  filename: ./models.go
 client:
   package: githubv4
   filename: ./client.go
