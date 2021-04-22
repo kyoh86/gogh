@@ -1,51 +1,63 @@
+fragment Repo on Repository {
+  id
+  url
+  owner {
+    login
+  }
+  name
+  description
+  createdAt
+  isArchived
+  isDisabled
+  isEmpty
+  isFork
+  isInOrganization
+  isLocked
+  isPrivate
+  isTemplate
+  licenseInfo {
+    name
+    key
+  }
+  parent {
+    owner {
+      id
+      login
+    }
+    name
+  }
+  primaryLanguage {
+    name
+  }
+  pushedAt
+  repositoryTopics(first:30) {
+    edges {
+      node {
+        topic {
+          name
+        }
+      }
+    }
+  }
+  resourcePath
+  stargazerCount
+  updatedAt
+}
+
 query ListRepos($repositoryCursor: String) { 
   viewer { 
+    #           --archived          Show only archived repositories
+    #           --no-archived       Omit archived repositories
+    #           --fork              Show only forks
+    #       -l, --language string   Filter by primary coding language
+    #       -L, --limit int         Maximum number of repositories to list (default 30)
+    #           --private           Show only private repositories
+    #           --public            Show only public repositories
+    #           --source            Show only non-forks
     repositories(first:30, after:$repositoryCursor) {
       edges {
         node {
-          url
-          owner {
-            login
-          }
-          name
-          createdAt
-          description
-          diskUsage
-          isArchived
-          isDisabled
-          isEmpty
-          isFork
-          isInOrganization
-          isLocked
-          isPrivate
-          isTemplate
-          licenseInfo {
-            name
-            key
-          }
-          parent {
-            owner {
-              id
-              login
-            }
-            name
-          }
-          primaryLanguage {
-            name
-          }
-          pushedAt
-          repositoryTopics(first:30) {
-            edges {
-              node {
-                topic {
-                  name
-                }
-              }
-            }
-          }
-          resourcePath
-          stargazerCount
-          updatedAt
+          ...Repo
         }
         cursor
       }

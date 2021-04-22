@@ -185,7 +185,52 @@ type Mutation struct {
 	UpdateTopics                                                *UpdateTopicsPayload                                                "json:\"updateTopics\" graphql:\"updateTopics\""
 	VerifyVerifiableDomain                                      *VerifyVerifiableDomainPayload                                      "json:\"verifyVerifiableDomain\" graphql:\"verifyVerifiableDomain\""
 }
-type CreateNewRepository struct {
+type Repo struct {
+	ID    string "json:\"id\" graphql:\"id\""
+	URL   string "json:\"url\" graphql:\"url\""
+	Owner struct {
+		Login string "json:\"login\" graphql:\"login\""
+	} "json:\"owner\" graphql:\"owner\""
+	Name             string  "json:\"name\" graphql:\"name\""
+	Description      *string "json:\"description\" graphql:\"description\""
+	CreatedAt        string  "json:\"createdAt\" graphql:\"createdAt\""
+	IsArchived       bool    "json:\"isArchived\" graphql:\"isArchived\""
+	IsDisabled       bool    "json:\"isDisabled\" graphql:\"isDisabled\""
+	IsEmpty          bool    "json:\"isEmpty\" graphql:\"isEmpty\""
+	IsFork           bool    "json:\"isFork\" graphql:\"isFork\""
+	IsInOrganization bool    "json:\"isInOrganization\" graphql:\"isInOrganization\""
+	IsLocked         bool    "json:\"isLocked\" graphql:\"isLocked\""
+	IsPrivate        bool    "json:\"isPrivate\" graphql:\"isPrivate\""
+	IsTemplate       bool    "json:\"isTemplate\" graphql:\"isTemplate\""
+	LicenseInfo      *struct {
+		Name string "json:\"name\" graphql:\"name\""
+		Key  string "json:\"key\" graphql:\"key\""
+	} "json:\"licenseInfo\" graphql:\"licenseInfo\""
+	Parent *struct {
+		Owner struct {
+			ID    string "json:\"id\" graphql:\"id\""
+			Login string "json:\"login\" graphql:\"login\""
+		} "json:\"owner\" graphql:\"owner\""
+		Name string "json:\"name\" graphql:\"name\""
+	} "json:\"parent\" graphql:\"parent\""
+	PrimaryLanguage *struct {
+		Name string "json:\"name\" graphql:\"name\""
+	} "json:\"primaryLanguage\" graphql:\"primaryLanguage\""
+	PushedAt         *string "json:\"pushedAt\" graphql:\"pushedAt\""
+	RepositoryTopics struct {
+		Edges []*struct {
+			Node *struct {
+				Topic struct {
+					Name string "json:\"name\" graphql:\"name\""
+				} "json:\"topic\" graphql:\"topic\""
+			} "json:\"node\" graphql:\"node\""
+		} "json:\"edges\" graphql:\"edges\""
+	} "json:\"repositoryTopics\" graphql:\"repositoryTopics\""
+	ResourcePath   string "json:\"resourcePath\" graphql:\"resourcePath\""
+	StargazerCount int64  "json:\"stargazerCount\" graphql:\"stargazerCount\""
+	UpdatedAt      string "json:\"updatedAt\" graphql:\"updatedAt\""
+}
+type CreateRepository struct {
 	CreateRepository *struct {
 		Repository *struct {
 			Name string "json:\"name\" graphql:\"name\""
@@ -228,8 +273,18 @@ type ListRepoUrls struct {
 		} "json:\"repositories\" graphql:\"repositories\""
 	} "json:\"viewer\" graphql:\"viewer\""
 }
+type ListRepos struct {
+	Viewer struct {
+		Repositories struct {
+			Edges []*struct {
+				Node   *Repo  "json:\"node\" graphql:\"node\""
+				Cursor string "json:\"cursor\" graphql:\"cursor\""
+			} "json:\"edges\" graphql:\"edges\""
+		} "json:\"repositories\" graphql:\"repositories\""
+	} "json:\"viewer\" graphql:\"viewer\""
+}
 
-const CreateNewRepositoryDocument = `mutation CreateNewRepository ($name: String!, $visibility: RepositoryVisibility!, $ownerId: ID) {
+const CreateRepositoryDocument = `mutation CreateRepository ($name: String!, $visibility: RepositoryVisibility = PUBLIC, $ownerId: ID) {
 	createRepository(input: {name:$name,visibility:$visibility,ownerId:$ownerId}) {
 		repository {
 			name
@@ -239,15 +294,15 @@ const CreateNewRepositoryDocument = `mutation CreateNewRepository ($name: String
 }
 `
 
-func (c *Client) CreateNewRepository(ctx context.Context, name string, visibility RepositoryVisibility, ownerID *string, httpRequestOptions ...client.HTTPRequestOption) (*CreateNewRepository, error) {
+func (c *Client) CreateRepository(ctx context.Context, name string, visibility *RepositoryVisibility, ownerID *string, httpRequestOptions ...client.HTTPRequestOption) (*CreateRepository, error) {
 	vars := map[string]interface{}{
 		"name":       name,
 		"visibility": visibility,
 		"ownerId":    ownerID,
 	}
 
-	var res CreateNewRepository
-	if err := c.Client.Post(ctx, "CreateNewRepository", CreateNewRepositoryDocument, &res, vars, httpRequestOptions...); err != nil {
+	var res CreateRepository
+	if err := c.Client.Post(ctx, "CreateRepository", CreateRepositoryDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
@@ -341,6 +396,78 @@ func (c *Client) ListRepoUrls(ctx context.Context, repositoryCursor *string, htt
 
 	var res ListRepoUrls
 	if err := c.Client.Post(ctx, "ListRepoUrls", ListRepoUrlsDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const ListReposDocument = `query ListRepos ($repositoryCursor: String) {
+	viewer {
+		repositories(first: 30, after: $repositoryCursor) {
+			edges {
+				node {
+					... Repo
+				}
+				cursor
+			}
+		}
+	}
+}
+fragment Repo on Repository {
+	id
+	url
+	owner {
+		login
+	}
+	name
+	description
+	createdAt
+	isArchived
+	isDisabled
+	isEmpty
+	isFork
+	isInOrganization
+	isLocked
+	isPrivate
+	isTemplate
+	licenseInfo {
+		name
+		key
+	}
+	parent {
+		owner {
+			id
+			login
+		}
+		name
+	}
+	primaryLanguage {
+		name
+	}
+	pushedAt
+	repositoryTopics(first: 30) {
+		edges {
+			node {
+				topic {
+					name
+				}
+			}
+		}
+	}
+	resourcePath
+	stargazerCount
+	updatedAt
+}
+`
+
+func (c *Client) ListRepos(ctx context.Context, repositoryCursor *string, httpRequestOptions ...client.HTTPRequestOption) (*ListRepos, error) {
+	vars := map[string]interface{}{
+		"repositoryCursor": repositoryCursor,
+	}
+
+	var res ListRepos
+	if err := c.Client.Post(ctx, "ListRepos", ListReposDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

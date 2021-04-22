@@ -6,11 +6,13 @@ import (
 	"net/url"
 
 	github "github.com/google/go-github/v35/github"
+	"github.com/kyoh86/gogh/v2/internal/githubv4"
 	"golang.org/x/oauth2"
 )
 
 type genuineAdaptor struct {
-	client *github.Client
+	restClient *github.Client
+	gqlClient  *githubv4.Client
 }
 
 const (
@@ -63,49 +65,13 @@ func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Ada
 	return newGenuineEnterpriseAdaptor(baseURL.String(), uploadURL.String(), client)
 }
 
-func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Response, error) {
-	return c.client.Users.Get(ctx, user)
-}
-
-func (c *genuineAdaptor) SearchRepository(ctx context.Context, query string, opts *SearchOptions) ([]*github.Repository, *Response, error) {
-	result, resp, err := c.client.Search.Repositories(ctx, query, opts)
-	if err != nil {
-		return nil, resp, err
-	}
-	return result.Repositories, resp, nil
-}
-
-func (c *genuineAdaptor) RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error) {
-	return c.client.Repositories.Create(ctx, org, repo)
-}
-
-func (c *genuineAdaptor) RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error) {
-	return c.client.Repositories.CreateFork(ctx, owner, repo, opts)
-}
-
-func (c *genuineAdaptor) RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error) {
-	return c.client.Repositories.Get(ctx, owner, repo)
-}
-
-func (c *genuineAdaptor) RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error) {
-	return c.client.Repositories.Delete(ctx, owner, repo)
-}
-
-func (c *genuineAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error) {
-	return c.client.Repositories.CreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq)
-}
-
-func (c *genuineAdaptor) OrganizationsList(ctx context.Context, opts *github.ListOptions) ([]*Organization, *Response, error) {
-	return c.client.Organizations.List(ctx, "", opts)
-}
-
 func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
 	return oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))
 }
 
 func newGenuineAdaptor(httpClient *http.Client) Adaptor {
 	return &genuineAdaptor{
-		client: github.NewClient(httpClient),
+		restClient: github.NewClient(httpClient),
 	}
 }
 
@@ -115,6 +81,42 @@ func newGenuineEnterpriseAdaptor(baseURL string, uploadURL string, httpClient *h
 		return nil, err
 	}
 	return &genuineAdaptor{
-		client: client,
+		restClient: client,
 	}, nil
+}
+
+func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Response, error) {
+	return c.restClient.Users.Get(ctx, user)
+}
+
+func (c *genuineAdaptor) SearchRepository(ctx context.Context, query string, opts *SearchOptions) ([]*github.Repository, *Response, error) {
+	result, resp, err := c.restClient.Search.Repositories(ctx, query, opts)
+	if err != nil {
+		return nil, resp, err
+	}
+	return result.Repositories, resp, nil
+}
+
+func (c *genuineAdaptor) RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error) {
+	return c.restClient.Repositories.Create(ctx, org, repo)
+}
+
+func (c *genuineAdaptor) RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error) {
+	return c.restClient.Repositories.CreateFork(ctx, owner, repo, opts)
+}
+
+func (c *genuineAdaptor) RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error) {
+	return c.restClient.Repositories.Get(ctx, owner, repo)
+}
+
+func (c *genuineAdaptor) RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error) {
+	return c.restClient.Repositories.Delete(ctx, owner, repo)
+}
+
+func (c *genuineAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error) {
+	return c.restClient.Repositories.CreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq)
+}
+
+func (c *genuineAdaptor) OrganizationsList(ctx context.Context, opts *github.ListOptions) ([]*Organization, *Response, error) {
+	return c.restClient.Organizations.List(ctx, "", opts)
 }
