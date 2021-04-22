@@ -46,57 +46,77 @@ func (c *RemoteController) repoListSpecList(query string, repos []*github.Reposi
 }
 
 type RemoteListOption struct {
-	User  string
+	Users []string
 	Query string
 
-	// Archived : If non-nil, filters repositories according to whether they have been archived.
+	// How to sort the search results. Possible values are `stars`,
+	// `fork` and `updated`.
+	Sort string
+
+	// Sort order if sort parameter is provided. Possible values are: asc,
+	// desc. Default is desc.
+	Order string
+
+	// If non-nil, filters repositories according to whether they have been archived.
 	Archived *bool
 
-	// IsFork : If non-null, filters repositories according to whether they are forks of another repository.
+	// If non-null, filters repositories according to whether they are forks of another repository.
 	IsFork *bool
 
-	// IsFork : If non-null, filters repositories according to whether they are private.
+	// If non-null, filters repositories according to whether they are private.
 	IsPrivate *bool
 
-	// Language : Filter by primary coding language.
+	// Filter by primary coding language.
 	Language string
 
-	// Limit : Maximum number of repositories to list.
+	// If non-nill, limit a number of repositories to list.
 	Limit *int
-}
-
-func (o *RemoteListOption) GetUser() string {
-	if o == nil {
-		return ""
-	}
-	return o.User
 }
 
 func (o *RemoteListOption) GetQuery() string {
 	if o == nil {
-		return ""
+		return "user:@me"
 	}
-	return o.Query
-}
-
-func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
-	if o == nil {
-		return &github.RepositoryListOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
+	terms := make([]string, 0, 10)
+	if len(o.Users) == 0 {
+		terms = append(terms, "user:@me")
+	} else {
+		for _, u := range o.Users {
+			terms = append(terms, fmt.Sprintf("user:%q", u))
 		}
 	}
-	return &github.RepositoryListOptions{
-		Visibility:  o.Visibility,
-		Affiliation: o.Affiliation,
-		Type:        o.Type,
-		Sort:        o.Sort,
-		Direction:   o.Direction,
+
+	if o.Archived != nil {
+		terms = append(terms, fmt.Sprintf("archived:%v", *o.Archived))
+	}
+	if o.IsFork != nil {
+		terms = append(terms, fmt.Sprintf("fork:%v", *o.IsFork))
+	}
+	if o.IsPrivate != nil {
+		if *o.IsPrivate {
+			terms = append(terms, "is:private")
+		} else {
+			terms = append(terms, "is:public")
+		}
+	}
+	if o.Language != "" {
+		terms = append(terms, fmt.Sprintf("language:%q", o.Language))
+	}
+	return strings.Join(terms, " ")
+}
+
+func (o *RemoteListOption) GetOptions() *github.SearchOptions {
+	opt := &github.SearchOptions{
 		ListOptions: github.ListOptions{
 			PerPage: 100,
 		},
 	}
+	if o == nil {
+		return opt
+	}
+	opt.Sort = o.Sort
+	opt.Order = o.Order
+	return opt
 }
 
 func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Spec, _ error) {
@@ -128,95 +148,7 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 		defer close(sch)
 		defer close(ech)
 		for {
-			repos, resp, err := c.adaptor.RepositoryList(ctx, option.GetUser(), opt)
-			if err != nil {
-				ech <- err
-				return
-			}
-			if err := c.repoListSpecList(option.GetQuery(), repos, sch); err != nil {
-				ech <- err
-				return
-			}
-			if resp.NextPage == 0 {
-				return
-			}
-			opt.Page = resp.NextPage
-		}
-	}()
-	return sch, ech
-}
-
-type RemoteListByOrgOption struct {
-	Query string
-
-	// Type of repositories to list. Possible values are: all, public, private,
-	// forks, sources, member. Default is "all".
-	Type string
-
-	// How to sort the repository list. Can be one of created, updated, pushed,
-	// full_name. Default is "created".
-	Sort string
-
-	// Direction in which to sort repositories. Can be one of asc or desc.
-	// Default when using full_name: asc; otherwise desc.
-	Direction string
-}
-
-func (o *RemoteListByOrgOption) GetQuery() string {
-	if o == nil {
-		return ""
-	}
-	return o.Query
-}
-
-func (o *RemoteListByOrgOption) GetOptions() *github.RepositoryListByOrgOptions {
-	if o == nil {
-		return &github.RepositoryListByOrgOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}
-	}
-	return &github.RepositoryListByOrgOptions{
-		Type:      o.Type,
-		Sort:      o.Sort,
-		Direction: o.Direction,
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-}
-
-func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) (allSpecs []Spec, _ error) {
-	sch, ech := c.ListByOrgAsync(ctx, org, option)
-	for {
-		select {
-		case spec, more := <-sch:
-			if !more {
-				return
-			}
-			allSpecs = append(allSpecs, spec)
-		case err := <-ech:
-			if err != nil {
-				return nil, err
-			}
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				return nil, err
-			}
-		}
-	}
-}
-
-func (c *RemoteController) ListByOrgAsync(ctx context.Context, org string, option *RemoteListByOrgOption) (<-chan Spec, <-chan error) {
-	opt := option.GetOptions()
-	sch := make(chan Spec, 1)
-	ech := make(chan error, 1)
-	go func() {
-		defer close(sch)
-		defer close(ech)
-		for {
-			repos, resp, err := c.adaptor.RepositoryListByOrg(ctx, org, opt)
+			repos, resp, err := c.adaptor.SearchRepository(ctx, option.GetQuery(), opt)
 			if err != nil {
 				ech <- err
 				return

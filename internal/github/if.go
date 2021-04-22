@@ -6,22 +6,21 @@ import (
 	github "github.com/google/go-github/v35/github"
 )
 
-type Repository = github.Repository
-type RepositoryCreateForkOptions = github.RepositoryCreateForkOptions
-type RepositoryListByOrgOptions = github.RepositoryListByOrgOptions
-type RepositoryListOptions = github.RepositoryListOptions
-type TemplateRepoRequest = github.TemplateRepoRequest
-type ListOptions = github.ListOptions
-type Response = github.Response
-type User = github.User
-type Organization = github.Organization
+type (
+	Repository                  = github.Repository
+	SearchOptions               = github.SearchOptions
+	RepositoriesSearchResult    = github.RepositoriesSearchResult
+	RepositoryCreateForkOptions = github.RepositoryCreateForkOptions
+	TemplateRepoRequest         = github.TemplateRepoRequest
+	ListOptions                 = github.ListOptions
+	Response                    = github.Response
+	User                        = github.User
+	Organization                = github.Organization
+)
 
 type Adaptor interface {
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
-
-	RepositoryList(ctx context.Context, user string, opts *RepositoryListOptions) ([]*Repository, *Response, error)
-	RepositoryListByOrg(ctx context.Context, org string, opts *RepositoryListByOrgOptions) ([]*Repository, *Response, error)
-
+	SearchRepository(ctx context.Context, query string, opts *SearchOptions) ([]*Repository, *Response, error)
 	RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error)
 	RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error)
 	RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error)
