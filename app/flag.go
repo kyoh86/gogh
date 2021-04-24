@@ -29,27 +29,27 @@ func (f ProjectFormat) Type() string {
 	return "string"
 }
 
-func (f ProjectFormat) Formatter() (gogh.ProjectFormat, error) {
+func (f ProjectFormat) Formatter() (gogh.Format, error) {
 	return formatter(string(f))
 }
 
-func formatter(v string) (gogh.ProjectFormat, error) {
+func formatter(v string) (gogh.Format, error) {
 	switch v {
 	case "", "rel-path":
-		return gogh.ProjectFormatRelPath, nil
+		return gogh.FormatRelPath, nil
 	case "rel-file-path":
-		return gogh.ProjectFormatRelFilePath, nil
+		return gogh.FormatRelFilePath, nil
 	case "full-file-path":
-		return gogh.ProjectFormatFullFilePath, nil
+		return gogh.FormatFullFilePath, nil
 	case "json":
-		return gogh.ProjectFormatJSON, nil
+		return gogh.FormatJSON, nil
 	case "url":
-		return gogh.ProjectFormatURL, nil
+		return gogh.FormatURL, nil
 	case "fields":
-		return gogh.ProjectFormatFields("\t"), nil
+		return gogh.FormatFields("\t"), nil
 	}
 	if strings.HasPrefix(v, "fields:") {
-		return gogh.ProjectFormatFields(v[len("fields:"):]), nil
+		return gogh.FormatFields(v[len("fields:"):]), nil
 	}
 	return nil, fmt.Errorf("invalid format: %q", v)
 }

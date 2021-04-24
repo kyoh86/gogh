@@ -24,32 +24,32 @@ func TestFormat(t *testing.T) {
 	// Because windows uses '\' for path separator.
 	for _, testcase := range []struct {
 		title  string
-		format testtarget.ProjectFormat
+		format testtarget.Format
 		expect string
 	}{
 		{
 			title:  "FullFilePath",
-			format: testtarget.ProjectFormatFullFilePath,
+			format: testtarget.FormatFullFilePath,
 			expect: filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "RelPath",
-			format: testtarget.ProjectFormatRelPath,
+			format: testtarget.FormatRelPath,
 			expect: "github.com/kyoh86/gogh",
 		},
 		{
 			title:  "RelFilePath",
-			format: testtarget.ProjectFormatRelFilePath,
+			format: testtarget.FormatRelFilePath,
 			expect: filepath.Clean("github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "URL",
-			format: testtarget.ProjectFormatURL,
+			format: testtarget.FormatURL,
 			expect: "https://github.com/kyoh86/gogh",
 		},
 		{
 			title:  "FieldsWithSpace",
-			format: testtarget.ProjectFormatFields(" "),
+			format: testtarget.FormatFields(" "),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -62,7 +62,7 @@ func TestFormat(t *testing.T) {
 		},
 		{
 			title:  "FieldsWithSpecial",
-			format: testtarget.ProjectFormatFields("<<>>"),
+			format: testtarget.FormatFields("<<>>"),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -86,7 +86,7 @@ func TestFormat(t *testing.T) {
 	}
 
 	t.Run("JSON", func(t *testing.T) {
-		formatted, err := testtarget.ProjectFormatJSON(project)
+		formatted, err := testtarget.FormatJSON(project)
 		if err != nil {
 			t.Fatalf("failed to format: %s", err)
 		}

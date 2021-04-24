@@ -35,16 +35,16 @@ var reposCommand = &cobra.Command{
 					return err
 				}
 				remote := gogh.NewRemoteController(adaptor)
-				rch, ech := remote.ListAsync(ctx, &gogh.RemoteListOption{
+				sch, ech := remote.ListAsync(ctx, &gogh.RemoteListOption{
 					Query: reposFlags.query,
 				})
 				for {
 					select {
-					case repo, more := <-rch:
+					case spec, more := <-sch:
 						if !more {
 							return nil
 						}
-						fmt.Println(repo.Spec().String())
+						fmt.Println(spec)
 					case err := <-ech:
 						if err != nil {
 							return err

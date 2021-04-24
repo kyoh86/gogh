@@ -5,29 +5,29 @@ import (
 	"strings"
 )
 
-type ProjectFormat func(Project) (string, error)
+type Format func(Project) (string, error)
 
-func (f ProjectFormat) Format(p Project) (string, error) {
+func (f Format) Format(p Project) (string, error) {
 	return f(p)
 }
 
-func ProjectFormatFullFilePath(p Project) (string, error) {
+func FormatFullFilePath(p Project) (string, error) {
 	return p.FullFilePath(), nil
 }
 
-func ProjectFormatRelPath(p Project) (string, error) {
+func FormatRelPath(p Project) (string, error) {
 	return p.RelPath(), nil
 }
 
-func ProjectFormatRelFilePath(p Project) (string, error) {
+func FormatRelFilePath(p Project) (string, error) {
 	return p.RelFilePath(), nil
 }
 
-func ProjectFormatURL(p Project) (string, error) {
+func FormatURL(p Project) (string, error) {
 	return p.URL(), nil
 }
 
-func ProjectFormatJSON(p Project) (string, error) {
+func FormatJSON(p Project) (string, error) {
 	buf, err := json.Marshal(map[string]interface{}{
 		"fullFilePath": p.FullFilePath(),
 		"relFilePath":  p.RelFilePath(),
@@ -43,7 +43,7 @@ func ProjectFormatJSON(p Project) (string, error) {
 	return string(buf), nil
 }
 
-func ProjectFormatFields(s string) ProjectFormat {
+func FormatFields(s string) Format {
 	return func(p Project) (string, error) {
 		return strings.Join([]string{
 			p.FullFilePath(),
