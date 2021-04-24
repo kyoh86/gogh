@@ -6,6 +6,7 @@ type Repository struct {
 	PushedAt    time.Time
 	Parent      *Spec
 	spec        Spec
+	URL         string
 	Description string
 	Homepage    string
 	Language    string
