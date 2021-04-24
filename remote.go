@@ -21,19 +21,48 @@ func NewRemoteController(adaptor github.Adaptor) *RemoteController {
 	}
 }
 
-func (c *RemoteController) repoSpec(repo *github.Repository) (Spec, error) {
+func (c *RemoteController) parseSpec(repo *github.Repository) (Spec, error) {
 	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return Spec{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
 	}
 	owner, name := path.Split(u.Path)
+
 	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
-func (c *RemoteController) repoListSpecList(repos []*github.Repository, ch chan<- Spec) error {
+func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
+	var parentSpec *Spec
+	if parent := repo.GetParent(); parent != nil {
+		spec, err := c.parseSpec(parent)
+		if err != nil {
+			return Repository{}, fmt.Errorf("parse parent repository as local spec: %w", err)
+		}
+		parentSpec = &spec
+	}
+	spec, err := c.parseSpec(repo)
+	if err != nil {
+		return Repository{}, fmt.Errorf("parse repository as local spec: %w", err)
+	}
+	return Repository{
+		spec:        spec,
+		description: repo.GetDescription(),
+		homepage:    repo.GetHomepage(),
+		language:    repo.GetLanguage(),
+		topics:      repo.Topics,
+		pushedAt:    repo.GetPushedAt().Time,
+		archived:    repo.GetArchived(),
+		private:     repo.GetPrivate(),
+		isTemplate:  repo.GetIsTemplate(),
+		fork:        repo.GetFork(),
+		parent:      parentSpec,
+	}, nil
+}
+
+func (c *RemoteController) repoListSpecList(repos []*github.Repository, ch chan<- Repository) error {
 	for _, repo := range repos {
-		spec, err := c.repoSpec(repo)
+		spec, err := c.ingest(repo)
 		if err != nil {
 			return err
 		}
@@ -116,7 +145,7 @@ func (o *RemoteListOption) GetOptions() *github.SearchOptions {
 	return opt
 }
 
-func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Spec, _ error) {
+func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Repository, _ error) {
 	sch, ech := c.ListAsync(ctx, option)
 	for {
 		select {
@@ -137,9 +166,9 @@ func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (
 	}
 }
 
-func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOption) (<-chan Spec, <-chan error) {
+func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOption) (<-chan Repository, <-chan error) {
 	opt := option.GetOptions()
-	sch := make(chan Spec, 1)
+	sch := make(chan Repository, 1)
 	ech := make(chan error, 1)
 	go func() {
 		defer close(sch)
@@ -258,12 +287,12 @@ func (o *RemoteCreateOption) GetOrganization() string {
 	return o.Organization
 }
 
-func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Spec, error) {
+func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryCreate(ctx, option.GetOrganization(), option.buildRepository(name))
 	if err != nil {
-		return Spec{}, fmt.Errorf("create a repository: %w", err)
+		return Repository{}, fmt.Errorf("create a repository: %w", err)
 	}
-	return c.repoSpec(repo)
+	return c.ingest(repo)
 }
 
 type RemoteCreateFromTemplateOption struct {
@@ -284,12 +313,12 @@ func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(name string) *
 	}
 }
 
-func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner, templateName, name string, option *RemoteCreateFromTemplateOption) (Spec, error) {
+func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner, templateName, name string, option *RemoteCreateFromTemplateOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFromTemplate(ctx, templateOwner, templateName, option.buildTemplateRepoRequest(name))
 	if err != nil {
-		return Spec{}, fmt.Errorf("create a repository from template: %w", err)
+		return Repository{}, fmt.Errorf("create a repository from template: %w", err)
 	}
-	return c.repoSpec(repo)
+	return c.ingest(repo)
 }
 
 type RemoteForkOption struct {
@@ -306,51 +335,51 @@ func (o *RemoteForkOption) GetOptions() *github.RepositoryCreateForkOptions {
 	}
 }
 
-func (c *RemoteController) Fork(ctx context.Context, owner string, name string, option *RemoteForkOption) (Spec, error) {
+func (c *RemoteController) Fork(ctx context.Context, owner string, name string, option *RemoteForkOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFork(ctx, owner, name, option.GetOptions())
 	if err != nil {
 		var acc *github.AcceptedError
 		if !errors.As(err, &acc) {
-			return Spec{}, fmt.Errorf("fork a repository: %w", err)
+			return Repository{}, fmt.Errorf("fork a repository: %w", err)
 		}
 	}
-	return c.repoSpec(repo)
+	return c.ingest(repo)
 }
 
 type RemoteGetOption struct{}
 
-func (c *RemoteController) Get(ctx context.Context, owner string, name string, _ *RemoteGetOption) (Spec, error) {
+func (c *RemoteController) Get(ctx context.Context, owner string, name string, _ *RemoteGetOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
 	if err != nil {
-		return Spec{}, fmt.Errorf("get a repository: %w", err)
+		return Repository{}, fmt.Errorf("get a repository: %w", err)
 	}
-	return c.repoSpec(repo)
+	return c.ingest(repo)
 }
 
 type RemoteSourceOption struct{}
 
-func (c *RemoteController) GetSource(ctx context.Context, owner string, name string, _ *RemoteSourceOption) (Spec, error) {
+func (c *RemoteController) GetSource(ctx context.Context, owner string, name string, _ *RemoteSourceOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
 	if err != nil {
-		return Spec{}, fmt.Errorf("get a repository: %w", err)
+		return Repository{}, fmt.Errorf("get a repository: %w", err)
 	}
 	if source := repo.GetSource(); source != nil {
-		return c.repoSpec(source)
+		return c.ingest(source)
 	}
-	return c.repoSpec(repo)
+	return c.ingest(repo)
 }
 
 type RemoteParentOption struct{}
 
-func (c *RemoteController) GetParent(ctx context.Context, owner string, name string, _ *RemoteParentOption) (Spec, error) {
+func (c *RemoteController) GetParent(ctx context.Context, owner string, name string, _ *RemoteParentOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
 	if err != nil {
-		return Spec{}, fmt.Errorf("get a repository: %w", err)
+		return Repository{}, fmt.Errorf("get a repository: %w", err)
 	}
 	if parent := repo.GetParent(); parent != nil {
-		return c.repoSpec(parent)
+		return c.ingest(parent)
 	}
-	return c.repoSpec(repo)
+	return c.ingest(repo)
 }
 
 type RemoteDeleteOption struct{}

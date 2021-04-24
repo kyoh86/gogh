@@ -16,9 +16,15 @@ type Repository struct {
 	fork        bool
 }
 
+func (r Repository) Spec() Spec    { return r.spec }
+func (r Repository) Host() string  { return r.spec.Host() }
+func (r Repository) Owner() string { return r.spec.Owner() }
+func (r Repository) Name() string  { return r.spec.Name() }
+
 func (r Repository) Description() string {
 	return r.description
 }
+
 func (r Repository) Homepage() string {
 	return r.homepage
 }
