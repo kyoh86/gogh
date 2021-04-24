@@ -31,14 +31,11 @@ func (c *RemoteController) repoSpec(repo *github.Repository) (Spec, error) {
 	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
-func (c *RemoteController) repoListSpecList(query string, repos []*github.Repository, ch chan<- Spec) error {
+func (c *RemoteController) repoListSpecList(repos []*github.Repository, ch chan<- Spec) error {
 	for _, repo := range repos {
 		spec, err := c.repoSpec(repo)
 		if err != nil {
 			return err
-		}
-		if !strings.Contains(spec.String(), query) {
-			continue
 		}
 		ch <- spec
 	}
@@ -153,7 +150,7 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 				ech <- err
 				return
 			}
-			if err := c.repoListSpecList(option.GetQuery(), repos, sch); err != nil {
+			if err := c.repoListSpecList(repos, sch); err != nil {
 				ech <- err
 				return
 			}
