@@ -7,29 +7,33 @@ import (
 	"github.com/kyoh86/gogh/v2"
 )
 
-type ProjectFormat func(gogh.Project) (string, error)
+type ProjectFormat interface {
+	Format(p gogh.Project) (string, error)
+}
 
-func (f ProjectFormat) Format(p gogh.Project) (string, error) {
+type ProjectFormatFunc func(gogh.Project) (string, error)
+
+func (f ProjectFormatFunc) Format(p gogh.Project) (string, error) {
 	return f(p)
 }
 
-func ProjectFormatFullFilePath(p gogh.Project) (string, error) {
+var ProjectFormatFullFilePath = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 	return p.FullFilePath(), nil
-}
+})
 
-func ProjectFormatRelPath(p gogh.Project) (string, error) {
+var ProjectFormatRelPath = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 	return p.RelPath(), nil
-}
+})
 
-func ProjectFormatRelFilePath(p gogh.Project) (string, error) {
+var ProjectFormatRelFilePath = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 	return p.RelFilePath(), nil
-}
+})
 
-func ProjectFormatURL(p gogh.Project) (string, error) {
+var ProjectFormatURL = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 	return p.URL(), nil
-}
+})
 
-func ProjectFormatJSON(p gogh.Project) (string, error) {
+var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 	buf, err := json.Marshal(map[string]interface{}{
 		"fullFilePath": p.FullFilePath(),
 		"relFilePath":  p.RelFilePath(),
@@ -43,10 +47,10 @@ func ProjectFormatJSON(p gogh.Project) (string, error) {
 		return "", err
 	}
 	return string(buf), nil
-}
+})
 
 func ProjectFormatFields(s string) ProjectFormat {
-	return func(p gogh.Project) (string, error) {
+	return ProjectFormatFunc(func(p gogh.Project) (string, error) {
 		return strings.Join([]string{
 			p.FullFilePath(),
 			p.RelFilePath(),
@@ -56,5 +60,5 @@ func ProjectFormatFields(s string) ProjectFormat {
 			p.Owner(),
 			p.Name(),
 		}, s), nil
-	}
+	})
 }

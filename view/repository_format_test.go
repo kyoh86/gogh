@@ -11,12 +11,12 @@ import (
 	testtarget "github.com/kyoh86/gogh/v2/view"
 )
 
-func TestProjectFormat(t *testing.T) {
+func TestRepositoryFormat(t *testing.T) {
 	spec, err := gogh.NewSpec("github.com", "kyoh86", "gogh")
 	if err != nil {
 		t.Fatalf("failed to init Spec: %s", err)
 	}
-	project := gogh.NewProject("/tmp", spec)
+	project := gogh.NewRepository("/tmp", spec)
 	if err != nil {
 		t.Fatalf("failed to get project from Spec: %s", err)
 	}
@@ -25,32 +25,32 @@ func TestProjectFormat(t *testing.T) {
 	// Because windows uses '\' for path separator.
 	for _, testcase := range []struct {
 		title  string
-		format testtarget.ProjectFormat
+		format testtarget.RepositoryFormat
 		expect string
 	}{
 		{
 			title:  "FullFilePath",
-			format: testtarget.ProjectFormatFunc(testtarget.ProjectFormatFullFilePath),
+			format: testtarget.RepositoryFormatFullFilePath,
 			expect: filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "RelPath",
-			format: testtarget.ProjectFormatRelPath,
+			format: testtarget.RepositoryFormatRelPath,
 			expect: "github.com/kyoh86/gogh",
 		},
 		{
 			title:  "RelFilePath",
-			format: testtarget.ProjectFormatRelFilePath,
+			format: testtarget.RepositoryFormatRelFilePath,
 			expect: filepath.Clean("github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "URL",
-			format: testtarget.ProjectFormatURL,
+			format: testtarget.RepositoryFormatURL,
 			expect: "https://github.com/kyoh86/gogh",
 		},
 		{
 			title:  "FieldsWithSpace",
-			format: testtarget.ProjectFormatFields(" "),
+			format: testtarget.RepositoryFormatFields(" "),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -63,7 +63,7 @@ func TestProjectFormat(t *testing.T) {
 		},
 		{
 			title:  "FieldsWithSpecial",
-			format: testtarget.ProjectFormatFields("<<>>"),
+			format: testtarget.RepositoryFormatFields("<<>>"),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -87,7 +87,7 @@ func TestProjectFormat(t *testing.T) {
 	}
 
 	t.Run("JSON", func(t *testing.T) {
-		formatted, err := testtarget.ProjectFormatJSON(project)
+		formatted, err := testtarget.RepositoryFormatJSON(project)
 		if err != nil {
 			t.Fatalf("failed to format: %s", err)
 		}
