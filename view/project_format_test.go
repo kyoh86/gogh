@@ -1,4 +1,4 @@
-package gogh_test
+package view_test
 
 import (
 	"encoding/json"
@@ -7,15 +7,16 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	testtarget "github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v2"
+	testtarget "github.com/kyoh86/gogh/v2/view"
 )
 
-func TestFormat(t *testing.T) {
-	spec, err := testtarget.NewSpec("github.com", "kyoh86", "gogh")
+func TestProjectFormat(t *testing.T) {
+	spec, err := gogh.NewSpec("github.com", "kyoh86", "gogh")
 	if err != nil {
 		t.Fatalf("failed to init Spec: %s", err)
 	}
-	project := testtarget.NewProject("/tmp", spec)
+	project := gogh.NewProject("/tmp", spec)
 	if err != nil {
 		t.Fatalf("failed to get project from Spec: %s", err)
 	}
@@ -24,32 +25,32 @@ func TestFormat(t *testing.T) {
 	// Because windows uses '\' for path separator.
 	for _, testcase := range []struct {
 		title  string
-		format testtarget.Format
+		format testtarget.ProjectFormat
 		expect string
 	}{
 		{
 			title:  "FullFilePath",
-			format: testtarget.FormatFullFilePath,
+			format: testtarget.ProjectFormatFullFilePath,
 			expect: filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "RelPath",
-			format: testtarget.FormatRelPath,
+			format: testtarget.ProjectFormatRelPath,
 			expect: "github.com/kyoh86/gogh",
 		},
 		{
 			title:  "RelFilePath",
-			format: testtarget.FormatRelFilePath,
+			format: testtarget.ProjectFormatRelFilePath,
 			expect: filepath.Clean("github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "URL",
-			format: testtarget.FormatURL,
+			format: testtarget.ProjectFormatURL,
 			expect: "https://github.com/kyoh86/gogh",
 		},
 		{
 			title:  "FieldsWithSpace",
-			format: testtarget.FormatFields(" "),
+			format: testtarget.ProjectFormatFields(" "),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -62,7 +63,7 @@ func TestFormat(t *testing.T) {
 		},
 		{
 			title:  "FieldsWithSpecial",
-			format: testtarget.FormatFields("<<>>"),
+			format: testtarget.ProjectFormatFields("<<>>"),
 			expect: strings.Join([]string{
 				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -86,7 +87,7 @@ func TestFormat(t *testing.T) {
 	}
 
 	t.Run("JSON", func(t *testing.T) {
-		formatted, err := testtarget.FormatJSON(project)
+		formatted, err := testtarget.ProjectFormatJSON(project)
 		if err != nil {
 			t.Fatalf("failed to format: %s", err)
 		}

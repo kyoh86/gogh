@@ -1,33 +1,35 @@
-package gogh
+package view
 
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/kyoh86/gogh/v2"
 )
 
-type Format func(Project) (string, error)
+type ProjectFormat func(gogh.Project) (string, error)
 
-func (f Format) Format(p Project) (string, error) {
+func (f ProjectFormat) Format(p gogh.Project) (string, error) {
 	return f(p)
 }
 
-func FormatFullFilePath(p Project) (string, error) {
+func ProjectFormatFullFilePath(p gogh.Project) (string, error) {
 	return p.FullFilePath(), nil
 }
 
-func FormatRelPath(p Project) (string, error) {
+func ProjectFormatRelPath(p gogh.Project) (string, error) {
 	return p.RelPath(), nil
 }
 
-func FormatRelFilePath(p Project) (string, error) {
+func ProjectFormatRelFilePath(p gogh.Project) (string, error) {
 	return p.RelFilePath(), nil
 }
 
-func FormatURL(p Project) (string, error) {
+func ProjectFormatURL(p gogh.Project) (string, error) {
 	return p.URL(), nil
 }
 
-func FormatJSON(p Project) (string, error) {
+func ProjectFormatJSON(p gogh.Project) (string, error) {
 	buf, err := json.Marshal(map[string]interface{}{
 		"fullFilePath": p.FullFilePath(),
 		"relFilePath":  p.RelFilePath(),
@@ -43,8 +45,8 @@ func FormatJSON(p Project) (string, error) {
 	return string(buf), nil
 }
 
-func FormatFields(s string) Format {
-	return func(p Project) (string, error) {
+func ProjectFormatFields(s string) ProjectFormat {
+	return func(p gogh.Project) (string, error) {
 		return strings.Join([]string{
 			p.FullFilePath(),
 			p.RelFilePath(),
