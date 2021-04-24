@@ -47,16 +47,16 @@ func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
 	}
 	return Repository{
 		spec:        spec,
-		description: repo.GetDescription(),
-		homepage:    repo.GetHomepage(),
-		language:    repo.GetLanguage(),
-		topics:      repo.Topics,
-		pushedAt:    repo.GetPushedAt().Time,
-		archived:    repo.GetArchived(),
-		private:     repo.GetPrivate(),
-		isTemplate:  repo.GetIsTemplate(),
-		fork:        repo.GetFork(),
-		parent:      parentSpec,
+		Description: repo.GetDescription(),
+		Homepage:    repo.GetHomepage(),
+		Language:    repo.GetLanguage(),
+		Topics:      repo.Topics,
+		PushedAt:    repo.GetPushedAt().Time,
+		Archived:    repo.GetArchived(),
+		Private:     repo.GetPrivate(),
+		IsTemplate:  repo.GetIsTemplate(),
+		Fork:        repo.GetFork(),
+		Parent:      parentSpec,
 	}, nil
 }
 
@@ -72,31 +72,15 @@ func (c *RemoteController) repoListSpecList(repos []*github.Repository, ch chan<
 }
 
 type RemoteListOption struct {
-	Users []string
-	Query string
-
-	// How to sort the search results. Possible values are `stars`,
-	// `fork` and `updated`.
-	Sort string
-
-	// Sort order if sort parameter is provided. Possible values are: asc,
-	// desc. Default is desc.
-	Order string
-
-	// If non-nil, filters repositories according to whether they have been archived.
-	Archived *bool
-
-	// If non-null, filters repositories according to whether they are forks of another repository.
-	IsFork *bool
-
-	// If non-null, filters repositories according to whether they are private.
 	IsPrivate *bool
-
-	// Filter by primary coding language.
-	Language string
-
-	// If non-nill, limit a number of repositories to list.
-	Limit *int
+	Limit     *int
+	Archived  *bool
+	IsFork    *bool
+	Query     string
+	Order     string
+	Language  string
+	Sort      string
+	Users     []string
 }
 
 func (o *RemoteListOption) GetQuery() string {
@@ -193,65 +177,22 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 }
 
 type RemoteCreateOption struct {
-	// Organization is the name of the organization that owns the repository.
-	Organization string
-
-	// Description is a short description of the repository.
-	Description string
-
-	// Homepage is a URL with more information about the repository.
-	Homepage string
-
-	// Visibility can be public or private. If your organization is associated with an enterprise account using GitHub
-	// Enterprise Cloud or GitHub Enterprise Server 2.20+, visibility can also be internal. For more information, see
-	// "Creating an internal repository" in the GitHub Help documentation.  The visibility parameter overrides the private
-	// parameter when you use both parameters with the nebula-preview preview header.
-	Visibility string
-
-	// DisableIssues is either false to enable issues for this repository or true to disable them.
-	DisableIssues bool
-
-	// DisableProjects is either false to enable projects for this repository or true to disable them. Note: If you're
-	// creating a repository in an organization that has disabled repository projects, the default is false, and if you
-	// pass true, the API returns an error.
-	DisableProjects bool
-
-	// DisableWiki is either false to enable the wiki for this repository or true to disable it.
-	DisableWiki bool
-
-	// DisableDownloads is either false to enable the downloads or true to disable it.
-	DisableDownloads bool
-
-	// IsTemplate is either true to make this repo available as a template repository or false to prevent it.
-	IsTemplate bool
-
-	// TeamID is the id of the team that will be granted access to this repository. This is only valid when creating a
-	// repository in an organization.
-	TeamID int64
-
-	// AutoInit is pass true to create an initial commit with empty README.
-	AutoInit bool
-
-	// GitignoreTemplate is the desired language or platform .gitignore template to apply. Use the name of the template
-	// without the extension. For example, "Haskell".
-	GitignoreTemplate string
-
-	// LicenseTemplate is an open source license template, and then use the license keyword as the licenseTemplate string.
-	// For example, "mit" or "mpl-2.0".
-	LicenseTemplate string
-
-	// PreventSquashMerge is either false to allow squash-merging pull requests, or true to prevent squash-merging.
-	PreventSquashMerge bool
-
-	// PreventMergeCommit is either false to allow merging pull requests with a merge commit, or true to prevent merging
-	// pull requests with merge commits.
-	PreventMergeCommit bool
-
-	// PreventRebaseMerge is either false to allow rebase-merging pull requests, or true to prevent rebase-merging.
-	PreventRebaseMerge bool
-
-	// DeleteBranchOnMerge is either true to allow automatically deleting head branches when pull requests are merged, or
-	// false to prevent automatic deletion.
+	Organization        string
+	Description         string
+	Homepage            string
+	Visibility          string
+	LicenseTemplate     string
+	GitignoreTemplate   string
+	TeamID              int64
+	IsTemplate          bool
+	DisableDownloads    bool
+	DisableWiki         bool
+	AutoInit            bool
+	DisableProjects     bool
+	DisableIssues       bool
+	PreventSquashMerge  bool
+	PreventMergeCommit  bool
+	PreventRebaseMerge  bool
 	DeleteBranchOnMerge bool
 }
 
