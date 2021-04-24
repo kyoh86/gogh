@@ -46,7 +46,7 @@ func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
 		return Repository{}, fmt.Errorf("parse repository as local spec: %w", err)
 	}
 	return Repository{
-		spec:        spec,
+		Spec:        spec,
 		URL:         strings.TrimSuffix(repo.GetCloneURL(), ".git"),
 		Description: repo.GetDescription(),
 		Homepage:    repo.GetHomepage(),

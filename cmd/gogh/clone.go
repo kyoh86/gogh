@@ -55,7 +55,7 @@ var cloneCommand = &cobra.Command{
 					return err
 				}
 				for _, s := range founds {
-					specs = append(specs, s.Spec().String())
+					specs = append(specs, s.Spec.String())
 				}
 			}
 			if err := survey.AskOne(&survey.MultiSelect{
@@ -126,10 +126,10 @@ func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.Spe
 			l.WithField("error", err).Warn("failed to get repository")
 			return nil
 		}
-		if parent.Spec().String() != spec.String() {
+		if parent.Spec.String() != spec.String() {
 			if err := local.SetRemoteSpecs(ctx, spec, map[string][]gogh.Spec{
 				git.DefaultRemoteName: {spec},
-				"upstream":            {parent.Spec()},
+				"upstream":            {parent.Spec},
 			}); err != nil {
 				return err
 			}

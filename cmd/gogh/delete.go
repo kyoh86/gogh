@@ -43,7 +43,7 @@ var deleteCommand = &cobra.Command{
 					return err
 				}
 				for _, s := range founds {
-					specs = append(specs, s.Spec().String())
+					specs = append(specs, s.Spec.String())
 				}
 			}
 			if err := survey.AskOne(&survey.Select{
