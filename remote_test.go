@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/internal/github_mock"
@@ -887,17 +888,116 @@ func TestRemoteController_Delete(t *testing.T) {
 	})
 }
 
-func TestRemoteController_ListOrganization(t *testing.T) {
+func TestRemoteController_ListOrganizations(t *testing.T) {
 	ctx := context.Background()
+
+	org1 := "kyoh86-tryouts-1"
+	org2 := "kyoh86-tryouts-2"
 	t.Run("Error", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		internalError := errors.New("test error")
-		mock.EXPECT().OrganizationsList(ctx, nil).Return(nil, internalError)
+		mock.EXPECT().OrganizationsList(ctx, jsonMatcher{&github.ListOptions{
+			PerPage: 100,
+		}}).Return(nil, nil, internalError)
 
-		if err := remote.ListOrganization(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
+		if _, err := remote.ListOrganizations(ctx, nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+		}
+	})
+
+	t.Run("Timeout", func(t *testing.T) {
+		timeout := 500 * time.Millisecond
+		sleep := 2 * time.Second
+		ctx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+		internalError := context.DeadlineExceeded
+
+		mock, teardown := MockAdaptor(t)
+		defer teardown()
+		remote := testtarget.NewRemoteController(mock)
+		mock.EXPECT().OrganizationsList(ctx, jsonMatcher{&github.ListOptions{
+			PerPage: 100,
+		}}).DoAndReturn(func(_ context.Context, _ string, _ *github.ListOptions) ([]*github.Organization, *github.Response, error) {
+			<-time.After(sleep)
+			return []*github.Organization{{
+				Name: &org1,
+			}}, &github.Response{NextPage: 0}, nil
+		})
+
+		if _, err := remote.ListOrganizations(ctx, nil); !errors.Is(err, internalError) {
+			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+		}
+	})
+
+	t.Run("NilOption", func(t *testing.T) {
+		mock, teardown := MockAdaptor(t)
+		defer teardown()
+		remote := testtarget.NewRemoteController(mock)
+		mock.EXPECT().OrganizationsList(ctx, jsonMatcher{&github.ListOptions{
+			PerPage: 100,
+		}}).Return([]*github.Organization{{
+			Name: &org1,
+		}, {
+			Name: &org2,
+		}}, &github.Response{NextPage: 0}, nil)
+
+		got, err := remote.ListOrganizations(ctx, nil)
+		if err != nil {
+			t.Fatalf("failed to listup: %s", err)
+		}
+		want := []string{org1, org2}
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("result mismatch (-want +got):\n%s", diff)
+		}
+	})
+
+	t.Run("EmptyOption", func(t *testing.T) {
+		mock, teardown := MockAdaptor(t)
+		defer teardown()
+		remote := testtarget.NewRemoteController(mock)
+		mock.EXPECT().OrganizationsList(ctx, jsonMatcher{&github.ListOptions{
+			PerPage: 100,
+		}}).Return([]*github.Organization{{
+			Name: &org1,
+		}, {
+			Name: &org2,
+		}}, &github.Response{NextPage: 0}, nil)
+
+		got, err := remote.ListOrganizations(ctx, &testtarget.RemoteListOrganizationOption{})
+		if err != nil {
+			t.Fatalf("failed to listup: %s", err)
+		}
+		want := []string{org1, org2}
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("result mismatch (-want +got):\n%s", diff)
+		}
+	})
+
+	t.Run("Paging", func(t *testing.T) {
+		mock, teardown := MockAdaptor(t)
+		defer teardown()
+		remote := testtarget.NewRemoteController(mock)
+		mock.EXPECT().OrganizationsList(ctx, jsonMatcher{&github.ListOptions{
+			PerPage: 100,
+		}}).Return([]*github.Organization{{
+			Name: &org1,
+		}}, &github.Response{NextPage: 1}, nil)
+		mock.EXPECT().OrganizationsList(ctx, jsonMatcher{&github.ListOptions{
+			Page:    1,
+			PerPage: 100,
+		}}).Return([]*github.Organization{{
+			Name: &org2,
+		}}, &github.Response{NextPage: 0}, nil)
+
+		got, err := remote.ListOrganizations(ctx, nil)
+		if err != nil {
+			t.Fatalf("failed to listup: %s", err)
+		}
+		want := []string{org1, org2}
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Errorf("result mismatch (-want +got):\n%s", diff)
 		}
 	})
 }
