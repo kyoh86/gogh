@@ -9,15 +9,6 @@ import (
 	"github.com/morikuni/aec"
 )
 
-type Column struct {
-	Truncatable bool
-	MinWidth    int
-	Elipsis     string
-
-	Priority    int
-	CellBuilder CellBuilder
-}
-
 type CellBuilder interface {
 	Build(gogh.Repository) (content string, style aec.ANSI)
 }
@@ -27,8 +18,6 @@ type CellBuildFunc func(r gogh.Repository) (content string, style aec.ANSI)
 func (f CellBuildFunc) Build(r gogh.Repository) (content string, style aec.ANSI) {
 	return f(r)
 }
-
-const GenericElipsis = ".."
 
 var SpecCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
 	content = r.Spec.String()
@@ -40,22 +29,22 @@ var DescriptionCell = CellBuildFunc(func(r gogh.Repository) (content string, sty
 	return content, aec.DefaultF.With(aec.DefaultB)
 })
 
-// 	// UNDONE: this breaks aec.Apply
-// var EmojiAttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
-// 	contents := []string{""}
-// 	if r.Private {
-// 		contents[0] = "🔒 "
-// 	} else {
-// 		contents[0] = ""
-// 	}
-// 	if r.Fork {
-// 		contents = append(contents, "🔀 ")
-// 	}
-// 	if r.Archived {
-// 		contents = append(contents, "🗃️ ")
-// 	}
-// 	return strings.Join(contents, ""), aec.EmptyBuilder.ANSI
-// })
+var EmojiAttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
+	// FIXME: this breaks terminal
+	contents := []string{""}
+	if r.Private {
+		contents[0] = "\U0001F512\uFE0F "
+	} else {
+		contents[0] = ""
+	}
+	if r.Fork {
+		contents = append(contents, "\U0001F500\uFE0F ")
+	}
+	if r.Archived {
+		contents = append(contents, "\U0001F5C3\uFE0F ")
+	}
+	return strings.Join(contents, ""), aec.EmptyBuilder.ANSI
+})
 
 var AttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
 	contents := []string{""}

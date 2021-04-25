@@ -10,69 +10,96 @@ import (
 )
 
 type Printer struct {
-	w          io.Writer
-	c          *runewidth.Condition
-	columns    []builtColumn
-	priorities []columnPriority
-	rows       [][]Cell
-	width      int
-	styled     bool
-}
-
-type columnPriority struct {
-	index    int
-	priority int
-}
-
-type builtColumn struct {
-	Column
-	width int
-}
-
-type Cell struct {
-	style   aec.ANSI
-	content string
+	w       io.Writer
+	c       *runewidth.Condition
+	columns []Column
+	indices []int // column indices sorted by priority
+	rows    [][]cell
 	width   int
+	styled  bool
 }
 
-type TableOption func(*Printer)
+type Align int
 
-func OptionStyled() TableOption {
+const (
+	AlignLeft  Align = iota
+	AlignRight Align = iota
+)
+
+type Option func(*Printer)
+
+func Styled() Option {
 	return func(p *Printer) {
 		p.styled = true
 	}
 }
 
-func OptionWidth(w int) TableOption {
+func Width(w int) Option {
 	return func(p *Printer) {
 		p.width = w
 	}
 }
 
-func insertPriority(priorities []columnPriority, newbee columnPriority) []columnPriority {
-	for i, exist := range priorities {
-		if exist.priority > newbee.priority {
-			return append(priorities[:i], append([]columnPriority{newbee}, priorities[i:]...)...)
+func Columns(columns ...Column) Option {
+	// get column indices sorted by priority
+	insertPriority := func(indices, priors []int, newIndex, newPrior int) ([]int, []int) {
+		for i, old := range priors {
+			if old > newPrior {
+				return append(indices[:i], append([]int{newIndex}, indices[i:]...)...),
+					append(priors[:i], append([]int{newPrior}, priors[i:]...)...)
+			}
 		}
+		return append(indices, newIndex),
+			append(priors, newPrior)
 	}
-	return append(priorities, newbee)
-}
 
-func OptionColumns(columns ...Column) TableOption {
+	var priors []int
+	var indices []int
+	for index, column := range columns {
+		columns[index].width = 0
+		indices, priors = insertPriority(indices, priors, index, column.Priority)
+	}
+
 	return func(p *Printer) {
-		for i, column := range columns {
-			p.columns = append(p.columns, builtColumn{
-				Column: column,
-			})
-			p.priorities = insertPriority(p.priorities, columnPriority{
-				index:    i,
-				priority: column.Priority,
-			})
-		}
+		p.indices = indices
+		p.columns = columns
 	}
 }
 
-func NewPrinter(w io.Writer, option ...TableOption) *Printer {
+type Column struct {
+	CellBuilder CellBuilder
+	Elipsis     string
+	MinWidth    int
+	Priority    int
+	Align       Align
+	Truncatable bool
+	width       int
+}
+
+type cell struct {
+	style   aec.ANSI
+	content string
+}
+
+var DefaultColumns = []Column{{
+	Priority:    0,
+	CellBuilder: SpecCell,
+}, {
+	Truncatable: true,
+	MinWidth:    20,
+	Elipsis:     "...",
+	Priority:    3,
+	CellBuilder: DescriptionCell,
+}, {
+	Priority:    1,
+	CellBuilder: AttributesCell,
+}, {
+	Align:       AlignRight,
+	Priority:    2,
+	CellBuilder: PushedAtCell,
+}}
+
+func NewPrinter(w io.Writer, option ...Option) *Printer {
 	c := runewidth.NewCondition()
 	p := &Printer{
 		w: w,
@@ -82,39 +109,22 @@ func NewPrinter(w io.Writer, option ...TableOption) *Printer {
 		o(p)
 	}
 	if len(p.columns) == 0 {
-		OptionColumns(
-			Column{
-				Priority:    0,
-				CellBuilder: SpecCell,
-			}, Column{
-				Truncatable: true,
-				MinWidth:    20,
-				Elipsis:     GenericElipsis,
-				Priority:    3,
-				CellBuilder: DescriptionCell,
-			}, Column{
-				Priority:    1,
-				CellBuilder: AttributesCell,
-			}, Column{
-				Priority:    2,
-				CellBuilder: PushedAtCell,
-			})(p)
+		Columns(DefaultColumns...)(p)
 	}
 	return p
 }
 
 func (p *Printer) Print(r gogh.Repository) error {
-	cells := make([]Cell, len(p.columns))
+	cells := make([]cell, len(p.columns))
 	for i, column := range p.columns {
 		content, style := column.CellBuilder.Build(r)
 		width := p.c.StringWidth(content)
 		if p.columns[i].width < width {
 			p.columns[i].width = width
 		}
-		cells[i] = Cell{
+		cells[i] = cell{
 			content: content,
 			style:   style,
-			width:   width,
 		}
 	}
 	p.rows = append(p.rows, cells)
@@ -122,55 +132,77 @@ func (p *Printer) Print(r gogh.Repository) error {
 }
 
 const (
-	separator = "  "
+	sep       = "  "
 	sepLength = 2
 )
 
-func (p *Printer) truncater(rest int, column builtColumn) (int, func(Cell) *Cell) {
-	if rest < 0 {
-		return rest, func(Cell) *Cell { return nil }
+type cellPicker func(cell) *cell
+
+func (p *Printer) skipCell(cell) *cell { return nil }
+
+func (p *Printer) alignCell(column Column) cellPicker {
+	align := p.c.FillRight
+	if column.Align == AlignRight {
+		align = p.c.FillLeft
 	}
-	length := rest - sepLength
-	if column.width > length {
-		if column.Truncatable && column.MinWidth < length {
-			return 0, func(c Cell) *Cell {
-				c.content = p.c.FillRight(p.c.Truncate(c.content, length, column.Elipsis), length)
-				return &c
-			}
-		}
-		return rest, func(Cell) *Cell { return nil }
-	}
-	return length - column.width, func(c Cell) *Cell {
-		c.content = p.c.FillRight(c.content, column.width)
+	return func(c cell) *cell {
+		c.content = align(c.content, column.width)
 		return &c
 	}
 }
 
+func (p *Printer) truncateCell(rest int, column Column) (int, cellPicker) {
+	if rest < 0 {
+		return rest, p.skipCell
+	}
+	align := p.c.FillRight
+	if column.Align == AlignRight {
+		align = p.c.FillLeft
+	}
+	length := rest - sepLength
+	if column.width > length {
+		if column.Truncatable && column.MinWidth < length {
+			return 0, func(c cell) *cell {
+				c.content = align(p.c.Truncate(c.content, length, column.Elipsis), length)
+				return &c
+			}
+		}
+		return rest, p.skipCell
+	}
+	return length - column.width, p.alignCell(column)
+}
+
 func (p *Printer) Close() error {
-	picker := make([]func(Cell) *Cell, len(p.columns))
+	pickers := make([]cellPicker, len(p.columns))
 	if rest := p.width; rest > 0 {
-		for _, priority := range p.priorities {
-			rest, picker[priority.index] = p.truncater(rest, p.columns[priority.index])
+		for _, index := range p.indices {
+			rest, pickers[index] = p.truncateCell(rest, p.columns[index])
 		}
 	} else {
 		for i, column := range p.columns {
-			column := column
-			picker[i] = func(c Cell) *Cell {
-				c.content = p.c.FillRight(c.content, column.width)
-				return &c
+			pickers[i] = p.alignCell(column)
+		}
+	}
+	if p.styled {
+		for i, picker := range pickers {
+			picker := picker
+			pickers[i] = func(c cell) *cell {
+				newc := picker(c)
+				newc.content = newc.style.Apply(newc.content)
+				return newc
 			}
 		}
 	}
 	for _, row := range p.rows {
-		sep := ""
-		for i, pick := range picker {
+		s := ""
+		for i, pick := range pickers {
 			cell := pick(row[i])
 			if cell == nil {
-				break
+				continue
 			}
-			fmt.Fprint(p.w, sep)
-			fmt.Fprint(p.w, cell.style.Apply(cell.content))
-			sep = separator
+			fmt.Fprint(p.w, s)
+			fmt.Fprint(p.w, cell.content)
+			s = sep
 		}
 		fmt.Fprintln(p.w)
 	}

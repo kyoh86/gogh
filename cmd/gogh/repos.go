@@ -26,12 +26,12 @@ var reposCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		var options []repotab.TableOption
+		var options []repotab.Option
 		if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
-			options = append(options, repotab.OptionWidth(width))
+			options = append(options, repotab.Width(width))
 		}
 		if term.IsTerminal(int(os.Stdout.Fd())) {
-			options = append(options, repotab.OptionStyled())
+			options = append(options, repotab.Styled())
 		}
 		format := repotab.NewPrinter(os.Stdout, options...)
 		defer format.Close()
