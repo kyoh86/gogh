@@ -61,17 +61,6 @@ func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
 	}, nil
 }
 
-func (c *RemoteController) repoListSpecList(repos []*github.Repository, ch chan<- Repository) error {
-	for _, repo := range repos {
-		spec, err := c.ingest(repo)
-		if err != nil {
-			return err
-		}
-		ch <- spec
-	}
-	return nil
-}
-
 type RemoteListOption struct {
 	IsPrivate *bool
 	Limit     *int
@@ -159,6 +148,17 @@ func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (
 			}
 		}
 	}
+}
+
+func (c *RemoteController) repoListSpecList(repos []*github.Repository, ch chan<- Repository) error {
+	for _, repo := range repos {
+		spec, err := c.ingest(repo)
+		if err != nil {
+			return err
+		}
+		ch <- spec
+	}
+	return nil
 }
 
 func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOption) (<-chan Repository, <-chan error) {
@@ -304,32 +304,6 @@ func (c *RemoteController) Get(ctx context.Context, owner string, name string, _
 	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
 	if err != nil {
 		return Repository{}, fmt.Errorf("get a repository: %w", err)
-	}
-	return c.ingest(repo)
-}
-
-type RemoteSourceOption struct{}
-
-func (c *RemoteController) GetSource(ctx context.Context, owner string, name string, _ *RemoteSourceOption) (Repository, error) {
-	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
-	if err != nil {
-		return Repository{}, fmt.Errorf("get a repository: %w", err)
-	}
-	if source := repo.GetSource(); source != nil {
-		return c.ingest(source)
-	}
-	return c.ingest(repo)
-}
-
-type RemoteParentOption struct{}
-
-func (c *RemoteController) GetParent(ctx context.Context, owner string, name string, _ *RemoteParentOption) (Repository, error) {
-	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
-	if err != nil {
-		return Repository{}, fmt.Errorf("get a repository: %w", err)
-	}
-	if parent := repo.GetParent(); parent != nil {
-		return c.ingest(parent)
 	}
 	return c.ingest(repo)
 }
