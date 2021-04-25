@@ -886,3 +886,18 @@ func TestRemoteController_Delete(t *testing.T) {
 		}
 	})
 }
+
+func TestRemoteController_ListOrganization(t *testing.T) {
+	ctx := context.Background()
+	t.Run("Error", func(t *testing.T) {
+		mock, teardown := MockAdaptor(t)
+		defer teardown()
+		remote := testtarget.NewRemoteController(mock)
+		internalError := errors.New("test error")
+		mock.EXPECT().OrganizationsList(ctx, nil).Return(nil, internalError)
+
+		if err := remote.ListOrganization(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
+			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
+		}
+	})
+}
