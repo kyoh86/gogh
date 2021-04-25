@@ -75,7 +75,7 @@ type RemoteListOption struct {
 
 func (o *RemoteListOption) GetQuery() string {
 	if o == nil {
-		return "user:@me sort:updated"
+		return "user:@me fork:true sort:updated"
 	}
 	terms := make([]string, 0, 10)
 	if len(o.Users) == 0 {
@@ -89,8 +89,10 @@ func (o *RemoteListOption) GetQuery() string {
 	if o.Archived != nil {
 		terms = append(terms, fmt.Sprintf("archived:%v", *o.Archived))
 	}
-	if o.IsFork != nil {
-		terms = append(terms, fmt.Sprintf("fork:%v", *o.IsFork))
+	if o.IsFork == nil {
+		terms = append(terms, "fork:true")
+	} else if *o.IsFork {
+		terms = append(terms, "fork:only")
 	}
 	if o.IsPrivate != nil {
 		if *o.IsPrivate {
@@ -315,4 +317,62 @@ func (c *RemoteController) Delete(ctx context.Context, owner string, name string
 		return fmt.Errorf("delete a repository: %w", err)
 	}
 	return nil
+}
+
+type RemoteListOrganizationsOption struct{}
+
+func (o *RemoteListOrganizationsOption) GetOptions() *github.ListOptions {
+	opt := &github.ListOptions{
+		PerPage: 100,
+	}
+	if o == nil {
+		return opt
+	}
+	return opt
+}
+
+func (c *RemoteController) ListOrganizations(ctx context.Context, option *RemoteListOrganizationsOption) (allNames []string, _ error) {
+	nch, ech := c.ListOrganizationsAsync(ctx, option)
+	for {
+		select {
+		case name, more := <-nch:
+			if !more {
+				return
+			}
+			allNames = append(allNames, name)
+		case err := <-ech:
+			if err != nil {
+				return nil, err
+			}
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+		}
+	}
+}
+
+func (c *RemoteController) ListOrganizationsAsync(ctx context.Context, option *RemoteListOrganizationsOption) (<-chan string, <-chan error) {
+	opt := option.GetOptions()
+	nch := make(chan string, 1)
+	ech := make(chan error, 1)
+	go func() {
+		defer close(nch)
+		defer close(ech)
+		for {
+			orgs, resp, err := c.adaptor.OrganizationsList(ctx, opt)
+			if err != nil {
+				ech <- err
+				return
+			}
+			for _, org := range orgs {
+				nch <- org.GetLogin()
+			}
+			if resp.NextPage == 0 {
+				return
+			}
+			opt.Page = resp.NextPage
+		}
+	}()
+	return nch, ech
 }

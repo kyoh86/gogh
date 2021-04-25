@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/kyoh86/gogh/v2"
@@ -46,7 +47,12 @@ var reposCommand = &cobra.Command{
 					return err
 				}
 				remote := gogh.NewRemoteController(adaptor)
+				orgs, err := remote.ListOrganizations(ctx, nil)
+				if err != nil {
+					return fmt.Errorf("list orgnizations: %w", err)
+				}
 				sch, ech := remote.ListAsync(ctx, &gogh.RemoteListOption{
+					Users: append(orgs, "@me"),
 					Query: reposFlags.query,
 				})
 				for {
