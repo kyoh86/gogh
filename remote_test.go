@@ -20,6 +20,8 @@ func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
 	return mock, ctrl.Finish
 }
 
+const DefaultQuery = "user:@me sort:updated"
+
 func TestRemoteController_Get(t *testing.T) {
 	ctx := context.Background()
 
@@ -68,63 +70,70 @@ func TestRemoteListOption_GetQuery(t *testing.T) {
 		{
 			title: "nil",
 			opt:   nil,
-			want:  "user:@me",
+			want:  DefaultQuery,
 		},
 		{
 			title: "empty",
 			opt:   &testtarget.RemoteListOption{},
-			want:  "user:@me",
+			want:  DefaultQuery,
 		},
 		{
 			title: "single user",
 			opt:   &testtarget.RemoteListOption{Users: []string{"kyoh86"}},
-			want:  `user:"kyoh86"`,
+			want:  `user:"kyoh86" sort:updated`,
 		},
 		{
 			title: "archived",
 			opt:   &testtarget.RemoteListOption{Archived: ptr.Bool(true)},
-			want:  `user:@me archived:true`,
+			want:  `user:@me archived:true sort:updated`,
 		},
 		{
 			title: "not archived",
 			opt:   &testtarget.RemoteListOption{Archived: ptr.Bool(false)},
-			want:  `user:@me archived:false`,
+			want:  `user:@me archived:false sort:updated`,
 		},
 		{
 			title: "fork",
 			opt:   &testtarget.RemoteListOption{IsFork: ptr.Bool(true)},
-			want:  `user:@me fork:true`,
+			want:  `user:@me fork:true sort:updated`,
 		},
 		{
 			title: "no fork",
 			opt:   &testtarget.RemoteListOption{IsFork: ptr.Bool(false)},
-			want:  `user:@me fork:false`,
+			want:  `user:@me fork:false sort:updated`,
 		},
 		{
 			title: "private",
 			opt:   &testtarget.RemoteListOption{IsPrivate: ptr.Bool(true)},
-			want:  `user:@me is:private`,
+			want:  `user:@me is:private sort:updated`,
 		},
 		{
 			title: "public",
 			opt:   &testtarget.RemoteListOption{IsPrivate: ptr.Bool(false)},
-			want:  `user:@me is:public`,
+			want:  `user:@me is:public sort:updated`,
 		},
 		{
 			title: "languate",
 			opt:   &testtarget.RemoteListOption{Language: "go"},
-			want:  `user:@me language:"go"`,
+			want:  `user:@me language:"go" sort:updated`,
+		},
+		{
+			title: "sort",
+			opt:   &testtarget.RemoteListOption{Sort: "updated"},
+			want:  `user:@me sort:"updated"`,
 		},
 		{
 			title: "all options",
 			opt: &testtarget.RemoteListOption{
+				Query:     "foobar",
 				Users:     []string{"kyoh86"},
 				Archived:  ptr.Bool(false),
 				IsFork:    ptr.Bool(true),
 				IsPrivate: ptr.Bool(false),
+				Sort:      "updated",
 				Language:  "go",
 			},
-			want: `user:"kyoh86" archived:false fork:true is:public language:"go"`,
+			want: `user:"kyoh86" archived:false fork:true is:public language:"go" foobar sort:"updated"`,
 		},
 	} {
 		t.Run(tc.title, func(t *testing.T) {
@@ -147,7 +156,7 @@ func TestRemoteController_List(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		internalError := errors.New("test error")
-		mock.EXPECT().SearchRepository(ctx, "user:@me", jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -168,7 +177,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, "user:@me", jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -190,7 +199,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, "user:@me", jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -207,7 +216,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, "user:@me", jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -266,7 +275,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, "user:@me", jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -275,7 +284,7 @@ func TestRemoteController_List(t *testing.T) {
 		}, {
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
 		}}, &github.Response{NextPage: 1}, nil)
-		mock.EXPECT().SearchRepository(ctx, "user:@me", jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				Page:    1,
 				PerPage: 100,
@@ -331,7 +340,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, "user:@me", jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -390,7 +399,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, fmt.Sprintf("user:%q", user), jsonMatcher{&github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, fmt.Sprintf("user:%q sort:updated", user), jsonMatcher{&github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -439,7 +448,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, "user:@me is:public", &github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, "user:@me is:public sort:updated", &github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},
@@ -488,7 +497,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, fmt.Sprintf("user:%q is:public", user), &github.SearchOptions{
+		mock.EXPECT().SearchRepository(ctx, fmt.Sprintf("user:%q is:public sort:updated", user), &github.SearchOptions{
 			ListOptions: github.ListOptions{
 				PerPage: 100,
 			},

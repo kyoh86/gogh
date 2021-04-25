@@ -86,7 +86,7 @@ type RemoteListOption struct {
 
 func (o *RemoteListOption) GetQuery() string {
 	if o == nil {
-		return "user:@me"
+		return "user:@me sort:updated"
 	}
 	terms := make([]string, 0, 10)
 	if len(o.Users) == 0 {
@@ -112,6 +112,16 @@ func (o *RemoteListOption) GetQuery() string {
 	}
 	if o.Language != "" {
 		terms = append(terms, fmt.Sprintf("language:%q", o.Language))
+	}
+	if o.Query != "" {
+		terms = append(terms, o.Query)
+	}
+	if o.Sort == "" {
+		if o.Query == "" {
+			terms = append(terms, "sort:updated")
+		}
+	} else {
+		terms = append(terms, fmt.Sprintf("sort:%q", o.Sort))
 	}
 	return strings.Join(terms, " ")
 }
