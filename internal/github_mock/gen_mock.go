@@ -35,6 +35,22 @@ func (m *MockAdaptor) EXPECT() *MockAdaptorMockRecorder {
 	return m.recorder
 }
 
+// OrganizationsList mocks base method.
+func (m *MockAdaptor) OrganizationsList(ctx context.Context, opts *github.ListOptions) ([]*github.Organization, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OrganizationsList", ctx, opts)
+	ret0, _ := ret[0].([]*github.Organization)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// OrganizationsList indicates an expected call of OrganizationsList.
+func (mr *MockAdaptorMockRecorder) OrganizationsList(ctx, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrganizationsList", reflect.TypeOf((*MockAdaptor)(nil).OrganizationsList), ctx, opts)
+}
+
 // RepositoryCreate mocks base method.
 func (m *MockAdaptor) RepositoryCreate(ctx context.Context, org string, repo *github.Repository) (*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()

@@ -94,6 +94,10 @@ func (c *genuineAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templ
 	return c.client.Repositories.CreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq)
 }
 
+func (c *genuineAdaptor) OrganizationsList(ctx context.Context, opts *github.ListOptions) ([]*Organization, *Response, error) {
+	return c.client.Organizations.List(ctx, "", opts)
+}
+
 func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
 	return oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))
 }

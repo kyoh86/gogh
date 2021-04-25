@@ -19,6 +19,7 @@ type (
 )
 
 type Adaptor interface {
+	OrganizationsList(ctx context.Context, opts *ListOptions) ([]*Organization, *Response, error)
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
 	SearchRepository(ctx context.Context, query string, opts *SearchOptions) ([]*Repository, *Response, error)
 	RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error)
