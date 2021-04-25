@@ -10,7 +10,6 @@ type Repository struct {
 	Description string    `json:"description"`
 	Homepage    string    `json:"homepage"`
 	Language    string    `json:"language"`
-	Topics      []string  `json:"topics"`
 	Archived    bool      `json:"archived"`
 	Private     bool      `json:"private"`
 	IsTemplate  bool      `json:"isTemplate"`

@@ -10,6 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
+	github.com/Yamashou/gqlgenc v0.0.0-20210330020310-5eab2091f840
 	github.com/apex/log v1.9.0
 	github.com/aws/aws-sdk-go v1.38.17 // indirect
 	github.com/go-git/go-git/v5 v5.3.0

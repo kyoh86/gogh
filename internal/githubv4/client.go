@@ -230,14 +230,6 @@ type Repo struct {
 	StargazerCount int64  "json:\"stargazerCount\" graphql:\"stargazerCount\""
 	UpdatedAt      string "json:\"updatedAt\" graphql:\"updatedAt\""
 }
-type CreateRepository struct {
-	CreateRepository *struct {
-		Repository *struct {
-			Name string "json:\"name\" graphql:\"name\""
-			URL  string "json:\"url\" graphql:\"url\""
-		} "json:\"repository\" graphql:\"repository\""
-	} "json:\"createRepository\" graphql:\"createRepository\""
-}
 type GetUserID struct {
 	User *struct {
 		ID string "json:\"id\" graphql:\"id\""
@@ -282,31 +274,6 @@ type ListRepos struct {
 			} "json:\"edges\" graphql:\"edges\""
 		} "json:\"repositories\" graphql:\"repositories\""
 	} "json:\"viewer\" graphql:\"viewer\""
-}
-
-const CreateRepositoryDocument = `mutation CreateRepository ($name: String!, $visibility: RepositoryVisibility = PUBLIC, $ownerId: ID) {
-	createRepository(input: {name:$name,visibility:$visibility,ownerId:$ownerId}) {
-		repository {
-			name
-			url
-		}
-	}
-}
-`
-
-func (c *Client) CreateRepository(ctx context.Context, name string, visibility *RepositoryVisibility, ownerID *string, httpRequestOptions ...client.HTTPRequestOption) (*CreateRepository, error) {
-	vars := map[string]interface{}{
-		"name":       name,
-		"visibility": visibility,
-		"ownerId":    ownerID,
-	}
-
-	var res CreateRepository
-	if err := c.Client.Post(ctx, "CreateRepository", CreateRepositoryDocument, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
 }
 
 const GetUserIDDocument = `query GetUserId ($login: String!) {

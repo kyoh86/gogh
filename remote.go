@@ -64,13 +64,18 @@ func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
 type RemoteListOption struct {
 	IsPrivate *bool
 	Limit     *int
-	Archived  *bool
 	IsFork    *bool
 	Query     string
 	Order     string
-	Language  string
 	Sort      string
 	Users     []string
+	// UNDONE:
+	// https://github.com/cli/cli/blob/5a2ec54685806a6576bdc185751afc09aba44408/pkg/cmd/repo/list/http.go#L60-L62
+	// >	if filter.Language != "" || filter.Archived || filter.NonArchived {
+	// >		return searchRepos(client, hostname, limit, owner, filter)
+	// >	}
+	// Language  string
+	// Archived  *bool
 }
 
 func (o *RemoteListOption) GetQuery() string {
