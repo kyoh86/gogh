@@ -2,39 +2,48 @@ package view
 
 import (
 	"encoding/json"
-	"strings"
+	"fmt"
+	"io"
 
 	"github.com/kyoh86/gogh/v2"
 )
 
-type RepositoryFormat interface {
-	Format(p gogh.Repository) (string, error)
+type RepositoryPrinter interface {
+	Print(p gogh.Repository) error
+	Close() error
 }
 
-type RepositoryFormatFunc func(gogh.Repository) (string, error)
+type RepositoryFuncPrinter func(gogh.Repository) error
 
-func (f RepositoryFormatFunc) Format(r gogh.Repository) (string, error) {
+func (f RepositoryFuncPrinter) Print(r gogh.Repository) error {
 	return f(r)
 }
 
-func RepositoryFormatURL(r gogh.Repository) (string, error) {
-	return r.URL, nil
+func (f RepositoryFuncPrinter) Close() error {
+	return nil
 }
 
-func RepositoryFormatJSON(r gogh.Repository) (string, error) {
-	buf, err := json.Marshal(r)
-	if err != nil {
-		return "", err
-	}
-	return string(buf), nil
+func NewRepositorySpecPrinter(w io.Writer) RepositoryPrinter {
+	return RepositoryFuncPrinter(func(r gogh.Repository) error {
+		fmt.Fprint(w, r.Spec.String())
+		return nil
+	})
 }
 
-func RepositoryFormatFields(s string) RepositoryFormat {
-	return RepositoryFormatFunc(func(r gogh.Repository) (string, error) {
-		return strings.Join([]string{
-			r.Host(),
-			r.Owner(),
-			r.Name(),
-		}, s), nil
+func NewRepositoryURLPrinter(w io.Writer) RepositoryPrinter {
+	return RepositoryFuncPrinter(func(r gogh.Repository) error {
+		fmt.Fprint(w, r.URL)
+		return nil
+	})
+}
+
+func NewRepositoryJSONPrinter(w io.Writer) RepositoryPrinter {
+	return RepositoryFuncPrinter(func(r gogh.Repository) error {
+		buf, err := json.Marshal(r)
+		if err != nil {
+			return err
+		}
+		fmt.Fprint(w, string(buf))
+		return nil
 	})
 }

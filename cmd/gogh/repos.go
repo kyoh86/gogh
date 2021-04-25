@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"os"
 
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v2/view/repotab"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/term"
 )
 
 var reposFlags struct {
@@ -24,6 +26,15 @@ var reposCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		var options []repotab.TableOption
+		if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
+			options = append(options, repotab.OptionWidth(width))
+		}
+		if term.IsTerminal(int(os.Stdout.Fd())) {
+			options = append(options, repotab.OptionStyled())
+		}
+		format := repotab.NewPrinter(os.Stdout, options...)
+		defer format.Close()
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
 		eg, ctx := errgroup.WithContext(ctx)
@@ -44,7 +55,7 @@ var reposCommand = &cobra.Command{
 						if !more {
 							return nil
 						}
-						fmt.Println(spec)
+						format.Print(spec)
 					case err := <-ech:
 						if err != nil {
 							return err
