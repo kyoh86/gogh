@@ -73,14 +73,19 @@ var reposCommand = &cobra.Command{
 }
 
 func init() {
-	// TODO:          --archived          Show only archived repositories
-	// TODO:          --fork              Show only forks
-	// TODO:      -l, --language string   Filter by primary coding language
-	// TODO:      -L, --limit int         Maximum number of repositories to list (default 30)
-	// TODO:          --no-archived       Omit archived repositories
-	// TODO:          --private           Show only private repositories
-	// TODO:          --public            Show only public repositories
-	// TODO:          --source            Show only non-forks
+	// TODO: filter flags
+	//          --archived          Show only archived repositories
+	//          --fork              Show only forks
+	//      -l, --language string   Filter by primary coding language
+	//      -L, --limit int         Maximum number of repositories to list (default 30)
+	//          --no-archived       Omit archived repositories
+	//          --private           Show only private repositories
+	//          --public            Show only public repositories
+	//          --source            Show only non-forks
+	//
+	// TODO: style flags
+	//          --format            table,spec,URL,json
+	//          --color             auto,never,always
 	reposCommand.Flags().StringVarP(&reposFlags.query, "query", "", "", "Query for selecting projects")
 	facadeCommand.AddCommand(reposCommand)
 }
