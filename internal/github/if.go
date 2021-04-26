@@ -4,6 +4,7 @@ import (
 	"context"
 
 	github "github.com/google/go-github/v35/github"
+	"github.com/kyoh86/gogh/v2/internal/githubv4"
 )
 
 type (
@@ -13,10 +14,52 @@ type (
 	ListOptions                 = github.ListOptions
 	Response                    = github.Response
 	User                        = github.User
+	Repo                        = githubv4.Repo
+	RepositoryPrivacy           = githubv4.RepositoryPrivacy
+	RepositoryOrder             = githubv4.RepositoryOrder
+	RepositoryOrderField        = githubv4.RepositoryOrderField
+	OrderDirection              = githubv4.OrderDirection
+	RepositoryAffiliation       = githubv4.RepositoryAffiliation
+	Page                        = githubv4.Page
 )
 
+const (
+	OrderDirectionAsc  OrderDirection = githubv4.OrderDirectionAsc
+	OrderDirectionDesc OrderDirection = githubv4.OrderDirectionDesc
+)
+
+const (
+	RepositoryPrivacyPublic  RepositoryPrivacy = githubv4.RepositoryPrivacyPublic
+	RepositoryPrivacyPrivate RepositoryPrivacy = githubv4.RepositoryPrivacyPrivate
+)
+
+const (
+	RepositoryOrderFieldCreatedAt  RepositoryOrderField = githubv4.RepositoryOrderFieldCreatedAt
+	RepositoryOrderFieldUpdatedAt  RepositoryOrderField = githubv4.RepositoryOrderFieldUpdatedAt
+	RepositoryOrderFieldPushedAt   RepositoryOrderField = githubv4.RepositoryOrderFieldPushedAt
+	RepositoryOrderFieldName       RepositoryOrderField = githubv4.RepositoryOrderFieldName
+	RepositoryOrderFieldStargazers RepositoryOrderField = githubv4.RepositoryOrderFieldStargazers
+)
+
+const (
+	RepositoryAffiliationOwner              RepositoryAffiliation = githubv4.RepositoryAffiliationOwner
+	RepositoryAffiliationCollaborator       RepositoryAffiliation = githubv4.RepositoryAffiliationCollaborator
+	RepositoryAffiliationOrganizationMember RepositoryAffiliation = githubv4.RepositoryAffiliationOrganizationMember
+)
+
+type RepositoryListOptions struct {
+	Limit             *int64
+	After             *string
+	IsFork            *bool
+	Privacy           *RepositoryPrivacy
+	OrderBy           *RepositoryOrder
+	OwnerAffiliations []*RepositoryAffiliation
+}
+
 type Adaptor interface {
+	GetHost() string
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
+	RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*Repo, Page, error)
 	RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error)
 	RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error)
 	RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error)

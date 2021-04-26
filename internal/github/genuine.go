@@ -5,15 +5,19 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/google/go-github/v35/github"
 	github "github.com/google/go-github/v35/github"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
 	"golang.org/x/oauth2"
 )
 
 type genuineAdaptor struct {
+	host       string
 	restClient *github.Client
 	gqlClient  *githubv4.Client
+}
+
+func (a *genuineAdaptor) GetHost() string {
+	return a.host
 }
 
 const (
@@ -37,7 +41,7 @@ func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Ada
 		client = NewAuthClient(ctx, token)
 	}
 	if host == DefaultHost || host == DefaultAPIHost {
-		return newGenuineAdaptor(client), nil
+		return newGenuineAdaptor(DefaultHost, client), nil
 	}
 	baseRESTURL := &url.URL{
 		Scheme: "https://",
@@ -57,26 +61,28 @@ func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Ada
 	for _, option := range options {
 		option(baseRESTURL, uploadRESTURL, baseGQLURL)
 	}
-	return newGenuineEnterpriseAdaptor(baseRESTURL.String(), uploadRESTURL.String(), baseGQLURL.String(), client)
+	return newGenuineEnterpriseAdaptor(host, baseRESTURL.String(), uploadRESTURL.String(), baseGQLURL.String(), client)
 }
 
 func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
 	return oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))
 }
 
-func newGenuineAdaptor(httpClient *http.Client) Adaptor {
+func newGenuineAdaptor(host string, httpClient *http.Client) Adaptor {
 	return &genuineAdaptor{
+		host:       host,
 		restClient: github.NewClient(httpClient),
 		gqlClient:  githubv4.NewClient(httpClient, "https://"+DefaultAPIHost+"/graphql"),
 	}
 }
 
-func newGenuineEnterpriseAdaptor(baseRESTURL, uploadRESTURL, baseGQLURL string, httpClient *http.Client) (Adaptor, error) {
+func newGenuineEnterpriseAdaptor(host string, baseRESTURL, uploadRESTURL, baseGQLURL string, httpClient *http.Client) (Adaptor, error) {
 	restClient, err := github.NewEnterpriseClient(baseRESTURL, uploadRESTURL, httpClient)
 	if err != nil {
 		return nil, err
 	}
 	return &genuineAdaptor{
+		host:       host,
 		restClient: restClient,
 		gqlClient:  githubv4.NewClient(httpClient, baseGQLURL),
 	}, nil
@@ -86,56 +92,24 @@ func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Resp
 	return c.restClient.Users.Get(ctx, user)
 }
 
-type RepositoryListOptions struct { // TODO:
-	Limit             *int64
-	Cursor            *string
-	IsFork            *bool
-	Privacy           *githubv4.RepositoryPrivacy
-	OwnerAffiliations []*githubv4.RepositoryAffiliation
-	OrderBy           *githubv4.RepositoryOrder
-}
-
-func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*Repository, error) {
-	var ()
+func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*Repo, Page, error) {
 	repos, err := c.gqlClient.ListRepos(
 		ctx,
 		opts.Limit,
-		opts.Cursor,
+		opts.After,
 		opts.IsFork,
 		opts.Privacy,
 		opts.OwnerAffiliations,
 		opts.OrderBy,
 	)
 	if err != nil {
-		return nil, err
+		return nil, Page{}, err
 	}
-	ingrepos := make([]*Repository, 0, len(repos.Viewer.Repositories.Edges))
+	ingrepos := make([]*Repo, 0, len(repos.Viewer.Repositories.Edges))
 	for _, edge := range repos.Viewer.Repositories.Edges {
-		srcrepo := edge.Node
-		ingrepo := &Repository{
-			URL: &srcrepo.URL,
-			Owner: &github.User{
-				Login: &srcrepo.Owner.Login,
-			},
-			Name:        &srcrepo.Name,
-			Description: srcrepo.Description,
-			Fork:        &srcrepo.IsFork,
-			Archived:    &srcrepo.IsArchived,
-			Private:     &srcrepo.IsPrivate,
-			IsTemplate:  &srcrepo.IsTemplate,
-			// TODO: CreatedAt    string  "json:\"createdAt\" graphql:\"createdAt\""
-			// TODO: PushedAt     *string "json:\"pushedAt\" graphql:\"pushedAt\""
-			// TODO: Parent       *struct {
-			// TODO: 	Owner struct {
-			// TODO: 		ID    string "json:\"id\" graphql:\"id\""
-			// TODO: 		Login string "json:\"login\" graphql:\"login\""
-			// TODO: 	} "json:\"owner\" graphql:\"owner\""
-			// TODO: 	Name         string "json:\"name\" graphql:\"name\""
-			// TODO: } "json:\"parent\" graphql:\"parent\""
-		}
-		ingrepos = append(ingrepos, ingrepo)
+		ingrepos = append(ingrepos, edge.Node)
 	}
-	return ingrepos, nil
+	return ingrepos, repos.Viewer.Repositories.PageInfo, nil
 }
 
 func (c *genuineAdaptor) RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error) {

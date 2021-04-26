@@ -1,11 +1,18 @@
+fragment Page on PageInfo {
+  endCursor
+  hasNextPage
+}
+
 fragment Repo on Repository {
-  id
   url
+  homepageUrl
+  primaryLanguage {
+    name
+  }
+  name
   owner {
     login
   }
-  resourcePath
-  name
   description
   createdAt
   isArchived
@@ -14,22 +21,24 @@ fragment Repo on Repository {
   isTemplate
   pushedAt
   parent {
+    name
     owner {
-      id
       login
     }
-    name
-    resourcePath
   }
 }
 
-query ListRepos($first: Int = 30, $cursor: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $ownerAffiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field: PUSHED_AT, direction: DESC}) {
+query ListRepos($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $ownerAffiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field: PUSHED_AT, direction: DESC}) {
   viewer {
-    repositories(first: $first, after: $cursor, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
+    repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
       edges {
         node {
           ...Repo
         }
+      }
+      totalCount
+      pageInfo {
+        ...Page
       }
     }
   }

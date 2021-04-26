@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/kyoh86/gogh/v2/internal/github"
 )
@@ -32,7 +33,7 @@ func (c *RemoteController) parseSpec(repo *github.Repository) (Spec, error) {
 	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
-func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
+func (c *RemoteController) ingestRepository(repo *github.Repository) (Repository, error) {
 	var parentSpec *Spec
 	if parent := repo.GetParent(); parent != nil {
 		spec, err := c.parseSpec(parent)
@@ -61,13 +62,13 @@ func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
 }
 
 type RemoteListOption struct {
-	IsPrivate *bool
-	Limit     *int
-	IsFork    *bool
-	Query     string
-	Order     string
-	Sort      string
-	Users     []string
+	Private *bool
+	Limit   *int
+	IsFork  *bool
+	Query   string
+	Order   string
+	Sort    string
+	Own     bool
 	// UNDONE:
 	// https://github.com/cli/cli/blob/5a2ec54685806a6576bdc185751afc09aba44408/pkg/cmd/repo/list/http.go#L60-L62
 	// >	if filter.Language != "" || filter.Archived || filter.NonArchived {
@@ -77,55 +78,39 @@ type RemoteListOption struct {
 	// Archived  *bool
 }
 
-func (o *RemoteListOption) GetQuery() string {
+func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	if o == nil {
-		return "user:@me fork:true sort:updated"
+		return nil
 	}
-	terms := make([]string, 0, 10)
-	if len(o.Users) == 0 {
-		terms = append(terms, "user:@me")
-	} else {
-		for _, u := range o.Users {
-			terms = append(terms, fmt.Sprintf("user:%q", u))
-		}
-	}
-
-	if o.IsFork == nil {
-		terms = append(terms, "fork:true")
-	} else if *o.IsFork {
-		terms = append(terms, "fork:only")
-	}
-	if o.IsPrivate != nil {
-		if *o.IsPrivate {
-			terms = append(terms, "is:private")
-		} else {
-			terms = append(terms, "is:public")
-		}
-	}
-	if o.Query != "" {
-		terms = append(terms, o.Query)
-	}
-	if o.Sort == "" {
-		if o.Query == "" {
-			terms = append(terms, "sort:updated")
-		}
-	} else {
-		terms = append(terms, fmt.Sprintf("sort:%q", o.Sort))
-	}
-	return strings.Join(terms, " ")
-}
-
-func (o *RemoteListOption) GetOptions() *github.SearchOptions {
-	opt := &github.SearchOptions{
-		ListOptions: github.ListOptions{
-			PerPage: 100,
+	opt := &github.RepositoryListOptions{
+		IsFork: o.IsFork,
+		OrderBy: &github.RepositoryOrder{
+			Field:     github.RepositoryOrderField(o.Sort),
+			Direction: github.OrderDirection(o.Order),
 		},
 	}
-	if o == nil {
-		return opt
+
+	if o.Limit != nil {
+		limit := int64(*o.Limit)
+		opt.Limit = &limit
 	}
-	opt.Sort = o.Sort
-	opt.Order = o.Order
+
+	owner := github.RepositoryAffiliationOwner
+	opt.OwnerAffiliations = []*github.RepositoryAffiliation{&owner}
+	if !o.Own {
+		member := github.RepositoryAffiliationOrganizationMember
+		opt.OwnerAffiliations = append(opt.OwnerAffiliations, &member)
+	}
+
+	if o.Private != nil {
+		if *o.Private {
+			private := github.RepositoryPrivacyPrivate
+			opt.Privacy = &private
+		} else {
+			public := github.RepositoryPrivacyPublic
+			opt.Privacy = &public
+		}
+	}
 	return opt
 }
 
@@ -150,9 +135,46 @@ func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (
 	}
 }
 
-func (c *RemoteController) repoListSpecList(repos []*github.Repository, ch chan<- Repository) error {
+func (c *RemoteController) ingestRepo(repo *github.Repo) (ret Repository, _ error) {
+	ret.URL = repo.URL
+	ret.IsTemplate = repo.IsTemplate
+	ret.Archived = repo.IsArchived
+	ret.Private = repo.IsPrivate
+	ret.Fork = repo.IsFork
+	spec, err := NewSpec(c.adaptor.GetHost(), repo.Owner.Login, repo.Name)
+	if err != nil {
+		return Repository{}, err
+	}
+	ret.Spec = spec
+	if repo.Description != nil {
+		ret.Description = *repo.Description
+	}
+	if repo.HomepageURL != nil {
+		ret.Homepage = *repo.HomepageURL
+	}
+	if repo.PrimaryLanguage != nil {
+		ret.Language = repo.PrimaryLanguage.Name
+	}
+	if repo.PushedAt != nil {
+		pat, err := time.Parse(time.RFC3339, *repo.PushedAt)
+		if err != nil {
+			return ret, fmt.Errorf("parse pushedAt: %w", err)
+		}
+		ret.PushedAt = pat
+	}
+	if repo.Parent != nil {
+		parent, err := NewSpec(c.adaptor.GetHost(), repo.Parent.Owner.Login, repo.Parent.Name)
+		if err != nil {
+			return Repository{}, err
+		}
+		ret.Parent = &parent
+	}
+	return ret, nil
+}
+
+func (c *RemoteController) repoListSpecList(repos []*github.Repo, ch chan<- Repository) error {
 	for _, repo := range repos {
-		spec, err := c.ingest(repo)
+		spec, err := c.ingestRepo(repo)
 		if err != nil {
 			return err
 		}
@@ -169,7 +191,7 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 		defer close(sch)
 		defer close(ech)
 		for {
-			repos, resp, err := c.adaptor.SearchRepository(ctx, option.GetQuery(), opt)
+			repos, page, err := c.adaptor.RepositoryList(ctx, opt)
 			if err != nil {
 				ech <- err
 				return
@@ -178,10 +200,10 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 				ech <- err
 				return
 			}
-			if resp.NextPage == 0 {
+			if !page.HasNextPage {
 				return
 			}
-			opt.Page = resp.NextPage
+			opt.After = page.EndCursor
 		}
 	}()
 	return sch, ech
@@ -244,7 +266,7 @@ func (c *RemoteController) Create(ctx context.Context, name string, option *Remo
 	if err != nil {
 		return Repository{}, fmt.Errorf("create a repository: %w", err)
 	}
-	return c.ingest(repo)
+	return c.ingestRepository(repo)
 }
 
 type RemoteCreateFromTemplateOption struct {
@@ -270,7 +292,7 @@ func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner
 	if err != nil {
 		return Repository{}, fmt.Errorf("create a repository from template: %w", err)
 	}
-	return c.ingest(repo)
+	return c.ingestRepository(repo)
 }
 
 type RemoteForkOption struct {
@@ -295,7 +317,7 @@ func (c *RemoteController) Fork(ctx context.Context, owner string, name string, 
 			return Repository{}, fmt.Errorf("fork a repository: %w", err)
 		}
 	}
-	return c.ingest(repo)
+	return c.ingestRepository(repo)
 }
 
 type RemoteGetOption struct{}
@@ -305,7 +327,7 @@ func (c *RemoteController) Get(ctx context.Context, owner string, name string, _
 	if err != nil {
 		return Repository{}, fmt.Errorf("get a repository: %w", err)
 	}
-	return c.ingest(repo)
+	return c.ingestRepository(repo)
 }
 
 type RemoteDeleteOption struct{}
@@ -315,62 +337,4 @@ func (c *RemoteController) Delete(ctx context.Context, owner string, name string
 		return fmt.Errorf("delete a repository: %w", err)
 	}
 	return nil
-}
-
-type RemoteListOrganizationsOption struct{}
-
-func (o *RemoteListOrganizationsOption) GetOptions() *github.ListOptions {
-	opt := &github.ListOptions{
-		PerPage: 100,
-	}
-	if o == nil {
-		return opt
-	}
-	return opt
-}
-
-func (c *RemoteController) ListOrganizations(ctx context.Context, option *RemoteListOrganizationsOption) (allNames []string, _ error) {
-	nch, ech := c.ListOrganizationsAsync(ctx, option)
-	for {
-		select {
-		case name, more := <-nch:
-			if !more {
-				return
-			}
-			allNames = append(allNames, name)
-		case err := <-ech:
-			if err != nil {
-				return nil, err
-			}
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				return nil, err
-			}
-		}
-	}
-}
-
-func (c *RemoteController) ListOrganizationsAsync(ctx context.Context, option *RemoteListOrganizationsOption) (<-chan string, <-chan error) {
-	opt := option.GetOptions()
-	nch := make(chan string, 1)
-	ech := make(chan error, 1)
-	go func() {
-		defer close(nch)
-		defer close(ech)
-		for {
-			orgs, resp, err := c.adaptor.OrganizationsList(ctx, opt)
-			if err != nil {
-				ech <- err
-				return
-			}
-			for _, org := range orgs {
-				nch <- org.GetLogin()
-			}
-			if resp.NextPage == 0 {
-				return
-			}
-			opt.Page = resp.NextPage
-		}
-	}()
-	return nch, ech
 }

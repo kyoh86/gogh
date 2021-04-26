@@ -35,6 +35,20 @@ func (m *MockAdaptor) EXPECT() *MockAdaptorMockRecorder {
 	return m.recorder
 }
 
+// GetHost mocks base method.
+func (m *MockAdaptor) GetHost() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHost")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetHost indicates an expected call of GetHost.
+func (mr *MockAdaptorMockRecorder) GetHost() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHost", reflect.TypeOf((*MockAdaptor)(nil).GetHost))
+}
+
 // RepositoryCreate mocks base method.
 func (m *MockAdaptor) RepositoryCreate(ctx context.Context, org string, repo *github.Repository) (*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()
@@ -112,6 +126,22 @@ func (m *MockAdaptor) RepositoryGet(ctx context.Context, owner, repo string) (*g
 func (mr *MockAdaptorMockRecorder) RepositoryGet(ctx, owner, repo interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryGet", reflect.TypeOf((*MockAdaptor)(nil).RepositoryGet), ctx, owner, repo)
+}
+
+// RepositoryList mocks base method.
+func (m *MockAdaptor) RepositoryList(ctx context.Context, opts *github.RepositoryListOptions) ([]*github.Repo, *string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RepositoryList", ctx, opts)
+	ret0, _ := ret[0].([]*github.Repo)
+	ret1, _ := ret[1].(*string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// RepositoryList indicates an expected call of RepositoryList.
+func (mr *MockAdaptorMockRecorder) RepositoryList(ctx, opts interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RepositoryList", reflect.TypeOf((*MockAdaptor)(nil).RepositoryList), ctx, opts)
 }
 
 // UserGet mocks base method.

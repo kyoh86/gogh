@@ -185,28 +185,32 @@ type Mutation struct {
 	UpdateTopics                                                *UpdateTopicsPayload                                                "json:\"updateTopics\" graphql:\"updateTopics\""
 	VerifyVerifiableDomain                                      *VerifyVerifiableDomainPayload                                      "json:\"verifyVerifiableDomain\" graphql:\"verifyVerifiableDomain\""
 }
+type Page struct {
+	EndCursor   *string "json:\"endCursor\" graphql:\"endCursor\""
+	HasNextPage bool    "json:\"hasNextPage\" graphql:\"hasNextPage\""
+}
 type Repo struct {
-	ID    string "json:\"id\" graphql:\"id\""
-	URL   string "json:\"url\" graphql:\"url\""
+	URL             string  "json:\"url\" graphql:\"url\""
+	HomepageURL     *string "json:\"homepageUrl\" graphql:\"homepageUrl\""
+	PrimaryLanguage *struct {
+		Name string "json:\"name\" graphql:\"name\""
+	} "json:\"primaryLanguage\" graphql:\"primaryLanguage\""
+	Name  string "json:\"name\" graphql:\"name\""
 	Owner struct {
 		Login string "json:\"login\" graphql:\"login\""
 	} "json:\"owner\" graphql:\"owner\""
-	ResourcePath string  "json:\"resourcePath\" graphql:\"resourcePath\""
-	Name         string  "json:\"name\" graphql:\"name\""
-	Description  *string "json:\"description\" graphql:\"description\""
-	CreatedAt    string  "json:\"createdAt\" graphql:\"createdAt\""
-	IsArchived   bool    "json:\"isArchived\" graphql:\"isArchived\""
-	IsFork       bool    "json:\"isFork\" graphql:\"isFork\""
-	IsPrivate    bool    "json:\"isPrivate\" graphql:\"isPrivate\""
-	IsTemplate   bool    "json:\"isTemplate\" graphql:\"isTemplate\""
-	PushedAt     *string "json:\"pushedAt\" graphql:\"pushedAt\""
-	Parent       *struct {
+	Description *string "json:\"description\" graphql:\"description\""
+	CreatedAt   string  "json:\"createdAt\" graphql:\"createdAt\""
+	IsArchived  bool    "json:\"isArchived\" graphql:\"isArchived\""
+	IsFork      bool    "json:\"isFork\" graphql:\"isFork\""
+	IsPrivate   bool    "json:\"isPrivate\" graphql:\"isPrivate\""
+	IsTemplate  bool    "json:\"isTemplate\" graphql:\"isTemplate\""
+	PushedAt    *string "json:\"pushedAt\" graphql:\"pushedAt\""
+	Parent      *struct {
+		Name  string "json:\"name\" graphql:\"name\""
 		Owner struct {
-			ID    string "json:\"id\" graphql:\"id\""
 			Login string "json:\"login\" graphql:\"login\""
 		} "json:\"owner\" graphql:\"owner\""
-		Name         string "json:\"name\" graphql:\"name\""
-		ResourcePath string "json:\"resourcePath\" graphql:\"resourcePath\""
 	} "json:\"parent\" graphql:\"parent\""
 }
 type GetUserID struct {
@@ -250,6 +254,8 @@ type ListRepos struct {
 			Edges []*struct {
 				Node *Repo "json:\"node\" graphql:\"node\""
 			} "json:\"edges\" graphql:\"edges\""
+			TotalCount int64 "json:\"totalCount\" graphql:\"totalCount\""
+			PageInfo   Page  "json:\"pageInfo\" graphql:\"pageInfo\""
 		} "json:\"repositories\" graphql:\"repositories\""
 	} "json:\"viewer\" graphql:\"viewer\""
 }
@@ -347,25 +353,31 @@ func (c *Client) ListRepoUrls(ctx context.Context, repositoryCursor *string, htt
 	return &res, nil
 }
 
-const ListReposDocument = `query ListRepos ($first: Int = 30, $cursor: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $ownerAffiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}) {
+const ListReposDocument = `query ListRepos ($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $ownerAffiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}) {
 	viewer {
-		repositories(first: $first, after: $cursor, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
+		repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
 			edges {
 				node {
 					... Repo
 				}
 			}
+			totalCount
+			pageInfo {
+				... Page
+			}
 		}
 	}
 }
 fragment Repo on Repository {
-	id
 	url
+	homepageUrl
+	primaryLanguage {
+		name
+	}
+	name
 	owner {
 		login
 	}
-	resourcePath
-	name
 	description
 	createdAt
 	isArchived
@@ -374,20 +386,22 @@ fragment Repo on Repository {
 	isTemplate
 	pushedAt
 	parent {
+		name
 		owner {
-			id
 			login
 		}
-		name
-		resourcePath
 	}
+}
+fragment Page on PageInfo {
+	endCursor
+	hasNextPage
 }
 `
 
-func (c *Client) ListRepos(ctx context.Context, first *int64, cursor *string, isFork *bool, privacy *RepositoryPrivacy, ownerAffiliations []*RepositoryAffiliation, orderBy *RepositoryOrder, httpRequestOptions ...client.HTTPRequestOption) (*ListRepos, error) {
+func (c *Client) ListRepos(ctx context.Context, first *int64, after *string, isFork *bool, privacy *RepositoryPrivacy, ownerAffiliations []*RepositoryAffiliation, orderBy *RepositoryOrder, httpRequestOptions ...client.HTTPRequestOption) (*ListRepos, error) {
 	vars := map[string]interface{}{
 		"first":             first,
-		"cursor":            cursor,
+		"after":             after,
 		"isFork":            isFork,
 		"privacy":           privacy,
 		"ownerAffiliations": ownerAffiliations,
