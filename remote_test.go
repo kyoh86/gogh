@@ -235,10 +235,7 @@ func TestRemoteController_List(t *testing.T) {
 	member := github.RepositoryAffiliationOrganizationMember
 	emptyOption := &github.RepositoryListOptions{
 		OwnerAffiliations: []*github.RepositoryAffiliation{&owner, &member},
-		OrderBy: &github.RepositoryOrder{
-			Field:     github.RepositoryOrderField(""),
-			Direction: github.OrderDirection(""),
-		},
+		Limit:             ptr.Int64(100),
 	}
 	t.Run("EmptyOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
@@ -345,7 +342,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
 			Privacy:           &public,
 			OwnerAffiliations: emptyOption.OwnerAffiliations,
-			OrderBy:           emptyOption.OrderBy,
+			Limit:             emptyOption.Limit,
 		}}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-1",
 		}, {
@@ -395,7 +392,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{github.RepositoryListOptions{
 			Privacy:           &public,
 			OwnerAffiliations: emptyOption.OwnerAffiliations,
-			OrderBy:           emptyOption.OrderBy,
+			Limit:             emptyOption.Limit,
 		}}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-1",
 		}, {

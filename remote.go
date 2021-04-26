@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/wacul/ptr"
 )
 
 type RemoteController struct {
@@ -84,13 +85,25 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	}
 	opt := &github.RepositoryListOptions{
 		IsFork: o.IsFork,
-		OrderBy: &github.RepositoryOrder{
-			Field:     github.RepositoryOrderField(o.Sort),
-			Direction: github.OrderDirection(o.Order),
-		},
 	}
 
-	if o.Limit != nil {
+	if o.Sort != "" {
+		opt.OrderBy = &github.RepositoryOrder{
+			Field: github.RepositoryOrderField(o.Sort),
+		}
+		if o.Order == "" {
+			if opt.OrderBy.Field == github.RepositoryOrderFieldName {
+				opt.OrderBy.Direction = github.OrderDirectionAsc
+			} else {
+				opt.OrderBy.Direction = github.OrderDirectionDesc
+			}
+		} else {
+			opt.OrderBy.Direction = github.OrderDirection(o.Order)
+		}
+	}
+	if o.Limit == nil {
+		opt.Limit = ptr.Int64(100)
+	} else {
 		limit := int64(*o.Limit)
 		opt.Limit = &limit
 	}
