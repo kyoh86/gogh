@@ -62,73 +62,6 @@ func TestRemoteController_Get(t *testing.T) {
 	})
 }
 
-func TestRemoteListOption_GetQuery(t *testing.T) {
-	for _, tc := range []struct {
-		title string
-		opt   *testtarget.RemoteListOption
-		want  string
-	}{
-		{
-			title: "nil",
-			opt:   nil,
-			want:  DefaultQuery,
-		},
-		{
-			title: "empty",
-			opt:   &testtarget.RemoteListOption{},
-			want:  DefaultQuery,
-		},
-		{
-			title: "single user",
-			opt:   &testtarget.RemoteListOption{Users: []string{"kyoh86"}},
-			want:  `user:"kyoh86" fork:true sort:updated`,
-		},
-		{
-			title: "fork",
-			opt:   &testtarget.RemoteListOption{IsFork: ptr.Bool(true)},
-			want:  `user:@me fork:only sort:updated`,
-		},
-		{
-			title: "no fork",
-			opt:   &testtarget.RemoteListOption{IsFork: ptr.Bool(false)},
-			want:  `user:@me sort:updated`,
-		},
-		{
-			title: "private",
-			opt:   &testtarget.RemoteListOption{IsPrivate: ptr.Bool(true)},
-			want:  `user:@me fork:true is:private sort:updated`,
-		},
-		{
-			title: "public",
-			opt:   &testtarget.RemoteListOption{IsPrivate: ptr.Bool(false)},
-			want:  `user:@me fork:true is:public sort:updated`,
-		},
-		{
-			title: "sort",
-			opt:   &testtarget.RemoteListOption{Sort: "updated"},
-			want:  `user:@me fork:true sort:"updated"`,
-		},
-		{
-			title: "all options",
-			opt: &testtarget.RemoteListOption{
-				Query:     "foobar",
-				Users:     []string{"kyoh86"},
-				IsFork:    ptr.Bool(true),
-				IsPrivate: ptr.Bool(false),
-				Sort:      "updated",
-			},
-			want: `user:"kyoh86" fork:only is:public foobar sort:"updated"`,
-		},
-	} {
-		t.Run(tc.title, func(t *testing.T) {
-			got := tc.opt.GetQuery()
-			if tc.want != got {
-				t.Errorf("-want: %s\n+got:%s", tc.want, got)
-			}
-		})
-	}
-}
-
 func TestRemoteController_List(t *testing.T) {
 	ctx := context.Background()
 
@@ -140,11 +73,7 @@ func TestRemoteController_List(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		internalError := errors.New("test error")
-		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}}).Return(nil, nil, internalError)
+		mock.EXPECT().RepositoryList(ctx, nil).Return(nil, nil, internalError)
 
 		if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
@@ -161,16 +90,13 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}}).DoAndReturn(func(_ context.Context, _ string, _ *github.SearchOptions) ([]*github.Repository, *github.Response, error) {
+		mock.EXPECT().RepositoryList(ctx, nil).DoAndReturn(func(_ context.Context, _ *github.RepositoryListOptions) ([]*github.Repo, github.Page, error) {
 			<-time.After(sleep)
-			return []*github.Repository{{
-				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
+			return []*github.Repo{{
+				Owner: {},
+				URL:   ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 			}, {
-				CloneURL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
+				URL: ptr.String("https://github.com/" + org + "/org-repo-2.git"),
 			}}, &github.Response{NextPage: 0}, nil
 		})
 
@@ -183,11 +109,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}}).Return([]*github.Repository{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{}}).Return([]*github.Repository{{
 			CloneURL: ptr.String("://invalid//url"),
 		}}, &github.Response{NextPage: 1}, nil)
 
@@ -200,11 +122,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}}).Return([]*github.Repository{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{}}).Return([]*github.Repository{{
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 		}, {
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
@@ -259,20 +177,13 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}}).Return([]*github.Repository{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{}}).Return([]*github.Repository{{
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 		}, {
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
 		}}, &github.Response{NextPage: 1}, nil)
-		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				Page:    1,
-				PerPage: 100,
-			},
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
+			PerPage: 100,
 		}}).Return([]*github.Repository{{
 			CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
 		}, {
@@ -324,11 +235,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, DefaultQuery, jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}}).Return([]*github.Repository{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{}}).Return([]*github.Repository{{
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 		}, {
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
@@ -383,19 +290,13 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, fmt.Sprintf("user:%q fork:true sort:updated", user), jsonMatcher{&github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}}).Return([]*github.Repository{{
+		mock.EXPECT().RepositoryList(ctx, fmt.Sprintf("user:%q fork:true sort:updated", user), jsonMatcher{&github.RepositoryListOptions{}}).Return([]*github.Repository{{
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 		}, {
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
 		}}, &github.Response{NextPage: 0}, nil)
 
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{
-			Users: []string{user},
-		})
+		specs, err := remote.List(ctx, &testtarget.RemoteListOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -432,11 +333,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, "user:@me fork:true is:public sort:updated", &github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}).Return([]*github.Repository{{
+		mock.EXPECT().RepositoryList(ctx, "user:@me fork:true is:public sort:updated", &github.RepositoryListOptions{}).Return([]*github.Repository{{
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 		}, {
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),
@@ -481,11 +378,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().SearchRepository(ctx, fmt.Sprintf("user:%q fork:true is:public sort:updated", user), &github.SearchOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}).Return([]*github.Repository{{
+		mock.EXPECT().RepositoryList(ctx, fmt.Sprintf("user:%q fork:true is:public sort:updated", user), &github.RepositoryListOptions{}).Return([]*github.Repository{{
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
 		}, {
 			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-2.git"),

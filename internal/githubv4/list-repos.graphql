@@ -1,17 +1,32 @@
-fragment Page on PageInfo {
+fragment PageInfoFragment on PageInfo {
   endCursor
   hasNextPage
 }
 
-fragment Repo on Repository {
+fragment LanguageFragment on Language {
+  name
+}
+
+fragment OwnerFragment on RepositoryOwner {
+  login
+}
+
+fragment ParentRepositoryFragment on Repository {
+  name
+  owner {
+    ...OwnerFragment
+  }
+}
+
+fragment RepositoryFragment on Repository {
   url
   homepageUrl
   primaryLanguage {
-    name
+    ...LanguageFragment
   }
   name
   owner {
-    login
+    ...OwnerFragment
   }
   description
   createdAt
@@ -21,10 +36,7 @@ fragment Repo on Repository {
   isTemplate
   pushedAt
   parent {
-    name
-    owner {
-      login
-    }
+    ...ParentRepositoryFragment
   }
 }
 
@@ -33,12 +45,12 @@ query ListRepos($first: Int = 30, $after: String, $isFork: Boolean, $privacy: Re
     repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
       edges {
         node {
-          ...Repo
+          ...RepositoryFragment
         }
       }
       totalCount
       pageInfo {
-        ...Page
+        ...PageInfoFragment
       }
     }
   }

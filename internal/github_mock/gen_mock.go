@@ -129,11 +129,11 @@ func (mr *MockAdaptorMockRecorder) RepositoryGet(ctx, owner, repo interface{}) *
 }
 
 // RepositoryList mocks base method.
-func (m *MockAdaptor) RepositoryList(ctx context.Context, opts *github.RepositoryListOptions) ([]*github.Repo, github.Page, error) {
+func (m *MockAdaptor) RepositoryList(ctx context.Context, opts *github.RepositoryListOptions) ([]*github.RepositoryFragment, github.PageInfoFragment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RepositoryList", ctx, opts)
-	ret0, _ := ret[0].([]*github.Repo)
-	ret1, _ := ret[1].(github.Page)
+	ret0, _ := ret[0].([]*github.RepositoryFragment)
+	ret1, _ := ret[1].(github.PageInfoFragment)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }

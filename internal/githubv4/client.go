@@ -185,42 +185,43 @@ type Mutation struct {
 	UpdateTopics                                                *UpdateTopicsPayload                                                "json:\"updateTopics\" graphql:\"updateTopics\""
 	VerifyVerifiableDomain                                      *VerifyVerifiableDomainPayload                                      "json:\"verifyVerifiableDomain\" graphql:\"verifyVerifiableDomain\""
 }
-type Page struct {
+type PageInfoFragment struct {
 	EndCursor   *string "json:\"endCursor\" graphql:\"endCursor\""
 	HasNextPage bool    "json:\"hasNextPage\" graphql:\"hasNextPage\""
 }
-type Repo struct {
-	URL             string  "json:\"url\" graphql:\"url\""
-	HomepageURL     *string "json:\"homepageUrl\" graphql:\"homepageUrl\""
-	PrimaryLanguage *struct {
-		Name string "json:\"name\" graphql:\"name\""
-	} "json:\"primaryLanguage\" graphql:\"primaryLanguage\""
-	Name  string "json:\"name\" graphql:\"name\""
-	Owner struct {
-		Login string "json:\"login\" graphql:\"login\""
-	} "json:\"owner\" graphql:\"owner\""
-	Description *string "json:\"description\" graphql:\"description\""
-	CreatedAt   string  "json:\"createdAt\" graphql:\"createdAt\""
-	IsArchived  bool    "json:\"isArchived\" graphql:\"isArchived\""
-	IsFork      bool    "json:\"isFork\" graphql:\"isFork\""
-	IsPrivate   bool    "json:\"isPrivate\" graphql:\"isPrivate\""
-	IsTemplate  bool    "json:\"isTemplate\" graphql:\"isTemplate\""
-	PushedAt    *string "json:\"pushedAt\" graphql:\"pushedAt\""
-	Parent      *struct {
-		Name  string "json:\"name\" graphql:\"name\""
-		Owner struct {
-			Login string "json:\"login\" graphql:\"login\""
-		} "json:\"owner\" graphql:\"owner\""
-	} "json:\"parent\" graphql:\"parent\""
+type LanguageFragment struct {
+	Name string "json:\"name\" graphql:\"name\""
+}
+type OwnerFragment struct {
+	Login string "json:\"login\" graphql:\"login\""
+}
+type ParentRepositoryFragment struct {
+	Name  string        "json:\"name\" graphql:\"name\""
+	Owner OwnerFragment "json:\"owner\" graphql:\"owner\""
+}
+type RepositoryFragment struct {
+	URL             string                    "json:\"url\" graphql:\"url\""
+	HomepageURL     *string                   "json:\"homepageUrl\" graphql:\"homepageUrl\""
+	PrimaryLanguage *LanguageFragment         "json:\"primaryLanguage\" graphql:\"primaryLanguage\""
+	Name            string                    "json:\"name\" graphql:\"name\""
+	Owner           OwnerFragment             "json:\"owner\" graphql:\"owner\""
+	Description     *string                   "json:\"description\" graphql:\"description\""
+	CreatedAt       string                    "json:\"createdAt\" graphql:\"createdAt\""
+	IsArchived      bool                      "json:\"isArchived\" graphql:\"isArchived\""
+	IsFork          bool                      "json:\"isFork\" graphql:\"isFork\""
+	IsPrivate       bool                      "json:\"isPrivate\" graphql:\"isPrivate\""
+	IsTemplate      bool                      "json:\"isTemplate\" graphql:\"isTemplate\""
+	PushedAt        *string                   "json:\"pushedAt\" graphql:\"pushedAt\""
+	Parent          *ParentRepositoryFragment "json:\"parent\" graphql:\"parent\""
 }
 type ListRepos struct {
 	Viewer struct {
 		Repositories struct {
 			Edges []*struct {
-				Node *Repo "json:\"node\" graphql:\"node\""
+				Node *RepositoryFragment "json:\"node\" graphql:\"node\""
 			} "json:\"edges\" graphql:\"edges\""
-			TotalCount int64 "json:\"totalCount\" graphql:\"totalCount\""
-			PageInfo   Page  "json:\"pageInfo\" graphql:\"pageInfo\""
+			TotalCount int64            "json:\"totalCount\" graphql:\"totalCount\""
+			PageInfo   PageInfoFragment "json:\"pageInfo\" graphql:\"pageInfo\""
 		} "json:\"repositories\" graphql:\"repositories\""
 	} "json:\"viewer\" graphql:\"viewer\""
 }
@@ -230,25 +231,25 @@ const ListReposDocument = `query ListRepos ($first: Int = 30, $after: String, $i
 		repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
 			edges {
 				node {
-					... Repo
+					... RepositoryFragment
 				}
 			}
 			totalCount
 			pageInfo {
-				... Page
+				... PageInfoFragment
 			}
 		}
 	}
 }
-fragment Repo on Repository {
+fragment RepositoryFragment on Repository {
 	url
 	homepageUrl
 	primaryLanguage {
-		name
+		... LanguageFragment
 	}
 	name
 	owner {
-		login
+		... OwnerFragment
 	}
 	description
 	createdAt
@@ -258,13 +259,22 @@ fragment Repo on Repository {
 	isTemplate
 	pushedAt
 	parent {
-		name
-		owner {
-			login
-		}
+		... ParentRepositoryFragment
 	}
 }
-fragment Page on PageInfo {
+fragment LanguageFragment on Language {
+	name
+}
+fragment OwnerFragment on RepositoryOwner {
+	login
+}
+fragment ParentRepositoryFragment on Repository {
+	name
+	owner {
+		... OwnerFragment
+	}
+}
+fragment PageInfoFragment on PageInfo {
 	endCursor
 	hasNextPage
 }

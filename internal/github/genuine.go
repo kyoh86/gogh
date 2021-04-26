@@ -92,7 +92,7 @@ func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Resp
 	return c.restClient.Users.Get(ctx, user)
 }
 
-func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*Repo, Page, error) {
+func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*RepositoryFragment, PageInfoFragment, error) {
 	repos, err := c.gqlClient.ListRepos(
 		ctx,
 		opts.Limit,
@@ -103,9 +103,9 @@ func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryLis
 		opts.OrderBy,
 	)
 	if err != nil {
-		return nil, Page{}, err
+		return nil, PageInfoFragment{}, err
 	}
-	ingrepos := make([]*Repo, 0, len(repos.Viewer.Repositories.Edges))
+	ingrepos := make([]*RepositoryFragment, 0, len(repos.Viewer.Repositories.Edges))
 	for _, edge := range repos.Viewer.Repositories.Edges {
 		ingrepos = append(ingrepos, edge.Node)
 	}

@@ -135,7 +135,7 @@ func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (
 	}
 }
 
-func (c *RemoteController) ingestRepo(repo *github.Repo) (ret Repository, _ error) {
+func (c *RemoteController) ingestRepo(repo *github.RepositoryFragment) (ret Repository, _ error) {
 	ret.URL = repo.URL
 	ret.IsTemplate = repo.IsTemplate
 	ret.Archived = repo.IsArchived
@@ -172,7 +172,7 @@ func (c *RemoteController) ingestRepo(repo *github.Repo) (ret Repository, _ erro
 	return ret, nil
 }
 
-func (c *RemoteController) repoListSpecList(repos []*github.Repo, ch chan<- Repository) error {
+func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, ch chan<- Repository) error {
 	for _, repo := range repos {
 		spec, err := c.ingestRepo(repo)
 		if err != nil {

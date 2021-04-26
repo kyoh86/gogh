@@ -14,13 +14,16 @@ type (
 	ListOptions                 = github.ListOptions
 	Response                    = github.Response
 	User                        = github.User
-	Repo                        = githubv4.Repo
 	RepositoryPrivacy           = githubv4.RepositoryPrivacy
 	RepositoryOrder             = githubv4.RepositoryOrder
 	RepositoryOrderField        = githubv4.RepositoryOrderField
 	OrderDirection              = githubv4.OrderDirection
 	RepositoryAffiliation       = githubv4.RepositoryAffiliation
-	Page                        = githubv4.Page
+	PageInfoFragment            = githubv4.PageInfoFragment
+	LanguageFragment            = githubv4.LanguageFragment
+	OwnerFragment               = githubv4.OwnerFragment
+	ParentRepositoryFragment    = githubv4.ParentRepositoryFragment
+	RepositoryFragment          = githubv4.RepositoryFragment
 )
 
 const (
@@ -59,7 +62,7 @@ type RepositoryListOptions struct {
 type Adaptor interface {
 	GetHost() string
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
-	RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*Repo, Page, error)
+	RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*RepositoryFragment, PageInfoFragment, error)
 	RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error)
 	RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error)
 	RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error)
