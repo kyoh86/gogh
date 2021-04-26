@@ -1,5 +1,0 @@
-query GetUserId($login: String!) {
-  user(login: $login) {
-    id
-  }
-}
