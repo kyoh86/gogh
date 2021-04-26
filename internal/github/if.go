@@ -8,20 +8,15 @@ import (
 
 type (
 	Repository                  = github.Repository
-	SearchOptions               = github.SearchOptions
-	RepositoriesSearchResult    = github.RepositoriesSearchResult
 	RepositoryCreateForkOptions = github.RepositoryCreateForkOptions
 	TemplateRepoRequest         = github.TemplateRepoRequest
 	ListOptions                 = github.ListOptions
 	Response                    = github.Response
 	User                        = github.User
-	Organization                = github.Organization
 )
 
 type Adaptor interface {
-	OrganizationsList(ctx context.Context, opts *ListOptions) ([]*Organization, *Response, error)
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
-	SearchRepository(ctx context.Context, query string, opts *SearchOptions) ([]*Repository, *Response, error)
 	RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error)
 	RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error)
 	RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error)

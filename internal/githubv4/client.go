@@ -191,44 +191,23 @@ type Repo struct {
 	Owner struct {
 		Login string "json:\"login\" graphql:\"login\""
 	} "json:\"owner\" graphql:\"owner\""
-	Name             string  "json:\"name\" graphql:\"name\""
-	Description      *string "json:\"description\" graphql:\"description\""
-	CreatedAt        string  "json:\"createdAt\" graphql:\"createdAt\""
-	IsArchived       bool    "json:\"isArchived\" graphql:\"isArchived\""
-	IsDisabled       bool    "json:\"isDisabled\" graphql:\"isDisabled\""
-	IsEmpty          bool    "json:\"isEmpty\" graphql:\"isEmpty\""
-	IsFork           bool    "json:\"isFork\" graphql:\"isFork\""
-	IsInOrganization bool    "json:\"isInOrganization\" graphql:\"isInOrganization\""
-	IsLocked         bool    "json:\"isLocked\" graphql:\"isLocked\""
-	IsPrivate        bool    "json:\"isPrivate\" graphql:\"isPrivate\""
-	IsTemplate       bool    "json:\"isTemplate\" graphql:\"isTemplate\""
-	LicenseInfo      *struct {
-		Name string "json:\"name\" graphql:\"name\""
-		Key  string "json:\"key\" graphql:\"key\""
-	} "json:\"licenseInfo\" graphql:\"licenseInfo\""
-	Parent *struct {
+	ResourcePath string  "json:\"resourcePath\" graphql:\"resourcePath\""
+	Name         string  "json:\"name\" graphql:\"name\""
+	Description  *string "json:\"description\" graphql:\"description\""
+	CreatedAt    string  "json:\"createdAt\" graphql:\"createdAt\""
+	IsArchived   bool    "json:\"isArchived\" graphql:\"isArchived\""
+	IsFork       bool    "json:\"isFork\" graphql:\"isFork\""
+	IsPrivate    bool    "json:\"isPrivate\" graphql:\"isPrivate\""
+	IsTemplate   bool    "json:\"isTemplate\" graphql:\"isTemplate\""
+	PushedAt     *string "json:\"pushedAt\" graphql:\"pushedAt\""
+	Parent       *struct {
 		Owner struct {
 			ID    string "json:\"id\" graphql:\"id\""
 			Login string "json:\"login\" graphql:\"login\""
 		} "json:\"owner\" graphql:\"owner\""
-		Name string "json:\"name\" graphql:\"name\""
+		Name         string "json:\"name\" graphql:\"name\""
+		ResourcePath string "json:\"resourcePath\" graphql:\"resourcePath\""
 	} "json:\"parent\" graphql:\"parent\""
-	PrimaryLanguage *struct {
-		Name string "json:\"name\" graphql:\"name\""
-	} "json:\"primaryLanguage\" graphql:\"primaryLanguage\""
-	PushedAt         *string "json:\"pushedAt\" graphql:\"pushedAt\""
-	RepositoryTopics struct {
-		Edges []*struct {
-			Node *struct {
-				Topic struct {
-					Name string "json:\"name\" graphql:\"name\""
-				} "json:\"topic\" graphql:\"topic\""
-			} "json:\"node\" graphql:\"node\""
-		} "json:\"edges\" graphql:\"edges\""
-	} "json:\"repositoryTopics\" graphql:\"repositoryTopics\""
-	ResourcePath   string "json:\"resourcePath\" graphql:\"resourcePath\""
-	StargazerCount int64  "json:\"stargazerCount\" graphql:\"stargazerCount\""
-	UpdatedAt      string "json:\"updatedAt\" graphql:\"updatedAt\""
 }
 type GetUserID struct {
 	User *struct {
@@ -269,8 +248,7 @@ type ListRepos struct {
 	Viewer struct {
 		Repositories struct {
 			Edges []*struct {
-				Node   *Repo  "json:\"node\" graphql:\"node\""
-				Cursor string "json:\"cursor\" graphql:\"cursor\""
+				Node *Repo "json:\"node\" graphql:\"node\""
 			} "json:\"edges\" graphql:\"edges\""
 		} "json:\"repositories\" graphql:\"repositories\""
 	} "json:\"viewer\" graphql:\"viewer\""
@@ -369,14 +347,13 @@ func (c *Client) ListRepoUrls(ctx context.Context, repositoryCursor *string, htt
 	return &res, nil
 }
 
-const ListReposDocument = `query ListRepos ($repositoryCursor: String) {
+const ListReposDocument = `query ListRepos ($first: Int = 30, $cursor: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $ownerAffiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}) {
 	viewer {
-		repositories(first: 30, after: $repositoryCursor) {
+		repositories(first: $first, after: $cursor, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
 			edges {
 				node {
 					... Repo
 				}
-				cursor
 			}
 		}
 	}
@@ -387,50 +364,34 @@ fragment Repo on Repository {
 	owner {
 		login
 	}
+	resourcePath
 	name
 	description
 	createdAt
 	isArchived
-	isDisabled
-	isEmpty
 	isFork
-	isInOrganization
-	isLocked
 	isPrivate
 	isTemplate
-	licenseInfo {
-		name
-		key
-	}
+	pushedAt
 	parent {
 		owner {
 			id
 			login
 		}
 		name
+		resourcePath
 	}
-	primaryLanguage {
-		name
-	}
-	pushedAt
-	repositoryTopics(first: 30) {
-		edges {
-			node {
-				topic {
-					name
-				}
-			}
-		}
-	}
-	resourcePath
-	stargazerCount
-	updatedAt
 }
 `
 
-func (c *Client) ListRepos(ctx context.Context, repositoryCursor *string, httpRequestOptions ...client.HTTPRequestOption) (*ListRepos, error) {
+func (c *Client) ListRepos(ctx context.Context, first *int64, cursor *string, isFork *bool, privacy *RepositoryPrivacy, ownerAffiliations []*RepositoryAffiliation, orderBy *RepositoryOrder, httpRequestOptions ...client.HTTPRequestOption) (*ListRepos, error) {
 	vars := map[string]interface{}{
-		"repositoryCursor": repositoryCursor,
+		"first":             first,
+		"cursor":            cursor,
+		"isFork":            isFork,
+		"privacy":           privacy,
+		"ownerAffiliations": ownerAffiliations,
+		"orderBy":           orderBy,
 	}
 
 	var res ListRepos
