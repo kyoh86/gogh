@@ -203,7 +203,11 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 			if !page.HasNextPage {
 				return
 			}
-			opt.After = page.EndCursor
+			if opt == nil {
+				opt = &github.RepositoryListOptions{After: page.EndCursor}
+			} else {
+				opt.After = page.EndCursor
+			}
 		}
 	}()
 	return sch, ech
