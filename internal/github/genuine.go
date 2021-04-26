@@ -20,24 +20,13 @@ const (
 	DefaultAPIHost = "api.github.com"
 )
 
-type Option func(baseURL *url.URL, uploadURL *url.URL)
+type Option func(baseRESTURL *url.URL, uploadRESTURL *url.URL, baseGQLURL *url.URL)
 
 func WithScheme(scheme string) Option {
-	return func(baseURL *url.URL, uploadURL *url.URL) {
-		baseURL.Scheme = scheme
-		uploadURL.Scheme = scheme
-	}
-}
-
-func WithBasePath(path string) Option {
-	return func(baseURL *url.URL, _ *url.URL) {
-		baseURL.Path = path
-	}
-}
-
-func WithUploadPath(path string) Option {
-	return func(_ *url.URL, uploadURL *url.URL) {
-		uploadURL.Path = path
+	return func(baseRESTURL *url.URL, uploadRESTURL *url.URL, baseGQLURL *url.URL) {
+		baseRESTURL.Scheme = scheme
+		uploadRESTURL.Scheme = scheme
+		baseGQLURL.Scheme = scheme
 	}
 }
 
@@ -49,20 +38,25 @@ func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Ada
 	if host == DefaultHost || host == DefaultAPIHost {
 		return newGenuineAdaptor(client), nil
 	}
-	baseURL := &url.URL{
+	baseRESTURL := &url.URL{
 		Scheme: "https://",
 		Host:   host,
 		Path:   "/api/v3",
 	}
-	uploadURL := &url.URL{
+	uploadRESTURL := &url.URL{
 		Scheme: "https://",
 		Host:   host,
 		Path:   "/api/uploads",
 	}
-	for _, option := range options {
-		option(baseURL, uploadURL)
+	baseGQLURL := &url.URL{
+		Scheme: "https://",
+		Host:   host,
+		Path:   "/api/graphql",
 	}
-	return newGenuineEnterpriseAdaptor(baseURL.String(), uploadURL.String(), client)
+	for _, option := range options {
+		option(baseRESTURL, uploadRESTURL, baseGQLURL)
+	}
+	return newGenuineEnterpriseAdaptor(baseRESTURL.String(), uploadRESTURL.String(), baseGQLURL.String(), client)
 }
 
 func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
@@ -72,16 +66,18 @@ func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
 func newGenuineAdaptor(httpClient *http.Client) Adaptor {
 	return &genuineAdaptor{
 		restClient: github.NewClient(httpClient),
+		gqlClient:  githubv4.NewClient(httpClient, "https://"+DefaultAPIHost+"/graphql"),
 	}
 }
 
-func newGenuineEnterpriseAdaptor(baseURL string, uploadURL string, httpClient *http.Client) (Adaptor, error) {
-	client, err := github.NewEnterpriseClient(baseURL, uploadURL, httpClient)
+func newGenuineEnterpriseAdaptor(baseRESTURL, uploadRESTURL, baseGQLURL string, httpClient *http.Client) (Adaptor, error) {
+	restClient, err := github.NewEnterpriseClient(baseRESTURL, uploadRESTURL, httpClient)
 	if err != nil {
 		return nil, err
 	}
 	return &genuineAdaptor{
-		restClient: client,
+		restClient: restClient,
+		gqlClient:  githubv4.NewClient(httpClient, baseGQLURL),
 	}, nil
 }
 
@@ -89,12 +85,25 @@ func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Resp
 	return c.restClient.Users.Get(ctx, user)
 }
 
-func (c *genuineAdaptor) SearchRepository(ctx context.Context, query string, opts *SearchOptions) ([]*github.Repository, *Response, error) {
+func (c *genuineAdaptor) SearchRepository(ctx context.Context, query string, opts *SearchOptions) ([]*Repository, *Response, error) {
 	result, resp, err := c.restClient.Search.Repositories(ctx, query, opts)
 	if err != nil {
 		return nil, resp, err
 	}
 	return result.Repositories, resp, nil
+}
+
+type RepositoryListOptions struct { // TODO:
+}
+
+func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*Repository, error) {
+	repos, err := c.gqlClient.ListRepos(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	_ = repos
+	// TODO:
+	return nil, nil
 }
 
 func (c *genuineAdaptor) RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error) {
@@ -117,6 +126,6 @@ func (c *genuineAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templ
 	return c.restClient.Repositories.CreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq)
 }
 
-func (c *genuineAdaptor) OrganizationsList(ctx context.Context, opts *github.ListOptions) ([]*Organization, *Response, error) {
+func (c *genuineAdaptor) OrganizationsList(ctx context.Context, opts *ListOptions) ([]*Organization, *Response, error) {
 	return c.restClient.Organizations.List(ctx, "", opts)
 }

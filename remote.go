@@ -51,7 +51,6 @@ func (c *RemoteController) ingest(repo *github.Repository) (Repository, error) {
 		Description: repo.GetDescription(),
 		Homepage:    repo.GetHomepage(),
 		Language:    repo.GetLanguage(),
-		Topics:      repo.Topics,
 		PushedAt:    repo.GetPushedAt().Time,
 		Archived:    repo.GetArchived(),
 		Private:     repo.GetPrivate(),
@@ -91,9 +90,6 @@ func (o *RemoteListOption) GetQuery() string {
 		}
 	}
 
-	if o.Archived != nil {
-		terms = append(terms, fmt.Sprintf("archived:%v", *o.Archived))
-	}
 	if o.IsFork == nil {
 		terms = append(terms, "fork:true")
 	} else if *o.IsFork {
@@ -105,9 +101,6 @@ func (o *RemoteListOption) GetQuery() string {
 		} else {
 			terms = append(terms, "is:public")
 		}
-	}
-	if o.Language != "" {
-		terms = append(terms, fmt.Sprintf("language:%q", o.Language))
 	}
 	if o.Query != "" {
 		terms = append(terms, o.Query)

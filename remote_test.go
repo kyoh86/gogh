@@ -84,16 +84,6 @@ func TestRemoteListOption_GetQuery(t *testing.T) {
 			want:  `user:"kyoh86" fork:true sort:updated`,
 		},
 		{
-			title: "archived",
-			opt:   &testtarget.RemoteListOption{Archived: ptr.Bool(true)},
-			want:  `user:@me archived:true fork:true sort:updated`,
-		},
-		{
-			title: "not archived",
-			opt:   &testtarget.RemoteListOption{Archived: ptr.Bool(false)},
-			want:  `user:@me archived:false fork:true sort:updated`,
-		},
-		{
 			title: "fork",
 			opt:   &testtarget.RemoteListOption{IsFork: ptr.Bool(true)},
 			want:  `user:@me fork:only sort:updated`,
@@ -114,11 +104,6 @@ func TestRemoteListOption_GetQuery(t *testing.T) {
 			want:  `user:@me fork:true is:public sort:updated`,
 		},
 		{
-			title: "languate",
-			opt:   &testtarget.RemoteListOption{Language: "go"},
-			want:  `user:@me fork:true language:"go" sort:updated`,
-		},
-		{
 			title: "sort",
 			opt:   &testtarget.RemoteListOption{Sort: "updated"},
 			want:  `user:@me fork:true sort:"updated"`,
@@ -128,13 +113,11 @@ func TestRemoteListOption_GetQuery(t *testing.T) {
 			opt: &testtarget.RemoteListOption{
 				Query:     "foobar",
 				Users:     []string{"kyoh86"},
-				Archived:  ptr.Bool(false),
 				IsFork:    ptr.Bool(true),
 				IsPrivate: ptr.Bool(false),
 				Sort:      "updated",
-				Language:  "go",
 			},
-			want: `user:"kyoh86" archived:false fork:only is:public language:"go" foobar sort:"updated"`,
+			want: `user:"kyoh86" fork:only is:public foobar sort:"updated"`,
 		},
 	} {
 		t.Run(tc.title, func(t *testing.T) {
