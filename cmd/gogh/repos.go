@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"github.com/kyoh86/gogh/v2"
@@ -14,7 +15,15 @@ import (
 )
 
 var reposFlags struct {
-	query string
+	query    string
+	format   string
+	color    string
+	relation []string
+	limit    int
+	private  bool
+	public   bool
+	fork     bool
+	notFork  bool
 }
 
 var reposCommand = &cobra.Command{
@@ -26,18 +35,50 @@ var reposCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		listOption := gogh.RemoteListOption{
+			Query: reposFlags.query,
+			Limit: &reposFlags.limit,
+		}
+		if reposFlags.private && reposFlags.public {
+			return errors.New("specify only one of `--private` or `--public`")
+		}
+		if reposFlags.private {
+			listOption.Private = &reposFlags.private // &true
+		}
+		if reposFlags.public {
+			listOption.Private = &reposFlags.private // &false
+		}
+
+		if reposFlags.fork && reposFlags.notFork {
+			return errors.New("specify only one of `--fork` or `--no-fork`")
+		}
+		if reposFlags.fork {
+			listOption.IsFork = &reposFlags.fork // &true
+		}
+		if reposFlags.notFork {
+			listOption.IsFork = &reposFlags.fork // &false
+		}
+		for _, r := range reposFlags.relation {
+			rdef := gogh.RepositoryRelation(r)
+			if !rdef.IsValid() {
+				return errors.New("--relation can accept `owner`, `organizationMember` or `collaborator`")
+			}
+			listOption.Relation = append(listOption.Relation, rdef)
+		}
 		var options []repotab.Option
 		if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
 			options = append(options, repotab.Width(width))
 		}
-		if term.IsTerminal(int(os.Stdout.Fd())) {
+		if term.IsTerminal(int(os.Stdout.Fd())) || reposFlags.color == "always" {
 			options = append(options, repotab.Styled())
 		}
+		// TODO: use reposFlags.format
 		format := repotab.NewPrinter(os.Stdout, options...)
 		defer format.Close()
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
 		eg, ctx := errgroup.WithContext(ctx)
+
 		for _, server := range list {
 			server := server
 			eg.Go(func() error {
@@ -46,16 +87,14 @@ var reposCommand = &cobra.Command{
 					return err
 				}
 				remote := gogh.NewRemoteController(adaptor)
-				sch, ech := remote.ListAsync(ctx, &gogh.RemoteListOption{
-					Query: reposFlags.query,
-				})
+				rch, ech := remote.ListAsync(ctx, &listOption)
 				for {
 					select {
-					case spec, more := <-sch:
+					case repo, more := <-rch:
 						if !more {
 							return nil
 						}
-						format.Print(spec)
+						format.Print(repo)
 					case err := <-ech:
 						if err != nil {
 							return err
@@ -73,19 +112,21 @@ var reposCommand = &cobra.Command{
 }
 
 func init() {
-	// TODO: filter flags
-	//          --archived          Show only archived repositories
-	//          --fork              Show only forks
-	//      -l, --language string   Filter by primary coding language
-	//      -L, --limit int         Maximum number of repositories to list (default 30)
-	//          --no-archived       Omit archived repositories
-	//          --private           Show only private repositories
-	//          --public            Show only public repositories
-	//          --source            Show only non-forks
-	//
-	// TODO: style flags
-	//          --format            table,spec,URL,json
-	//          --color             auto,never,always
+	reposCommand.Flags().IntVarP(&reposFlags.limit, "limit", "", 30, "Max number of repositories to list")
+
+	reposCommand.Flags().BoolVarP(&reposFlags.public, "public", "", false, "Show only public repositories")
+	reposCommand.Flags().BoolVarP(&reposFlags.private, "private", "", false, "Show only private repositories")
+
+	reposCommand.Flags().BoolVarP(&reposFlags.fork, "fork", "", false, "Show only forks")
+	reposCommand.Flags().BoolVarP(&reposFlags.notFork, "no-fork", "", false, "Omit forks")
+
 	reposCommand.Flags().StringVarP(&reposFlags.query, "query", "", "", "Query for selecting projects")
+
+	reposCommand.Flags().StringVarP(&reposFlags.format, "format", "", "table", "The formatting style for each repository")
+	reposCommand.Flags().StringVarP(&reposFlags.color, "color", "", "auto", "Colorize the output; It can accept 'auto', 'always' or 'never'")
+
+	reposCommand.Flags().StringSliceP("relation", "", []string{"owner", "organizationMember"}, "The relation of user to each repository; It can accept `owner`, `organizationMember` or `collaborator`")
+
+	// TODO: order
 	facadeCommand.AddCommand(reposCommand)
 }

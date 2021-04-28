@@ -232,9 +232,8 @@ func TestRemoteController_List(t *testing.T) {
 	})
 
 	owner := github.RepositoryAffiliationOwner
-	member := github.RepositoryAffiliationOrganizationMember
 	emptyOption := &github.RepositoryListOptions{
-		OwnerAffiliations: []*github.RepositoryAffiliation{&owner, &member},
+		OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
 		Limit:             ptr.Int64(100),
 	}
 	t.Run("EmptyOption", func(t *testing.T) {

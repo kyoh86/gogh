@@ -62,14 +62,39 @@ func (c *RemoteController) ingestRepository(repo *github.Repository) (Repository
 	}, nil
 }
 
+type RepositoryRelation string
+
+const (
+	RepositoryRelationOwner              = RepositoryRelation("owner")
+	RepositoryRelationOrganizationMember = RepositoryRelation("organizationMember")
+	RepositoryRelationCollaborator       = RepositoryRelation("collaborator")
+)
+
+func AllRepositoryRelation() []RepositoryRelation {
+	return []RepositoryRelation{
+		RepositoryRelationOwner,
+		RepositoryRelationOrganizationMember,
+		RepositoryRelationCollaborator,
+	}
+}
+
+func (r RepositoryRelation) IsValid() bool {
+	for _, def := range AllRepositoryRelation() {
+		if def == r {
+			return true
+		}
+	}
+	return false
+}
+
 type RemoteListOption struct {
-	Private *bool
-	Limit   *int
-	IsFork  *bool
-	Query   string
-	Order   string
-	Sort    string
-	Own     bool
+	Private  *bool
+	Limit    *int
+	IsFork   *bool
+	Query    string
+	Order    string
+	Sort     string
+	Relation []RepositoryRelation
 	// UNDONE:
 	// https://github.com/cli/cli/blob/5a2ec54685806a6576bdc185751afc09aba44408/pkg/cmd/repo/list/http.go#L60-L62
 	// >	if filter.Language != "" || filter.Archived || filter.NonArchived {
@@ -109,10 +134,21 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	}
 
 	owner := github.RepositoryAffiliationOwner
-	opt.OwnerAffiliations = []*github.RepositoryAffiliation{&owner}
-	if !o.Own {
+	if len(o.Relation) == 0 {
+		opt.OwnerAffiliations = []*github.RepositoryAffiliation{&owner}
+	} else {
 		member := github.RepositoryAffiliationOrganizationMember
-		opt.OwnerAffiliations = append(opt.OwnerAffiliations, &member)
+		collabo := github.RepositoryAffiliationCollaborator
+		for _, r := range o.Relation {
+			switch r {
+			case RepositoryRelationOwner:
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &owner)
+			case RepositoryRelationOrganizationMember:
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &member)
+			case RepositoryRelationCollaborator:
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &collabo)
+			}
+		}
 	}
 
 	if o.Private != nil {
