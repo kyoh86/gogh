@@ -221,13 +221,19 @@ func (c *RemoteController) ingestRepo(repo *github.RepositoryFragment) (ret Repo
 	return ret, nil
 }
 
-func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, ch chan<- Repository) error {
+var errOverLimit = errors.New("over limit")
+
+func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, count *int64, limit int64, ch chan<- Repository) error {
 	for _, repo := range repos {
+		if limit > 0 && limit <= *count {
+			return errOverLimit
+		}
 		spec, err := c.ingestRepo(repo)
 		if err != nil {
 			return err
 		}
 		ch <- spec
+		*count = *count + 1
 	}
 	return nil
 }
@@ -239,13 +245,28 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 	go func() {
 		defer close(sch)
 		defer close(ech)
+
+		var count int64
+		var limit int64
+		if opt.Limit == nil || *opt.Limit == 0 {
+			limit = 0
+			opt.Limit = ptr.Int64(100)
+		} else if *opt.Limit > 100 {
+			limit = *opt.Limit
+			*opt.Limit = 100
+		} else {
+			limit = *opt.Limit
+		}
 		for {
 			repos, page, err := c.adaptor.RepositoryList(ctx, opt)
 			if err != nil {
 				ech <- err
 				return
 			}
-			if err := c.repoListSpecList(repos, sch); err != nil {
+			if err := c.repoListSpecList(repos, &count, limit, sch); err != nil {
+				if errors.Is(err, errOverLimit) {
+					return
+				}
 				ech <- err
 				return
 			}
