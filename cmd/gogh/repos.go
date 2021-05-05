@@ -138,7 +138,7 @@ func init() {
 	reposCommand.Flags().StringVarP(&reposFlags.format, "format", "", "table", "The formatting style for each repository")
 	reposCommand.Flags().StringVarP(&reposFlags.color, "color", "", "auto", "Colorize the output; It can accept 'auto', 'always' or 'never'")
 
-	reposCommand.Flags().StringSliceP("relation", "", []string{"owner", "organizationMember"}, "The relation of user to each repository; It can accept `owner`, `organizationMember` or `collaborator`")
+	reposCommand.Flags().StringSliceVarP(&reposFlags.relation, "relation", "", []string{"owner", "organizationMember"}, "The relation of user to each repository; It can accept `owner`, `organizationMember` or `collaborator`")
 
 	// TODO: order
 	facadeCommand.AddCommand(reposCommand)
