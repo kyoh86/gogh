@@ -34,7 +34,7 @@ var ProjectFormatURL = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 })
 
 var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
-	buf, err := json.Marshal(map[string]interface{}{
+	buf, _ := json.Marshal(map[string]interface{}{
 		"fullFilePath": p.FullFilePath(),
 		"relFilePath":  p.RelFilePath(),
 		"url":          p.URL(),
@@ -43,9 +43,6 @@ var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 		"owner":        p.Owner(),
 		"name":         p.Name(),
 	})
-	if err != nil {
-		return "", err
-	}
 	return string(buf), nil
 })
 

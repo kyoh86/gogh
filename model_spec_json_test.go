@@ -65,15 +65,14 @@ func TestSpecJSON(t *testing.T) {
 		if err := json.Unmarshal(buf, &got); err != nil {
 			t.Fatal(err)
 		}
-		want := spec
-		if diff := cmp.Diff(want, got, cmp.AllowUnexported(want)); diff != "" {
+		if diff := cmp.Diff(spec, got, cmp.AllowUnexported(spec)); diff != "" {
 			t.Errorf("result mismatch;\n-want, +got\n%s", diff)
 		}
 	})
 
 	t.Run("Unmarshal invalid input", func(t *testing.T) {
 		var got testtarget.Spec
-		if err := json.Unmarshal([]byte{'{'}, &got); err == nil {
+		if err := json.Unmarshal([]byte(`{"host":42}`), &got); err == nil {
 			t.Error("expected error, but got nil")
 		}
 	})

@@ -39,10 +39,7 @@ func NewRepositoryURLPrinter(w io.Writer) RepositoryPrinter {
 
 func NewRepositoryJSONPrinter(w io.Writer) RepositoryPrinter {
 	return RepositoryFuncPrinter(func(r gogh.Repository) error {
-		buf, err := json.Marshal(r)
-		if err != nil {
-			return err
-		}
+		buf, _ := json.Marshal(r)
 		fmt.Fprintln(w, string(buf))
 		return nil
 	})
