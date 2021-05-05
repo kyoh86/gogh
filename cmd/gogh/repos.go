@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v2/view"
 	"github.com/kyoh86/gogh/v2/view/repotab"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -72,8 +74,19 @@ var reposCommand = &cobra.Command{
 		if term.IsTerminal(int(os.Stdout.Fd())) || reposFlags.color == "always" {
 			options = append(options, repotab.Styled())
 		}
-		// TODO: use reposFlags.format
-		format := repotab.NewPrinter(os.Stdout, options...)
+		var format view.RepositoryPrinter
+		switch reposFlags.format {
+		case "spec":
+			format = view.NewRepositorySpecPrinter(os.Stdout)
+		case "url":
+			format = view.NewRepositoryURLPrinter(os.Stdout)
+		case "json":
+			format = view.NewRepositoryJSONPrinter(os.Stdout)
+		case "table":
+			format = repotab.NewPrinter(os.Stdout, options...)
+		default:
+			return fmt.Errorf("invalid format %q; it can accept %q, %q, %q or %q", reposFlags.format, "spec", "url", "json", "table")
+		}
 		defer format.Close()
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()

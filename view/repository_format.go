@@ -25,14 +25,14 @@ func (f RepositoryFuncPrinter) Close() error {
 
 func NewRepositorySpecPrinter(w io.Writer) RepositoryPrinter {
 	return RepositoryFuncPrinter(func(r gogh.Repository) error {
-		fmt.Fprint(w, r.Spec.String())
+		fmt.Fprintln(w, r.Spec.String())
 		return nil
 	})
 }
 
 func NewRepositoryURLPrinter(w io.Writer) RepositoryPrinter {
 	return RepositoryFuncPrinter(func(r gogh.Repository) error {
-		fmt.Fprint(w, r.URL)
+		fmt.Fprintln(w, r.URL)
 		return nil
 	})
 }
@@ -43,7 +43,7 @@ func NewRepositoryJSONPrinter(w io.Writer) RepositoryPrinter {
 		if err != nil {
 			return err
 		}
-		fmt.Fprint(w, string(buf))
+		fmt.Fprintln(w, string(buf))
 		return nil
 	})
 }
