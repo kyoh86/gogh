@@ -63,6 +63,10 @@ func ingestRepository(repo *github.Repository) (Repository, error) {
 	}, nil
 }
 
+const (
+	RepositoryListMaxLimitPerPage = 100
+)
+
 type RepositoryRelation string
 
 const (
@@ -124,7 +128,7 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 		}
 	}
 	if o.Limit == nil {
-		opt.Limit = ptr.Int64(100)
+		opt.Limit = ptr.Int64(RepositoryListMaxLimitPerPage)
 	} else {
 		limit := int64(*o.Limit)
 		opt.Limit = &limit
@@ -248,13 +252,13 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 		switch {
 		case opt == nil:
 			limit = 0
-			opt = &github.RepositoryListOptions{Limit: ptr.Int64(100)}
+			opt = &github.RepositoryListOptions{Limit: ptr.Int64(RepositoryListMaxLimitPerPage)}
 		case opt.Limit == nil || *opt.Limit == 0:
 			limit = 0
-			opt.Limit = ptr.Int64(100)
-		case *opt.Limit > 100:
+			opt.Limit = ptr.Int64(RepositoryListMaxLimitPerPage)
+		case *opt.Limit > RepositoryListMaxLimitPerPage:
 			limit = *opt.Limit
-			*opt.Limit = 100
+			*opt.Limit = RepositoryListMaxLimitPerPage
 		default:
 			limit = *opt.Limit
 		}
@@ -273,9 +277,6 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 			}
 			if !page.HasNextPage {
 				return
-			}
-			if opt == nil {
-				opt = &github.RepositoryListOptions{}
 			}
 			opt.After = page.EndCursor
 		}
