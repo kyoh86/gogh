@@ -72,7 +72,7 @@ func TestRemoteController_List(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		internalError := errors.New("test error")
-		mock.EXPECT().RepositoryList(ctx, nil).Return(nil, github.PageInfoFragment{}, internalError)
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(100)}}).Return(nil, github.PageInfoFragment{}, internalError)
 
 		if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
@@ -89,7 +89,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, nil).DoAndReturn(func(_ context.Context, _ *github.RepositoryListOptions) ([]*github.RepositoryFragment, github.PageInfoFragment, error) {
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(100)}}).DoAndReturn(func(_ context.Context, _ *github.RepositoryListOptions) ([]*github.RepositoryFragment, github.PageInfoFragment, error) {
 			<-time.After(sleep)
 			return []*github.RepositoryFragment{{
 				Owner: github.OwnerFragment{Login: org},
@@ -109,7 +109,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, nil).Return([]*github.RepositoryFragment{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(100)}}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: "."}, Name: ".",
 		}}, github.PageInfoFragment{}, nil)
 
@@ -122,7 +122,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, nil).Return([]*github.RepositoryFragment{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(100)}}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-1",
 		}, {
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-2",
@@ -177,13 +177,14 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, nil).Return([]*github.RepositoryFragment{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(100)}}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-1",
 		}, {
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-2",
 		}}, github.PageInfoFragment{HasNextPage: true, EndCursor: ptr.String("next-page")}, nil)
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
 			After: ptr.String("next-page"),
+			Limit: ptr.Int64(100),
 		}}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: org}, Name: "org-repo-1",
 		}, {

@@ -306,6 +306,9 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 		var count int64
 		var limit int64
 		switch {
+		case opt == nil:
+			limit = 0
+			opt = &github.RepositoryListOptions{Limit: ptr.Int64(100)}
 		case opt.Limit == nil || *opt.Limit == 0:
 			limit = 0
 			opt.Limit = ptr.Int64(100)
