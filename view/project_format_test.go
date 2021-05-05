@@ -30,7 +30,7 @@ func TestProjectFormat(t *testing.T) {
 	}{
 		{
 			title:  "FullFilePath",
-			format: testtarget.ProjectFormatFunc(testtarget.ProjectFormatFullFilePath),
+			format: testtarget.ProjectFormatFullFilePath,
 			expect: filepath.Clean("/tmp/github.com/kyoh86/gogh"),
 		},
 		{

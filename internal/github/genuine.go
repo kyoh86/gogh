@@ -88,12 +88,12 @@ func newGenuineEnterpriseAdaptor(host string, baseRESTURL, uploadRESTURL, baseGQ
 	}, nil
 }
 
-func (c *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Response, error) {
-	return c.restClient.Users.Get(ctx, user)
+func (a *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Response, error) {
+	return a.restClient.Users.Get(ctx, user)
 }
 
-func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*RepositoryFragment, PageInfoFragment, error) {
-	repos, err := c.gqlClient.ListRepos(
+func (a *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*RepositoryFragment, PageInfoFragment, error) {
+	repos, err := a.gqlClient.ListRepos(
 		ctx,
 		opts.Limit,
 		opts.After,
@@ -112,22 +112,22 @@ func (c *genuineAdaptor) RepositoryList(ctx context.Context, opts *RepositoryLis
 	return ingrepos, repos.Viewer.Repositories.PageInfo, nil
 }
 
-func (c *genuineAdaptor) RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error) {
-	return c.restClient.Repositories.Create(ctx, org, repo)
+func (a *genuineAdaptor) RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error) {
+	return a.restClient.Repositories.Create(ctx, org, repo)
 }
 
-func (c *genuineAdaptor) RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error) {
-	return c.restClient.Repositories.CreateFork(ctx, owner, repo, opts)
+func (a *genuineAdaptor) RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error) {
+	return a.restClient.Repositories.CreateFork(ctx, owner, repo, opts)
 }
 
-func (c *genuineAdaptor) RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error) {
-	return c.restClient.Repositories.Get(ctx, owner, repo)
+func (a *genuineAdaptor) RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error) {
+	return a.restClient.Repositories.Get(ctx, owner, repo)
 }
 
-func (c *genuineAdaptor) RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error) {
-	return c.restClient.Repositories.Delete(ctx, owner, repo)
+func (a *genuineAdaptor) RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error) {
+	return a.restClient.Repositories.Delete(ctx, owner, repo)
 }
 
-func (c *genuineAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error) {
-	return c.restClient.Repositories.CreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq)
+func (a *genuineAdaptor) RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error) {
+	return a.restClient.Repositories.CreateFromTemplate(ctx, templateOwner, templateRepo, templateRepoReq)
 }

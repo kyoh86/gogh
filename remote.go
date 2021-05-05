@@ -290,7 +290,7 @@ func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, 
 			return err
 		}
 		ch <- spec
-		*count = *count + 1
+		*count++
 	}
 	return nil
 }
@@ -305,13 +305,14 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 
 		var count int64
 		var limit int64
-		if opt.Limit == nil || *opt.Limit == 0 {
+		switch {
+		case opt.Limit == nil || *opt.Limit == 0:
 			limit = 0
 			opt.Limit = ptr.Int64(100)
-		} else if *opt.Limit > 100 {
+		case *opt.Limit > 100:
 			limit = *opt.Limit
 			*opt.Limit = 100
-		} else {
+		default:
 			limit = *opt.Limit
 		}
 		for {
