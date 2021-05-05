@@ -54,13 +54,21 @@ func ingestRepository(repo *github.Repository) (Repository, error) {
 		Description: repo.GetDescription(),
 		Homepage:    repo.GetHomepage(),
 		Language:    repo.GetLanguage(),
-		PushedAt:    repo.GetPushedAt().Time,
+		PushedAt:    ptrTime(repo.GetPushedAt().Time),
 		Archived:    repo.GetArchived(),
 		Private:     repo.GetPrivate(),
 		IsTemplate:  repo.GetIsTemplate(),
 		Fork:        repo.GetFork(),
 		Parent:      parentSpec,
 	}, nil
+}
+
+func ptrTime(t time.Time) *time.Time {
+	var def time.Time
+	if t == def {
+		return nil
+	}
+	return &t
 }
 
 const (
@@ -213,7 +221,7 @@ func ingestRepositoryFragment(host string, repo *github.RepositoryFragment) (ret
 		if err != nil {
 			return ret, fmt.Errorf("parse pushedAt: %w", err)
 		}
-		ret.PushedAt = pat
+		ret.PushedAt = &pat
 	}
 	if repo.Parent != nil {
 		parent, err := NewSpec(host, repo.Parent.Owner.Login, repo.Parent.Name)

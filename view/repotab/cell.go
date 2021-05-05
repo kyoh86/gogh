@@ -65,5 +65,8 @@ var AttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, styl
 })
 
 var PushedAtCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
-	return view.FuzzyAgoAbbr(time.Now(), r.PushedAt), aec.LightBlackF
+	if r.PushedAt == nil {
+		return "", aec.LightBlackF
+	}
+	return view.FuzzyAgoAbbr(time.Now(), *r.PushedAt), aec.LightBlackF
 })

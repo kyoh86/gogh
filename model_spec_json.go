@@ -3,7 +3,7 @@ package gogh
 import "encoding/json"
 
 type jsonSpec struct {
-	Host  string `json:"json"`
+	Host  string `json:"host"`
 	Owner string `json:"owner"`
 	Name  string `json:"name"`
 }
@@ -19,7 +19,7 @@ func (s *Spec) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (s *Spec) MarshalJSON() ([]byte, error) {
+func (s Spec) MarshalJSON() ([]byte, error) {
 	m := jsonSpec{
 		Host:  s.host,
 		Owner: s.owner,
