@@ -1,0 +1,57 @@
+fragment PageInfoFragment on PageInfo {
+  endCursor
+  hasNextPage
+}
+
+fragment LanguageFragment on Language {
+  name
+}
+
+fragment OwnerFragment on RepositoryOwner {
+  login
+}
+
+fragment ParentRepositoryFragment on Repository {
+  name
+  owner {
+    ...OwnerFragment
+  }
+}
+
+fragment RepositoryFragment on Repository {
+  url
+  homepageUrl
+  primaryLanguage {
+    ...LanguageFragment
+  }
+  name
+  owner {
+    ...OwnerFragment
+  }
+  description
+  createdAt
+  isArchived
+  isFork
+  isPrivate
+  isTemplate
+  updatedAt
+  parent {
+    ...ParentRepositoryFragment
+  }
+}
+
+query ListRepos($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $ownerAffiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field: PUSHED_AT, direction: DESC}) {
+  viewer {
+    repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
+      edges {
+        node {
+          ...RepositoryFragment
+        }
+      }
+      totalCount
+      pageInfo {
+        ...PageInfoFragment
+      }
+    }
+  }
+}

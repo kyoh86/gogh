@@ -38,7 +38,7 @@ var listCommand = &cobra.Command{
 				return err
 			}
 			for _, project := range projects {
-				str, err := f(project)
+				str, err := f.Format(project)
 				if err != nil {
 					log.FromContext(ctx).WithFields(log.Fields{
 						"error":  err,

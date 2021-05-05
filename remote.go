@@ -7,8 +7,11 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v2/internal/githubv4"
+	"github.com/wacul/ptr"
 )
 
 type RemoteController struct {
@@ -21,99 +24,159 @@ func NewRemoteController(adaptor github.Adaptor) *RemoteController {
 	}
 }
 
-func (c *RemoteController) repoSpec(repo *github.Repository) (Spec, error) {
+func parseSpec(repo *github.Repository) (Spec, error) {
 	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return Spec{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
 	}
 	owner, name := path.Split(u.Path)
+
 	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
-func (c *RemoteController) repoListSpecList(query string, repos []*github.Repository, ch chan<- Spec) error {
-	for _, repo := range repos {
-		spec, err := c.repoSpec(repo)
+func ingestRepository(repo *github.Repository) (Repository, error) {
+	var parentSpec *Spec
+	if parent := repo.GetParent(); parent != nil {
+		spec, err := parseSpec(parent)
 		if err != nil {
-			return err
+			return Repository{}, fmt.Errorf("parse parent repository as local spec: %w", err)
 		}
-		if !strings.Contains(spec.String(), query) {
-			continue
-		}
-		ch <- spec
+		parentSpec = &spec
 	}
-	return nil
+	spec, err := parseSpec(repo)
+	if err != nil {
+		return Repository{}, fmt.Errorf("parse repository as local spec: %w", err)
+	}
+	return Repository{
+		Spec:        spec,
+		URL:         strings.TrimSuffix(repo.GetCloneURL(), ".git"),
+		Description: repo.GetDescription(),
+		Homepage:    repo.GetHomepage(),
+		Language:    repo.GetLanguage(),
+		UpdatedAt:   repo.GetUpdatedAt().Time,
+		Archived:    repo.GetArchived(),
+		Private:     repo.GetPrivate(),
+		IsTemplate:  repo.GetIsTemplate(),
+		Fork:        repo.GetFork(),
+		Parent:      parentSpec,
+	}, nil
 }
+
+const (
+	RepositoryListMaxLimitPerPage = 100
+)
+
+type RepositoryRelation string
+
+const (
+	RepositoryRelationOwner              = RepositoryRelation("owner")
+	RepositoryRelationOrganizationMember = RepositoryRelation("organizationMember")
+	RepositoryRelationCollaborator       = RepositoryRelation("collaborator")
+)
+
+var AllRepositoryRelation = []RepositoryRelation{
+	RepositoryRelationOwner,
+	RepositoryRelationOrganizationMember,
+	RepositoryRelationCollaborator,
+}
+
+type RepositoryOrderField = githubv4.RepositoryOrderField
+
+var AllRepositoryOrderField = githubv4.AllRepositoryOrderField
+
+type OrderDirection = githubv4.OrderDirection
+
+var AllOrderDirection = githubv4.AllOrderDirection
 
 type RemoteListOption struct {
-	User  string
-	Query string
-
-	// Visibility of repositories to list. Can be one of all, public, or private.
-	// Default: all
-	Visibility string
-
-	// List repos of given affiliation[s].
-	// Comma-separated list of values. Can include:
-	// * owner: Repositories that are owned by the authenticated user.
-	// * collaborator: Repositories that the user has been added to as a
-	//   collaborator.
-	// * organization_member: Repositories that the user has access to through
-	//   being a member of an organization. This includes every repository on
-	//   every team that the user is on.
-	// Default: owner,collaborator,organization_member
-	Affiliation string
-
-	// Type of repositories to list.
-	// Can be one of all, owner, public, private, member. Default: all
-	// Will cause a 422 error if used in the same request as visibility or
-	// affiliation.
-	Type string
-
-	// How to sort the repository list. Can be one of created, updated, pushed,
-	// full_name. Default: full_name
-	Sort string
-
-	// Direction in which to sort repositories. Can be one of asc or desc.
-	// Default: when using full_name: asc; otherwise desc
-	Direction string
-}
-
-func (o *RemoteListOption) GetUser() string {
-	if o == nil {
-		return ""
-	}
-	return o.User
-}
-
-func (o *RemoteListOption) GetQuery() string {
-	if o == nil {
-		return ""
-	}
-	return o.Query
+	Private  *bool
+	Limit    *int
+	IsFork   *bool
+	Order    OrderDirection
+	Sort     RepositoryOrderField
+	Relation []RepositoryRelation
+	// UNDONE:
+	// https://github.com/cli/cli/blob/5a2ec54685806a6576bdc185751afc09aba44408/pkg/cmd/repo/list/http.go#L60-L62
+	// >	if filter.Language != "" || filter.Archived || filter.NonArchived {
+	// >		return searchRepos(client, hostname, limit, owner, filter)
+	// >	}
+	// Language  string
+	// Archived  *bool
 }
 
 func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
+	owner := github.RepositoryAffiliationOwner
 	if o == nil {
 		return &github.RepositoryListOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
+			OrderBy: &github.RepositoryOrder{
+				Field:     github.RepositoryOrderFieldUpdatedAt,
+				Direction: githubv4.OrderDirectionDesc,
 			},
+			Limit:             ptr.Int64(RepositoryListMaxLimitPerPage),
+			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
 		}
 	}
-	return &github.RepositoryListOptions{
-		Visibility:  o.Visibility,
-		Affiliation: o.Affiliation,
-		Type:        o.Type,
-		Sort:        o.Sort,
-		Direction:   o.Direction,
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
+	opt := &github.RepositoryListOptions{
+		IsFork: o.IsFork,
 	}
+
+	if o.Sort == "" {
+		opt.OrderBy = &github.RepositoryOrder{
+			Field:     github.RepositoryOrderFieldUpdatedAt,
+			Direction: githubv4.OrderDirectionDesc,
+		}
+	} else {
+		opt.OrderBy = &github.RepositoryOrder{
+			Field: o.Sort,
+		}
+		if o.Order == "" {
+			if opt.OrderBy.Field == github.RepositoryOrderFieldName {
+				opt.OrderBy.Direction = github.OrderDirectionAsc
+			} else {
+				opt.OrderBy.Direction = github.OrderDirectionDesc
+			}
+		} else {
+			opt.OrderBy.Direction = o.Order
+		}
+	}
+	if o.Limit == nil {
+		opt.Limit = ptr.Int64(RepositoryListMaxLimitPerPage)
+	} else {
+		limit := int64(*o.Limit)
+		opt.Limit = &limit
+	}
+
+	if len(o.Relation) == 0 {
+		opt.OwnerAffiliations = []*github.RepositoryAffiliation{&owner}
+	} else {
+		member := github.RepositoryAffiliationOrganizationMember
+		collabo := github.RepositoryAffiliationCollaborator
+		for _, r := range o.Relation {
+			switch r {
+			case RepositoryRelationOwner:
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &owner)
+			case RepositoryRelationOrganizationMember:
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &member)
+			case RepositoryRelationCollaborator:
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &collabo)
+			}
+		}
+	}
+
+	if o.Private != nil {
+		if *o.Private {
+			private := github.RepositoryPrivacyPrivate
+			opt.Privacy = &private
+		} else {
+			public := github.RepositoryPrivacyPublic
+			opt.Privacy = &public
+		}
+	}
+	return opt
 }
 
-func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Spec, _ error) {
+func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Repository, _ error) {
 	sch, ech := c.ListAsync(ctx, option)
 	for {
 		select {
@@ -134,180 +197,117 @@ func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (
 	}
 }
 
-func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOption) (<-chan Spec, <-chan error) {
+func ingestRepositoryFragment(host string, repo *github.RepositoryFragment) (ret Repository, _ error) {
+	ret.URL = repo.URL
+	ret.IsTemplate = repo.IsTemplate
+	ret.Archived = repo.IsArchived
+	ret.Private = repo.IsPrivate
+	ret.Fork = repo.IsFork
+	spec, err := NewSpec(host, repo.Owner.Login, repo.Name)
+	if err != nil {
+		return Repository{}, err
+	}
+	ret.Spec = spec
+	if repo.Description != nil {
+		ret.Description = *repo.Description
+	}
+	if repo.HomepageURL != nil {
+		ret.Homepage = *repo.HomepageURL
+	}
+	if repo.PrimaryLanguage != nil {
+		ret.Language = repo.PrimaryLanguage.Name
+	}
+	uat, err := time.Parse(time.RFC3339, repo.UpdatedAt)
+	if err != nil {
+		return ret, fmt.Errorf("parse updatedAt: %w", err)
+	}
+	ret.UpdatedAt = uat
+	if repo.Parent != nil {
+		parent, err := NewSpec(host, repo.Parent.Owner.Login, repo.Parent.Name)
+		if err != nil {
+			return Repository{}, err
+		}
+		ret.Parent = &parent
+	}
+	return ret, nil
+}
+
+var errOverLimit = errors.New("over limit")
+
+func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, count *int64, limit int64, ch chan<- Repository) error {
+	for _, repo := range repos {
+		if limit > 0 && limit <= *count {
+			return errOverLimit
+		}
+		spec, err := ingestRepositoryFragment(c.adaptor.GetHost(), repo)
+		if err != nil {
+			return err
+		}
+		ch <- spec
+		*count++
+	}
+	return nil
+}
+
+func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOption) (<-chan Repository, <-chan error) {
 	opt := option.GetOptions()
-	sch := make(chan Spec, 1)
+	sch := make(chan Repository, 1)
 	ech := make(chan error, 1)
 	go func() {
 		defer close(sch)
 		defer close(ech)
+
+		var count int64
+		var limit int64
+		switch {
+		case opt.Limit == nil || *opt.Limit == 0:
+			limit = 0
+			opt.Limit = ptr.Int64(RepositoryListMaxLimitPerPage)
+		case *opt.Limit > RepositoryListMaxLimitPerPage:
+			limit = *opt.Limit
+			*opt.Limit = RepositoryListMaxLimitPerPage
+		default:
+			limit = *opt.Limit
+		}
 		for {
-			repos, resp, err := c.adaptor.RepositoryList(ctx, option.GetUser(), opt)
+			repos, page, err := c.adaptor.RepositoryList(ctx, opt)
 			if err != nil {
 				ech <- err
 				return
 			}
-			if err := c.repoListSpecList(option.GetQuery(), repos, sch); err != nil {
+			if err := c.repoListSpecList(repos, &count, limit, sch); err != nil {
+				if errors.Is(err, errOverLimit) {
+					return
+				}
 				ech <- err
 				return
 			}
-			if resp.NextPage == 0 {
+			if !page.HasNextPage {
 				return
 			}
-			opt.Page = resp.NextPage
-		}
-	}()
-	return sch, ech
-}
-
-type RemoteListByOrgOption struct {
-	Query string
-
-	// Type of repositories to list. Possible values are: all, public, private,
-	// forks, sources, member. Default is "all".
-	Type string
-
-	// How to sort the repository list. Can be one of created, updated, pushed,
-	// full_name. Default is "created".
-	Sort string
-
-	// Direction in which to sort repositories. Can be one of asc or desc.
-	// Default when using full_name: asc; otherwise desc.
-	Direction string
-}
-
-func (o *RemoteListByOrgOption) GetQuery() string {
-	if o == nil {
-		return ""
-	}
-	return o.Query
-}
-
-func (o *RemoteListByOrgOption) GetOptions() *github.RepositoryListByOrgOptions {
-	if o == nil {
-		return &github.RepositoryListByOrgOptions{
-			ListOptions: github.ListOptions{
-				PerPage: 100,
-			},
-		}
-	}
-	return &github.RepositoryListByOrgOptions{
-		Type:      o.Type,
-		Sort:      o.Sort,
-		Direction: o.Direction,
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-}
-
-func (c *RemoteController) ListByOrg(ctx context.Context, org string, option *RemoteListByOrgOption) (allSpecs []Spec, _ error) {
-	sch, ech := c.ListByOrgAsync(ctx, org, option)
-	for {
-		select {
-		case spec, more := <-sch:
-			if !more {
-				return
-			}
-			allSpecs = append(allSpecs, spec)
-		case err := <-ech:
-			if err != nil {
-				return nil, err
-			}
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				return nil, err
-			}
-		}
-	}
-}
-
-func (c *RemoteController) ListByOrgAsync(ctx context.Context, org string, option *RemoteListByOrgOption) (<-chan Spec, <-chan error) {
-	opt := option.GetOptions()
-	sch := make(chan Spec, 1)
-	ech := make(chan error, 1)
-	go func() {
-		defer close(sch)
-		defer close(ech)
-		for {
-			repos, resp, err := c.adaptor.RepositoryListByOrg(ctx, org, opt)
-			if err != nil {
-				ech <- err
-				return
-			}
-			if err := c.repoListSpecList(option.GetQuery(), repos, sch); err != nil {
-				ech <- err
-				return
-			}
-			if resp.NextPage == 0 {
-				return
-			}
-			opt.Page = resp.NextPage
+			opt.After = page.EndCursor
 		}
 	}()
 	return sch, ech
 }
 
 type RemoteCreateOption struct {
-	// Organization is the name of the organization that owns the repository.
-	Organization string
-
-	// Description is a short description of the repository.
-	Description string
-
-	// Homepage is a URL with more information about the repository.
-	Homepage string
-
-	// Visibility can be public or private. If your organization is associated with an enterprise account using GitHub
-	// Enterprise Cloud or GitHub Enterprise Server 2.20+, visibility can also be internal. For more information, see
-	// "Creating an internal repository" in the GitHub Help documentation.  The visibility parameter overrides the private
-	// parameter when you use both parameters with the nebula-preview preview header.
-	Visibility string
-
-	// DisableIssues is either false to enable issues for this repository or true to disable them.
-	DisableIssues bool
-
-	// DisableProjects is either false to enable projects for this repository or true to disable them. Note: If you're
-	// creating a repository in an organization that has disabled repository projects, the default is false, and if you
-	// pass true, the API returns an error.
-	DisableProjects bool
-
-	// DisableWiki is either false to enable the wiki for this repository or true to disable it.
-	DisableWiki bool
-
-	// DisableDownloads is either false to enable the downloads or true to disable it.
-	DisableDownloads bool
-
-	// IsTemplate is either true to make this repo available as a template repository or false to prevent it.
-	IsTemplate bool
-
-	// TeamID is the id of the team that will be granted access to this repository. This is only valid when creating a
-	// repository in an organization.
-	TeamID int64
-
-	// AutoInit is pass true to create an initial commit with empty README.
-	AutoInit bool
-
-	// GitignoreTemplate is the desired language or platform .gitignore template to apply. Use the name of the template
-	// without the extension. For example, "Haskell".
-	GitignoreTemplate string
-
-	// LicenseTemplate is an open source license template, and then use the license keyword as the licenseTemplate string.
-	// For example, "mit" or "mpl-2.0".
-	LicenseTemplate string
-
-	// PreventSquashMerge is either false to allow squash-merging pull requests, or true to prevent squash-merging.
-	PreventSquashMerge bool
-
-	// PreventMergeCommit is either false to allow merging pull requests with a merge commit, or true to prevent merging
-	// pull requests with merge commits.
-	PreventMergeCommit bool
-
-	// PreventRebaseMerge is either false to allow rebase-merging pull requests, or true to prevent rebase-merging.
-	PreventRebaseMerge bool
-
-	// DeleteBranchOnMerge is either true to allow automatically deleting head branches when pull requests are merged, or
-	// false to prevent automatic deletion.
+	Organization        string
+	Description         string
+	Homepage            string
+	Visibility          string
+	LicenseTemplate     string
+	GitignoreTemplate   string
+	TeamID              int64
+	IsTemplate          bool
+	DisableDownloads    bool
+	DisableWiki         bool
+	AutoInit            bool
+	DisableProjects     bool
+	DisableIssues       bool
+	PreventSquashMerge  bool
+	PreventMergeCommit  bool
+	PreventRebaseMerge  bool
 	DeleteBranchOnMerge bool
 }
 
@@ -343,12 +343,12 @@ func (o *RemoteCreateOption) GetOrganization() string {
 	return o.Organization
 }
 
-func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Spec, error) {
+func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryCreate(ctx, option.GetOrganization(), option.buildRepository(name))
 	if err != nil {
-		return Spec{}, fmt.Errorf("create a repository: %w", err)
+		return Repository{}, fmt.Errorf("create a repository: %w", err)
 	}
-	return c.repoSpec(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteCreateFromTemplateOption struct {
@@ -369,12 +369,12 @@ func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(name string) *
 	}
 }
 
-func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner, templateName, name string, option *RemoteCreateFromTemplateOption) (Spec, error) {
+func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner, templateName, name string, option *RemoteCreateFromTemplateOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFromTemplate(ctx, templateOwner, templateName, option.buildTemplateRepoRequest(name))
 	if err != nil {
-		return Spec{}, fmt.Errorf("create a repository from template: %w", err)
+		return Repository{}, fmt.Errorf("create a repository from template: %w", err)
 	}
-	return c.repoSpec(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteForkOption struct {
@@ -391,51 +391,25 @@ func (o *RemoteForkOption) GetOptions() *github.RepositoryCreateForkOptions {
 	}
 }
 
-func (c *RemoteController) Fork(ctx context.Context, owner string, name string, option *RemoteForkOption) (Spec, error) {
+func (c *RemoteController) Fork(ctx context.Context, owner string, name string, option *RemoteForkOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFork(ctx, owner, name, option.GetOptions())
 	if err != nil {
 		var acc *github.AcceptedError
 		if !errors.As(err, &acc) {
-			return Spec{}, fmt.Errorf("fork a repository: %w", err)
+			return Repository{}, fmt.Errorf("fork a repository: %w", err)
 		}
 	}
-	return c.repoSpec(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteGetOption struct{}
 
-func (c *RemoteController) Get(ctx context.Context, owner string, name string, _ *RemoteGetOption) (Spec, error) {
+func (c *RemoteController) Get(ctx context.Context, owner string, name string, _ *RemoteGetOption) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
 	if err != nil {
-		return Spec{}, fmt.Errorf("get a repository: %w", err)
+		return Repository{}, fmt.Errorf("get a repository: %w", err)
 	}
-	return c.repoSpec(repo)
-}
-
-type RemoteSourceOption struct{}
-
-func (c *RemoteController) GetSource(ctx context.Context, owner string, name string, _ *RemoteSourceOption) (Spec, error) {
-	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
-	if err != nil {
-		return Spec{}, fmt.Errorf("get a repository: %w", err)
-	}
-	if source := repo.GetSource(); source != nil {
-		return c.repoSpec(source)
-	}
-	return c.repoSpec(repo)
-}
-
-type RemoteParentOption struct{}
-
-func (c *RemoteController) GetParent(ctx context.Context, owner string, name string, _ *RemoteParentOption) (Spec, error) {
-	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
-	if err != nil {
-		return Spec{}, fmt.Errorf("get a repository: %w", err)
-	}
-	if parent := repo.GetParent(); parent != nil {
-		return c.repoSpec(parent)
-	}
-	return c.repoSpec(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteDeleteOption struct{}

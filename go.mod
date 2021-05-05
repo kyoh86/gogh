@@ -10,6 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
+	github.com/Yamashou/gqlgenc v0.0.0-20210330020310-5eab2091f840
 	github.com/apex/log v1.9.0
 	github.com/aws/aws-sdk-go v1.38.17 // indirect
 	github.com/go-git/go-git/v5 v5.3.0
@@ -26,8 +27,10 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
+	github.com/mattn/go-runewidth v0.0.12
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/copystructure v1.1.2 // indirect
+	github.com/morikuni/aec v1.0.0
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/saracen/walker v0.1.2
 	github.com/sassoftware/go-rpmutils v0.2.0 // indirect
@@ -39,7 +42,7 @@ require (
 	golang.org/x/net v0.0.0-20210410081132-afb366fc7cd1 // indirect
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72 // indirect
+	golang.org/x/term v0.0.0-20210422114643-f5beecf764ed
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	golang.org/x/tools v0.1.1-0.20210302220138-2ac05c832e1a // indirect
 	google.golang.org/api v0.44.0 // indirect

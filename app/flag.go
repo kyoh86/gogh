@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v2/view"
 	"github.com/spf13/pflag"
 )
 
@@ -29,27 +29,27 @@ func (f ProjectFormat) Type() string {
 	return "string"
 }
 
-func (f ProjectFormat) Formatter() (gogh.Format, error) {
+func (f ProjectFormat) Formatter() (view.ProjectFormat, error) {
 	return formatter(string(f))
 }
 
-func formatter(v string) (gogh.Format, error) {
+func formatter(v string) (view.ProjectFormat, error) {
 	switch v {
 	case "", "rel-path":
-		return gogh.FormatRelPath, nil
+		return view.ProjectFormatRelPath, nil
 	case "rel-file-path":
-		return gogh.FormatRelFilePath, nil
+		return view.ProjectFormatRelFilePath, nil
 	case "full-file-path":
-		return gogh.FormatFullFilePath, nil
+		return view.ProjectFormatFullFilePath, nil
 	case "json":
-		return gogh.FormatJSON, nil
+		return view.ProjectFormatJSON, nil
 	case "url":
-		return gogh.FormatURL, nil
+		return view.ProjectFormatURL, nil
 	case "fields":
-		return gogh.FormatFields("\t"), nil
+		return view.ProjectFormatFields("\t"), nil
 	}
 	if strings.HasPrefix(v, "fields:") {
-		return gogh.FormatFields(v[len("fields:"):]), nil
+		return view.ProjectFormatFields(v[len("fields:"):]), nil
 	}
 	return nil, fmt.Errorf("invalid format: %q", v)
 }

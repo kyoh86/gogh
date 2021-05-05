@@ -36,7 +36,7 @@ var forkCommand = &cobra.Command{
 			return err
 		}
 		return local.SetRemoteSpecs(ctx, spec, map[string][]gogh.Spec{
-			git.DefaultRemoteName: {forked},
+			git.DefaultRemoteName: {forked.Spec},
 			"upstream":            {spec},
 		})
 	},

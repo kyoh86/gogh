@@ -55,7 +55,7 @@ var cloneCommand = &cobra.Command{
 					return err
 				}
 				for _, s := range founds {
-					specs = append(specs, s.String())
+					specs = append(specs, s.Spec.String())
 				}
 			}
 			if err := survey.AskOne(&survey.MultiSelect{
@@ -112,7 +112,7 @@ func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.Spe
 			return err
 		}
 		remote := gogh.NewRemoteController(adaptor)
-		parent, err := remote.GetParent(ctx, spec.Owner(), spec.Name(), nil)
+		repo, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil)
 		if err != nil {
 			return err
 		}
@@ -126,10 +126,10 @@ func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.Spe
 			l.WithField("error", err).Warn("failed to get repository")
 			return nil
 		}
-		if parent.String() != spec.String() {
+		if repo.Parent != nil && repo.Parent.String() != spec.String() {
 			if err := local.SetRemoteSpecs(ctx, spec, map[string][]gogh.Spec{
 				git.DefaultRemoteName: {spec},
-				"upstream":            {parent},
+				"upstream":            {*repo.Parent},
 			}); err != nil {
 				return err
 			}
