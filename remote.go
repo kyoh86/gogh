@@ -87,12 +87,70 @@ func (r RepositoryRelation) IsValid() bool {
 	return false
 }
 
+type RepositoryOrderField string
+
+const (
+	RepositoryOrderFieldCreatedAt  RepositoryOrderField = "CREATED_AT"
+	RepositoryOrderFieldUpdatedAt  RepositoryOrderField = "UPDATED_AT"
+	RepositoryOrderFieldPushedAt   RepositoryOrderField = "PUSHED_AT"
+	RepositoryOrderFieldName       RepositoryOrderField = "NAME"
+	RepositoryOrderFieldStargazers RepositoryOrderField = "STARGAZERS"
+)
+
+func AllRepositoryOrderField() []RepositoryOrderField {
+	return []RepositoryOrderField{
+		RepositoryOrderFieldCreatedAt,
+		RepositoryOrderFieldUpdatedAt,
+		RepositoryOrderFieldPushedAt,
+		RepositoryOrderFieldName,
+		RepositoryOrderFieldStargazers,
+	}
+}
+
+func (e RepositoryOrderField) IsValid() bool {
+	switch e {
+	case RepositoryOrderFieldCreatedAt, RepositoryOrderFieldUpdatedAt, RepositoryOrderFieldPushedAt, RepositoryOrderFieldName, RepositoryOrderFieldStargazers:
+		return true
+	}
+	return false
+}
+
+func (e RepositoryOrderField) String() string {
+	return string(e)
+}
+
+type OrderDirection string
+
+const (
+	OrderDirectionAsc  OrderDirection = "ASC"
+	OrderDirectionDesc OrderDirection = "DESC"
+)
+
+func AllOrderDirection() []OrderDirection {
+	return []OrderDirection{
+		OrderDirectionAsc,
+		OrderDirectionDesc,
+	}
+}
+
+func (e OrderDirection) IsValid() bool {
+	switch e {
+	case OrderDirectionAsc, OrderDirectionDesc:
+		return true
+	}
+	return false
+}
+
+func (e OrderDirection) String() string {
+	return string(e)
+}
+
 type RemoteListOption struct {
 	Private  *bool
 	Limit    *int
 	IsFork   *bool
-	Order    string
-	Sort     string
+	Order    OrderDirection
+	Sort     RepositoryOrderField
 	Relation []RepositoryRelation
 	// UNDONE:
 	// https://github.com/cli/cli/blob/5a2ec54685806a6576bdc185751afc09aba44408/pkg/cmd/repo/list/http.go#L60-L62

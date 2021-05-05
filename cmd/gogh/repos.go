@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/app"
@@ -25,6 +27,8 @@ var reposFlags struct {
 	public   bool
 	fork     bool
 	notFork  bool
+	sort     string
+	order    string
 }
 
 var reposCommand = &cobra.Command{
@@ -65,13 +69,6 @@ var reposCommand = &cobra.Command{
 			}
 			listOption.Relation = append(listOption.Relation, rdef)
 		}
-		var options []repotab.Option
-		if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
-			options = append(options, repotab.Width(width))
-		}
-		if term.IsTerminal(int(os.Stdout.Fd())) || reposFlags.color == "always" {
-			options = append(options, repotab.Styled())
-		}
 		var format view.RepositoryPrinter
 		switch reposFlags.format {
 		case "spec":
@@ -81,11 +78,32 @@ var reposCommand = &cobra.Command{
 		case "json":
 			format = view.NewRepositoryJSONPrinter(os.Stdout)
 		case "table":
+			var options []repotab.Option
+			if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
+				options = append(options, repotab.Width(width))
+			}
+			if term.IsTerminal(int(os.Stdout.Fd())) || reposFlags.color == "always" {
+				options = append(options, repotab.Styled())
+			}
 			format = repotab.NewPrinter(os.Stdout, options...)
 		default:
-			return fmt.Errorf("invalid format %q; it can accept %q, %q, %q or %q", reposFlags.format, "spec", "url", "json", "table")
+			return fmt.Errorf("invalid format %q; %s", reposFlags.format, repoFormatAccept)
 		}
 		defer format.Close()
+		if reposFlags.sort != "" {
+			sort := gogh.RepositoryOrderField(reposFlags.sort)
+			if !sort.IsValid() {
+				return fmt.Errorf("invalid sort %q; %s", reposFlags.sort, repoSortAccept)
+			}
+			listOption.Sort = sort
+		}
+		if reposFlags.order != "" {
+			order := gogh.OrderDirection(reposFlags.order)
+			if !order.IsValid() {
+				return fmt.Errorf("invalid order %q; %s", reposFlags.order, repoOrderAccept)
+			}
+			listOption.Order = order
+		}
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
 		eg, ctx := errgroup.WithContext(ctx)
@@ -122,7 +140,29 @@ var reposCommand = &cobra.Command{
 	},
 }
 
+var (
+	repoFormatAccept string
+	repoSortAccept   string
+	repoOrderAccept  string
+)
+
 func init() {
+	repoFormatAccept = fmt.Sprintf("it can accept %q, %q, %q or %q", "spec", "url", "json", "table")
+	{
+		var valids []string
+		for _, v := range gogh.AllRepositoryOrderField() {
+			valids = append(valids, strconv.Quote(v.String()))
+		}
+		repoSortAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
+	}
+	{
+		var valids []string
+		for _, v := range gogh.AllOrderDirection() {
+			valids = append(valids, strconv.Quote(v.String()))
+		}
+		repoOrderAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
+	}
+
 	reposCommand.Flags().IntVarP(&reposFlags.limit, "limit", "", 30, "Max number of repositories to list")
 
 	reposCommand.Flags().BoolVarP(&reposFlags.public, "public", "", false, "Show only public repositories")
@@ -131,11 +171,13 @@ func init() {
 	reposCommand.Flags().BoolVarP(&reposFlags.fork, "fork", "", false, "Show only forks")
 	reposCommand.Flags().BoolVarP(&reposFlags.notFork, "no-fork", "", false, "Omit forks")
 
-	reposCommand.Flags().StringVarP(&reposFlags.format, "format", "", "table", "The formatting style for each repository")
+	reposCommand.Flags().StringVarP(&reposFlags.format, "format", "", "table", "The formatting style for each repository; "+repoFormatAccept)
 	reposCommand.Flags().StringVarP(&reposFlags.color, "color", "", "auto", "Colorize the output; It can accept 'auto', 'always' or 'never'")
 
 	reposCommand.Flags().StringSliceVarP(&reposFlags.relation, "relation", "", []string{"owner", "organizationMember"}, "The relation of user to each repository; It can accept `owner`, `organizationMember` or `collaborator`")
 
-	// TODO: order
+	reposCommand.Flags().StringVarP(&reposFlags.sort, "sort", "", "", "Property by which repository be ordered; "+repoSortAccept)
+	reposCommand.Flags().StringVarP(&reposFlags.order, "order", "", "", "Directions in which to order a list of items when provided an `sort` flag; "+repoOrderAccept)
+
 	facadeCommand.AddCommand(reposCommand)
 }
