@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v2/internal/githubv4"
 	"github.com/wacul/ptr"
 )
 
@@ -70,16 +71,14 @@ const (
 	RepositoryRelationCollaborator       = RepositoryRelation("collaborator")
 )
 
-func AllRepositoryRelation() []RepositoryRelation {
-	return []RepositoryRelation{
-		RepositoryRelationOwner,
-		RepositoryRelationOrganizationMember,
-		RepositoryRelationCollaborator,
-	}
+var AllRepositoryRelation = []RepositoryRelation{
+	RepositoryRelationOwner,
+	RepositoryRelationOrganizationMember,
+	RepositoryRelationCollaborator,
 }
 
 func (r RepositoryRelation) IsValid() bool {
-	for _, def := range AllRepositoryRelation() {
+	for _, def := range AllRepositoryRelation {
 		if def == r {
 			return true
 		}
@@ -87,63 +86,13 @@ func (r RepositoryRelation) IsValid() bool {
 	return false
 }
 
-type RepositoryOrderField string
+type RepositoryOrderField = githubv4.RepositoryOrderField
 
-const (
-	RepositoryOrderFieldCreatedAt  RepositoryOrderField = "CREATED_AT"
-	RepositoryOrderFieldUpdatedAt  RepositoryOrderField = "UPDATED_AT"
-	RepositoryOrderFieldPushedAt   RepositoryOrderField = "PUSHED_AT"
-	RepositoryOrderFieldName       RepositoryOrderField = "NAME"
-	RepositoryOrderFieldStargazers RepositoryOrderField = "STARGAZERS"
-)
+var AllRepositoryOrderField = githubv4.AllRepositoryOrderField
 
-func AllRepositoryOrderField() []RepositoryOrderField {
-	return []RepositoryOrderField{
-		RepositoryOrderFieldCreatedAt,
-		RepositoryOrderFieldUpdatedAt,
-		RepositoryOrderFieldPushedAt,
-		RepositoryOrderFieldName,
-		RepositoryOrderFieldStargazers,
-	}
-}
+type OrderDirection = githubv4.OrderDirection
 
-func (e RepositoryOrderField) IsValid() bool {
-	switch e {
-	case RepositoryOrderFieldCreatedAt, RepositoryOrderFieldUpdatedAt, RepositoryOrderFieldPushedAt, RepositoryOrderFieldName, RepositoryOrderFieldStargazers:
-		return true
-	}
-	return false
-}
-
-func (e RepositoryOrderField) String() string {
-	return string(e)
-}
-
-type OrderDirection string
-
-const (
-	OrderDirectionAsc  OrderDirection = "ASC"
-	OrderDirectionDesc OrderDirection = "DESC"
-)
-
-func AllOrderDirection() []OrderDirection {
-	return []OrderDirection{
-		OrderDirectionAsc,
-		OrderDirectionDesc,
-	}
-}
-
-func (e OrderDirection) IsValid() bool {
-	switch e {
-	case OrderDirectionAsc, OrderDirectionDesc:
-		return true
-	}
-	return false
-}
-
-func (e OrderDirection) String() string {
-	return string(e)
-}
+var AllOrderDirection = githubv4.AllOrderDirection
 
 type RemoteListOption struct {
 	Private  *bool

@@ -150,14 +150,14 @@ func init() {
 	repoFormatAccept = fmt.Sprintf("it can accept %q, %q, %q or %q", "spec", "url", "json", "table")
 	{
 		var valids []string
-		for _, v := range gogh.AllRepositoryOrderField() {
+		for _, v := range gogh.AllRepositoryOrderField {
 			valids = append(valids, strconv.Quote(v.String()))
 		}
 		repoSortAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
 	}
 	{
 		var valids []string
-		for _, v := range gogh.AllOrderDirection() {
+		for _, v := range gogh.AllOrderDirection {
 			valids = append(valids, strconv.Quote(v.String()))
 		}
 		repoOrderAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
