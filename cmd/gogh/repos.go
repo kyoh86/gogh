@@ -62,12 +62,16 @@ var reposCommand = &cobra.Command{
 		if reposFlags.notFork {
 			listOption.IsFork = &reposFlags.fork // &false
 		}
+	LOOP_CONVERT_RELATION:
 		for _, r := range reposFlags.relation {
 			rdef := gogh.RepositoryRelation(r)
-			if !rdef.IsValid() {
-				return errors.New("--relation can accept `owner`, `organizationMember` or `collaborator`")
+			for _, def := range gogh.AllRepositoryRelation {
+				if def == rdef {
+					listOption.Relation = append(listOption.Relation, rdef)
+					continue LOOP_CONVERT_RELATION
+				}
 			}
-			listOption.Relation = append(listOption.Relation, rdef)
+			return fmt.Errorf("invalid relation %q; %s", r, repoRelationAccept)
 		}
 		var format view.RepositoryPrinter
 		switch reposFlags.format {
@@ -141,9 +145,10 @@ var reposCommand = &cobra.Command{
 }
 
 var (
-	repoFormatAccept string
-	repoSortAccept   string
-	repoOrderAccept  string
+	repoFormatAccept   string
+	repoSortAccept     string
+	repoOrderAccept    string
+	repoRelationAccept string
 )
 
 func init() {
@@ -162,7 +167,13 @@ func init() {
 		}
 		repoOrderAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
 	}
-
+	{
+		var valids []string
+		for _, v := range gogh.AllRepositoryRelation {
+			valids = append(valids, strconv.Quote(string(v)))
+		}
+		repoRelationAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
+	}
 	reposCommand.Flags().IntVarP(&reposFlags.limit, "limit", "", 30, "Max number of repositories to list. 0 means unlimited")
 
 	reposCommand.Flags().BoolVarP(&reposFlags.public, "public", "", false, "Show only public repositories")
@@ -174,7 +185,7 @@ func init() {
 	reposCommand.Flags().StringVarP(&reposFlags.format, "format", "", "table", "The formatting style for each repository; "+repoFormatAccept)
 	reposCommand.Flags().StringVarP(&reposFlags.color, "color", "", "auto", "Colorize the output; It can accept 'auto', 'always' or 'never'")
 
-	reposCommand.Flags().StringSliceVarP(&reposFlags.relation, "relation", "", []string{"owner", "organizationMember"}, "The relation of user to each repository; It can accept `owner`, `organizationMember` or `collaborator`")
+	reposCommand.Flags().StringSliceVarP(&reposFlags.relation, "relation", "", []string{"owner", "organizationMember"}, "The relation of user to each repository; "+repoRelationAccept)
 
 	reposCommand.Flags().StringVarP(&reposFlags.sort, "sort", "", "", "Property by which repository be ordered; "+repoSortAccept)
 	reposCommand.Flags().StringVarP(&reposFlags.order, "order", "", "", "Directions in which to order a list of items when provided an `sort` flag; "+repoOrderAccept)

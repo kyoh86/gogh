@@ -77,15 +77,6 @@ var AllRepositoryRelation = []RepositoryRelation{
 	RepositoryRelationCollaborator,
 }
 
-func (r RepositoryRelation) IsValid() bool {
-	for _, def := range AllRepositoryRelation {
-		if def == r {
-			return true
-		}
-	}
-	return false
-}
-
 type RepositoryOrderField = githubv4.RepositoryOrderField
 
 var AllRepositoryOrderField = githubv4.AllRepositoryOrderField
