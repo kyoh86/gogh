@@ -20,8 +20,6 @@ func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
 	return mock, ctrl.Finish
 }
 
-const DefaultQuery = "user:@me fork:true sort:updated"
-
 func TestRemoteController_Get(t *testing.T) {
 	ctx := context.Background()
 

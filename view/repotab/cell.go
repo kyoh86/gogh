@@ -30,7 +30,7 @@ var DescriptionCell = CellBuildFunc(func(r gogh.Repository) (content string, sty
 })
 
 var EmojiAttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
-	// FIXME: this breaks terminal
+	// UNDONE: this breaks terminal
 	contents := []string{""}
 	if r.Private {
 		contents[0] = "\U0001F512\uFE0F "
