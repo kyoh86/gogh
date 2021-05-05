@@ -17,7 +17,6 @@ import (
 )
 
 var reposFlags struct {
-	query    string
 	format   string
 	color    string
 	relation []string
@@ -38,7 +37,6 @@ var reposCommand = &cobra.Command{
 			return err
 		}
 		listOption := gogh.RemoteListOption{
-			Query: reposFlags.query,
 			Limit: &reposFlags.limit,
 		}
 		if reposFlags.private && reposFlags.public {
@@ -132,8 +130,6 @@ func init() {
 
 	reposCommand.Flags().BoolVarP(&reposFlags.fork, "fork", "", false, "Show only forks")
 	reposCommand.Flags().BoolVarP(&reposFlags.notFork, "no-fork", "", false, "Omit forks")
-
-	reposCommand.Flags().StringVarP(&reposFlags.query, "query", "", "", "Query for selecting projects")
 
 	reposCommand.Flags().StringVarP(&reposFlags.format, "format", "", "table", "The formatting style for each repository")
 	reposCommand.Flags().StringVarP(&reposFlags.color, "color", "", "auto", "Colorize the output; It can accept 'auto', 'always' or 'never'")

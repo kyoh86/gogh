@@ -91,7 +91,6 @@ type RemoteListOption struct {
 	Private  *bool
 	Limit    *int
 	IsFork   *bool
-	Query    string
 	Order    string
 	Sort     string
 	Relation []RepositoryRelation
