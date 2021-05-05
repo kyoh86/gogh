@@ -96,7 +96,7 @@ var DefaultColumns = []Column{{
 }, {
 	Align:       AlignRight,
 	Priority:    2,
-	CellBuilder: PushedAtCell,
+	CellBuilder: UpdatedAtCell,
 }}
 
 func NewPrinter(w io.Writer, option ...Option) *Printer {

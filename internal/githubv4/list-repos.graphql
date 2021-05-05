@@ -34,7 +34,7 @@ fragment RepositoryFragment on Repository {
   isFork
   isPrivate
   isTemplate
-  pushedAt
+  updatedAt
   parent {
     ...ParentRepositoryFragment
   }

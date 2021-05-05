@@ -4,19 +4,25 @@ import (
 	"bytes"
 	"io"
 	"testing"
+	"time"
 
 	"github.com/kyoh86/gogh/v2"
 	testtarget "github.com/kyoh86/gogh/v2/view"
 )
 
 func TestRepositoryPrinters(t *testing.T) {
+	uat, err := time.Parse(time.RFC3339, "2021-05-01T01:00:00Z")
+	if err != nil {
+		t.Fatal(err)
+	}
 	spec, err := gogh.NewSpec("github.com", "kyoh86", "gogh")
 	if err != nil {
 		t.Fatal(err)
 	}
 	repo := gogh.Repository{
-		Spec: spec,
-		URL:  "https://github.com/kyoh86/gogh",
+		UpdatedAt: uat,
+		Spec:      spec,
+		URL:       "https://github.com/kyoh86/gogh",
 	}
 	for _, testcase := range []struct {
 		title   string
@@ -36,7 +42,7 @@ func TestRepositoryPrinters(t *testing.T) {
 		{
 			title:   "json",
 			printer: testtarget.NewRepositoryJSONPrinter,
-			want:    `{"spec":{"host":"github.com","owner":"kyoh86","name":"gogh"},"url":"https://github.com/kyoh86/gogh"}` + "\n",
+			want:    `{"updatedAt":"2021-05-01T01:00:00Z","spec":{"host":"github.com","owner":"kyoh86","name":"gogh"},"url":"https://github.com/kyoh86/gogh"}` + "\n",
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {

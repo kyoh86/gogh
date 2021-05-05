@@ -211,7 +211,7 @@ type RepositoryFragment struct {
 	IsFork          bool                      "json:\"isFork\" graphql:\"isFork\""
 	IsPrivate       bool                      "json:\"isPrivate\" graphql:\"isPrivate\""
 	IsTemplate      bool                      "json:\"isTemplate\" graphql:\"isTemplate\""
-	PushedAt        *string                   "json:\"pushedAt\" graphql:\"pushedAt\""
+	UpdatedAt       string                    "json:\"updatedAt\" graphql:\"updatedAt\""
 	Parent          *ParentRepositoryFragment "json:\"parent\" graphql:\"parent\""
 }
 type ListRepos struct {
@@ -241,6 +241,10 @@ const ListReposDocument = `query ListRepos ($first: Int = 30, $after: String, $i
 		}
 	}
 }
+fragment PageInfoFragment on PageInfo {
+	endCursor
+	hasNextPage
+}
 fragment RepositoryFragment on Repository {
 	url
 	homepageUrl
@@ -257,7 +261,7 @@ fragment RepositoryFragment on Repository {
 	isFork
 	isPrivate
 	isTemplate
-	pushedAt
+	updatedAt
 	parent {
 		... ParentRepositoryFragment
 	}
@@ -273,10 +277,6 @@ fragment ParentRepositoryFragment on Repository {
 	owner {
 		... OwnerFragment
 	}
-}
-fragment PageInfoFragment on PageInfo {
-	endCursor
-	hasNextPage
 }
 `
 

@@ -54,21 +54,13 @@ func ingestRepository(repo *github.Repository) (Repository, error) {
 		Description: repo.GetDescription(),
 		Homepage:    repo.GetHomepage(),
 		Language:    repo.GetLanguage(),
-		PushedAt:    ptrTime(repo.GetPushedAt().Time),
+		UpdatedAt:   repo.GetUpdatedAt().Time,
 		Archived:    repo.GetArchived(),
 		Private:     repo.GetPrivate(),
 		IsTemplate:  repo.GetIsTemplate(),
 		Fork:        repo.GetFork(),
 		Parent:      parentSpec,
 	}, nil
-}
-
-func ptrTime(t time.Time) *time.Time {
-	var def time.Time
-	if t == def {
-		return nil
-	}
-	return &t
 }
 
 const (
@@ -117,6 +109,10 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	owner := github.RepositoryAffiliationOwner
 	if o == nil {
 		return &github.RepositoryListOptions{
+			OrderBy: &github.RepositoryOrder{
+				Field:     github.RepositoryOrderFieldUpdatedAt,
+				Direction: githubv4.OrderDirectionDesc,
+			},
 			Limit:             ptr.Int64(RepositoryListMaxLimitPerPage),
 			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
 		}
@@ -125,7 +121,12 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 		IsFork: o.IsFork,
 	}
 
-	if o.Sort != "" {
+	if o.Sort == "" {
+		opt.OrderBy = &github.RepositoryOrder{
+			Field:     github.RepositoryOrderFieldUpdatedAt,
+			Direction: githubv4.OrderDirectionDesc,
+		}
+	} else {
 		opt.OrderBy = &github.RepositoryOrder{
 			Field: o.Sort,
 		}
@@ -216,13 +217,11 @@ func ingestRepositoryFragment(host string, repo *github.RepositoryFragment) (ret
 	if repo.PrimaryLanguage != nil {
 		ret.Language = repo.PrimaryLanguage.Name
 	}
-	if repo.PushedAt != nil {
-		pat, err := time.Parse(time.RFC3339, *repo.PushedAt)
-		if err != nil {
-			return ret, fmt.Errorf("parse pushedAt: %w", err)
-		}
-		ret.PushedAt = &pat
+	uat, err := time.Parse(time.RFC3339, repo.UpdatedAt)
+	if err != nil {
+		return ret, fmt.Errorf("parse updatedAt: %w", err)
 	}
+	ret.UpdatedAt = uat
 	if repo.Parent != nil {
 		parent, err := NewSpec(host, repo.Parent.Owner.Login, repo.Parent.Name)
 		if err != nil {
