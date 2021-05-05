@@ -3,6 +3,7 @@ package gogh_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -74,7 +75,10 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		{
 			title: "nil",
 			base:  nil,
-			want:  nil,
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+			},
 		},
 		{
 			title: "empty",
@@ -189,6 +193,11 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 func TestRemoteController_List(t *testing.T) {
 	ctx := context.Background()
 
+	owner := github.RepositoryAffiliationOwner
+	emptyOption := &github.RepositoryListOptions{
+		Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
+		OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+	}
 	host := testtarget.DefaultHost
 	user := "kyoh86"
 	org := "kyoh86-tryouts"
@@ -197,7 +206,7 @@ func TestRemoteController_List(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		internalError := errors.New("test error")
-		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(testtarget.RepositoryListMaxLimitPerPage)}}).Return(nil, github.PageInfoFragment{}, internalError)
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{emptyOption}).Return(nil, github.PageInfoFragment{}, internalError)
 
 		if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
@@ -214,7 +223,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(testtarget.RepositoryListMaxLimitPerPage)}}).DoAndReturn(func(_ context.Context, _ *github.RepositoryListOptions) ([]*github.RepositoryFragment, github.PageInfoFragment, error) {
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{emptyOption}).DoAndReturn(func(_ context.Context, _ *github.RepositoryListOptions) ([]*github.RepositoryFragment, github.PageInfoFragment, error) {
 			<-time.After(sleep)
 			return []*github.RepositoryFragment{{
 				Owner: github.OwnerFragment{Login: org},
@@ -234,7 +243,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(testtarget.RepositoryListMaxLimitPerPage)}}).Return([]*github.RepositoryFragment{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{emptyOption}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: "."}, Name: ".",
 		}}, github.PageInfoFragment{}, nil)
 
@@ -247,7 +256,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(testtarget.RepositoryListMaxLimitPerPage)}}).Return([]*github.RepositoryFragment{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{emptyOption}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-1",
 		}, {
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-2",
@@ -302,20 +311,21 @@ func TestRemoteController_List(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
-		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{Limit: ptr.Int64(testtarget.RepositoryListMaxLimitPerPage)}}).Return([]*github.RepositoryFragment{{
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{emptyOption}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-1",
 		}, {
 			Owner: github.OwnerFragment{Login: user}, Name: "user-repo-2",
 		}}, github.PageInfoFragment{HasNextPage: true, EndCursor: ptr.String("next-page")}, nil)
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
-			After: ptr.String("next-page"),
-			Limit: ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
+			After:             ptr.String("next-page"),
+			Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
+			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
 		}}).Return([]*github.RepositoryFragment{{
 			Owner: github.OwnerFragment{Login: org}, Name: "org-repo-1",
 		}, {
 			Owner: github.OwnerFragment{Login: org}, Name: "org-repo-2",
 		}}, github.PageInfoFragment{}, nil)
-		specs, err := remote.List(ctx, nil)
+		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: ptr.Int(0)})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -356,11 +366,47 @@ func TestRemoteController_List(t *testing.T) {
 		}
 	})
 
-	owner := github.RepositoryAffiliationOwner
-	emptyOption := &github.RepositoryListOptions{
-		OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-		Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-	}
+	t.Run("Paging Over Max Per Page", func(t *testing.T) {
+		mock, teardown := MockAdaptor(t)
+		defer teardown()
+		remote := testtarget.NewRemoteController(mock)
+
+		const (
+			perPage = testtarget.RepositoryListMaxLimitPerPage
+			limit   = perPage + 2
+		)
+		var responses []*github.RepositoryFragment
+		for i := 0; i < limit+1; i++ { // getting limit +1 items but ignore it.
+			responses = append(responses, &github.RepositoryFragment{
+				Owner: github.OwnerFragment{Login: user},
+				Name:  fmt.Sprintf("user-repo-%03d", i+1),
+			})
+		}
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
+			Limit:             ptr.Int64(perPage),
+			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+		}}).Return(responses[0:perPage], github.PageInfoFragment{HasNextPage: true, EndCursor: ptr.String("next-page")}, nil)
+		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
+			After:             ptr.String("next-page"),
+			Limit:             ptr.Int64(perPage),
+			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+		}}).Return(responses[perPage:], github.PageInfoFragment{}, nil)
+		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: ptr.Int(limit)})
+		if err != nil {
+			t.Fatalf("failed to listup: %s", err)
+		}
+		if len(specs) != limit {
+			t.Fatalf("expect some specs, but %d is gotten", len(specs))
+		}
+		for i := 0; i < limit; i++ {
+			got := specs[i]
+			want := fmt.Sprintf("user-repo-%03d", i+1)
+			if want != got.Name() {
+				t.Errorf("expect name %q but %q gotten", want, got.Name())
+			}
+		}
+	})
+
 	t.Run("EmptyOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()

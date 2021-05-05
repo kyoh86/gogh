@@ -106,8 +106,12 @@ type RemoteListOption struct {
 }
 
 func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
+	owner := github.RepositoryAffiliationOwner
 	if o == nil {
-		return nil
+		return &github.RepositoryListOptions{
+			Limit:             ptr.Int64(RepositoryListMaxLimitPerPage),
+			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+		}
 	}
 	opt := &github.RepositoryListOptions{
 		IsFork: o.IsFork,
@@ -134,7 +138,6 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 		opt.Limit = &limit
 	}
 
-	owner := github.RepositoryAffiliationOwner
 	if len(o.Relation) == 0 {
 		opt.OwnerAffiliations = []*github.RepositoryAffiliation{&owner}
 	} else {
@@ -250,9 +253,6 @@ func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOpti
 		var count int64
 		var limit int64
 		switch {
-		case opt == nil:
-			limit = 0
-			opt = &github.RepositoryListOptions{Limit: ptr.Int64(RepositoryListMaxLimitPerPage)}
 		case opt.Limit == nil || *opt.Limit == 0:
 			limit = 0
 			opt.Limit = ptr.Int64(RepositoryListMaxLimitPerPage)
