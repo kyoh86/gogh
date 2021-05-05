@@ -117,8 +117,8 @@ func TestIngestRepository(t *testing.T) {
 }
 
 func TestIngestRepositoryFragment(t *testing.T) {
+	tim, _ := time.Parse("2006-01-02", "2021-01-01")
 	t.Run("valid repository", func(t *testing.T) {
-		tim, _ := time.Parse("2006-01-02", "2021-01-01")
 		want := Repository{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
@@ -178,6 +178,7 @@ func TestIngestRepositoryFragment(t *testing.T) {
 			Owner:      githubv4.OwnerFragment{Login: ".."},
 			Name:       "gogh",
 			URL:        "https://github.com/kyoh86/gogh",
+			UpdatedAt:  tim.Format(time.RFC3339),
 			IsFork:     false,
 			IsArchived: true,
 			IsPrivate:  false,
@@ -190,9 +191,10 @@ func TestIngestRepositoryFragment(t *testing.T) {
 
 	t.Run("invalid parent", func(t *testing.T) {
 		_, err := ingestRepositoryFragment("github.com", &github.RepositoryFragment{
-			Owner: githubv4.OwnerFragment{Login: "kyoh86"},
-			Name:  "gogh",
-			URL:   "https://github.com/kyoh86/gogh",
+			Owner:     githubv4.OwnerFragment{Login: "kyoh86"},
+			Name:      "gogh",
+			URL:       "https://github.com/kyoh86/gogh",
+			UpdatedAt: tim.Format(time.RFC3339),
 			Parent: &github.ParentRepositoryFragment{
 				Owner: githubv4.OwnerFragment{Login: ".."},
 				Name:  "..",
