@@ -163,7 +163,7 @@ func init() {
 		repoOrderAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
 	}
 
-	reposCommand.Flags().IntVarP(&reposFlags.limit, "limit", "", 30, "Max number of repositories to list")
+	reposCommand.Flags().IntVarP(&reposFlags.limit, "limit", "", 30, "Max number of repositories to list. 0 means unlimited")
 
 	reposCommand.Flags().BoolVarP(&reposFlags.public, "public", "", false, "Show only public repositories")
 	reposCommand.Flags().BoolVarP(&reposFlags.private, "private", "", false, "Show only private repositories")
