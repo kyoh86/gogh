@@ -120,7 +120,7 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 
 	if o.Sort != "" {
 		opt.OrderBy = &github.RepositoryOrder{
-			Field: github.RepositoryOrderField(o.Sort),
+			Field: o.Sort,
 		}
 		if o.Order == "" {
 			if opt.OrderBy.Field == github.RepositoryOrderFieldName {
@@ -129,7 +129,7 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 				opt.OrderBy.Direction = github.OrderDirectionDesc
 			}
 		} else {
-			opt.OrderBy.Direction = github.OrderDirection(o.Order)
+			opt.OrderBy.Direction = o.Order
 		}
 	}
 	if o.Limit == nil {
