@@ -24,7 +24,7 @@ func NewRemoteController(adaptor github.Adaptor) *RemoteController {
 	}
 }
 
-func (c *RemoteController) parseSpec(repo *github.Repository) (Spec, error) {
+func parseSpec(repo *github.Repository) (Spec, error) {
 	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
 	u, err := url.Parse(rawURL)
 	if err != nil {
@@ -35,16 +35,16 @@ func (c *RemoteController) parseSpec(repo *github.Repository) (Spec, error) {
 	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
-func (c *RemoteController) ingestRepository(repo *github.Repository) (Repository, error) {
+func ingestRepository(repo *github.Repository) (Repository, error) {
 	var parentSpec *Spec
 	if parent := repo.GetParent(); parent != nil {
-		spec, err := c.parseSpec(parent)
+		spec, err := parseSpec(parent)
 		if err != nil {
 			return Repository{}, fmt.Errorf("parse parent repository as local spec: %w", err)
 		}
 		parentSpec = &spec
 	}
-	spec, err := c.parseSpec(repo)
+	spec, err := parseSpec(repo)
 	if err != nil {
 		return Repository{}, fmt.Errorf("parse repository as local spec: %w", err)
 	}
@@ -190,13 +190,13 @@ func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (
 	}
 }
 
-func (c *RemoteController) ingestRepo(repo *github.RepositoryFragment) (ret Repository, _ error) {
+func ingestRepositoryFragment(host string, repo *github.RepositoryFragment) (ret Repository, _ error) {
 	ret.URL = repo.URL
 	ret.IsTemplate = repo.IsTemplate
 	ret.Archived = repo.IsArchived
 	ret.Private = repo.IsPrivate
 	ret.Fork = repo.IsFork
-	spec, err := NewSpec(c.adaptor.GetHost(), repo.Owner.Login, repo.Name)
+	spec, err := NewSpec(host, repo.Owner.Login, repo.Name)
 	if err != nil {
 		return Repository{}, err
 	}
@@ -218,7 +218,7 @@ func (c *RemoteController) ingestRepo(repo *github.RepositoryFragment) (ret Repo
 		ret.PushedAt = pat
 	}
 	if repo.Parent != nil {
-		parent, err := NewSpec(c.adaptor.GetHost(), repo.Parent.Owner.Login, repo.Parent.Name)
+		parent, err := NewSpec(host, repo.Parent.Owner.Login, repo.Parent.Name)
 		if err != nil {
 			return Repository{}, err
 		}
@@ -234,7 +234,7 @@ func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, 
 		if limit > 0 && limit <= *count {
 			return errOverLimit
 		}
-		spec, err := c.ingestRepo(repo)
+		spec, err := ingestRepositoryFragment(c.adaptor.GetHost(), repo)
 		if err != nil {
 			return err
 		}
@@ -349,7 +349,7 @@ func (c *RemoteController) Create(ctx context.Context, name string, option *Remo
 	if err != nil {
 		return Repository{}, fmt.Errorf("create a repository: %w", err)
 	}
-	return c.ingestRepository(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteCreateFromTemplateOption struct {
@@ -375,7 +375,7 @@ func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner
 	if err != nil {
 		return Repository{}, fmt.Errorf("create a repository from template: %w", err)
 	}
-	return c.ingestRepository(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteForkOption struct {
@@ -400,7 +400,7 @@ func (c *RemoteController) Fork(ctx context.Context, owner string, name string, 
 			return Repository{}, fmt.Errorf("fork a repository: %w", err)
 		}
 	}
-	return c.ingestRepository(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteGetOption struct{}
@@ -410,7 +410,7 @@ func (c *RemoteController) Get(ctx context.Context, owner string, name string, _
 	if err != nil {
 		return Repository{}, fmt.Errorf("get a repository: %w", err)
 	}
-	return c.ingestRepository(repo)
+	return ingestRepository(repo)
 }
 
 type RemoteDeleteOption struct{}

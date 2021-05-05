@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/internal/github_mock"
@@ -57,6 +58,132 @@ func TestRemoteController_Get(t *testing.T) {
 			t.Errorf("expect name %q but %q gotten", "gogh", actual.Name())
 		}
 	})
+}
+
+func TestRemoteListOption_GetOptions(t *testing.T) {
+	private := github.RepositoryPrivacyPrivate
+	public := github.RepositoryPrivacyPublic
+	owner := github.RepositoryAffiliationOwner
+	member := github.RepositoryAffiliationOrganizationMember
+	collabo := github.RepositoryAffiliationCollaborator
+	for _, testcase := range []struct {
+		title string
+		base  *testtarget.RemoteListOption
+		want  *github.RepositoryListOptions
+	}{
+		{
+			title: "nil",
+			base:  nil,
+			want:  nil,
+		},
+		{
+			title: "empty",
+			base:  &testtarget.RemoteListOption{},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+			},
+		},
+		{
+			title: "private",
+			base:  &testtarget.RemoteListOption{Private: ptr.Bool(true)},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				Privacy:           &private,
+			},
+		},
+		{
+			title: "public",
+			base:  &testtarget.RemoteListOption{Private: ptr.Bool(false)},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				Privacy:           &public,
+			},
+		},
+		{
+			title: "limit",
+			base:  &testtarget.RemoteListOption{Limit: ptr.Int(1)},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(1),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+			},
+		},
+		{
+			title: "relations",
+			base: &testtarget.RemoteListOption{Relation: []testtarget.RepositoryRelation{
+				testtarget.RepositoryRelationOwner,
+				testtarget.RepositoryRelationOrganizationMember,
+				testtarget.RepositoryRelationCollaborator,
+			}},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner, &member, &collabo},
+			},
+		},
+		{
+			title: "fork",
+			base: &testtarget.RemoteListOption{
+				IsFork: ptr.Bool(true),
+			},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				IsFork:            ptr.Bool(true),
+			},
+		},
+		{
+			title: "sort by name",
+			base: &testtarget.RemoteListOption{
+				Sort: github.RepositoryOrderFieldName,
+			},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				OrderBy: &github.RepositoryOrder{
+					Field:     github.RepositoryOrderFieldName,
+					Direction: github.OrderDirectionAsc,
+				},
+			},
+		},
+		{
+			title: "sort by stargazers",
+			base: &testtarget.RemoteListOption{
+				Sort: github.RepositoryOrderFieldStargazers,
+			},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				OrderBy: &github.RepositoryOrder{
+					Field:     github.RepositoryOrderFieldStargazers,
+					Direction: github.OrderDirectionDesc,
+				},
+			},
+		},
+		{
+			title: "sort by stargazers ascending",
+			base: &testtarget.RemoteListOption{
+				Sort:  github.RepositoryOrderFieldStargazers,
+				Order: github.OrderDirectionAsc,
+			},
+			want: &github.RepositoryListOptions{
+				Limit:             ptr.Int64(100),
+				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				OrderBy: &github.RepositoryOrder{
+					Field:     github.RepositoryOrderFieldStargazers,
+					Direction: github.OrderDirectionAsc,
+				},
+			},
+		},
+	} {
+		t.Run(testcase.title, func(t *testing.T) {
+			got := testcase.base.GetOptions()
+			if diff := cmp.Diff(testcase.want, got); diff != "" {
+				t.Errorf("result mismatched\n-want, +got:\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestRemoteController_List(t *testing.T) {
