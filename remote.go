@@ -295,7 +295,7 @@ type RemoteCreateOption struct {
 	Organization        string
 	Description         string
 	Homepage            string
-	Visibility          string
+	Private             bool
 	LicenseTemplate     string
 	GitignoreTemplate   string
 	TeamID              int64
@@ -319,7 +319,7 @@ func (o *RemoteCreateOption) buildRepository(name string) *github.Repository {
 		Name:                stringPtr(name),
 		Description:         stringPtr(o.Description),
 		Homepage:            stringPtr(o.Homepage),
-		Visibility:          stringPtr(o.Visibility),
+		Private:             boolPtr(o.Private),
 		HasIssues:           falsePtr(o.DisableIssues),
 		HasProjects:         falsePtr(o.DisableProjects),
 		HasWiki:             falsePtr(o.DisableWiki),

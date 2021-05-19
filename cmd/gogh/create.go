@@ -13,6 +13,7 @@ import (
 
 var createFlags struct {
 	template string
+	private  bool
 	dryrun   bool
 }
 
@@ -68,9 +69,12 @@ var createCommand = &cobra.Command{
 		}
 
 		if createFlags.template == "" {
-			var ropt *gogh.RemoteCreateOption
+			ropt := &gogh.RemoteCreateOption{}
 			if server.User() != spec.Owner() {
-				ropt = &gogh.RemoteCreateOption{Organization: spec.Owner()}
+				ropt.Organization = spec.Owner()
+			}
+			if createFlags.private {
+				ropt.Private = true
 			}
 			_, err = remote.Create(ctx, spec.Name(), ropt)
 			return err
@@ -80,9 +84,12 @@ var createCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		var ropt *gogh.RemoteCreateFromTemplateOption
+		ropt := &gogh.RemoteCreateFromTemplateOption{}
 		if server.User() != spec.Owner() {
-			ropt = &gogh.RemoteCreateFromTemplateOption{Owner: spec.Owner()}
+			ropt.Owner = spec.Owner()
+		}
+		if createFlags.private {
+			ropt.Private = true
 		}
 		_, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt)
 		return err
@@ -91,6 +98,7 @@ var createCommand = &cobra.Command{
 
 func init() {
 	createCommand.Flags().BoolVarP(&createFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	createCommand.Flags().BoolVarP(&createFlags.private, "private", "", false, "Whether the repository is private")
 	createCommand.Flags().StringVarP(&createFlags.template, "template", "", "", "Create new repository from the template")
 	facadeCommand.AddCommand(createCommand)
 }
