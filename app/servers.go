@@ -14,10 +14,6 @@ func Servers() *gogh.Servers {
 	return &servers
 }
 
-func Parser() *gogh.SpecParser {
-	return gogh.NewSpecParser(&servers)
-}
-
 func setupServers() error {
 	serversPath = filepath.Join(cacheDir, Name, "servers.yaml")
 	if err := loadYAML(serversPath, &servers); err != nil {
