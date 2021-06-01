@@ -7,8 +7,10 @@ import (
 	"github.com/kyoh86/gogh/v2"
 )
 
-var servers gogh.Servers
-var serversPath string
+var (
+	servers     gogh.Servers
+	serversPath string
+)
 
 func Servers() *gogh.Servers {
 	return &servers
