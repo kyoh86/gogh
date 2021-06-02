@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +31,7 @@ var bundleDumpCommand = &cobra.Command{
 			out = f
 		}
 		ctx := cmd.Context()
-		roots := app.Roots()
+		roots := Roots()
 		if len(roots) == 0 {
 			return nil
 		}

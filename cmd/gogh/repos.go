@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/view"
 	"github.com/kyoh86/gogh/v2/view/repotab"
@@ -36,7 +35,7 @@ var reposCommand = &cobra.Command{
 	Short: "List remote repositories",
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		list, err := app.Servers().List()
+		list, err := Servers().List()
 		if err != nil {
 			return err
 		}

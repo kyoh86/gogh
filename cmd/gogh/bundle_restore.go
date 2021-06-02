@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +33,7 @@ var bundleRestoreCommand = &cobra.Command{
 		}
 
 		ctx := cmd.Context()
-		servers := app.Servers()
+		servers := Servers()
 		return cloneAll(ctx, servers, specs, bundleRestoreFlags.dryrun)
 	},
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 )
@@ -25,7 +24,7 @@ var deleteCommand = &cobra.Command{
 	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
-		servers := app.Servers()
+		servers := Servers()
 		var selected string
 		if len(specs) == 0 {
 			servers, err := servers.List()
@@ -62,7 +61,7 @@ var deleteCommand = &cobra.Command{
 			return err
 		}
 
-		local := gogh.NewLocalController(app.DefaultRoot())
+		local := gogh.NewLocalController(DefaultRoot())
 		if !deleteFlags.force {
 			var confirmed bool
 			if err := survey.AskOne(&survey.Confirm{

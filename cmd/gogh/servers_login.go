@@ -5,7 +5,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +22,7 @@ var loginCommand = &cobra.Command{
 		if err := getParams(); err != nil {
 			return err
 		}
-		return app.Servers().Set(loginFlags.Host, loginFlags.User, loginFlags.Password)
+		return Servers().Set(loginFlags.Host, loginFlags.User, loginFlags.Password)
 	},
 }
 

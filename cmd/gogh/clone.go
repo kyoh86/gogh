@@ -7,7 +7,6 @@ import (
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -38,7 +37,7 @@ var cloneCommand = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
-		servers := app.Servers()
+		servers := Servers()
 		if len(specs) == 0 {
 			servers, err := servers.List()
 			if err != nil {
@@ -87,7 +86,7 @@ func cloneAll(ctx context.Context, servers *gogh.Servers, specs []string, dryrun
 		return nil
 	}
 
-	local := gogh.NewLocalController(app.DefaultRoot())
+	local := gogh.NewLocalController(DefaultRoot())
 	if len(specs) == 1 {
 		return cloneOne(ctx, local, parser, specs[0])()
 	}

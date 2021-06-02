@@ -5,14 +5,13 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
 
 var listFlags struct {
 	query   string
 	primary bool
-	format  app.ProjectFormat
+	format  ProjectFormat
 }
 
 var listCommand = &cobra.Command{
@@ -27,7 +26,7 @@ var listCommand = &cobra.Command{
 		}
 
 		ctx := cmd.Context()
-		roots := app.Roots()
+		roots := Roots()
 		if listFlags.primary && len(roots) > 1 {
 			roots = roots[0:1]
 		}

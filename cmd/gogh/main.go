@@ -7,7 +7,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
 
@@ -18,12 +17,9 @@ var (
 )
 
 var facadeCommand = &cobra.Command{
-	Use:     app.Name,
+	Use:     Name,
 	Short:   "GO GitHub project manager",
 	Version: fmt.Sprintf("%s-%s (%s)", version, commit, date),
-	PersistentPreRunE: func(*cobra.Command, []string) error {
-		return app.Setup()
-	},
 }
 
 func main() {
@@ -31,6 +27,9 @@ func main() {
 		Handler: cli.New(os.Stderr),
 		Level:   log.InfoLevel,
 	})
+	if err := Setup(); err != nil {
+		log.FromContext(ctx).WithField("error", err).Fatalf("failed to setup application")
+	}
 	if err := facadeCommand.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

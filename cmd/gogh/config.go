@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"fmt"
@@ -6,15 +6,38 @@ import (
 	"path/filepath"
 )
 
+type FlagStruct struct {
+	Create struct {
+		Template            string
+		LicenseTemplate     string
+		GitignoreTemplate   string
+		Private             bool
+		DisableDownloads    bool
+		DisableWiki         bool
+		AutoInit            bool
+		DisableProjects     bool
+		DisableIssues       bool
+		PreventSquashMerge  bool
+		PreventMergeCommit  bool
+		PreventRebaseMerge  bool
+		DeleteBranchOnMerge bool
+	}
+}
+
 var (
 	config struct {
 		Roots []string
+		Flag  FlagStruct
 	}
 	configPath string
 )
 
 func DefaultRoot() string {
 	return expandPath(config.Roots[0])
+}
+
+func Flag() FlagStruct {
+	return config.Flag
 }
 
 func Roots() []string {

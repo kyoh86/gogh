@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +10,7 @@ var logoutCommand = &cobra.Command{
 	Use:   "logout",
 	Short: "Logout from a server",
 	RunE: func(cmd *cobra.Command, hosts []string) error {
-		servers := app.Servers()
+		servers := Servers()
 		if len(hosts) == 0 {
 			configured, err := servers.List()
 			if err != nil {
