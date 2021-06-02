@@ -1,51 +1,30 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/goccy/go-yaml"
+	"github.com/spf13/cobra"
 )
 
-const (
-	Name = "gogh"
-)
+const appName = "gogh"
 
-var (
-	homeDir   string
-	configDir string
-	cacheDir  string
-)
+var setupOnce sync.Once
 
-func Setup() error {
-	{
-		dir, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("search user home dir: %w", err)
-		}
-		homeDir = dir
-	}
-	{
-		dir, err := os.UserConfigDir()
-		if err != nil {
-			return fmt.Errorf("search user config dir: %w", err)
-		}
-		configDir = dir
-	}
-	{
-		dir, err := os.UserCacheDir()
-		if err != nil {
-			return fmt.Errorf("search user cache dir: %w", err)
-		}
-		cacheDir = dir
-	}
+func setup() {
+	setupOnce.Do(func() {
+		cobra.CheckErr(setupCore())
+	})
+}
 
-	if err := setupConfig(); err != nil {
+func setupCore() error {
+	if err := loadConfig(); err != nil {
 		return err
 	}
 
-	if err := setupServers(); err != nil {
+	if err := loadServers(); err != nil {
 		return err
 	}
 

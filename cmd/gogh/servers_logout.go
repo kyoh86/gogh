@@ -10,7 +10,6 @@ var logoutCommand = &cobra.Command{
 	Use:   "logout",
 	Short: "Logout from a server",
 	RunE: func(cmd *cobra.Command, hosts []string) error {
-		servers := Servers()
 		if len(hosts) == 0 {
 			configured, err := servers.List()
 			if err != nil {
@@ -45,5 +44,6 @@ var logoutCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	serversCommand.AddCommand(logoutCommand)
 }

@@ -32,8 +32,8 @@ var rootsAddCommand = &cobra.Command{
 	Use:   "add",
 	Short: "Add directories into the roots",
 	Args:  cobra.ExactArgs(1),
-	Run: func(_ *cobra.Command, roots []string) {
-		AddRoots(roots)
+	RunE: func(_ *cobra.Command, roots []string) error {
+		return addRoots(roots)
 	},
 }
 
@@ -53,7 +53,7 @@ var rootsRemoveCommand = &cobra.Command{
 		} else {
 			selected = roots[0]
 		}
-		RemoveRoot(selected)
+		removeRoot(selected)
 		return nil
 	},
 }
@@ -74,12 +74,13 @@ var rootsSetDefaultCommand = &cobra.Command{
 		} else {
 			selected = roots[0]
 		}
-		SetDefaultRoot(selected)
-		return nil
+
+		return setDefaultRoot(selected)
 	},
 }
 
 func init() {
+	setup()
 	rootsCommand.AddCommand(rootsSetDefaultCommand)
 	rootsCommand.AddCommand(rootsRemoveCommand)
 	rootsCommand.AddCommand(rootsAddCommand)

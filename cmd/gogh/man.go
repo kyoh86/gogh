@@ -70,5 +70,6 @@ var manCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	facadeCommand.AddCommand(manCommand)
 }

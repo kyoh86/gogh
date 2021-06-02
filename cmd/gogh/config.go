@@ -6,53 +6,58 @@ import (
 	"path/filepath"
 )
 
-type FlagStruct struct {
-	Create struct {
-		Template            string
-		LicenseTemplate     string
-		GitignoreTemplate   string
-		Private             bool
-		DisableDownloads    bool
-		DisableWiki         bool
-		AutoInit            bool
-		DisableProjects     bool
-		DisableIssues       bool
-		PreventSquashMerge  bool
-		PreventMergeCommit  bool
-		PreventRebaseMerge  bool
-		DeleteBranchOnMerge bool
-	}
+var config struct {
+	Roots       []ExpandablePath `yaml:"roots"`
+	DefaultFlag struct {
+		Create createFlagsStruct `yaml:"create,omitempty"`
+		Repos  reposFlagsStruct  `yaml:"repos,omitempty"`
+	} `yaml:"flag,omitempty"`
 }
 
-var (
-	config struct {
-		Roots []string
-		Flag  FlagStruct
-	}
-	configPath string
-)
-
-func DefaultRoot() string {
-	return expandPath(config.Roots[0])
-}
-
-func Flag() FlagStruct {
-	return config.Flag
+func defaultRoot() string {
+	return config.Roots[0].expanded
 }
 
 func Roots() []string {
-	roots := make([]string, 0, len(config.Roots))
+	list := make([]string, 0, len(config.Roots))
 	for _, r := range config.Roots {
-		roots = append(roots, expandPath(r))
+		list = append(list, r.expanded)
 	}
-	return roots
+	return list
 }
 
-func SetDefaultRoot(r string) {
-	roots := make([]string, 0, len(config.Roots))
-	roots = append(roots, r)
+func setDefaultRoot(r string) error {
+	roots := make([]ExpandablePath, 0, len(config.Roots))
+	newDefault, err := ParsePath(r)
+	if err != nil {
+		return err
+	}
+	roots = append(roots, newDefault)
 	for _, root := range config.Roots {
-		if root == r {
+		if root.raw == r {
+			continue
+		}
+		roots = append(roots, root)
+	}
+	config.Roots = roots
+	return nil
+}
+
+func addRoots(roots []string) error {
+	for _, r := range roots {
+		newRoot, err := ParsePath(r)
+		if err != nil {
+			return err
+		}
+		config.Roots = append(config.Roots, newRoot)
+	}
+	return nil
+}
+
+func removeRoot(r string) {
+	roots := make([]ExpandablePath, 0, len(config.Roots))
+	for _, root := range config.Roots {
+		if root.raw == r {
 			continue
 		}
 		roots = append(roots, root)
@@ -60,44 +65,35 @@ func SetDefaultRoot(r string) {
 	config.Roots = roots
 }
 
-func AddRoots(roots []string) {
-	config.Roots = append(config.Roots, roots...)
-}
-
-func RemoveRoot(r string) {
-	roots := make([]string, 0, len(config.Roots))
-	for _, root := range config.Roots {
-		if root == r {
-			continue
-		}
-		roots = append(roots, root)
+func loadConfig() error {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return fmt.Errorf("search user config dir: %w", err)
 	}
-	config.Roots = roots
-}
-
-func expandPath(p string) string {
-	p = os.ExpandEnv(p)
-	runes := []rune(p)
-	if runes[0] == '~' && (runes[1] == filepath.Separator || runes[1] == '/') {
-		return filepath.Join(homeDir, string(runes[2:]))
-	}
-	return p
-}
-
-func setupConfig() error {
-	configPath = filepath.Join(configDir, Name, "config.yaml")
+	configPath := filepath.Join(configDir, appName, "config.yaml")
 	if err := loadYAML(configPath, &config); err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
 	if len(config.Roots) == 0 {
-		config.Roots = []string{
-			filepath.Join(homeDir, "Projects"),
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("search user home dir: %w", err)
 		}
+		raw := filepath.Join(homeDir, "Projects")
+		config.Roots = []ExpandablePath{{
+			raw:      raw,
+			expanded: raw,
+		}}
 	}
 	return nil
 }
 
 func SaveConfig() error {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return fmt.Errorf("search user config dir: %w", err)
+	}
+	configPath := filepath.Join(configDir, appName, "config.yaml")
 	if err := saveYAML(configPath, config); err != nil {
 		return fmt.Errorf("save config: %w", err)
 	}

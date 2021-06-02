@@ -10,8 +10,8 @@ import (
 
 var listFlags struct {
 	query   string
-	primary bool
 	format  ProjectFormat
+	primary bool
 }
 
 var listCommand = &cobra.Command{
@@ -57,6 +57,7 @@ Print each project in a given format, where [format] can be one of "rel-path", "
 `
 
 func init() {
+	setup()
 	listCommand.Flags().StringVarP(&listFlags.query, "query", "", "", "Query for selecting projects")
 	listCommand.Flags().BoolVarP(&listFlags.primary, "primary", "", false, "List up projects in just a primary root")
 	listCommand.Flags().VarP(&listFlags.format, "format", "f", formatShortUsage)

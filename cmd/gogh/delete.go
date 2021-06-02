@@ -24,14 +24,13 @@ var deleteCommand = &cobra.Command{
 	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
-		servers := Servers()
 		var selected string
 		if len(specs) == 0 {
-			servers, err := servers.List()
+			list, err := servers.List()
 			if err != nil {
 				return err
 			}
-			for _, server := range servers {
+			for _, server := range list {
 				adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
 				if err != nil {
 					return err
@@ -55,13 +54,13 @@ var deleteCommand = &cobra.Command{
 			selected = specs[0]
 		}
 
-		parser := gogh.NewSpecParser(servers)
+		parser := gogh.NewSpecParser(&servers)
 		spec, server, err := parser.Parse(selected)
 		if err != nil {
 			return err
 		}
 
-		local := gogh.NewLocalController(DefaultRoot())
+		local := gogh.NewLocalController(defaultRoot())
 		if !deleteFlags.force {
 			var confirmed bool
 			if err := survey.AskOne(&survey.Confirm{
@@ -108,6 +107,7 @@ var deleteCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	deleteCommand.Flags().BoolVarP(&deleteFlags.force, "force", "", false, "Do NOT confirm to delete.")
 	facadeCommand.AddCommand(deleteCommand)
 }

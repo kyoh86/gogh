@@ -17,52 +17,54 @@ import (
 	"golang.org/x/term"
 )
 
-var reposFlags struct {
-	format   string
-	color    string
-	relation []string
-	limit    int
-	private  bool
-	public   bool
-	fork     bool
-	notFork  bool
-	sort     string
-	order    string
+type reposFlagsStruct struct {
+	Format   string   `yaml:"format,omitempty"`
+	Color    string   `yaml:"color,omitempty"`
+	Sort     string   `yaml:"sort,omitempty"`
+	Order    string   `yaml:"order,omitempty"`
+	Relation []string `yaml:"relation,omitempty"`
+	Limit    int      `yaml:"limit,omitempty"`
+	Private  bool     `yaml:"private,omitempty"`
+	Public   bool     `yaml:"public,omitempty"`
+	Fork     bool     `yaml:"fork,omitempty"`
+	NotFork  bool     `yaml:"notFork,omitempty"`
 }
+
+var reposFlags reposFlagsStruct
 
 var reposCommand = &cobra.Command{
 	Use:   "repos",
 	Short: "List remote repositories",
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		list, err := Servers().List()
+		list, err := servers.List()
 		if err != nil {
 			return err
 		}
 		listOption := gogh.RemoteListOption{
-			Limit: &reposFlags.limit,
+			Limit: &reposFlags.Limit,
 		}
-		if reposFlags.private && reposFlags.public {
+		if reposFlags.Private && reposFlags.Public {
 			return errors.New("specify only one of `--private` or `--public`")
 		}
-		if reposFlags.private {
-			listOption.Private = &reposFlags.private // &true
+		if reposFlags.Private {
+			listOption.Private = &reposFlags.Private // &true
 		}
-		if reposFlags.public {
-			listOption.Private = &reposFlags.private // &false
+		if reposFlags.Public {
+			listOption.Private = &reposFlags.Private // &false
 		}
 
-		if reposFlags.fork && reposFlags.notFork {
+		if reposFlags.Fork && reposFlags.NotFork {
 			return errors.New("specify only one of `--fork` or `--no-fork`")
 		}
-		if reposFlags.fork {
-			listOption.IsFork = &reposFlags.fork // &true
+		if reposFlags.Fork {
+			listOption.IsFork = &reposFlags.Fork // &true
 		}
-		if reposFlags.notFork {
-			listOption.IsFork = &reposFlags.fork // &false
+		if reposFlags.NotFork {
+			listOption.IsFork = &reposFlags.Fork // &false
 		}
 	LOOP_CONVERT_RELATION:
-		for _, r := range reposFlags.relation {
+		for _, r := range reposFlags.Relation {
 			rdef := gogh.RepositoryRelation(r)
 			for _, def := range gogh.AllRepositoryRelation {
 				if def == rdef {
@@ -73,7 +75,7 @@ var reposCommand = &cobra.Command{
 			return fmt.Errorf("invalid relation %q; %s", r, repoRelationAccept)
 		}
 		var format view.RepositoryPrinter
-		switch reposFlags.format {
+		switch reposFlags.Format {
 		case "spec":
 			format = view.NewRepositorySpecPrinter(os.Stdout)
 		case "url":
@@ -85,25 +87,25 @@ var reposCommand = &cobra.Command{
 			if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
 				options = append(options, repotab.Width(width))
 			}
-			if term.IsTerminal(int(os.Stdout.Fd())) || reposFlags.color == "always" {
+			if term.IsTerminal(int(os.Stdout.Fd())) || reposFlags.Color == "always" {
 				options = append(options, repotab.Styled())
 			}
 			format = repotab.NewPrinter(os.Stdout, options...)
 		default:
-			return fmt.Errorf("invalid format %q; %s", reposFlags.format, repoFormatAccept)
+			return fmt.Errorf("invalid format %q; %s", reposFlags.Format, repoFormatAccept)
 		}
 		defer format.Close()
-		if reposFlags.sort != "" {
-			sort := gogh.RepositoryOrderField(reposFlags.sort)
+		if reposFlags.Sort != "" {
+			sort := gogh.RepositoryOrderField(reposFlags.Sort)
 			if !sort.IsValid() {
-				return fmt.Errorf("invalid sort %q; %s", reposFlags.sort, repoSortAccept)
+				return fmt.Errorf("invalid sort %q; %s", reposFlags.Sort, repoSortAccept)
 			}
 			listOption.Sort = sort
 		}
-		if reposFlags.order != "" {
-			order := gogh.OrderDirection(reposFlags.order)
+		if reposFlags.Order != "" {
+			order := gogh.OrderDirection(reposFlags.Order)
 			if !order.IsValid() {
-				return fmt.Errorf("invalid order %q; %s", reposFlags.order, repoOrderAccept)
+				return fmt.Errorf("invalid order %q; %s", reposFlags.Order, repoOrderAccept)
 			}
 			listOption.Order = order
 		}
@@ -151,6 +153,7 @@ var (
 )
 
 func init() {
+	setup()
 	repoFormatAccept = fmt.Sprintf("it can accept %q, %q, %q or %q", "spec", "url", "json", "table")
 	{
 		var valids []string
@@ -173,21 +176,21 @@ func init() {
 		}
 		repoRelationAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
 	}
-	reposCommand.Flags().IntVarP(&reposFlags.limit, "limit", "", 30, "Max number of repositories to list. 0 means unlimited")
+	reposCommand.Flags().IntVarP(&reposFlags.Limit, "limit", "", defaultInt(config.DefaultFlag.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
 
-	reposCommand.Flags().BoolVarP(&reposFlags.public, "public", "", false, "Show only public repositories")
-	reposCommand.Flags().BoolVarP(&reposFlags.private, "private", "", false, "Show only private repositories")
+	reposCommand.Flags().BoolVarP(&reposFlags.Public, "public", "", config.DefaultFlag.Repos.Public, "Show only public repositories")
+	reposCommand.Flags().BoolVarP(&reposFlags.Private, "private", "", config.DefaultFlag.Repos.Private, "Show only private repositories")
 
-	reposCommand.Flags().BoolVarP(&reposFlags.fork, "fork", "", false, "Show only forks")
-	reposCommand.Flags().BoolVarP(&reposFlags.notFork, "no-fork", "", false, "Omit forks")
+	reposCommand.Flags().BoolVarP(&reposFlags.Fork, "fork", "", config.DefaultFlag.Repos.Fork, "Show only forks")
+	reposCommand.Flags().BoolVarP(&reposFlags.NotFork, "no-fork", "", config.DefaultFlag.Repos.NotFork, "Omit forks")
 
-	reposCommand.Flags().StringVarP(&reposFlags.format, "format", "", "table", "The formatting style for each repository; "+repoFormatAccept)
-	reposCommand.Flags().StringVarP(&reposFlags.color, "color", "", "auto", "Colorize the output; It can accept 'auto', 'always' or 'never'")
+	reposCommand.Flags().StringVarP(&reposFlags.Format, "format", "", defaultString(config.DefaultFlag.Repos.Format, "table"), "The formatting style for each repository; "+repoFormatAccept)
+	reposCommand.Flags().StringVarP(&reposFlags.Color, "color", "", defaultString(config.DefaultFlag.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
 
-	reposCommand.Flags().StringSliceVarP(&reposFlags.relation, "relation", "", []string{"owner", "organizationMember"}, "The relation of user to each repository; "+repoRelationAccept)
+	reposCommand.Flags().StringSliceVarP(&reposFlags.Relation, "relation", "", defaultStringSlice(config.DefaultFlag.Repos.Relation, []string{"owner", "organizationMember"}), "The relation of user to each repository; "+repoRelationAccept)
 
-	reposCommand.Flags().StringVarP(&reposFlags.sort, "sort", "", "", "Property by which repository be ordered; "+repoSortAccept)
-	reposCommand.Flags().StringVarP(&reposFlags.order, "order", "", "", "Directions in which to order a list of items when provided an `sort` flag; "+repoOrderAccept)
+	reposCommand.Flags().StringVarP(&reposFlags.Sort, "sort", "", config.DefaultFlag.Repos.Sort, "Property by which repository be ordered; "+repoSortAccept)
+	reposCommand.Flags().StringVarP(&reposFlags.Order, "order", "", config.DefaultFlag.Repos.Order, "Directions in which to order a list of items when provided an `sort` flag; "+repoOrderAccept)
 
 	facadeCommand.AddCommand(reposCommand)
 }

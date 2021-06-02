@@ -17,7 +17,7 @@ var (
 )
 
 var facadeCommand = &cobra.Command{
-	Use:     Name,
+	Use:     appName,
 	Short:   "GO GitHub project manager",
 	Version: fmt.Sprintf("%s-%s (%s)", version, commit, date),
 }
@@ -27,9 +27,6 @@ func main() {
 		Handler: cli.New(os.Stderr),
 		Level:   log.InfoLevel,
 	})
-	if err := Setup(); err != nil {
-		log.FromContext(ctx).WithField("error", err).Fatalf("failed to setup application")
-	}
 	if err := facadeCommand.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

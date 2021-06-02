@@ -6,18 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var serversListFlags struct{}
-
 var serversListCommand = &cobra.Command{
 	Use:   "list",
 	Short: "Listup servers",
 	Args:  cobra.ExactArgs(0),
 	RunE: func(*cobra.Command, []string) error {
-		servers, err := Servers().List()
+		list, err := servers.List()
 		if err != nil {
 			return fmt.Errorf("listup servers: %w", err)
 		}
-		for _, server := range servers {
+		for _, server := range list {
 			fmt.Println(server)
 		}
 		return nil
@@ -25,5 +23,6 @@ var serversListCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	serversCommand.AddCommand(serversListCommand)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -9,17 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	servers     gogh.Servers
-	serversPath string
-)
+var servers gogh.Servers
 
-func Servers() *gogh.Servers {
-	return &servers
-}
-
-func setupServers() error {
-	serversPath = filepath.Join(cacheDir, Name, "servers.yaml")
+func loadServers() error {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return fmt.Errorf("search user cache dir: %w", err)
+	}
+	serversPath := filepath.Join(cacheDir, appName, "servers.yaml")
 	if err := loadYAML(serversPath, &servers); err != nil {
 		return fmt.Errorf("load servers: %w", err)
 	}
@@ -27,6 +25,11 @@ func setupServers() error {
 }
 
 func SaveServers() error {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return fmt.Errorf("search user cache dir: %w", err)
+	}
+	serversPath := filepath.Join(cacheDir, appName, "servers.yaml")
 	if err := saveYAML(serversPath, &servers); err != nil {
 		return fmt.Errorf("save servers: %w", err)
 	}
@@ -46,8 +49,7 @@ var setDefaultCommand = &cobra.Command{
 	Use:   "set-default",
 	Short: "Set default server",
 	Args:  cobra.RangeArgs(0, 1),
-	RunE: func(cmd *cobra.Command, hosts []string) error {
-		servers := Servers()
+	RunE: func(_ *cobra.Command, hosts []string) error {
 		var selected string
 		if len(hosts) == 0 {
 			configured, err := servers.List()
@@ -76,6 +78,7 @@ var setDefaultCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	serversCommand.AddCommand(setDefaultCommand)
 	facadeCommand.AddCommand(serversCommand)
 }

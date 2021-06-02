@@ -13,8 +13,7 @@ var forkCommand = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
-		servers := Servers()
-		parser := gogh.NewSpecParser(servers)
+		parser := gogh.NewSpecParser(&servers)
 		spec, server, err := parser.Parse(specs[0])
 		if err != nil {
 			return err
@@ -29,7 +28,7 @@ var forkCommand = &cobra.Command{
 			return err
 		}
 
-		root := DefaultRoot()
+		root := defaultRoot()
 		local := gogh.NewLocalController(root)
 		if _, err := local.Clone(ctx, spec, server, nil); err != nil {
 			return err
@@ -42,5 +41,6 @@ var forkCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	facadeCommand.AddCommand(forkCommand)
 }

@@ -62,6 +62,7 @@ var bundleDumpCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	bundleDumpCommand.Flags().StringVarP(&bundleDumpFlags.file, "file", "", "", "A file to output")
 	bundleCommand.AddCommand(bundleDumpCommand)
 }

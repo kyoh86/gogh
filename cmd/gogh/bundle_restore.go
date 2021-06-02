@@ -33,12 +33,12 @@ var bundleRestoreCommand = &cobra.Command{
 		}
 
 		ctx := cmd.Context()
-		servers := Servers()
-		return cloneAll(ctx, servers, specs, bundleRestoreFlags.dryrun)
+		return cloneAll(ctx, specs, bundleRestoreFlags.dryrun)
 	},
 }
 
 func init() {
+	setup()
 	bundleRestoreCommand.Flags().BoolVarP(&bundleRestoreFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	bundleRestoreCommand.Flags().StringVarP(&bundleRestoreFlags.file, "file", "", "", "Read the file as input")
 	bundleCommand.AddCommand(bundleRestoreCommand)

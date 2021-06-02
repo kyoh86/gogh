@@ -13,5 +13,6 @@ var bundleCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	facadeCommand.AddCommand(bundleCommand)
 }

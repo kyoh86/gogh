@@ -10,25 +10,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var createFlags struct {
-	template            string
-	description         string
-	homepage            string
-	licenseTemplate     string
-	gitignoreTemplate   string
-	private             bool
-	isTemplate          bool
-	disableDownloads    bool
-	disableWiki         bool
-	autoInit            bool
-	disableProjects     bool
-	disableIssues       bool
-	preventSquashMerge  bool
-	preventMergeCommit  bool
-	preventRebaseMerge  bool
-	deleteBranchOnMerge bool
-	dryrun              bool
+type createFlagsStruct struct {
+	Template            string `yaml:"template,omitempty"`
+	Description         string `yaml:"-"`
+	Homepage            string `yaml:"-"`
+	LicenseTemplate     string `yaml:"licenseTemplate,omitempty"`
+	GitignoreTemplate   string `yaml:"gitignoreTemplate,omitempty"`
+	Private             bool   `yaml:"private,omitempty"`
+	IsTemplate          bool   `yaml:"-"`
+	DisableDownloads    bool   `yaml:"disableDownloads,omitempty"`
+	DisableWiki         bool   `yaml:"disableWiki,omitempty"`
+	AutoInit            bool   `yaml:"autoInit,omitempty"`
+	DisableProjects     bool   `yaml:"disableProjects,omitempty"`
+	DisableIssues       bool   `yaml:"disableIssues,omitempty"`
+	PreventSquashMerge  bool   `yaml:"preventSquashMerge,omitempty"`
+	PreventMergeCommit  bool   `yaml:"preventMergeCommit,omitempty"`
+	PreventRebaseMerge  bool   `yaml:"preventRebaseMerge,omitempty"`
+	DeleteBranchOnMerge bool   `yaml:"deleteBranchOnMerge,omitempty"`
+	Dryrun              bool   `yaml:"-"`
 }
+
+var createFlags createFlagsStruct
 
 var createCommand = &cobra.Command{
 	Use:     "create [flags] [[OWNER/]NAME]",
@@ -36,10 +38,9 @@ var createCommand = &cobra.Command{
 	Short:   "Create a new project with a remote repository",
 	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
-		servers := Servers()
 		var name string
+		parser := gogh.NewSpecParser(&servers)
 		if len(specs) == 0 {
-			parser := gogh.NewSpecParser(servers)
 			if err := survey.AskOne(&survey.Input{
 				Message: "A spec of repository name to create",
 			}, &name, survey.WithValidator(func(input interface{}) error {
@@ -57,13 +58,12 @@ var createCommand = &cobra.Command{
 		}
 
 		ctx := cmd.Context()
-		parser := gogh.NewSpecParser(servers)
 		spec, server, err := parser.Parse(name)
 		if err != nil {
 			return err
 		}
 
-		local := gogh.NewLocalController(DefaultRoot())
+		local := gogh.NewLocalController(defaultRoot())
 		if _, err = local.Create(ctx, spec, nil); err != nil {
 			if !errors.Is(err, git.ErrRepositoryAlreadyExists) {
 				return err
@@ -81,23 +81,23 @@ var createCommand = &cobra.Command{
 			return nil
 		}
 
-		if createFlags.template == "" {
+		if createFlags.Template == "" {
 			ropt := &gogh.RemoteCreateOption{
-				Description:         createFlags.description,
-				Homepage:            createFlags.homepage,
-				LicenseTemplate:     createFlags.licenseTemplate,
-				GitignoreTemplate:   createFlags.gitignoreTemplate,
-				Private:             createFlags.private,
-				IsTemplate:          createFlags.isTemplate,
-				DisableDownloads:    createFlags.disableDownloads,
-				DisableWiki:         createFlags.disableWiki,
-				AutoInit:            createFlags.autoInit,
-				DisableProjects:     createFlags.disableProjects,
-				DisableIssues:       createFlags.disableIssues,
-				PreventSquashMerge:  createFlags.preventSquashMerge,
-				PreventMergeCommit:  createFlags.preventMergeCommit,
-				PreventRebaseMerge:  createFlags.preventRebaseMerge,
-				DeleteBranchOnMerge: createFlags.deleteBranchOnMerge,
+				Description:         createFlags.Description,
+				Homepage:            createFlags.Homepage,
+				LicenseTemplate:     createFlags.LicenseTemplate,
+				GitignoreTemplate:   createFlags.GitignoreTemplate,
+				Private:             createFlags.Private,
+				IsTemplate:          createFlags.IsTemplate,
+				DisableDownloads:    createFlags.DisableDownloads,
+				DisableWiki:         createFlags.DisableWiki,
+				AutoInit:            createFlags.AutoInit,
+				DisableProjects:     createFlags.DisableProjects,
+				DisableIssues:       createFlags.DisableIssues,
+				PreventSquashMerge:  createFlags.PreventSquashMerge,
+				PreventMergeCommit:  createFlags.PreventMergeCommit,
+				PreventRebaseMerge:  createFlags.PreventRebaseMerge,
+				DeleteBranchOnMerge: createFlags.DeleteBranchOnMerge,
 			}
 			if server.User() != spec.Owner() {
 				ropt.Organization = spec.Owner()
@@ -107,7 +107,7 @@ var createCommand = &cobra.Command{
 			return err
 		}
 
-		from, err := gogh.ParseSiblingSpec(spec, createFlags.template)
+		from, err := gogh.ParseSiblingSpec(spec, createFlags.Template)
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ var createCommand = &cobra.Command{
 		if server.User() != spec.Owner() {
 			ropt.Owner = spec.Owner()
 		}
-		if createFlags.private {
+		if createFlags.Private {
 			ropt.Private = true
 		}
 		_, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt)
@@ -124,22 +124,23 @@ var createCommand = &cobra.Command{
 }
 
 func init() {
-	createCommand.Flags().BoolVarP(&createFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	createCommand.Flags().StringVarP(&createFlags.template, "template", "", Flag().Create.Template, "Create new repository from the template")
-	createCommand.Flags().StringVarP(&createFlags.description, "description", "", "", "A short description of the repository")
-	createCommand.Flags().StringVarP(&createFlags.homepage, "homepage", "", "", "A URL with more information about the repository")
-	createCommand.Flags().StringVarP(&createFlags.licenseTemplate, "license-template", "", Flag().Create.LicenseTemplate, `Choose an open source license template that best suits your needs, and then use the license keyword as the license_template string when "auto-init" flag is set. For example, "mit" or "mpl-2.0"`)
-	createCommand.Flags().StringVarP(&createFlags.gitignoreTemplate, "gitignore-template", "", Flag().Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
-	createCommand.Flags().BoolVarP(&createFlags.private, "private", "", Flag().Create.Private, "Whether the repository is private")
-	createCommand.Flags().BoolVarP(&createFlags.isTemplate, "is-template", "", false, "Whether the repository is available as a template")
-	createCommand.Flags().BoolVarP(&createFlags.disableDownloads, "disable-downloads", "", Flag().Create.DisableDownloads, `Disable "Downloads" page`)
-	createCommand.Flags().BoolVarP(&createFlags.disableWiki, "disable-wiki", "", Flag().Create.DisableWiki, `Disable Wiki for the repository`)
-	createCommand.Flags().BoolVarP(&createFlags.autoInit, "auto-init", "", Flag().Create.AutoInit, "Create an initial commit with empty README")
-	createCommand.Flags().BoolVarP(&createFlags.disableProjects, "disable-projects", "", Flag().Create.DisableProjects, `Disable projects for the repository`)
-	createCommand.Flags().BoolVarP(&createFlags.disableIssues, "disable-issues", "", Flag().Create.DisableIssues, `Disable issues for the repository`)
-	createCommand.Flags().BoolVarP(&createFlags.preventSquashMerge, "prevent-squash-merge", "", Flag().Create.PreventSquashMerge, "Prevent squash-merging pull requests")
-	createCommand.Flags().BoolVarP(&createFlags.preventMergeCommit, "prevent-merge-commit", "", Flag().Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
-	createCommand.Flags().BoolVarP(&createFlags.preventRebaseMerge, "prevent-rebase-merge", "", Flag().Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
-	createCommand.Flags().BoolVarP(&createFlags.deleteBranchOnMerge, "delete-branch-on-merge", "", Flag().Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
+	setup()
+	createCommand.Flags().BoolVarP(&createFlags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	createCommand.Flags().StringVarP(&createFlags.Template, "template", "", config.DefaultFlag.Create.Template, "Create new repository from the template")
+	createCommand.Flags().StringVarP(&createFlags.Description, "description", "", "", "A short description of the repository")
+	createCommand.Flags().StringVarP(&createFlags.Homepage, "homepage", "", "", "A URL with more information about the repository")
+	createCommand.Flags().StringVarP(&createFlags.LicenseTemplate, "license-template", "", config.DefaultFlag.Create.LicenseTemplate, `Choose an open source license template that best suits your needs, and then use the license keyword as the license_template string when "auto-init" flag is set. For example, "mit" or "mpl-2.0"`)
+	createCommand.Flags().StringVarP(&createFlags.GitignoreTemplate, "gitignore-template", "", config.DefaultFlag.Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
+	createCommand.Flags().BoolVarP(&createFlags.Private, "private", "", config.DefaultFlag.Create.Private, "Whether the repository is private")
+	createCommand.Flags().BoolVarP(&createFlags.IsTemplate, "is-template", "", false, "Whether the repository is available as a template")
+	createCommand.Flags().BoolVarP(&createFlags.DisableDownloads, "disable-downloads", "", config.DefaultFlag.Create.DisableDownloads, `Disable "Downloads" page`)
+	createCommand.Flags().BoolVarP(&createFlags.DisableWiki, "disable-wiki", "", config.DefaultFlag.Create.DisableWiki, `Disable Wiki for the repository`)
+	createCommand.Flags().BoolVarP(&createFlags.AutoInit, "auto-init", "", config.DefaultFlag.Create.AutoInit, "Create an initial commit with empty README")
+	createCommand.Flags().BoolVarP(&createFlags.DisableProjects, "disable-projects", "", config.DefaultFlag.Create.DisableProjects, `Disable projects for the repository`)
+	createCommand.Flags().BoolVarP(&createFlags.DisableIssues, "disable-issues", "", config.DefaultFlag.Create.DisableIssues, `Disable issues for the repository`)
+	createCommand.Flags().BoolVarP(&createFlags.PreventSquashMerge, "prevent-squash-merge", "", config.DefaultFlag.Create.PreventSquashMerge, "Prevent squash-merging pull requests")
+	createCommand.Flags().BoolVarP(&createFlags.PreventMergeCommit, "prevent-merge-commit", "", config.DefaultFlag.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
+	createCommand.Flags().BoolVarP(&createFlags.PreventRebaseMerge, "prevent-rebase-merge", "", config.DefaultFlag.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
+	createCommand.Flags().BoolVarP(&createFlags.DeleteBranchOnMerge, "delete-branch-on-merge", "", config.DefaultFlag.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
 	facadeCommand.AddCommand(createCommand)
 }
