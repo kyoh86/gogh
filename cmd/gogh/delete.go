@@ -9,13 +9,13 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 )
 
 var deleteFlags struct {
-	force bool
+	force  bool
+	dryrun bool
 }
 
 var deleteCommand = &cobra.Command{
@@ -25,14 +25,13 @@ var deleteCommand = &cobra.Command{
 	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
-		servers := app.Servers()
 		var selected string
 		if len(specs) == 0 {
-			servers, err := servers.List()
+			list, err := servers.List()
 			if err != nil {
 				return err
 			}
-			for _, server := range servers {
+			for _, server := range list {
 				adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
 				if err != nil {
 					return err
@@ -56,13 +55,13 @@ var deleteCommand = &cobra.Command{
 			selected = specs[0]
 		}
 
-		parser := gogh.NewSpecParser(servers)
+		parser := gogh.NewSpecParser(&servers)
 		spec, server, err := parser.Parse(selected)
 		if err != nil {
 			return err
 		}
 
-		local := gogh.NewLocalController(app.DefaultRoot())
+		local := gogh.NewLocalController(defaultRoot())
 		if !deleteFlags.force {
 			var confirmed bool
 			if err := survey.AskOne(&survey.Confirm{
@@ -74,7 +73,9 @@ var deleteCommand = &cobra.Command{
 				return nil
 			}
 		}
-		if err := local.Delete(ctx, spec, nil); err != nil {
+		if deleteFlags.dryrun {
+			fmt.Printf("deleting local %s\n", spec.String())
+		} else if err := local.Delete(ctx, spec, nil); err != nil {
 			if !os.IsNotExist(err) {
 				return fmt.Errorf("delete local: %w", err)
 			}
@@ -95,7 +96,9 @@ var deleteCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
+		if deleteFlags.dryrun {
+			fmt.Printf("deleting remote %s\n", spec.String())
+		} else if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
 			var gherr *github.ErrorResponse
 			if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
 				log.FromContext(ctx).Errorf("Failed to delete a repository: there is no permission to delete %q", spec.URL())
@@ -109,6 +112,8 @@ var deleteCommand = &cobra.Command{
 }
 
 func init() {
+	setup()
 	deleteCommand.Flags().BoolVarP(&deleteFlags.force, "force", "", false, "Do NOT confirm to delete.")
+	deleteCommand.Flags().BoolVarP(&deleteFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(deleteCommand)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/app"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -38,13 +37,12 @@ var cloneCommand = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
-		servers := app.Servers()
 		if len(specs) == 0 {
-			servers, err := servers.List()
+			list, err := servers.List()
 			if err != nil {
 				return err
 			}
-			for _, server := range servers {
+			for _, server := range list {
 				adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
 				if err != nil {
 					return err
@@ -65,12 +63,12 @@ var cloneCommand = &cobra.Command{
 				return err
 			}
 		}
-		return cloneAll(ctx, servers, specs, cloneFlags.dryrun)
+		return cloneAll(ctx, specs, cloneFlags.dryrun)
 	},
 }
 
-func cloneAll(ctx context.Context, servers *gogh.Servers, specs []string, dryrun bool) error {
-	parser := gogh.NewSpecParser(servers)
+func cloneAll(ctx context.Context, specs []string, dryrun bool) error {
+	parser := gogh.NewSpecParser(&servers)
 	if dryrun {
 		for _, s := range specs {
 			spec, alias, _, err := parser.ParseWithAlias(s)
@@ -87,7 +85,7 @@ func cloneAll(ctx context.Context, servers *gogh.Servers, specs []string, dryrun
 		return nil
 	}
 
-	local := gogh.NewLocalController(app.DefaultRoot())
+	local := gogh.NewLocalController(defaultRoot())
 	if len(specs) == 1 {
 		return cloneOne(ctx, local, parser, specs[0])()
 	}
@@ -140,6 +138,7 @@ func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.Spe
 }
 
 func init() {
+	setup()
 	cloneCommand.Flags().BoolVarP(&cloneFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(cloneCommand)
 }
