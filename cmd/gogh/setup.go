@@ -87,7 +87,7 @@ func (h appFileHandler) save(input interface{}) error {
 		return fmt.Errorf("search app file dir for %s: %w", h.basename, err)
 	}
 	path := filepath.Join(dir, appName, h.basename)
-	if err := saveYAML(path, config); err != nil {
+	if err := saveYAML(path, input); err != nil {
 		return fmt.Errorf("save %s: %w", h.basename, err)
 	}
 	return nil
