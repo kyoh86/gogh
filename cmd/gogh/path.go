@@ -2,18 +2,33 @@ package main
 
 import (
 	"encoding"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
-type ExpandablePath struct {
+type expandedPath struct {
 	raw      string
 	expanded string
 }
 
-func (p *ExpandablePath) UnmarshalText(raw []byte) error {
-	ex, err := ParsePath(string(raw))
+func (p *expandedPath) Set(v string) error {
+	p.raw = v
+	p.expanded = v // NOTE: path is always expanded in the flag
+	return nil
+}
+
+func (p expandedPath) String() string {
+	return p.raw
+}
+
+func (p expandedPath) Type() string {
+	return "string"
+}
+
+func (p *expandedPath) UnmarshalText(raw []byte) error {
+	ex, err := parsePath(string(raw))
 	if err != nil {
 		return err
 	}
@@ -21,7 +36,7 @@ func (p *ExpandablePath) UnmarshalText(raw []byte) error {
 	return nil
 }
 
-func (p ExpandablePath) MarshalText() ([]byte, error) {
+func (p expandedPath) MarshalText() ([]byte, error) {
 	return []byte(p.raw), nil
 }
 
@@ -51,18 +66,19 @@ func expandPath(p string) (string, error) {
 	return p, nil
 }
 
-func ParsePath(raw string) (ExpandablePath, error) {
+func parsePath(raw string) (expandedPath, error) {
 	expanded, err := expandPath(raw)
 	if err != nil {
-		return ExpandablePath{}, fmt.Errorf("expand path: %w", err)
+		return expandedPath{}, fmt.Errorf("expand path: %w", err)
 	}
-	return ExpandablePath{
+	return expandedPath{
 		raw:      raw,
 		expanded: expanded,
 	}, nil
 }
 
 var (
-	_ encoding.TextUnmarshaler = (*ExpandablePath)(nil)
-	_ encoding.TextMarshaler   = (*ExpandablePath)(nil)
+	_ encoding.TextUnmarshaler = (*expandedPath)(nil)
+	_ encoding.TextMarshaler   = (*expandedPath)(nil)
+	_ flag.Value               = (*expandedPath)(nil)
 )

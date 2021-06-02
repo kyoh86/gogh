@@ -14,7 +14,8 @@ import (
 )
 
 var deleteFlags struct {
-	force bool
+	force  bool
+	dryrun bool
 }
 
 var deleteCommand = &cobra.Command{
@@ -72,7 +73,9 @@ var deleteCommand = &cobra.Command{
 				return nil
 			}
 		}
-		if err := local.Delete(ctx, spec, nil); err != nil {
+		if deleteFlags.dryrun {
+			fmt.Printf("deleting local %s\n", spec.String())
+		} else if err := local.Delete(ctx, spec, nil); err != nil {
 			if !os.IsNotExist(err) {
 				return fmt.Errorf("delete local: %w", err)
 			}
@@ -93,7 +96,9 @@ var deleteCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
+		if deleteFlags.dryrun {
+			fmt.Printf("deleting remote %s\n", spec.String())
+		} else if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
 			var gherr *github.ErrorResponse
 			if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
 				log.FromContext(ctx).Errorf("Failed to delete a repository: there is no permission to delete %q", spec.URL())
@@ -109,5 +114,6 @@ var deleteCommand = &cobra.Command{
 func init() {
 	setup()
 	deleteCommand.Flags().BoolVarP(&deleteFlags.force, "force", "", false, "Do NOT confirm to delete.")
+	deleteCommand.Flags().BoolVarP(&deleteFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(deleteCommand)
 }

@@ -12,7 +12,7 @@ var rootsCommand = &cobra.Command{
 	Short:   "Manage roots",
 	Aliases: []string{"root"},
 	PersistentPostRunE: func(*cobra.Command, []string) error {
-		return SaveConfig()
+		return saveConfig()
 	},
 	Run: rootsListCommand.Run,
 }
@@ -22,7 +22,7 @@ var rootsListCommand = &cobra.Command{
 	Short: "List all of the roots",
 	Args:  cobra.ExactArgs(0),
 	Run: func(*cobra.Command, []string) {
-		for _, root := range Roots() {
+		for _, root := range roots() {
 			fmt.Println(root)
 		}
 	},
@@ -32,8 +32,8 @@ var rootsAddCommand = &cobra.Command{
 	Use:   "add",
 	Short: "Add directories into the roots",
 	Args:  cobra.ExactArgs(1),
-	RunE: func(_ *cobra.Command, roots []string) error {
-		return addRoots(roots)
+	RunE: func(_ *cobra.Command, rootList []string) error {
+		return addRoots(rootList)
 	},
 }
 
@@ -41,17 +41,17 @@ var rootsRemoveCommand = &cobra.Command{
 	Use:   "remove",
 	Short: "Remove a directory from the roots",
 	Args:  cobra.RangeArgs(0, 1),
-	RunE: func(_ *cobra.Command, roots []string) error {
+	RunE: func(_ *cobra.Command, rootList []string) error {
 		var selected string
-		if len(roots) == 0 {
+		if len(rootList) == 0 {
 			if err := survey.AskOne(&survey.Select{
 				Message: "Roots to remove",
-				Options: Roots(),
+				Options: roots(),
 			}, &selected); err != nil {
 				return err
 			}
 		} else {
-			selected = roots[0]
+			selected = rootList[0]
 		}
 		removeRoot(selected)
 		return nil
@@ -62,17 +62,17 @@ var rootsSetDefaultCommand = &cobra.Command{
 	Use:   "set-default",
 	Short: "Set a directory as the default in the roots",
 	Args:  cobra.RangeArgs(0, 1),
-	RunE: func(_ *cobra.Command, roots []string) error {
+	RunE: func(_ *cobra.Command, rootList []string) error {
 		var selected string
-		if len(roots) == 0 {
+		if len(rootList) == 0 {
 			if err := survey.AskOne(&survey.Select{
 				Message: "A directory to set as default root",
-				Options: Roots(),
+				Options: roots(),
 			}, &selected); err != nil {
 				return err
 			}
 		} else {
-			selected = roots[0]
+			selected = rootList[0]
 		}
 
 		return setDefaultRoot(selected)

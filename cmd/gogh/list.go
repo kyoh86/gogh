@@ -8,48 +8,51 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listFlags struct {
-	query   string
-	format  ProjectFormat
-	primary bool
+type listFlagsStruct struct {
+	Query   string        `yaml:"-"`
+	Format  ProjectFormat `yaml:"format,omitempty"`
+	Primary bool          `yaml:"primary,omitempty"`
 }
 
-var listCommand = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"ls"},
-	Short:   "List local projects",
-	Args:    cobra.ExactArgs(0),
-	RunE: func(cmd *cobra.Command, _ []string) error {
-		f, err := listFlags.format.Formatter()
-		if err != nil {
-			return err
-		}
-
-		ctx := cmd.Context()
-		roots := Roots()
-		if listFlags.primary && len(roots) > 1 {
-			roots = roots[0:1]
-		}
-		for _, root := range roots {
-			local := gogh.NewLocalController(root)
-			projects, err := local.List(ctx, &gogh.LocalListOption{Query: listFlags.query})
+var (
+	listFlags   listFlagsStruct
+	listCommand = &cobra.Command{
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List local projects",
+		Args:    cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			f, err := listFlags.Format.Formatter()
 			if err != nil {
 				return err
 			}
-			for _, project := range projects {
-				str, err := f.Format(project)
-				if err != nil {
-					log.FromContext(ctx).WithFields(log.Fields{
-						"error":  err,
-						"format": project.FullFilePath(),
-					}).Info("failed to format")
-				}
-				fmt.Println(str)
+
+			ctx := cmd.Context()
+			list := roots()
+			if listFlags.Primary && len(list) > 1 {
+				list = list[0:1]
 			}
-		}
-		return nil
-	},
-}
+			for _, root := range list {
+				local := gogh.NewLocalController(root)
+				projects, err := local.List(ctx, &gogh.LocalListOption{Query: listFlags.Query})
+				if err != nil {
+					return err
+				}
+				for _, project := range projects {
+					str, err := f.Format(project)
+					if err != nil {
+						log.FromContext(ctx).WithFields(log.Fields{
+							"error":  err,
+							"format": project.FullFilePath(),
+						}).Info("failed to format")
+					}
+					fmt.Println(str)
+				}
+			}
+			return nil
+		},
+	}
+)
 
 const formatShortUsage = `
 Print each project in a given format, where [format] can be one of "rel-path", "rel-file-path",
@@ -58,8 +61,9 @@ Print each project in a given format, where [format] can be one of "rel-path", "
 
 func init() {
 	setup()
-	listCommand.Flags().StringVarP(&listFlags.query, "query", "", "", "Query for selecting projects")
-	listCommand.Flags().BoolVarP(&listFlags.primary, "primary", "", false, "List up projects in just a primary root")
-	listCommand.Flags().VarP(&listFlags.format, "format", "f", formatShortUsage)
+	listFlags.Format = defaultFlag.List.Format
+	listCommand.Flags().StringVarP(&listFlags.Query, "query", "", "", "Query for selecting projects")
+	listCommand.Flags().BoolVarP(&listFlags.Primary, "primary", "", defaultFlag.List.Primary, "List up projects in just a primary root")
+	listCommand.Flags().VarP(&listFlags.Format, "format", "f", formatShortUsage)
 	facadeCommand.AddCommand(listCommand)
 }
