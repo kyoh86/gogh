@@ -18,8 +18,6 @@ func (p Project) Root() string {
 	return p.root
 }
 
-func (p Project) Spec() Spec { return p.spec }
-
 func (p Project) Host() string  { return p.spec.host }
 func (p Project) Owner() string { return p.spec.owner }
 func (p Project) Name() string  { return p.spec.name }
@@ -42,10 +40,6 @@ func (p Project) RelFilePath() string {
 
 func (p Project) RelPath() string {
 	return path.Join(p.RelLevels()...)
-}
-
-func (p Project) URL() string {
-	return p.spec.URL()
 }
 
 // CheckEntity checks the project is exist in the local file-system.

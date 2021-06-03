@@ -1,6 +1,7 @@
 package view
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -30,14 +31,18 @@ var ProjectFormatRelFilePath = ProjectFormatFunc(func(p gogh.Project) (string, e
 })
 
 var ProjectFormatURL = ProjectFormatFunc(func(p gogh.Project) (string, error) {
-	return p.URL(), nil
+	return gogh.GetDefaultRemoteURLFromLocalProject(context.Background(), p)
 })
 
 var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
+	utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(context.Background(), p)
+	if err != nil {
+		return "", err
+	}
 	buf, _ := json.Marshal(map[string]interface{}{
 		"fullFilePath": p.FullFilePath(),
 		"relFilePath":  p.RelFilePath(),
-		"url":          p.URL(),
+		"url":          utxt,
 		"relPath":      p.RelPath(),
 		"host":         p.Host(),
 		"owner":        p.Owner(),
@@ -48,10 +53,14 @@ var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 
 func ProjectFormatFields(s string) ProjectFormat {
 	return ProjectFormatFunc(func(p gogh.Project) (string, error) {
+		utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(context.Background(), p)
+		if err != nil {
+			return "", err
+		}
 		return strings.Join([]string{
 			p.FullFilePath(),
 			p.RelFilePath(),
-			p.URL(),
+			utxt,
 			p.RelPath(),
 			p.Host(),
 			p.Owner(),

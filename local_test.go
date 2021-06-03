@@ -53,10 +53,6 @@ func TestLocalController(t *testing.T) {
 			if expectRelPath != project.RelPath() {
 				t.Errorf("expect rel-path %q but %q is gotten", expectRelPath, project.RelPath())
 			}
-			expectURL := "https://github.com/kyoh86/gogh"
-			if expectURL != project.URL() {
-				t.Errorf("expect url %q but %q is gotten", expectURL, project.URL())
-			}
 			expectRelFilePath := filepath.Clean("github.com/kyoh86/gogh")
 			if expectRelFilePath != project.RelFilePath() {
 				t.Errorf("expect rel-path %q but %q is gotten", expectRelFilePath, project.RelFilePath())
@@ -172,7 +168,7 @@ func TestLocalController(t *testing.T) {
 			t.Fatalf("failed to init dummy repository: %s", err)
 		}
 
-		expect := "https://github.com/kyoh86/gogh"
+		expect := "github.com/kyoh86/gogh"
 
 		// match cases
 		for _, testcase := range []struct {
@@ -213,8 +209,8 @@ func TestLocalController(t *testing.T) {
 					t.Fatalf("expect just one project is matched, but actual %d matched", len(actual))
 				}
 				for _, act := range actual {
-					if expect != act.URL() {
-						t.Errorf("expect that %q is matched but actual: %q", expect, act.URL())
+					if expect != act.RelPath() {
+						t.Errorf("expect that %q is matched but actual: %q", expect, act.RelPath())
 					}
 				}
 			})
@@ -306,10 +302,6 @@ func TestLocalController(t *testing.T) {
 		if expectRelFilePath != project.RelFilePath() {
 			t.Errorf("expect rel-path %q but %q is gotten", expectRelFilePath, project.RelFilePath())
 		}
-		expectURL := "https://github.com/kyoh86-tryouts/bare"
-		if expectURL != project.URL() {
-			t.Errorf("expect url %q but %q is gotten", expectURL, project.URL())
-		}
 		expectFullPath := filepath.Join(root, "github.com/kyoh86-tryouts/bare")
 		if expectFullPath != project.FullFilePath() {
 			t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullFilePath())
@@ -372,10 +364,6 @@ func TestLocalController(t *testing.T) {
 		wantRelFilePath := filepath.Clean("github.com/kyoh86/alias")
 		if wantRelFilePath != project.RelFilePath() {
 			t.Errorf("want rel-path %q but %q is gotten", wantRelFilePath, project.RelFilePath())
-		}
-		aliasURL := "https://github.com/kyoh86/alias"
-		if aliasURL != project.URL() {
-			t.Errorf("want url %q but %q is gotten", aliasURL, project.URL())
 		}
 		wantFullPath := filepath.Join(root, "github.com/kyoh86/alias")
 		if wantFullPath != project.FullFilePath() {

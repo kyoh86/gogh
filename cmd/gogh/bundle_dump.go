@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/spf13/cobra"
 )
@@ -39,17 +38,16 @@ var (
 			}
 			local := gogh.NewLocalController(list[0])
 			if err := local.Walk(ctx, nil, func(project gogh.Project) error {
-				localSpec := project.Spec()
-				urls, err := local.GetRemoteURLs(ctx, localSpec, git.DefaultRemoteName)
+				utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(ctx, project)
 				if err != nil {
 					return err
 				}
-				uobj, err := url.Parse(urls[0])
+				uobj, err := url.Parse(utxt)
 				if err != nil {
 					return err
 				}
 				remoteName := strings.Join([]string{uobj.Host, strings.TrimPrefix(strings.TrimSuffix(uobj.Path, ".git"), "/")}, "/")
-				localName := localSpec.String()
+				localName := project.RelPath()
 				if remoteName == localName {
 					fmt.Fprintln(out, localName)
 					return nil
