@@ -34,18 +34,25 @@ type LocalCreateOption struct { // UNDONE: support isBare
 
 func (l *LocalController) Create(ctx context.Context, spec Spec, opt *LocalCreateOption) (Project, error) {
 	p := NewProject(l.root, spec)
-	repo, err := git.PlainInit(p.FullFilePath(), false)
-	if err != nil {
+	if err := CreateLocalProject(ctx, p, spec.URL(), opt); err != nil {
 		return Project{}, err
+	}
+	return p, nil
+}
+
+func CreateLocalProject(_ context.Context, project Project, remoteURL string, _ *LocalCreateOption) error {
+	repo, err := git.PlainInit(project.FullFilePath(), false)
+	if err != nil {
+		return err
 	}
 
 	if _, err := repo.CreateRemote(&config.RemoteConfig{
 		Name: git.DefaultRemoteName,
-		URLs: []string{spec.URL()},
+		URLs: []string{remoteURL},
 	}); err != nil {
-		return Project{}, err
+		return err
 	}
-	return p, nil
+	return nil
 }
 
 func (l *LocalController) SetRemoteSpecs(ctx context.Context, spec Spec, remotes map[string][]Spec) error {

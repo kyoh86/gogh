@@ -67,7 +67,7 @@ func TestLocalController(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to get remote urls from created project: %s", err)
 			}
-			want := []string{expectURL}
+			want := []string{"https://github.com/kyoh86/gogh"}
 			if diff := cmp.Diff(want, got); diff != "" {
 				t.Errorf("remote urls mismatch (-want +got):\n%s", diff)
 			}
@@ -322,6 +322,7 @@ func TestLocalController(t *testing.T) {
 			t.Fatalf("cloned repository has multiple urls: %+v", urls)
 			fallthrough
 		case 1:
+			expectURL := "https://github.com/kyoh86-tryouts/bare"
 			if expectURL != urls[0] {
 				t.Errorf("expect the repository cloned for %q but %q actually", expectURL, urls[0])
 			}

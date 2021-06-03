@@ -1,6 +1,7 @@
 package view_test
 
 import (
+	"context"
 	"encoding/json"
 	"path/filepath"
 	"strings"
@@ -19,6 +20,9 @@ func TestProjectFormat(t *testing.T) {
 	project := gogh.NewProject("/tmp", spec)
 	if err != nil {
 		t.Fatalf("failed to get project from Spec: %s", err)
+	}
+	if err := gogh.CreateLocalProject(context.Background(), project, spec.URL(), nil); err != nil {
+		t.Fatalf("failed to prepare local project from Spec: %s", err)
 	}
 
 	// NOTE: When the path is checked, it should be passed with filepath.Clean.
