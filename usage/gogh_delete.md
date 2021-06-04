@@ -9,8 +9,9 @@ gogh delete [flags] [[OWNER/]NAME]
 ### Options
 
 ```
-      --force   Do NOT confirm to delete.
-  -h, --help    help for delete
+      --dryrun   Displays the operations that would be performed using the specified command without actually running them
+      --force    Do NOT confirm to delete.
+  -h, --help     help for delete
 ```
 
 ### SEE ALSO

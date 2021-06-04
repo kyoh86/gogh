@@ -10,7 +10,7 @@ gogh bundle restore [flags]
 
 ```
       --dryrun        Displays the operations that would be performed using the specified command without actually running them
-      --file string   Read the file as input
+      --file string   Read the file as input (default "~/.config/gogh/dump.txt")
   -h, --help          help for restore
 ```
 
