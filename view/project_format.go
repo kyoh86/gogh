@@ -3,8 +3,10 @@ package view
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 
+	git "github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
 )
 
@@ -30,12 +32,24 @@ var ProjectFormatRelFilePath = ProjectFormatFunc(func(p gogh.Project) (string, e
 	return p.RelFilePath(), nil
 })
 
+func formatProjectURL(p gogh.Project) (string, error) {
+	utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(context.Background(), p)
+	if err != nil {
+		if errors.Is(err, git.ErrRemoteNotFound) {
+			utxt = "https://" + p.RelPath()
+		} else {
+			return "", err
+		}
+	}
+	return utxt, nil
+}
+
 var ProjectFormatURL = ProjectFormatFunc(func(p gogh.Project) (string, error) {
-	return gogh.GetDefaultRemoteURLFromLocalProject(context.Background(), p)
+	return formatProjectURL(p)
 })
 
 var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
-	utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(context.Background(), p)
+	utxt, err := formatProjectURL(p)
 	if err != nil {
 		return "", err
 	}

@@ -43,7 +43,8 @@ var (
 					if err != nil {
 						log.FromContext(ctx).WithFields(log.Fields{
 							"error":  err,
-							"format": project.FullFilePath(),
+							"format": listFlags.Format.String(),
+							"path":   project.FullFilePath(),
 						}).Info("failed to format")
 					}
 					fmt.Println(str)

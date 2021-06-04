@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
 	"strings"
 
+	git "github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/spf13/cobra"
 )
@@ -40,6 +42,9 @@ var (
 			if err := local.Walk(ctx, nil, func(project gogh.Project) error {
 				utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(ctx, project)
 				if err != nil {
+					if errors.Is(err, git.ErrRemoteNotFound) {
+						return nil
+					}
 					return err
 				}
 				uobj, err := url.Parse(utxt)

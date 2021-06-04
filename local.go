@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -95,11 +96,11 @@ func (l *LocalController) GetRemoteURLs(ctx context.Context, spec Spec, name str
 func GetRemoteURLsFromLocalProject(_ context.Context, project Project, name string) ([]string, error) {
 	repo, err := git.PlainOpen(project.FullFilePath())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("open local repository: %w", err)
 	}
 	remote, err := repo.Remote(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get remote %s: %w", name, err)
 	}
 	return remote.Config().URLs, nil
 }
