@@ -13,17 +13,20 @@ import (
 )
 
 func TestProjectFormat(t *testing.T) {
+	tempDir := t.TempDir()
 	spec, err := gogh.NewSpec("github.com", "kyoh86", "gogh")
 	if err != nil {
 		t.Fatalf("failed to init Spec: %s", err)
 	}
-	project := gogh.NewProject("/tmp", spec)
+	project := gogh.NewProject(tempDir, spec)
 	if err != nil {
 		t.Fatalf("failed to get project from Spec: %s", err)
 	}
 	if err := gogh.CreateLocalProject(context.Background(), project, spec.URL(), nil); err != nil {
 		t.Fatalf("failed to prepare local project from Spec: %s", err)
 	}
+
+	wantPath := filepath.Join(tempDir, "github.com/kyoh86/gogh")
 
 	// NOTE: When the path is checked, it should be passed with filepath.Clean.
 	// Because windows uses '\' for path separator.
@@ -35,7 +38,7 @@ func TestProjectFormat(t *testing.T) {
 		{
 			title:  "FullFilePath",
 			format: testtarget.ProjectFormatFullFilePath,
-			expect: filepath.Clean("/tmp/github.com/kyoh86/gogh"),
+			expect: wantPath,
 		},
 		{
 			title:  "RelPath",
@@ -56,7 +59,7 @@ func TestProjectFormat(t *testing.T) {
 			title:  "FieldsWithSpace",
 			format: testtarget.ProjectFormatFields(" "),
 			expect: strings.Join([]string{
-				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
+				wantPath,
 				filepath.Clean("github.com/kyoh86/gogh"),
 				"https://github.com/kyoh86/gogh",
 				"github.com/kyoh86/gogh",
@@ -69,7 +72,7 @@ func TestProjectFormat(t *testing.T) {
 			title:  "FieldsWithSpecial",
 			format: testtarget.ProjectFormatFields("<<>>"),
 			expect: strings.Join([]string{
-				filepath.Clean("/tmp/github.com/kyoh86/gogh"),
+				wantPath,
 				filepath.Clean("github.com/kyoh86/gogh"),
 				"https://github.com/kyoh86/gogh",
 				"github.com/kyoh86/gogh",
@@ -100,7 +103,7 @@ func TestProjectFormat(t *testing.T) {
 			t.Fatalf("failed to unmarshal JSON formatted: %s", err)
 		}
 		want := map[string]interface{}{
-			"fullFilePath": filepath.Clean("/tmp/github.com/kyoh86/gogh"),
+			"fullFilePath": wantPath,
 			"relFilePath":  filepath.Clean("github.com/kyoh86/gogh"),
 			"url":          "https://github.com/kyoh86/gogh",
 			"relPath":      "github.com/kyoh86/gogh",
