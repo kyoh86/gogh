@@ -32,7 +32,7 @@ var ProjectFormatRelFilePath = ProjectFormatFunc(func(p gogh.Project) (string, e
 	return p.RelFilePath(), nil
 })
 
-func formatProjectURL(p gogh.Project) (string, error) {
+var ProjectFormatURL = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 	utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(context.Background(), p)
 	if err != nil {
 		if errors.Is(err, git.ErrRemoteNotFound) {
@@ -42,14 +42,10 @@ func formatProjectURL(p gogh.Project) (string, error) {
 		}
 	}
 	return utxt, nil
-}
-
-var ProjectFormatURL = ProjectFormatFunc(func(p gogh.Project) (string, error) {
-	return formatProjectURL(p)
 })
 
 var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
-	utxt, err := formatProjectURL(p)
+	utxt, err := ProjectFormatURL(p)
 	if err != nil {
 		return "", err
 	}
