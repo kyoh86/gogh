@@ -14,6 +14,8 @@ import (
 )
 
 var deleteFlags struct {
+	local  bool
+	remote bool
 	force  bool
 	dryrun bool
 }
@@ -61,50 +63,54 @@ var deleteCommand = &cobra.Command{
 			return err
 		}
 
-		local := gogh.NewLocalController(defaultRoot())
-		if !deleteFlags.force {
-			var confirmed bool
-			if err := survey.AskOne(&survey.Confirm{
-				Message: fmt.Sprintf("Are you sure you want to delete local-project %s?", spec.String()),
-			}, &confirmed); err != nil {
-				return err
+		if deleteFlags.local {
+			local := gogh.NewLocalController(defaultRoot())
+			if !deleteFlags.force {
+				var confirmed bool
+				if err := survey.AskOne(&survey.Confirm{
+					Message: fmt.Sprintf("Are you sure you want to delete local-project %s?", spec.String()),
+				}, &confirmed); err != nil {
+					return err
+				}
+				if !confirmed {
+					return nil
+				}
 			}
-			if !confirmed {
-				return nil
-			}
-		}
-		if deleteFlags.dryrun {
-			fmt.Printf("deleting local %s\n", spec.String())
-		} else if err := local.Delete(ctx, spec, nil); err != nil {
-			if !os.IsNotExist(err) {
-				return fmt.Errorf("delete local: %w", err)
+			if deleteFlags.dryrun {
+				fmt.Printf("deleting local %s\n", spec.String())
+			} else if err := local.Delete(ctx, spec, nil); err != nil {
+				if !os.IsNotExist(err) {
+					return fmt.Errorf("delete local: %w", err)
+				}
 			}
 		}
 
-		if !deleteFlags.force {
-			var confirmed bool
-			if err := survey.AskOne(&survey.Confirm{
-				Message: fmt.Sprintf("Are you sure you want to delete remote-repository %s?", spec.String()),
-			}, &confirmed); err != nil {
+		if deleteFlags.remote {
+			if !deleteFlags.force {
+				var confirmed bool
+				if err := survey.AskOne(&survey.Confirm{
+					Message: fmt.Sprintf("Are you sure you want to delete remote-repository %s?", spec.String()),
+				}, &confirmed); err != nil {
+					return err
+				}
+				if !confirmed {
+					return nil
+				}
+			}
+			adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+			if err != nil {
 				return err
 			}
-			if !confirmed {
-				return nil
-			}
-		}
-		adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
-		if err != nil {
-			return err
-		}
-		if deleteFlags.dryrun {
-			fmt.Printf("deleting remote %s\n", spec.String())
-		} else if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
-			var gherr *github.ErrorResponse
-			if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
-				log.FromContext(ctx).Errorf("Failed to delete a repository: there is no permission to delete %q", spec.URL())
-				log.FromContext(ctx).Errorf(`Add scope "delete_repo" for the token for %q`, server.String())
-			} else {
-				return err
+			if deleteFlags.dryrun {
+				fmt.Printf("deleting remote %s\n", spec.String())
+			} else if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
+				var gherr *github.ErrorResponse
+				if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
+					log.FromContext(ctx).Errorf("Failed to delete a repository: there is no permission to delete %q", spec.URL())
+					log.FromContext(ctx).Errorf(`Add scope "delete_repo" for the token for %q`, server.String())
+				} else {
+					return err
+				}
 			}
 		}
 		return nil
@@ -113,6 +119,8 @@ var deleteCommand = &cobra.Command{
 
 func init() {
 	setup()
+	deleteCommand.Flags().BoolVarP(&deleteFlags.local, "local", "", true, "Delete local project.")
+	deleteCommand.Flags().BoolVarP(&deleteFlags.remote, "remote", "", false, "Delete remote project.")
 	deleteCommand.Flags().BoolVarP(&deleteFlags.force, "force", "", false, "Do NOT confirm to delete.")
 	deleteCommand.Flags().BoolVarP(&deleteFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(deleteCommand)
