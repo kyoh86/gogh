@@ -43,11 +43,6 @@ func TestServersYAML(t *testing.T) {
 			expect error
 		}{
 			{
-				title:  "invalid-yaml",
-				input:  "NaN",
-				expect: errors.New("String node found where MapNode is expected"),
-			},
-			{
 				title:  "invalid-value",
 				input:  fmt.Sprintf(`{"%s":1}`, invalidHost),
 				expect: testtarget.ErrInvalidHost("invalid value: 1"),
