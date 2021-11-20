@@ -47,7 +47,7 @@ func addRoots(rootList []string) error {
 func removeRoot(r string) {
 	rootList := make([]expandedPath, 0, len(config.Roots))
 	for _, root := range config.Roots {
-		if root.raw == r {
+		if root.raw == r || root.expanded == r {
 			continue
 		}
 		rootList = append(rootList, root)
