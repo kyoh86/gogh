@@ -63,7 +63,7 @@ Print each project in a given format, where [format] can be one of "rel-path", "
 func init() {
 	setup()
 	listFlags.Format = defaultFlag.List.Format
-	listCommand.Flags().StringVarP(&listFlags.Query, "query", "", "", "Query for selecting projects")
+	listCommand.Flags().StringVarP(&listFlags.Query, "query", "q", "", "Query for selecting projects")
 	listCommand.Flags().BoolVarP(&listFlags.Primary, "primary", "", defaultFlag.List.Primary, "List up projects in just a primary root")
 	listCommand.Flags().VarP(&listFlags.Format, "format", "f", formatShortUsage)
 	facadeCommand.AddCommand(listCommand)

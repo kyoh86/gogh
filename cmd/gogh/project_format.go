@@ -35,11 +35,11 @@ func (f ProjectFormat) Formatter() (view.ProjectFormat, error) {
 
 func formatter(v string) (view.ProjectFormat, error) {
 	switch v {
-	case "", "rel-path":
+	case "", "rel-path", "rel":
 		return view.ProjectFormatRelPath, nil
 	case "rel-file-path":
 		return view.ProjectFormatRelFilePath, nil
-	case "full-file-path":
+	case "full-file-path", "full":
 		return view.ProjectFormatFullFilePath, nil
 	case "json":
 		return view.ProjectFormatJSON, nil
