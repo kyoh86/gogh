@@ -98,7 +98,7 @@ var configCommand = &cobra.Command{
 				logger.Error("[Bug] Failed to build default flag map")
 				return nil
 			}
-			defaultFlags = regexp.MustCompile("(?m)^").ReplaceAllString(w.String(), "   ")
+			defaultFlags = regexp.MustCompile("(?m)^").ReplaceAllString(w.String(), "  ")
 		}
 		var w strings.Builder
 		if err := t.Execute(&w, map[string]interface{}{
