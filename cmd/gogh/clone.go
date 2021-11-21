@@ -24,7 +24,7 @@ var cloneCommand = &cobra.Command{
   (for example, "github.com/kyoh86/example") like below.
     - "NAME": e.g. "example"; 
     - "OWNER/NAME": e.g. "kyoh86/example"
-  They'll be filled with a server-spec set by "servers login".
+  They'll be completed with a server-spec set by "servers login".
 
   It accepts an alias for each repository.
   For example:
