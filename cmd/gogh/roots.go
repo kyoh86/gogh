@@ -86,4 +86,5 @@ func init() {
 	rootsCommand.AddCommand(rootsAddCommand)
 	rootsCommand.AddCommand(rootsListCommand)
 	facadeCommand.AddCommand(rootsCommand)
+	configCommand.AddCommand(rootsCommand)
 }

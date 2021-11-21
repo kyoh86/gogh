@@ -1,0 +1,16 @@
+Now gogh is executed in the following context.
+
+## Root directories
+  (from {{.configFilePath}})
+
+{{range .roots}}  {{.}}
+{{end}}
+## Servers
+  (from {{.serversFilePath}})
+
+{{range .servers}}  {{.}}
+{{end}}
+## Default flags
+  (from {{.defaultFlagFilePath}})
+
+{{.defaultFlags}}

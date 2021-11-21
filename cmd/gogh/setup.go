@@ -20,19 +20,25 @@ func setup() {
 	})
 }
 
-func setupCore() error {
-	if err := loadConfig(); err != nil {
-		return err
-	}
+var (
+	configFilePath      string
+	serversFilePath     string
+	defaultFlagFilePath string
+)
 
-	if err := loadServers(); err != nil {
-		return err
+func setupCore() (err error) {
+	configFilePath, err = loadConfig()
+	if err != nil {
+		return
 	}
-
-	if err := loadDefaultFlag(); err != nil {
-		return err
+	serversFilePath, err = loadServers()
+	if err != nil {
+		return
 	}
-
+	defaultFlagFilePath, err = loadDefaultFlag()
+	if err != nil {
+		return
+	}
 	return nil
 }
 
@@ -69,24 +75,30 @@ type appFileHandler struct {
 	basename string
 }
 
-func (h appFileHandler) load(output interface{}) error {
+func (h appFileHandler) appFilePath() (string, error) {
 	dir, err := h.dir()
 	if err != nil {
-		return fmt.Errorf("search app file dir for %s: %w", h.basename, err)
+		return "", fmt.Errorf("search app file dir for %s: %w", h.basename, err)
 	}
-	path := filepath.Join(dir, appName, h.basename)
+	return filepath.Join(dir, appName, h.basename), nil
+}
+
+func (h appFileHandler) load(output interface{}) (string, error) {
+	path, err := h.appFilePath()
+	if err != nil {
+		return "", err
+	}
 	if err := loadYAML(path, output); err != nil {
-		return fmt.Errorf("load %s: %w", h.basename, err)
+		return "", fmt.Errorf("load %s: %w", h.basename, err)
 	}
-	return nil
+	return path, nil
 }
 
 func (h appFileHandler) save(input interface{}) error {
-	dir, err := h.dir()
+	path, err := h.appFilePath()
 	if err != nil {
-		return fmt.Errorf("search app file dir for %s: %w", h.basename, err)
+		return err
 	}
-	path := filepath.Join(dir, appName, h.basename)
 	if err := saveYAML(path, input); err != nil {
 		return fmt.Errorf("save %s: %w", h.basename, err)
 	}
@@ -99,14 +111,15 @@ var (
 	defaultFlagFileHandler = appFileHandler{dir: os.UserConfigDir, basename: "flag.yaml"}
 )
 
-func loadConfig() error {
-	if err := configFileHandler.load(&config); err != nil {
-		return err
+func loadConfig() (string, error) {
+	path, err := configFileHandler.load(&config)
+	if err != nil {
+		return "", err
 	}
 	if len(config.Roots) == 0 {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
-			return fmt.Errorf("search user home dir: %w", err)
+			return "", fmt.Errorf("search user home dir: %w", err)
 		}
 		raw := filepath.Join(homeDir, "Projects")
 		config.Roots = []expandedPath{{
@@ -114,14 +127,14 @@ func loadConfig() error {
 			expanded: raw,
 		}}
 	}
-	return nil
+	return path, nil
 }
 
 func saveConfig() error {
 	return configFileHandler.save(config)
 }
 
-func loadServers() error {
+func loadServers() (string, error) {
 	return serversFileHandler.load(&servers)
 }
 
@@ -129,6 +142,6 @@ func saveServers() error {
 	return serversFileHandler.save(servers)
 }
 
-func loadDefaultFlag() error {
+func loadDefaultFlag() (string, error) {
 	return defaultFlagFileHandler.load(&defaultFlag)
 }

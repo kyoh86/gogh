@@ -19,4 +19,5 @@ var serversCommand = &cobra.Command{
 func init() {
 	setup()
 	facadeCommand.AddCommand(serversCommand)
+	configCommand.AddCommand(serversCommand)
 }
