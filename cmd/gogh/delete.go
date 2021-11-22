@@ -23,7 +23,7 @@ var deleteFlags struct {
 var deleteCommand = &cobra.Command{
 	Use:     "delete [flags] [[OWNER/]NAME]",
 	Aliases: []string{"remove"},
-	Short:   "Delete a repository with a remote repository",
+	Short:   "Delete a project with a remote repository",
 	Args:    cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
