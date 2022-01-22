@@ -87,17 +87,17 @@ func cloneAll(ctx context.Context, specs []string, dryrun bool) error {
 
 	local := gogh.NewLocalController(defaultRoot())
 	if len(specs) == 1 {
-		return cloneOne(ctx, local, parser, specs[0])()
+		return cloneOneFunc(ctx, local, parser, specs[0])()
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, s := range specs {
-		eg.Go(cloneOne(ctx, local, parser, s))
+		eg.Go(cloneOneFunc(ctx, local, parser, s))
 	}
 	return eg.Wait()
 }
 
-func cloneOne(ctx context.Context, local *gogh.LocalController, parser *gogh.SpecParser, s string) func() error {
+func cloneOneFunc(ctx context.Context, local *gogh.LocalController, parser *gogh.SpecParser, s string) func() error {
 	return func() error {
 		spec, alias, server, err := parser.ParseWithAlias(s)
 		if err != nil {

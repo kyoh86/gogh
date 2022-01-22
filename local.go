@@ -2,6 +2,7 @@ package gogh
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -28,6 +29,22 @@ type LocalController struct {
 	// NOTE: v1 -> v2 diferrence
 	// if we wanna manage mulstiple root, create multiple controller instances.
 	root string
+}
+
+type LocalExistOption struct {
+}
+
+func (l *LocalController) Exist(ctx context.Context, spec Spec, opt *LocalExistOption) (bool, error) {
+	project := NewProject(l.root, spec)
+	_, err := git.PlainOpen(project.FullFilePath())
+	switch {
+	case err == nil:
+		return true, nil
+	case errors.Is(err, git.ErrRepositoryNotExists):
+		return false, nil
+	default:
+		return false, err
+	}
 }
 
 type LocalCreateOption struct { // UNDONE: support isBare

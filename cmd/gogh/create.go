@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/go-git/go-git/v5"
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
@@ -64,11 +64,18 @@ var (
 			}
 
 			local := gogh.NewLocalController(defaultRoot())
-			if _, err = local.Create(ctx, spec, nil); err != nil {
-				if !errors.Is(err, git.ErrRepositoryAlreadyExists) {
-					return err
-				}
+			exist, err := local.Exist(ctx, spec, nil)
+			if err != nil {
+				return err
 			}
+			if exist {
+				return errors.New("local project already exists")
+			}
+
+			l := log.FromContext(ctx).WithFields(log.Fields{
+				"server": server,
+				"spec":   spec,
+			})
 
 			adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
 			if err != nil {
@@ -78,48 +85,54 @@ var (
 
 			// check repo has already existed
 			if _, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil); err == nil {
+				l.Info("repository already exists")
+			} else {
+				if createFlags.Template == "" {
+					ropt := &gogh.RemoteCreateOption{
+						Description:         createFlags.Description,
+						Homepage:            createFlags.Homepage,
+						LicenseTemplate:     createFlags.LicenseTemplate,
+						GitignoreTemplate:   createFlags.GitignoreTemplate,
+						Private:             createFlags.Private,
+						IsTemplate:          createFlags.IsTemplate,
+						DisableDownloads:    createFlags.DisableDownloads,
+						DisableWiki:         createFlags.DisableWiki,
+						AutoInit:            createFlags.AutoInit,
+						DisableProjects:     createFlags.DisableProjects,
+						DisableIssues:       createFlags.DisableIssues,
+						PreventSquashMerge:  createFlags.PreventSquashMerge,
+						PreventMergeCommit:  createFlags.PreventMergeCommit,
+						PreventRebaseMerge:  createFlags.PreventRebaseMerge,
+						DeleteBranchOnMerge: createFlags.DeleteBranchOnMerge,
+					}
+					if server.User() != spec.Owner() {
+						ropt.Organization = spec.Owner()
+					}
+
+					_, err = remote.Create(ctx, spec.Name(), ropt)
+					return err
+				}
+
+				from, err := gogh.ParseSiblingSpec(spec, createFlags.Template)
+				if err != nil {
+					return err
+				}
+				ropt := &gogh.RemoteCreateFromTemplateOption{}
+				if server.User() != spec.Owner() {
+					ropt.Owner = spec.Owner()
+				}
+				if createFlags.Private {
+					ropt.Private = true
+				}
+				if _, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt); err != nil {
+					return err
+				}
+			}
+			if _, err := local.Clone(ctx, spec, server, nil); err != nil {
+				l.WithField("error", err).Warn("failed to get repository")
 				return nil
 			}
-
-			if createFlags.Template == "" {
-				ropt := &gogh.RemoteCreateOption{
-					Description:         createFlags.Description,
-					Homepage:            createFlags.Homepage,
-					LicenseTemplate:     createFlags.LicenseTemplate,
-					GitignoreTemplate:   createFlags.GitignoreTemplate,
-					Private:             createFlags.Private,
-					IsTemplate:          createFlags.IsTemplate,
-					DisableDownloads:    createFlags.DisableDownloads,
-					DisableWiki:         createFlags.DisableWiki,
-					AutoInit:            createFlags.AutoInit,
-					DisableProjects:     createFlags.DisableProjects,
-					DisableIssues:       createFlags.DisableIssues,
-					PreventSquashMerge:  createFlags.PreventSquashMerge,
-					PreventMergeCommit:  createFlags.PreventMergeCommit,
-					PreventRebaseMerge:  createFlags.PreventRebaseMerge,
-					DeleteBranchOnMerge: createFlags.DeleteBranchOnMerge,
-				}
-				if server.User() != spec.Owner() {
-					ropt.Organization = spec.Owner()
-				}
-
-				_, err = remote.Create(ctx, spec.Name(), ropt)
-				return err
-			}
-
-			from, err := gogh.ParseSiblingSpec(spec, createFlags.Template)
-			if err != nil {
-				return err
-			}
-			ropt := &gogh.RemoteCreateFromTemplateOption{}
-			if server.User() != spec.Owner() {
-				ropt.Owner = spec.Owner()
-			}
-			if createFlags.Private {
-				ropt.Private = true
-			}
-			_, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt)
-			return err
+			return nil
 		},
 	}
 )

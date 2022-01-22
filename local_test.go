@@ -30,6 +30,17 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Create", func(t *testing.T) {
 		spec := mustSpec(t, "github.com", "kyoh86", "gogh")
+		local.Delete(ctx, spec, nil)
+		t.Run("Exist", func(t *testing.T) {
+			e, err := local.Exist(ctx, spec, nil)
+			if err != nil {
+				t.Fatalf("failed to create a project: %s", err)
+			}
+			if e {
+				t.Errorf("%q exists", spec)
+			}
+		})
+
 		t.Run("First", func(t *testing.T) {
 			project, err := local.Create(ctx, spec, nil)
 			if err != nil {
@@ -70,6 +81,16 @@ func TestLocalController(t *testing.T) {
 			want := []string{"https://github.com/kyoh86/gogh"}
 			if diff := cmp.Diff(want, got); diff != "" {
 				t.Errorf("remote urls mismatch (-want +got):\n%s", diff)
+			}
+		})
+
+		t.Run("NotExist", func(t *testing.T) {
+			e, err := local.Exist(ctx, spec, nil)
+			if err != nil {
+				t.Fatalf("failed to create a project: %s", err)
+			}
+			if !e {
+				t.Errorf("%q does not exist", spec)
 			}
 		})
 
