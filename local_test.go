@@ -30,7 +30,6 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Create", func(t *testing.T) {
 		spec := mustSpec(t, "github.com", "kyoh86", "gogh")
-		local.Delete(ctx, spec, nil)
 		t.Run("Exist", func(t *testing.T) {
 			e, err := local.Exist(ctx, spec, nil)
 			if err != nil {
