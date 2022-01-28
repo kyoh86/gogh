@@ -109,23 +109,25 @@ var (
 						ropt.Organization = spec.Owner()
 					}
 
-					_, err = remote.Create(ctx, spec.Name(), ropt)
-					return err
-				}
+					if _, err := remote.Create(ctx, spec.Name(), ropt); err != nil {
+						return err
+					}
+				} else {
 
-				from, err := gogh.ParseSiblingSpec(spec, createFlags.Template)
-				if err != nil {
-					return err
-				}
-				ropt := &gogh.RemoteCreateFromTemplateOption{}
-				if server.User() != spec.Owner() {
-					ropt.Owner = spec.Owner()
-				}
-				if createFlags.Private {
-					ropt.Private = true
-				}
-				if _, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt); err != nil {
-					return err
+					from, err := gogh.ParseSiblingSpec(spec, createFlags.Template)
+					if err != nil {
+						return err
+					}
+					ropt := &gogh.RemoteCreateFromTemplateOption{}
+					if server.User() != spec.Owner() {
+						ropt.Owner = spec.Owner()
+					}
+					if createFlags.Private {
+						ropt.Private = true
+					}
+					if _, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt); err != nil {
+						return err
+					}
 				}
 			}
 			if _, err := local.Clone(ctx, spec, server, nil); err != nil {
