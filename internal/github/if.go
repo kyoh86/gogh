@@ -62,10 +62,26 @@ type RepositoryListOptions struct {
 type Adaptor interface {
 	GetHost() string
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
-	RepositoryList(ctx context.Context, opts *RepositoryListOptions) ([]*RepositoryFragment, PageInfoFragment, error)
-	RepositoryCreate(ctx context.Context, org string, repo *Repository) (*Repository, *Response, error)
-	RepositoryCreateFork(ctx context.Context, owner string, repo string, opts *RepositoryCreateForkOptions) (*Repository, *Response, error)
-	RepositoryCreateFromTemplate(ctx context.Context, templateOwner, templateRepo string, templateRepoReq *TemplateRepoRequest) (*Repository, *Response, error)
+	RepositoryList(
+		ctx context.Context,
+		opts *RepositoryListOptions,
+	) ([]*RepositoryFragment, PageInfoFragment, error)
+	RepositoryCreate(
+		ctx context.Context,
+		org string,
+		repo *Repository,
+	) (*Repository, *Response, error)
+	RepositoryCreateFork(
+		ctx context.Context,
+		owner string,
+		repo string,
+		opts *RepositoryCreateForkOptions,
+	) (*Repository, *Response, error)
+	RepositoryCreateFromTemplate(
+		ctx context.Context,
+		templateOwner, templateRepo string,
+		templateRepoReq *TemplateRepoRequest,
+	) (*Repository, *Response, error)
 	RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error)
 	RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error)
 }

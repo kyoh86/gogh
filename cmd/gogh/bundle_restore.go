@@ -43,7 +43,9 @@ var (
 func init() {
 	setup()
 	bundleRestoreFlags.File = defaultFlag.BundleRestore.File
-	bundleRestoreCommand.Flags().BoolVarP(&bundleRestoreFlags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	bundleRestoreCommand.Flags().VarP(&bundleRestoreFlags.File, "file", "", "Read the file as input")
+	bundleRestoreCommand.Flags().
+		BoolVarP(&bundleRestoreFlags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	bundleRestoreCommand.Flags().
+		VarP(&bundleRestoreFlags.File, "file", "", "Read the file as input")
 	bundleCommand.AddCommand(bundleRestoreCommand)
 }

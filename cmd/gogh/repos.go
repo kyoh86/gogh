@@ -184,21 +184,31 @@ func init() {
 		}
 		repoRelationAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
 	}
-	reposCommand.Flags().IntVarP(&reposFlags.Limit, "limit", "", defaultInt(defaultFlag.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
+	reposCommand.Flags().
+		IntVarP(&reposFlags.Limit, "limit", "", defaultInt(defaultFlag.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
 
-	reposCommand.Flags().BoolVarP(&reposFlags.Public, "public", "", defaultFlag.Repos.Public, "Show only public repositories")
-	reposCommand.Flags().BoolVarP(&reposFlags.Private, "private", "", defaultFlag.Repos.Private, "Show only private repositories")
+	reposCommand.Flags().
+		BoolVarP(&reposFlags.Public, "public", "", defaultFlag.Repos.Public, "Show only public repositories")
+	reposCommand.Flags().
+		BoolVarP(&reposFlags.Private, "private", "", defaultFlag.Repos.Private, "Show only private repositories")
 
-	reposCommand.Flags().BoolVarP(&reposFlags.Fork, "fork", "", defaultFlag.Repos.Fork, "Show only forks")
-	reposCommand.Flags().BoolVarP(&reposFlags.NotFork, "no-fork", "", defaultFlag.Repos.NotFork, "Omit forks")
+	reposCommand.Flags().
+		BoolVarP(&reposFlags.Fork, "fork", "", defaultFlag.Repos.Fork, "Show only forks")
+	reposCommand.Flags().
+		BoolVarP(&reposFlags.NotFork, "no-fork", "", defaultFlag.Repos.NotFork, "Omit forks")
 
-	reposCommand.Flags().StringVarP(&reposFlags.Format, "format", "", defaultString(defaultFlag.Repos.Format, "table"), "The formatting style for each repository; "+repoFormatAccept)
-	reposCommand.Flags().StringVarP(&reposFlags.Color, "color", "", defaultString(defaultFlag.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
+	reposCommand.Flags().
+		StringVarP(&reposFlags.Format, "format", "", defaultString(defaultFlag.Repos.Format, "table"), "The formatting style for each repository; "+repoFormatAccept)
+	reposCommand.Flags().
+		StringVarP(&reposFlags.Color, "color", "", defaultString(defaultFlag.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
 
-	reposCommand.Flags().StringSliceVarP(&reposFlags.Relation, "relation", "", defaultStringSlice(defaultFlag.Repos.Relation, []string{"owner", "organizationMember"}), "The relation of user to each repository; "+repoRelationAccept)
+	reposCommand.Flags().
+		StringSliceVarP(&reposFlags.Relation, "relation", "", defaultStringSlice(defaultFlag.Repos.Relation, []string{"owner", "organizationMember"}), "The relation of user to each repository; "+repoRelationAccept)
 
-	reposCommand.Flags().StringVarP(&reposFlags.Sort, "sort", "", defaultFlag.Repos.Sort, "Property by which repository be ordered; "+repoSortAccept)
-	reposCommand.Flags().StringVarP(&reposFlags.Order, "order", "", defaultFlag.Repos.Order, "Directions in which to order a list of items when provided an `sort` flag; "+repoOrderAccept)
+	reposCommand.Flags().
+		StringVarP(&reposFlags.Sort, "sort", "", defaultFlag.Repos.Sort, "Property by which repository be ordered; "+repoSortAccept)
+	reposCommand.Flags().
+		StringVarP(&reposFlags.Order, "order", "", defaultFlag.Repos.Order, "Directions in which to order a list of items when provided an `sort` flag; "+repoOrderAccept)
 
 	facadeCommand.AddCommand(reposCommand)
 }

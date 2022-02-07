@@ -97,7 +97,12 @@ func cloneAll(ctx context.Context, specs []string, dryrun bool) error {
 	return eg.Wait()
 }
 
-func cloneOneFunc(ctx context.Context, local *gogh.LocalController, parser *gogh.SpecParser, s string) func() error {
+func cloneOneFunc(
+	ctx context.Context,
+	local *gogh.LocalController,
+	parser *gogh.SpecParser,
+	s string,
+) func() error {
 	return func() error {
 		spec, alias, server, err := parser.ParseWithAlias(s)
 		if err != nil {
@@ -139,6 +144,7 @@ func cloneOneFunc(ctx context.Context, local *gogh.LocalController, parser *gogh
 
 func init() {
 	setup()
-	cloneCommand.Flags().BoolVarP(&cloneFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cloneCommand.Flags().
+		BoolVarP(&cloneFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(cloneCommand)
 }

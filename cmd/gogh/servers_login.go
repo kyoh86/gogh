@@ -61,8 +61,10 @@ func stringValidator(v func(s string) error) survey.Validator {
 
 func init() {
 	setup()
-	loginCommand.Flags().StringVarP(&loginFlags.Host, "host", "", gogh.DefaultHost, "Host name to login")
+	loginCommand.Flags().
+		StringVarP(&loginFlags.Host, "host", "", gogh.DefaultHost, "Host name to login")
 	loginCommand.Flags().StringVarP(&loginFlags.User, "user", "", "", "User name to login")
-	loginCommand.Flags().StringVarP(&loginFlags.Password, "password", "", "", "Password or developer private token")
+	loginCommand.Flags().
+		StringVarP(&loginFlags.Password, "password", "", "", "Password or developer private token")
 	serversCommand.AddCommand(loginCommand)
 }

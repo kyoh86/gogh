@@ -124,7 +124,10 @@ func TestServers(t *testing.T) {
 		})
 
 		t.Run("SetDefault", func(t *testing.T) {
-			if err := servers.SetDefault("unknown.dev"); !errors.Is(err, testtarget.ErrServerNotFound) {
+			if err := servers.SetDefault("unknown.dev"); !errors.Is(
+				err,
+				testtarget.ErrServerNotFound,
+			) {
 				t.Fatalf("expect error %q, actual: %v", testtarget.ErrServerNotFound, err)
 			}
 			if err := servers.SetDefault(host2); err != nil {

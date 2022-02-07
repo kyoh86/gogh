@@ -65,11 +65,19 @@ func TestLocalController(t *testing.T) {
 			}
 			expectRelFilePath := filepath.Clean("github.com/kyoh86/gogh")
 			if expectRelFilePath != project.RelFilePath() {
-				t.Errorf("expect rel-path %q but %q is gotten", expectRelFilePath, project.RelFilePath())
+				t.Errorf(
+					"expect rel-path %q but %q is gotten",
+					expectRelFilePath,
+					project.RelFilePath(),
+				)
 			}
 			expectFullPath := filepath.Join(root, "github.com", "kyoh86", "gogh")
 			if expectFullPath != project.FullFilePath() {
-				t.Errorf("expect full-path %q but %q is gotten", expectFullPath, project.FullFilePath())
+				t.Errorf(
+					"expect full-path %q but %q is gotten",
+					expectFullPath,
+					project.FullFilePath(),
+				)
 			}
 
 			// check git remote
@@ -95,14 +103,22 @@ func TestLocalController(t *testing.T) {
 
 		t.Run("Duplicated", func(t *testing.T) {
 			if _, err := local.Create(ctx, spec, nil); err != git.ErrRepositoryAlreadyExists {
-				t.Fatalf("error mismatch: -want +got\n -%v\n +%v", git.ErrRepositoryAlreadyExists, err)
+				t.Fatalf(
+					"error mismatch: -want +got\n -%v\n +%v",
+					git.ErrRepositoryAlreadyExists,
+					err,
+				)
 			}
 			server, err := testtarget.NewServerFor(spec.Host(), spec.Owner(), "")
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
 			if _, err := local.Clone(ctx, spec, server, nil); err != git.ErrRepositoryAlreadyExists {
-				t.Fatalf("error mismatch: -want +got\n -%v\n +%v", git.ErrRepositoryAlreadyExists, err)
+				t.Fatalf(
+					"error mismatch: -want +got\n -%v\n +%v",
+					git.ErrRepositoryAlreadyExists,
+					err,
+				)
 			}
 		})
 	})
@@ -226,7 +242,10 @@ func TestLocalController(t *testing.T) {
 					t.Fatalf("failed to get project list: %s", err)
 				}
 				if len(actual) != 1 {
-					t.Fatalf("expect just one project is matched, but actual %d matched", len(actual))
+					t.Fatalf(
+						"expect just one project is matched, but actual %d matched",
+						len(actual),
+					)
 				}
 				for _, act := range actual {
 					if expect != act.RelPath() {
@@ -320,7 +339,11 @@ func TestLocalController(t *testing.T) {
 		}
 		expectRelFilePath := filepath.Clean("github.com/kyoh86-tryouts/bare")
 		if expectRelFilePath != project.RelFilePath() {
-			t.Errorf("expect rel-path %q but %q is gotten", expectRelFilePath, project.RelFilePath())
+			t.Errorf(
+				"expect rel-path %q but %q is gotten",
+				expectRelFilePath,
+				project.RelFilePath(),
+			)
 		}
 		expectFullPath := filepath.Join(root, "github.com/kyoh86-tryouts/bare")
 		if expectFullPath != project.FullFilePath() {

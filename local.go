@@ -34,7 +34,11 @@ type LocalController struct {
 type LocalExistOption struct {
 }
 
-func (l *LocalController) Exist(ctx context.Context, spec Spec, opt *LocalExistOption) (bool, error) {
+func (l *LocalController) Exist(
+	ctx context.Context,
+	spec Spec,
+	opt *LocalExistOption,
+) (bool, error) {
 	project := NewProject(l.root, spec)
 	_, err := git.PlainOpen(project.FullFilePath())
 	switch {
@@ -50,7 +54,11 @@ func (l *LocalController) Exist(ctx context.Context, spec Spec, opt *LocalExistO
 type LocalCreateOption struct { // UNDONE: support isBare
 }
 
-func (l *LocalController) Create(ctx context.Context, spec Spec, opt *LocalCreateOption) (Project, error) {
+func (l *LocalController) Create(
+	ctx context.Context,
+	spec Spec,
+	opt *LocalCreateOption,
+) (Project, error) {
 	p := NewProject(l.root, spec)
 	if err := CreateLocalProject(ctx, p, spec.URL(), opt); err != nil {
 		return Project{}, err
@@ -58,7 +66,12 @@ func (l *LocalController) Create(ctx context.Context, spec Spec, opt *LocalCreat
 	return p, nil
 }
 
-func CreateLocalProject(_ context.Context, project Project, remoteURL string, _ *LocalCreateOption) error {
+func CreateLocalProject(
+	_ context.Context,
+	project Project,
+	remoteURL string,
+	_ *LocalCreateOption,
+) error {
 	repo, err := git.PlainInit(project.FullFilePath(), false)
 	if err != nil {
 		return err
@@ -73,7 +86,11 @@ func CreateLocalProject(_ context.Context, project Project, remoteURL string, _ 
 	return nil
 }
 
-func (l *LocalController) SetRemoteSpecs(ctx context.Context, spec Spec, remotes map[string][]Spec) error {
+func (l *LocalController) SetRemoteSpecs(
+	ctx context.Context,
+	spec Spec,
+	remotes map[string][]Spec,
+) error {
 	urls := map[string][]string{}
 	for name, specs := range remotes {
 		for _, spec := range specs {
@@ -83,11 +100,19 @@ func (l *LocalController) SetRemoteSpecs(ctx context.Context, spec Spec, remotes
 	return l.SetRemoteURLs(ctx, spec, urls)
 }
 
-func (l *LocalController) SetRemoteURLs(ctx context.Context, spec Spec, remotes map[string][]string) error {
+func (l *LocalController) SetRemoteURLs(
+	ctx context.Context,
+	spec Spec,
+	remotes map[string][]string,
+) error {
 	return SetRemoteURLsOnLocalProject(ctx, NewProject(l.root, spec), remotes)
 }
 
-func SetRemoteURLsOnLocalProject(_ context.Context, project Project, remotes map[string][]string) error {
+func SetRemoteURLsOnLocalProject(
+	_ context.Context,
+	project Project,
+	remotes map[string][]string,
+) error {
 	repo, err := git.PlainOpen(project.FullFilePath())
 	if err != nil {
 		return err
@@ -106,11 +131,19 @@ func SetRemoteURLsOnLocalProject(_ context.Context, project Project, remotes map
 	return repo.SetConfig(cfg)
 }
 
-func (l *LocalController) GetRemoteURLs(ctx context.Context, spec Spec, name string) ([]string, error) {
+func (l *LocalController) GetRemoteURLs(
+	ctx context.Context,
+	spec Spec,
+	name string,
+) ([]string, error) {
 	return GetRemoteURLsFromLocalProject(ctx, NewProject(l.root, spec), name)
 }
 
-func GetRemoteURLsFromLocalProject(_ context.Context, project Project, name string) ([]string, error) {
+func GetRemoteURLsFromLocalProject(
+	_ context.Context,
+	project Project,
+	name string,
+) ([]string, error) {
 	repo, err := git.PlainOpen(project.FullFilePath())
 	if err != nil {
 		return nil, fmt.Errorf("open local repository: %w", err)
@@ -136,7 +169,12 @@ type LocalCloneOption struct {
 	// UNDONE: support *git.CloneOptions
 }
 
-func (l *LocalController) Clone(ctx context.Context, spec Spec, server Server, opt *LocalCloneOption) (Project, error) {
+func (l *LocalController) Clone(
+	ctx context.Context,
+	spec Spec,
+	server Server,
+	opt *LocalCloneOption,
+) (Project, error) {
 	var auth transport.AuthMethod
 	if token := server.Token(); token != "" {
 		auth = &http.BasicAuth{
@@ -170,7 +208,11 @@ type LocalWalkOption struct {
 	Query string
 }
 
-func (l *LocalController) Walk(ctx context.Context, opt *LocalWalkOption, walkFn LocalWalkFunc) error {
+func (l *LocalController) Walk(
+	ctx context.Context,
+	opt *LocalWalkOption,
+	walkFn LocalWalkFunc,
+) error {
 	if _, err := os.Lstat(l.root); err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -191,14 +233,18 @@ func (l *LocalController) Walk(ctx context.Context, opt *LocalWalkOption, walkFn
 		}()
 
 		if _, err := git.PlainOpen(pathname); err != nil {
-			log.FromContext(ctx).WithFields(log.Fields{"error": err, "rel": rel}).Debug("skip a dir that is not a git directory")
+			log.FromContext(ctx).
+				WithFields(log.Fields{"error": err, "rel": rel}).
+				Debug("skip a dir that is not a git directory")
 			return nil
 		}
 
 		// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
 		spec, err := NewSpec(parts[0], parts[1], parts[2])
 		if err != nil {
-			log.FromContext(ctx).WithFields(log.Fields{"error": err, "rel": rel}).Debug("skip invalid entity")
+			log.FromContext(ctx).
+				WithFields(log.Fields{"error": err, "rel": rel}).
+				Debug("skip invalid entity")
 			return nil
 		}
 		p := NewProject(l.root, spec)

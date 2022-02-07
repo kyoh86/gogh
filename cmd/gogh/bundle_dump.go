@@ -26,7 +26,11 @@ var (
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
 			if bundleDumpFlags.File.expanded != "" {
-				f, err := os.OpenFile(bundleDumpFlags.File.expanded, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+				f, err := os.OpenFile(
+					bundleDumpFlags.File.expanded,
+					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
+					0644,
+				)
 				if err != nil {
 					return err
 				}

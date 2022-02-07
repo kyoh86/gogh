@@ -120,8 +120,11 @@ var deleteCommand = &cobra.Command{
 func init() {
 	setup()
 	deleteCommand.Flags().BoolVarP(&deleteFlags.local, "local", "", true, "Delete local project.")
-	deleteCommand.Flags().BoolVarP(&deleteFlags.remote, "remote", "", false, "Delete remote project.")
-	deleteCommand.Flags().BoolVarP(&deleteFlags.force, "force", "", false, "Do NOT confirm to delete.")
-	deleteCommand.Flags().BoolVarP(&deleteFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	deleteCommand.Flags().
+		BoolVarP(&deleteFlags.remote, "remote", "", false, "Delete remote project.")
+	deleteCommand.Flags().
+		BoolVarP(&deleteFlags.force, "force", "", false, "Do NOT confirm to delete.")
+	deleteCommand.Flags().
+		BoolVarP(&deleteFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(deleteCommand)
 }

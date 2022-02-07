@@ -176,7 +176,10 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	return opt
 }
 
-func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (allSpecs []Repository, _ error) {
+func (c *RemoteController) List(
+	ctx context.Context,
+	option *RemoteListOption,
+) (allSpecs []Repository, _ error) {
 	sch, ech := c.ListAsync(ctx, option)
 	for {
 		select {
@@ -197,7 +200,10 @@ func (c *RemoteController) List(ctx context.Context, option *RemoteListOption) (
 	}
 }
 
-func ingestRepositoryFragment(host string, repo *github.RepositoryFragment) (ret Repository, _ error) {
+func ingestRepositoryFragment(
+	host string,
+	repo *github.RepositoryFragment,
+) (ret Repository, _ error) {
 	ret.URL = repo.URL
 	ret.IsTemplate = repo.IsTemplate
 	ret.Archived = repo.IsArchived
@@ -234,7 +240,12 @@ func ingestRepositoryFragment(host string, repo *github.RepositoryFragment) (ret
 
 var errOverLimit = errors.New("over limit")
 
-func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, count *int64, limit int64, ch chan<- Repository) error {
+func (c *RemoteController) repoListSpecList(
+	repos []*github.RepositoryFragment,
+	count *int64,
+	limit int64,
+	ch chan<- Repository,
+) error {
 	for _, repo := range repos {
 		if limit > 0 && limit <= *count {
 			return errOverLimit
@@ -249,7 +260,10 @@ func (c *RemoteController) repoListSpecList(repos []*github.RepositoryFragment, 
 	return nil
 }
 
-func (c *RemoteController) ListAsync(ctx context.Context, option *RemoteListOption) (<-chan Repository, <-chan error) {
+func (c *RemoteController) ListAsync(
+	ctx context.Context,
+	option *RemoteListOption,
+) (<-chan Repository, <-chan error) {
 	opt := option.GetOptions()
 	sch := make(chan Repository, 1)
 	ech := make(chan error, 1)
@@ -343,8 +357,16 @@ func (o *RemoteCreateOption) GetOrganization() string {
 	return o.Organization
 }
 
-func (c *RemoteController) Create(ctx context.Context, name string, option *RemoteCreateOption) (Repository, error) {
-	repo, _, err := c.adaptor.RepositoryCreate(ctx, option.GetOrganization(), option.buildRepository(name))
+func (c *RemoteController) Create(
+	ctx context.Context,
+	name string,
+	option *RemoteCreateOption,
+) (Repository, error) {
+	repo, _, err := c.adaptor.RepositoryCreate(
+		ctx,
+		option.GetOrganization(),
+		option.buildRepository(name),
+	)
 	if err != nil {
 		return Repository{}, fmt.Errorf("create a repository: %w", err)
 	}
@@ -357,7 +379,9 @@ type RemoteCreateFromTemplateOption struct {
 	Private     bool   `json:"private,omitempty"`
 }
 
-func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(name string) *github.TemplateRepoRequest {
+func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(
+	name string,
+) *github.TemplateRepoRequest {
 	if o == nil {
 		return &github.TemplateRepoRequest{Name: &name}
 	}
@@ -369,8 +393,17 @@ func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(name string) *
 	}
 }
 
-func (c *RemoteController) CreateFromTemplate(ctx context.Context, templateOwner, templateName, name string, option *RemoteCreateFromTemplateOption) (Repository, error) {
-	repo, _, err := c.adaptor.RepositoryCreateFromTemplate(ctx, templateOwner, templateName, option.buildTemplateRepoRequest(name))
+func (c *RemoteController) CreateFromTemplate(
+	ctx context.Context,
+	templateOwner, templateName, name string,
+	option *RemoteCreateFromTemplateOption,
+) (Repository, error) {
+	repo, _, err := c.adaptor.RepositoryCreateFromTemplate(
+		ctx,
+		templateOwner,
+		templateName,
+		option.buildTemplateRepoRequest(name),
+	)
 	if err != nil {
 		return Repository{}, fmt.Errorf("create a repository from template: %w", err)
 	}
@@ -391,7 +424,12 @@ func (o *RemoteForkOption) GetOptions() *github.RepositoryCreateForkOptions {
 	}
 }
 
-func (c *RemoteController) Fork(ctx context.Context, owner string, name string, option *RemoteForkOption) (Repository, error) {
+func (c *RemoteController) Fork(
+	ctx context.Context,
+	owner string,
+	name string,
+	option *RemoteForkOption,
+) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFork(ctx, owner, name, option.GetOptions())
 	if err != nil {
 		var acc *github.AcceptedError
@@ -404,7 +442,12 @@ func (c *RemoteController) Fork(ctx context.Context, owner string, name string, 
 
 type RemoteGetOption struct{}
 
-func (c *RemoteController) Get(ctx context.Context, owner string, name string, _ *RemoteGetOption) (Repository, error) {
+func (c *RemoteController) Get(
+	ctx context.Context,
+	owner string,
+	name string,
+	_ *RemoteGetOption,
+) (Repository, error) {
 	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
 	if err != nil {
 		return Repository{}, fmt.Errorf("get a repository: %w", err)
@@ -414,7 +457,12 @@ func (c *RemoteController) Get(ctx context.Context, owner string, name string, _
 
 type RemoteDeleteOption struct{}
 
-func (c *RemoteController) Delete(ctx context.Context, owner string, name string, _ *RemoteDeleteOption) error {
+func (c *RemoteController) Delete(
+	ctx context.Context,
+	owner string,
+	name string,
+	_ *RemoteDeleteOption,
+) error {
 	if _, err := c.adaptor.RepositoryDelete(ctx, owner, name); err != nil {
 		return fmt.Errorf("delete a repository: %w", err)
 	}
