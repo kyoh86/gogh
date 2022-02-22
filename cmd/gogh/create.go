@@ -2,9 +2,11 @@ package main
 
 import (
 	"errors"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
+	git "github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
@@ -27,6 +29,7 @@ type createFlagsStruct struct {
 	PreventMergeCommit  bool   `yaml:"preventMergeCommit,omitempty"`
 	PreventRebaseMerge  bool   `yaml:"preventRebaseMerge,omitempty"`
 	DeleteBranchOnMerge bool   `yaml:"deleteBranchOnMerge,omitempty"`
+	CloneRetryLimit     int    `yaml:"cloneRetryLimit,omitempty"`
 	Dryrun              bool   `yaml:"-"`
 }
 
@@ -130,9 +133,22 @@ var (
 					}
 				}
 			}
-			if _, err := local.Clone(ctx, spec, server, nil); err != nil {
-				l.WithField("error", err).Warn("failed to get repository")
-				return nil
+			for i := 0; i < createFlags.CloneRetryLimit; i++ {
+				_, err := local.Clone(ctx, spec, server, nil)
+				switch {
+				case errors.Is(err, git.ErrRepositoryNotExists):
+					l.Info("waiting the remote repository is ready")
+				case err == nil:
+					return nil
+				default:
+					l.WithField("error", err).Warn("failed to get repository")
+					return nil
+				}
+				select {
+				case <-ctx.Done():
+					return nil
+				case <-time.After(1 * time.Second):
+				}
 			}
 			return nil
 		},
@@ -141,6 +157,9 @@ var (
 
 func init() {
 	setup()
+
+	defaultFlag.Create.CloneRetryLimit = 5
+
 	createCommand.Flags().
 		BoolVarP(&createFlags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	createCommand.Flags().
@@ -175,5 +194,7 @@ func init() {
 		BoolVarP(&createFlags.PreventRebaseMerge, "prevent-rebase-merge", "", defaultFlag.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
 	createCommand.Flags().
 		BoolVarP(&createFlags.DeleteBranchOnMerge, "delete-branch-on-merge", "", defaultFlag.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
+	createCommand.Flags().
+		IntVarP(&createFlags.CloneRetryLimit, "clone-retry-limit", "", defaultFlag.Create.CloneRetryLimit, "")
 	facadeCommand.AddCommand(createCommand)
 }
