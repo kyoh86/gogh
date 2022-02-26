@@ -2,11 +2,13 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
 	git "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
@@ -136,12 +138,14 @@ var (
 			for i := 0; i < createFlags.CloneRetryLimit; i++ {
 				_, err := local.Clone(ctx, spec, server, nil)
 				switch {
-				case errors.Is(err, git.ErrRepositoryNotExists):
+				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
 					l.Info("waiting the remote repository is ready")
 				case err == nil:
 					return nil
 				default:
-					l.WithField("error", err).Warn("failed to get repository")
+					l.WithField("error", err).
+						WithField("error-type", fmt.Sprintf("%t", err)).
+						Warn("failed to get repository")
 					return nil
 				}
 				select {
