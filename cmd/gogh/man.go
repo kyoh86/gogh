@@ -1,3 +1,4 @@
+//go:build man
 // +build man
 
 package main

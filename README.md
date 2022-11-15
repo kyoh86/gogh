@@ -40,7 +40,14 @@ You can also list projects (local repositories) (`gogh list`).
 ### For Golang developers
 
 ```console
-$ go get github.com/kyoh86/gogh/cmd/gogh
+$ go install github.com/kyoh86/gogh/cmd/gogh@latest
+```
+
+If you want zsh-completions, you can create completions file like this:
+
+```console
+$ echo "autoload -Uz compinit && compinit" >> ~/.zshrc
+$ gogh completion zsh > $fpath[1]/_gogh
 ```
 
 ### `Homebrew`/`Linuxbrew`

@@ -79,7 +79,7 @@ var (
 						continue LOOP_CONVERT_RELATION
 					}
 				}
-				return fmt.Errorf("invalid relation %q; %s", r, repoRelationAccept)
+				return fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(repoRelationAccept)))
 			}
 			var format view.RepositoryPrinter
 			switch reposFlags.Format {
@@ -105,14 +105,14 @@ var (
 			if reposFlags.Sort != "" {
 				sort := gogh.RepositoryOrderField(reposFlags.Sort)
 				if !sort.IsValid() {
-					return fmt.Errorf("invalid sort %q; %s", reposFlags.Sort, repoSortAccept)
+					return fmt.Errorf("invalid sort %q; %s", reposFlags.Sort, fmt.Sprintf("it can accept %s", quoteEnums(repoSortAccept)))
 				}
 				listOption.Sort = sort
 			}
 			if reposFlags.Order != "" {
 				order := gogh.OrderDirection(reposFlags.Order)
 				if !order.IsValid() {
-					return fmt.Errorf("invalid order %q; %s", reposFlags.Order, repoOrderAccept)
+					return fmt.Errorf("invalid order %q; %s", reposFlags.Order, fmt.Sprintf("it can accept %s", quoteEnums(repoOrderAccept)))
 				}
 				listOption.Order = order
 			}
@@ -154,35 +154,31 @@ var (
 )
 
 var (
-	repoFormatAccept   string
-	repoSortAccept     string
-	repoOrderAccept    string
-	repoRelationAccept string
+	repoFormatAccept   []string
+	repoSortAccept     []string
+	repoOrderAccept    []string
+	repoRelationAccept []string
 )
+
+func quoteEnums(values []string) string {
+	var quoted []string
+	for _, v := range values {
+		quoted = append(quoted, strconv.Quote(v))
+	}
+	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
+}
 
 func init() {
 	setup()
-	repoFormatAccept = fmt.Sprintf("it can accept %q, %q, %q or %q", "spec", "url", "json", "table")
-	{
-		var valids []string
-		for _, v := range gogh.AllRepositoryOrderField {
-			valids = append(valids, strconv.Quote(v.String()))
-		}
-		repoSortAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
+	repoFormatAccept = []string{"spec", "url", "json", "table"}
+	for _, v := range gogh.AllRepositoryOrderField {
+		repoSortAccept = append(repoSortAccept, v.String())
 	}
-	{
-		var valids []string
-		for _, v := range gogh.AllOrderDirection {
-			valids = append(valids, strconv.Quote(v.String()))
-		}
-		repoOrderAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
+	for _, v := range gogh.AllOrderDirection {
+		repoOrderAccept = append(repoOrderAccept, v.String())
 	}
-	{
-		var valids []string
-		for _, v := range gogh.AllRepositoryRelation {
-			valids = append(valids, strconv.Quote(string(v)))
-		}
-		repoRelationAccept = fmt.Sprintf("it can accept %s", strings.Join(valids, ", "))
+	for _, v := range gogh.AllRepositoryRelation {
+		repoRelationAccept = append(repoRelationAccept, v.String())
 	}
 	reposCommand.Flags().
 		IntVarP(&reposFlags.Limit, "limit", "", defaultInt(defaultFlag.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
@@ -198,17 +194,31 @@ func init() {
 		BoolVarP(&reposFlags.NotFork, "no-fork", "", defaultFlag.Repos.NotFork, "Omit forks")
 
 	reposCommand.Flags().
-		StringVarP(&reposFlags.Format, "format", "", defaultString(defaultFlag.Repos.Format, "table"), "The formatting style for each repository; "+repoFormatAccept)
+		StringVarP(&reposFlags.Format, "format", "", defaultString(defaultFlag.Repos.Format, "table"), fmt.Sprintf("The formatting style for each repository; it can accept %s", quoteEnums(repoFormatAccept)))
+	reposCommand.RegisterFlagCompletionFunc("format", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return repoFormatAccept, cobra.ShellCompDirectiveDefault
+	})
 	reposCommand.Flags().
 		StringVarP(&reposFlags.Color, "color", "", defaultString(defaultFlag.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
+	reposCommand.RegisterFlagCompletionFunc("color", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"auto", "always", "never"}, cobra.ShellCompDirectiveDefault
+	})
+	reposCommand.Flags().
+		StringSliceVarP(&reposFlags.Relation, "relation", "", defaultStringSlice(defaultFlag.Repos.Relation, []string{"owner", "organizationMember"}), fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(repoRelationAccept)))
+	reposCommand.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return repoRelationAccept, cobra.ShellCompDirectiveDefault
+	})
 
 	reposCommand.Flags().
-		StringSliceVarP(&reposFlags.Relation, "relation", "", defaultStringSlice(defaultFlag.Repos.Relation, []string{"owner", "organizationMember"}), "The relation of user to each repository; "+repoRelationAccept)
-
+		StringVarP(&reposFlags.Sort, "sort", "", defaultFlag.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(repoSortAccept)))
+	reposCommand.RegisterFlagCompletionFunc("sort", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return repoSortAccept, cobra.ShellCompDirectiveDefault
+	})
 	reposCommand.Flags().
-		StringVarP(&reposFlags.Sort, "sort", "", defaultFlag.Repos.Sort, "Property by which repository be ordered; "+repoSortAccept)
-	reposCommand.Flags().
-		StringVarP(&reposFlags.Order, "order", "", defaultFlag.Repos.Order, "Directions in which to order a list of items when provided an `sort` flag; "+repoOrderAccept)
+		StringVarP(&reposFlags.Order, "order", "", defaultFlag.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(repoOrderAccept)))
+	reposCommand.RegisterFlagCompletionFunc("order", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return repoOrderAccept, cobra.ShellCompDirectiveDefault
+	})
 
 	facadeCommand.AddCommand(reposCommand)
 }

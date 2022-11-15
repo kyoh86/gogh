@@ -81,6 +81,10 @@ var AllRepositoryRelation = []RepositoryRelation{
 	RepositoryRelationCollaborator,
 }
 
+func (r RepositoryRelation) String() string {
+	return string(r)
+}
+
 type RepositoryOrderField = githubv4.RepositoryOrderField
 
 var AllRepositoryOrderField = githubv4.AllRepositoryOrderField
