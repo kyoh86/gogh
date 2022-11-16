@@ -1,3 +1,22 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+
+project_name: gogh
+builds:
+  - id: default
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - "386"
+    main: ./cmd/gogh
+    binary: gogh
+    ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+    hooks:
+      post:
+        - make man VERSION={{.Version}} COMMIT={{.ShortCommit}} DATE={{.Date}}
 brews:
   - install: |
       bin.install "gogh"
@@ -8,20 +27,19 @@ brews:
     folder: Formula
     homepage: https://github.com/kyoh86/gogh
     description: GO GitHub project manager
-builds:
-  - goos:
-      - linux
-      - darwin
-      - windows
-    goarch:
-      - amd64
-      - arm
-      - arm64
-      - "386"
-    main: ./cmd/gogh
-    hooks:
-      post:
-        - make man VERSION={{.Version}} COMMIT={{.ShortCommit}} DATE={{.Date}}
+    license: MIT
+nfpms:
+  - builds:
+      - default
+    maintainer: kyoh86 <me@kyoh86.dev>
+    homepage: https://github.com/kyoh86/gogh
+    description: GO GitHub project manager
+    license: MIT
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
 archives:
   - id: gzip
     format: tar.gz
