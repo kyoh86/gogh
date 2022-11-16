@@ -36,7 +36,7 @@ jobs:
         with:
           method: "patch"
       - name: Run GoReleaser (dry-run)
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v3
         with:
           args: release --rm-dist --skip-publish --snapshot
   test-diagnostics:
@@ -80,7 +80,7 @@ jobs:
       - test-release
     steps:
       - name: Set Check Status Success
-        uses: Sibz/github-status-action@v1.1.2
+        uses: Sibz/github-status-action@v1.1.6
         with:
           context: test-status
           authToken: ${{ secrets.GITHUB_TOKEN }}
