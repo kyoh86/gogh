@@ -68,8 +68,10 @@ func init() {
 	listCommand.Flags().
 		BoolVarP(&listFlags.Primary, "primary", "", defaultFlag.List.Primary, "List up projects in just a primary root")
 	listCommand.Flags().VarP(&listFlags.Format, "format", "f", formatShortUsage)
-	listCommand.RegisterFlagCompletionFunc("format", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if err := listCommand.RegisterFlagCompletionFunc("format", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"rel-path", "rel-file-path", "full-file-path", "json", "url", "fields", "fields:"}, cobra.ShellCompDirectiveDefault
-	})
+	}); err != nil {
+		panic(err)
+	}
 	facadeCommand.AddCommand(listCommand)
 }
