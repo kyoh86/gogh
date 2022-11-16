@@ -39,7 +39,6 @@ nfpms:
       - apk
       - deb
       - rpm
-      - archlinux
 archives:
   - id: gzip
     format: tar.gz
