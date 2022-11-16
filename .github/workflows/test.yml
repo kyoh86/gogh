@@ -55,7 +55,7 @@ jobs:
       - name: Search diagnostics
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v3.3.1
+          version: v1.50.1
 
   test-covers:
     name: Take test coverages
