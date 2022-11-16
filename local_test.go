@@ -3,7 +3,6 @@ package gogh_test
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -191,7 +190,7 @@ func TestLocalController(t *testing.T) {
 	t.Run("List", func(t *testing.T) {
 		// create noise
 		// file
-		if err := ioutil.WriteFile(filepath.Join(root, "github.com", "kyoh86", "file"), nil, 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(root, "github.com", "kyoh86", "file"), nil, 0644); err != nil {
 			t.Fatalf("failed to create dummy file: %s", err)
 		}
 		// invalid name
@@ -279,7 +278,7 @@ func TestLocalController(t *testing.T) {
 		})
 		// create noise
 		// file
-		if err := ioutil.WriteFile(filepath.Join(root, "github.com", "kyoh86", "file"), nil, 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(root, "github.com", "kyoh86", "file"), nil, 0644); err != nil {
 			t.Fatalf("failed to create dummy file: %s", err)
 		}
 		// unmanaged root
@@ -467,7 +466,7 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 
 	t.Run("NotWritable", func(t *testing.T) {
 		// prepare a file for the root of the test
-		if err := ioutil.WriteFile(root, nil, 0644); err != nil {
+		if err := os.WriteFile(root, nil, 0644); err != nil {
 			t.Fatalf("failed to prepare dummy file: %s", err)
 		}
 

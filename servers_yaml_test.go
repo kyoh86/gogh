@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -23,7 +23,7 @@ func TestServersYAML(t *testing.T) {
 	)
 	un := func(t *testing.T, file string) (servers testtarget.Servers, retErr error) {
 		t.Helper()
-		buf, err := ioutil.ReadFile(file)
+		buf, err := os.ReadFile(file)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

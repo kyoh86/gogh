@@ -7,7 +7,6 @@ on:
           Which number to increment in the semantic versioning.
           Set 'major', 'minor' or 'patch'.
         required: true
-
 jobs:
   release-binary:
     name: Release Binary
