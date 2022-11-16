@@ -17,6 +17,9 @@ builds:
     hooks:
       post:
         - make man VERSION={{.Version}} COMMIT={{.ShortCommit}} DATE={{.Date}}
+checksum: {}
+signs:
+  - artifacts: checksum
 brews:
   - install: |
       bin.install "gogh"
