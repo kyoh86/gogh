@@ -3,7 +3,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-
 jobs:
   release-pkgbuild:
     name: Release PKGBUILD

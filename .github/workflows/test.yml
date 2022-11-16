@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - '*'
-
 jobs:
   test:
     name: Test local sources
@@ -22,7 +21,6 @@ jobs:
           go-version: 1.19
       - name: Test Go
         run: go test -v --race ./...
-
   test-release:
     name: Test releases
     runs-on: ubuntu-latest
@@ -41,7 +39,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           args: release --rm-dist --skip-publish --snapshot
-
   test-diagnostics:
     name: Find diagnostics
     runs-on: ubuntu-latest
@@ -56,7 +53,6 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.50.1
-
   test-covers:
     name: Take test coverages
     runs-on: ubuntu-latest
@@ -74,7 +70,6 @@ jobs:
         with:
           fail_ci_if_error: true
           files: coverage.txt
-
   test-status:
     name: Test status
     runs-on: ubuntu-latest
