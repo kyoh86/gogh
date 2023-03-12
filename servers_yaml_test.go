@@ -148,6 +148,17 @@ func TestServersYAML(t *testing.T) {
 		}
 	})
 
+	t.Run("UnmarshalNullYAML", func(t *testing.T) {
+		servers, err := un(t, "testdata/servers_null.yaml")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+		if _, err := servers.Default(); !errors.Is(err, testtarget.ErrNoServer) {
+			t.Errorf("expect error: %v, acutal: %v", testtarget.ErrNoServer, err)
+		}
+	})
+
 	t.Run("Marshal", func(t *testing.T) {
 		var servers testtarget.Servers
 		data := `

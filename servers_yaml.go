@@ -50,7 +50,7 @@ func (s *Servers) UnmarshalYAML(unmarshaler func(interface{}) error) error {
 
 func (s Servers) MarshalYAML() (interface{}, error) {
 	if s.defaultServer == nil {
-		return []interface{}{}, nil
+		return nil, nil
 	}
 
 	slice := yaml.MapSlice{{
