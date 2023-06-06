@@ -126,7 +126,7 @@ func cloneOneFunc(
 		})
 		l.Info("cloning")
 		if _, err = local.Clone(ctx, spec, server, &gogh.LocalCloneOption{Alias: alias}); err != nil {
-			l.WithField("error", err).Warn("failed to get repository")
+			l.WithField("error", err).Error("failed to get repository")
 			return nil
 		}
 		if repo.Parent != nil && repo.Parent.String() != spec.String() {

@@ -145,7 +145,7 @@ var (
 				default:
 					l.WithField("error", err).
 						WithField("error-type", fmt.Sprintf("%t", err)).
-						Warn("failed to get repository")
+						Error("failed to get repository")
 					return nil
 				}
 				select {
