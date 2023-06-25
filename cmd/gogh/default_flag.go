@@ -6,4 +6,5 @@ var defaultFlag struct {
 	List          listFlagsStruct          `yaml:"list,omitempty"`
 	Create        createFlagsStruct        `yaml:"create,omitempty"`
 	Repos         reposFlagsStruct         `yaml:"repos,omitempty"`
+	Fork          forkFlagsStruct          `yaml:"fork,omitempty"`
 }
