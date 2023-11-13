@@ -80,7 +80,6 @@ var rootsSetDefaultCommand = &cobra.Command{
 }
 
 func init() {
-	setup()
 	rootsCommand.AddCommand(rootsSetDefaultCommand)
 	rootsCommand.AddCommand(rootsRemoveCommand)
 	rootsCommand.AddCommand(rootsAddCommand)

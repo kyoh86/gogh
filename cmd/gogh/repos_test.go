@@ -7,8 +7,8 @@ import (
 func TestQuoteEnums(t *testing.T) {
 	for _, testcase := range []struct {
 		title  string
-		source []string
 		want   string
+		source []string
 	}{
 		{
 			title:  "minimul",

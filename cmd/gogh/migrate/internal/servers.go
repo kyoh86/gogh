@@ -1,4 +1,4 @@
-package gogh
+package migrate
 
 import (
 	"errors"

@@ -72,7 +72,6 @@ var (
 )
 
 func init() {
-	setup()
 	bundleDumpFlags.File = defaultFlag.BundleDump.File
 	bundleDumpCommand.Flags().VarP(&bundleDumpFlags.File, "file", "", "A file to output")
 	bundleCommand.AddCommand(bundleDumpCommand)

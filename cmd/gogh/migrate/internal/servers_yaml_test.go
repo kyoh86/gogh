@@ -1,4 +1,4 @@
-package gogh_test
+package migrate_test
 
 import (
 	"bytes"
@@ -9,7 +9,8 @@ import (
 	"testing"
 
 	"github.com/goccy/go-yaml"
-	testtarget "github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v2"
+	testtarget "github.com/kyoh86/gogh/v2/cmd/gogh/migrate/internal"
 )
 
 func TestServersYAML(t *testing.T) {
@@ -45,32 +46,32 @@ func TestServersYAML(t *testing.T) {
 			{
 				title:  "invalid-value",
 				input:  fmt.Sprintf(`{"%s":1}`, invalidHost),
-				expect: testtarget.ErrInvalidHost("invalid value: 1"),
+				expect: gogh.ErrInvalidHost("invalid value: 1"),
 			},
 			{
 				title:  "invalid-host",
 				input:  fmt.Sprintf(`{"%s":{"user":"%s","token":"%s"}}`, invalidHost, user1, token1),
-				expect: testtarget.ErrInvalidHost("invalid host: " + invalidHost),
+				expect: gogh.ErrInvalidHost("invalid host: " + invalidHost),
 			},
 			{
 				title:  "invalid-host-type",
 				input:  fmt.Sprintf(`{%d:{"user":"%s","token":"%s"}}`, 1, user1, token1),
-				expect: testtarget.ErrInvalidHost("invalid host: 1"),
+				expect: gogh.ErrInvalidHost("invalid host: 1"),
 			},
 			{
 				title:  "invalid-user",
 				input:  fmt.Sprintf(`{"%s":{"user":"%s","token":"%s"}}`, host1, invalidUser, token1),
-				expect: testtarget.ErrInvalidOwner("invalid owner: " + invalidUser),
+				expect: gogh.ErrInvalidOwner("invalid owner: " + invalidUser),
 			},
 			{
 				title:  "invalid-user-type",
 				input:  fmt.Sprintf(`{"%s":{"user":1,"token":"%s"}}`, host1, token1),
-				expect: testtarget.ErrInvalidOwner("invalid user-type: 1"),
+				expect: gogh.ErrInvalidOwner("invalid user-type: 1"),
 			},
 			{
 				title:  "invalid-token-type",
 				input:  fmt.Sprintf(`{"%s":{"user":"%s","token":1}}`, host1, user1),
-				expect: testtarget.ErrInvalidOwner("invalid token: 1"),
+				expect: gogh.ErrInvalidOwner("invalid token: 1"),
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {

@@ -29,12 +29,8 @@ var deleteCommand = &cobra.Command{
 		ctx := cmd.Context()
 		var selected string
 		if len(specs) == 0 {
-			list, err := servers.List()
-			if err != nil {
-				return err
-			}
-			for _, server := range list {
-				adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+			for _, entry := range tokens.Entries() {
+				adaptor, err := github.NewAdaptor(ctx, entry.Host, string(entry.Token))
 				if err != nil {
 					return err
 				}
@@ -57,8 +53,8 @@ var deleteCommand = &cobra.Command{
 			selected = specs[0]
 		}
 
-		parser := gogh.NewSpecParser(&servers)
-		spec, server, err := parser.Parse(selected)
+		parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
+		spec, err := parser.Parse(selected)
 		if err != nil {
 			return err
 		}
@@ -97,7 +93,8 @@ var deleteCommand = &cobra.Command{
 					return nil
 				}
 			}
-			adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+			token := tokens.Get(spec.Host(), spec.Owner())
+			adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
 			if err != nil {
 				return err
 			}
@@ -107,7 +104,7 @@ var deleteCommand = &cobra.Command{
 				var gherr *github.ErrorResponse
 				if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
 					log.FromContext(ctx).Errorf("Failed to delete a repository: there is no permission to delete %q", spec.URL())
-					log.FromContext(ctx).Errorf(`Add scope "delete_repo" for the token for %q`, server.String())
+					log.FromContext(ctx).Error(`Add scope "delete_repo" for the token`)
 				} else {
 					return err
 				}
@@ -118,7 +115,6 @@ var deleteCommand = &cobra.Command{
 }
 
 func init() {
-	setup()
 	deleteCommand.Flags().BoolVarP(&deleteFlags.local, "local", "", true, "Delete local project.")
 	deleteCommand.Flags().
 		BoolVarP(&deleteFlags.remote, "remote", "", false, "Delete remote project.")

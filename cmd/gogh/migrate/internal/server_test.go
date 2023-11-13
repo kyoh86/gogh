@@ -1,10 +1,10 @@
-package gogh_test
+package migrate_test
 
 import (
 	"fmt"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v2"
+	testtarget "github.com/kyoh86/gogh/v2/cmd/gogh/migrate/internal"
 )
 
 func TestServer(t *testing.T) {

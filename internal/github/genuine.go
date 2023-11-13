@@ -102,6 +102,16 @@ func (a *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Resp
 	return a.restClient.Users.Get(ctx, user)
 }
 
+func (a *genuineAdaptor) GetMe(
+	ctx context.Context,
+) (string, error) {
+	me, _, err := a.restClient.Users.Get(ctx, "")
+	if err != nil {
+		return "", err
+	}
+	return me.GetLogin(), nil
+}
+
 func (a *genuineAdaptor) RepositoryList(
 	ctx context.Context,
 	opts *RepositoryListOptions,

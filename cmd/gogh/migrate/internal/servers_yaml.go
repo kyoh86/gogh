@@ -1,9 +1,10 @@
-package gogh
+package migrate
 
 import (
 	"fmt"
 
 	"github.com/goccy/go-yaml"
+	"github.com/kyoh86/gogh/v2"
 )
 
 func (s *Servers) UnmarshalYAML(unmarshaler func(interface{}) error) error {
@@ -17,7 +18,7 @@ func (s *Servers) UnmarshalYAML(unmarshaler func(interface{}) error) error {
 	for _, item := range slice {
 		host, ok := item.Key.(string)
 		if !ok {
-			return ErrInvalidHost(fmt.Sprintf("invalid host: %v", item.Key))
+			return gogh.ErrInvalidHost(fmt.Sprintf("invalid host: %v", item.Key))
 		}
 		info, ok := item.Value.(map[string]interface{})
 		if !ok {

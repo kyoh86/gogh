@@ -22,7 +22,7 @@ func setup() {
 
 var (
 	configFilePath      string
-	serversFilePath     string
+	tokensFilePath      string
 	defaultFlagFilePath string
 )
 
@@ -31,7 +31,7 @@ func setupCore() (err error) {
 	if err != nil {
 		return
 	}
-	serversFilePath, err = loadServers()
+	tokensFilePath, err = loadTokens()
 	if err != nil {
 		return
 	}
@@ -107,7 +107,7 @@ func (h appFileHandler) save(input interface{}) error {
 
 var (
 	configFileHandler      = appFileHandler{dir: os.UserConfigDir, basename: "config.yaml"}
-	serversFileHandler     = appFileHandler{dir: os.UserCacheDir, basename: "servers.yaml"}
+	tokensFileHandler      = appFileHandler{dir: os.UserCacheDir, basename: "tokens.yaml"}
 	defaultFlagFileHandler = appFileHandler{dir: os.UserConfigDir, basename: "flag.yaml"}
 )
 
@@ -127,6 +127,9 @@ func loadConfig() (string, error) {
 			expanded: raw,
 		}}
 	}
+	if config.DefaultHost == "" {
+		config.DefaultHost = "github.com"
+	}
 	return path, nil
 }
 
@@ -134,12 +137,12 @@ func saveConfig() error {
 	return configFileHandler.save(config)
 }
 
-func loadServers() (string, error) {
-	return serversFileHandler.load(&servers)
+func loadTokens() (string, error) {
+	return tokensFileHandler.load(&tokens)
 }
 
-func saveServers() error {
-	return serversFileHandler.save(servers)
+func saveTokens() error {
+	return tokensFileHandler.save(tokens)
 }
 
 func loadDefaultFlag() (string, error) {

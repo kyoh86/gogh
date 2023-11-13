@@ -23,12 +23,13 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, specs []string) error {
 			ctx := cmd.Context()
-			parser := gogh.NewSpecParser(&servers)
-			spec, server, err := parser.Parse(specs[0])
+			parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
+			spec, err := parser.Parse(specs[0])
 			if err != nil {
 				return err
 			}
-			adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+			token := tokens.Get(spec.Host(), spec.Owner())
+			adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
 			if err != nil {
 				return err
 			}
@@ -48,7 +49,7 @@ var (
 				localSpec = forked.Spec
 			}
 			log.FromContext(ctx).Infof("git clone %q", spec.URL())
-			if _, err := local.Clone(ctx, spec, server, opt); err != nil {
+			if _, err := local.Clone(ctx, spec, string(token), opt); err != nil {
 				return fmt.Errorf("cloning the repository %q: %w", spec, err)
 			}
 			return local.SetRemoteSpecs(ctx, localSpec, map[string][]gogh.Spec{
@@ -60,7 +61,6 @@ var (
 )
 
 func init() {
-	setup()
 	forkCommand.Flags().
 		BoolVarP(&forkFlags.Own, "own", "", false, "Clones the forked repo to local as my-own repo")
 	facadeCommand.AddCommand(forkCommand)

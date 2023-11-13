@@ -5,8 +5,8 @@ Now gogh is executed in the following context.
 
 {{range .roots}}  {{.}}
 {{end}}
-## Servers
-  (from {{.serversFilePath}})
+## Tokens
+  (from {{.tokensFilePath}})
 
 {{range .servers}}  {{.}}
 {{end}}

@@ -1,15 +1,13 @@
-package gogh
+package migrate
 
 import (
 	"fmt"
 
-	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v2"
 )
 
-const (
-	DefaultHost = github.DefaultHost
-)
-
+// Server represents a GitHub server with user and token.
+// Deprecated: use Token and TokenManager instead.
 type Server struct {
 	host  string
 	user  string
@@ -21,17 +19,17 @@ func (s Server) String() string {
 }
 
 func NewServerFor(host, user, token string) (Server, error) {
-	if err := ValidateHost(host); err != nil {
+	if err := gogh.ValidateHost(host); err != nil {
 		return Server{}, err
 	}
-	if err := ValidateOwner(user); err != nil {
+	if err := gogh.ValidateOwner(user); err != nil {
 		return Server{}, err
 	}
 	return Server{host: host, user: user, token: token}, nil
 }
 
 func NewServer(user, token string) (Server, error) {
-	return NewServerFor(DefaultHost, user, token)
+	return NewServerFor(gogh.DefaultHost, user, token)
 }
 
 func (s Server) Host() string  { return s.host }

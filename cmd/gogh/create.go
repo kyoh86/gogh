@@ -44,7 +44,7 @@ var (
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, specs []string) error {
 			var name string
-			parser := gogh.NewSpecParser(&servers)
+			parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
 			if len(specs) == 0 {
 				if err := survey.AskOne(&survey.Input{
 					Message: "A spec of repository name to create",
@@ -53,7 +53,7 @@ var (
 					if !ok {
 						return errors.New("invalid type")
 					}
-					_, _, err := parser.Parse(s)
+					_, err := parser.Parse(s)
 					return err
 				})); err != nil {
 					return err
@@ -63,7 +63,7 @@ var (
 			}
 
 			ctx := cmd.Context()
-			spec, server, err := parser.Parse(name)
+			spec, err := parser.Parse(name)
 			if err != nil {
 				return err
 			}
@@ -78,11 +78,11 @@ var (
 			}
 
 			l := log.FromContext(ctx).WithFields(log.Fields{
-				"server": server,
-				"spec":   spec,
+				"spec": spec,
 			})
+			token := tokens[gogh.TokenTarget{Host: spec.Host(), Owner: spec.Owner()}]
 
-			adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+			adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
 			if err != nil {
 				return err
 			}
@@ -92,6 +92,10 @@ var (
 			if _, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil); err == nil {
 				l.Info("repository already exists")
 			} else {
+				me, err := remote.Me(ctx)
+				if err != nil {
+					return err
+				}
 				if createFlags.Template == "" {
 					ropt := &gogh.RemoteCreateOption{
 						Description:         createFlags.Description,
@@ -110,7 +114,7 @@ var (
 						PreventRebaseMerge:  createFlags.PreventRebaseMerge,
 						DeleteBranchOnMerge: createFlags.DeleteBranchOnMerge,
 					}
-					if server.User() != spec.Owner() {
+					if me != spec.Owner() {
 						ropt.Organization = spec.Owner()
 					}
 
@@ -118,13 +122,12 @@ var (
 						return err
 					}
 				} else {
-
 					from, err := gogh.ParseSiblingSpec(spec, createFlags.Template)
 					if err != nil {
 						return err
 					}
 					ropt := &gogh.RemoteCreateFromTemplateOption{}
-					if server.User() != spec.Owner() {
+					if me != spec.Owner() {
 						ropt.Owner = spec.Owner()
 					}
 					if createFlags.Private {
@@ -136,7 +139,7 @@ var (
 				}
 			}
 			for i := 0; i < createFlags.CloneRetryLimit; i++ {
-				_, err := local.Clone(ctx, spec, server, nil)
+				_, err := local.Clone(ctx, spec, string(token), nil)
 				switch {
 				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
 					l.Info("waiting the remote repository is ready")
@@ -160,8 +163,6 @@ var (
 )
 
 func init() {
-	setup()
-
 	defaultFlag.Create.CloneRetryLimit = 5
 
 	createCommand.Flags().

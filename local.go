@@ -27,7 +27,7 @@ type LocalController struct {
 	// UNDONE: support fs.FS
 
 	// NOTE: v1 -> v2 diferrence
-	// if we wanna manage mulstiple root, create multiple controller instances.
+	// if we wanna manage multiple root, create multiple controller instances.
 	root string
 }
 
@@ -172,14 +172,14 @@ type LocalCloneOption struct {
 func (l *LocalController) Clone(
 	ctx context.Context,
 	spec Spec,
-	server Server,
+	token string,
 	opt *LocalCloneOption,
 ) (Project, error) {
 	var auth transport.AuthMethod
-	if token := server.Token(); token != "" {
+	if token != "" {
 		auth = &http.BasicAuth{
-			Username: server.User(),
-			Password: server.Token(),
+			Username: spec.Owner(),
+			Password: token,
 		}
 	}
 

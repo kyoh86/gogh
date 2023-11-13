@@ -61,6 +61,7 @@ type RepositoryListOptions struct {
 
 type Adaptor interface {
 	GetHost() string
+	GetMe(ctx context.Context) (string, error)
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
 	RepositoryList(
 		ctx context.Context,

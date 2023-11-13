@@ -24,7 +24,7 @@ var cloneCommand = &cobra.Command{
   (for example, "github.com/kyoh86/example") like below.
     - "NAME": e.g. "example"; 
     - "OWNER/NAME": e.g. "kyoh86/example"
-  They'll be completed with a server-spec set by "servers login".
+  They'll be completed with the default host and owner set by "config set-default".
 
   It accepts an alias for each repository.
   For example:
@@ -38,12 +38,8 @@ var cloneCommand = &cobra.Command{
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
 		if len(specs) == 0 {
-			list, err := servers.List()
-			if err != nil {
-				return err
-			}
-			for _, server := range list {
-				adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+			for _, entry := range tokens.Entries() {
+				adaptor, err := github.NewAdaptor(ctx, entry.Host, string(entry.Token))
 				if err != nil {
 					return err
 				}
@@ -68,10 +64,10 @@ var cloneCommand = &cobra.Command{
 }
 
 func cloneAll(ctx context.Context, specs []string, dryrun bool) error {
-	parser := gogh.NewSpecParser(&servers)
+	parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
 	if dryrun {
 		for _, s := range specs {
-			spec, alias, _, err := parser.ParseWithAlias(s)
+			spec, alias, err := parser.ParseWithAlias(s)
 			if err != nil {
 				return err
 			}
@@ -100,17 +96,18 @@ func cloneAll(ctx context.Context, specs []string, dryrun bool) error {
 func cloneOneFunc(
 	ctx context.Context,
 	local *gogh.LocalController,
-	parser *gogh.SpecParser,
+	parser gogh.SpecParser,
 	s string,
 ) func() error {
 	return func() error {
-		spec, alias, server, err := parser.ParseWithAlias(s)
+		spec, alias, err := parser.ParseWithAlias(s)
 		if err != nil {
 			return err
 		}
 
+		token := tokens[gogh.TokenTarget{Host: spec.Host(), Owner: spec.Owner()}]
 		// check forked
-		adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+		adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
 		if err != nil {
 			return err
 		}
@@ -121,11 +118,10 @@ func cloneOneFunc(
 		}
 
 		l := log.FromContext(ctx).WithFields(log.Fields{
-			"server": server,
-			"spec":   spec,
+			"spec": spec,
 		})
 		l.Info("cloning")
-		if _, err = local.Clone(ctx, spec, server, &gogh.LocalCloneOption{Alias: alias}); err != nil {
+		if _, err = local.Clone(ctx, spec, string(token), &gogh.LocalCloneOption{Alias: alias}); err != nil {
 			l.WithField("error", err).Error("failed to get repository")
 			return nil
 		}
@@ -143,7 +139,6 @@ func cloneOneFunc(
 }
 
 func init() {
-	setup()
 	cloneCommand.Flags().
 		BoolVarP(&cloneFlags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	facadeCommand.AddCommand(cloneCommand)
