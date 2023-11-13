@@ -25,6 +25,7 @@ test: gen
 .PHONY: test
 
 man: gen
+	rm -rf ./usage/**.md
 	go run -tags man -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
 .PHONY: man
 

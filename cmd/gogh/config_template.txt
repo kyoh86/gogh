@@ -8,7 +8,7 @@ Now gogh is executed in the following context.
 ## Tokens
   (from {{.tokensFilePath}})
 
-{{range .servers}}  {{.}}
+{{range .tokens}}  {{.}}
 {{end}}
 ## Default flags
   (from {{.defaultFlagFilePath}})

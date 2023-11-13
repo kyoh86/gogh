@@ -10,6 +10,7 @@ gogh fork [flags] OWNER/NAME
 
 ```
   -h, --help   help for fork
+      --own    Clones the forked repo to local as my-own repo
 ```
 
 ### SEE ALSO

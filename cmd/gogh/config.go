@@ -120,6 +120,7 @@ var configCommand = &cobra.Command{
 			"tokensFilePath":      tokensFilePath,
 			"defaultFlagFilePath": defaultFlagFilePath,
 			"roots":               roots(),
+			"tokens":              tokens.Entries(),
 			"defaultFlags":        defaultFlags,
 		}); err != nil {
 			log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")

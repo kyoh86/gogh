@@ -16,6 +16,6 @@ var authCommand = &cobra.Command{
 }
 
 func init() {
-	facadeCommand.AddCommand(authCommand)
 	configCommand.AddCommand(authCommand)
+	facadeCommand.AddCommand(authCommand)
 }

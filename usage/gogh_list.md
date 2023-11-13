@@ -43,7 +43,7 @@ gogh list [flags]
                         
   -h, --help            help for list
       --primary         List up projects in just a primary root
-      --query string    Query for selecting projects
+  -q, --query string    Query for selecting projects
 ```
 
 ### SEE ALSO

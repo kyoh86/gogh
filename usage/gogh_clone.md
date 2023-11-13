@@ -13,7 +13,7 @@ gogh clone [flags] [[OWNER/]NAME[=ALIAS]]...
   (for example, "github.com/kyoh86/example") like below.
     - "NAME": e.g. "example"; 
     - "OWNER/NAME": e.g. "kyoh86/example"
-  They'll be filled with a server-spec set by "servers login".
+  They'll be completed with the default host and owner set by "config set-default".
 
   It accepts an alias for each repository.
   For example:

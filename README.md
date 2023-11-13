@@ -87,12 +87,12 @@ $ makepkg -i
 
 ### Others
 
-| Command        | Description              |
-| --             | --                       |
-| `gogh roots`   | Manage roots             |
-| `gogh servers` | Manage servers           |
-| `gogh bundle`  | Manage bundle            |
-| `gogh help`    | Help about any command   |
+| Command       | Description            |
+| --            | --                     |
+| `gogh roots`  | Manage roots           |
+| `gogh auth`   | Manage Authentications |
+| `gogh bundle` | Manage bundle          |
+| `gogh help`   | Help about any command |
 
 Use `gogh [command] --help` for more information about a command.
 Or see the manual in [usage/gogh.md](./usage/gogh.md).
@@ -111,26 +111,29 @@ Default: `~/Projects`.
 
 ## Servers
 
-`gogh` manages repositories in some servers that pairs of a user and a host name.  To login in new
-server or logout, you should use `servers login`.  `gogh` uses the first server as the default one.
+`gogh` manages repositories in some servers that pairs of an owner and a host name.  To login in new
+server or logout, you should use `auth login`.
+
+## Default Host and Owner
+
 When you specify a repository with ambiguous user or host, it will be interpolated with a default
-server.
+value. You may set them with `set-default`.
 
-I.E. when servers are:
+If you set them like below:
 
-```
-- github.com:
-  - user: kyoh86
-- example.com:
-  - user: foobar
-```
+| key     | value         |
+| -       | -             |
+| `host`  | `example.com` |
+| `owner` | `kyoh86`      |
 
-Ambiguous repository names will be interpolated:
+ambiguous repository names will be interpolated:
 
-| Ambiguous name | Interpolated name      |
-| --             | --                     |
-| `gogh`         | github.com/kyoh86/gogh |
-| `foobar/gogh`  | github.com/foobar/gogh |
+| Ambiguous name | Interpolated name       |
+| --             | --                      |
+| `gogh`         | example.com/kyoh86/gogh |
+| `foobar/gogh`  | example.com/foobar/gogh |
+
+NOTE: default host will be "github.com" if you don't set it.
 
 ## Commands
 
