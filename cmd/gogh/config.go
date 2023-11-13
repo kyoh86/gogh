@@ -122,6 +122,8 @@ var configCommand = &cobra.Command{
 			"roots":               roots(),
 			"tokens":              tokens.Entries(),
 			"defaultFlags":        defaultFlags,
+			"defaultHost":         config.DefaultHost,
+			"defaultOwner":        config.DefaultOwner,
 		}); err != nil {
 			log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")
 			return nil
