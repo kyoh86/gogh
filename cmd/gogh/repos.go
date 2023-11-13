@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/view"
@@ -116,7 +117,13 @@ var (
 			defer cancel()
 			eg, ctx := errgroup.WithContext(ctx)
 
-			for _, entry := range tokens.Entries() {
+			entries := tokens.Entries()
+			if len(entries) == 0 {
+				log.FromContext(ctx).Warn("No valid token found: you need to set token by `gogh auth login`")
+				return nil
+			}
+			for _, entry := range entries {
+				entry := entry
 				eg.Go(func() error {
 					adaptor, err := github.NewAdaptor(ctx, entry.Host, string(entry.Token))
 					if err != nil {
