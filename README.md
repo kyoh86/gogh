@@ -67,7 +67,18 @@ $ mkdir -p gogh_build && \
 $ makepkg -i
 ```
 
+## Setup
+
+`gogh` manages repositories in multiple servers that is pairs of an owner and a host name.
+To login in new server or logout, you should use `auth login` with personal access tokens.
+
+You should generate personal access tokens with repository permissions:
+✔️ Read access to code and metadata
+✔️ Read and Write access to administration
+
 ## Available commands
+
+See manual for detail: [usage/gogh.md](./usage/gogh.md).
 
 ### Show projects
 
@@ -78,12 +89,12 @@ $ makepkg -i
 
 ### Manipulate projects
 
-| Command        | Description                                   |
-| --             | --                                            |
-| `gogh create`  | Create a new project with a remote repository |
-| `gogh delete`  | Delete a repository with a remote repository  |
-| `gogh fork`    | Fork a repository                             |
-| `gogh clone`   | Clone a repository to local                   |
+| Command       | Description                                   |
+| --            | --                                            |
+| `gogh create` | Create a new project with a remote repository |
+| `gogh delete` | Delete a repository with a remote repository  |
+| `gogh fork`   | Fork a repository                             |
+| `gogh clone`  | Clone a repository to local                   |
 
 ### Others
 
@@ -97,7 +108,9 @@ $ makepkg -i
 Use `gogh [command] --help` for more information about a command.
 Or see the manual in [usage/gogh.md](./usage/gogh.md).
 
-## Roots
+## Configurations
+
+### Roots
 
 `gogh` manages projects under the `roots` directories.
 
@@ -109,12 +122,7 @@ local project under it. If you want to change the default, use `roots set-defaul
 
 Default: `~/Projects`.
 
-## Servers
-
-`gogh` manages repositories in some servers that pairs of an owner and a host name.  To login in new
-server or logout, you should use `auth login`.
-
-## Default Host and Owner
+### Default Host and Owner
 
 When you specify a repository with ambiguous user or host, it will be interpolated with a default
 value. You may set them with `set-default`.
@@ -134,10 +142,6 @@ ambiguous repository names will be interpolated:
 | `foobar/gogh`  | example.com/foobar/gogh |
 
 NOTE: default host will be "github.com" if you don't set it.
-
-## Commands
-
-Manual: [usage/gogh.md](./usage/gogh.md).
 
 ## Directory structures
 
