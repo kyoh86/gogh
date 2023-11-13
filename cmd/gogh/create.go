@@ -20,10 +20,10 @@ type createFlagsStruct struct {
 	Homepage            string `yaml:"-"`
 	LicenseTemplate     string `yaml:"licenseTemplate,omitempty"`
 	GitignoreTemplate   string `yaml:"gitignoreTemplate,omitempty"`
-	Private             bool   `yaml:"private,omitempty"`
-	IsTemplate          bool   `yaml:"-"`
-	DisableDownloads    bool   `yaml:"disableDownloads,omitempty"`
+	CloneRetryLimit     int    `yaml:"cloneRetryLimit,omitempty"`
 	DisableWiki         bool   `yaml:"disableWiki,omitempty"`
+	DisableDownloads    bool   `yaml:"disableDownloads,omitempty"`
+	IsTemplate          bool   `yaml:"-"`
 	AutoInit            bool   `yaml:"autoInit,omitempty"`
 	DisableProjects     bool   `yaml:"disableProjects,omitempty"`
 	DisableIssues       bool   `yaml:"disableIssues,omitempty"`
@@ -31,7 +31,7 @@ type createFlagsStruct struct {
 	PreventMergeCommit  bool   `yaml:"preventMergeCommit,omitempty"`
 	PreventRebaseMerge  bool   `yaml:"preventRebaseMerge,omitempty"`
 	DeleteBranchOnMerge bool   `yaml:"deleteBranchOnMerge,omitempty"`
-	CloneRetryLimit     int    `yaml:"cloneRetryLimit,omitempty"`
+	Private             bool   `yaml:"private,omitempty"`
 	Dryrun              bool   `yaml:"-"`
 }
 
