@@ -67,7 +67,19 @@ $ mkdir -p gogh_build && \
 $ makepkg -i
 ```
 
+## Setup
+
+`gogh` manages repositories in multiple servers that is pairs of an owner and a host name.
+To login in new server or logout, you should use `auth login` with personal access tokens.
+
+You should generate personal access tokens with repository permissions:
+
+- ✔️ Read access to code and metadata
+- ✔️ Read and Write access to administration
+
 ## Available commands
+
+See manual for detail: [usage/gogh.md](./usage/gogh.md).
 
 ### Show projects
 
@@ -78,26 +90,28 @@ $ makepkg -i
 
 ### Manipulate projects
 
-| Command        | Description                                   |
-| --             | --                                            |
-| `gogh create`  | Create a new project with a remote repository |
-| `gogh delete`  | Delete a repository with a remote repository  |
-| `gogh fork`    | Fork a repository                             |
-| `gogh clone`   | Clone a repository to local                   |
+| Command       | Description                                   |
+| --            | --                                            |
+| `gogh create` | Create a new project with a remote repository |
+| `gogh delete` | Delete a repository with a remote repository  |
+| `gogh fork`   | Fork a repository                             |
+| `gogh clone`  | Clone a repository to local                   |
 
 ### Others
 
-| Command        | Description              |
-| --             | --                       |
-| `gogh roots`   | Manage roots             |
-| `gogh servers` | Manage servers           |
-| `gogh bundle`  | Manage bundle            |
-| `gogh help`    | Help about any command   |
+| Command       | Description            |
+| --            | --                     |
+| `gogh roots`  | Manage roots           |
+| `gogh auth`   | Manage Authentications |
+| `gogh bundle` | Manage bundle          |
+| `gogh help`   | Help about any command |
 
 Use `gogh [command] --help` for more information about a command.
 Or see the manual in [usage/gogh.md](./usage/gogh.md).
 
-## Roots
+## Configurations
+
+### Roots
 
 `gogh` manages projects under the `roots` directories.
 
@@ -109,32 +123,26 @@ local project under it. If you want to change the default, use `roots set-defaul
 
 Default: `~/Projects`.
 
-## Servers
+### Default Host and Owner
 
-`gogh` manages repositories in some servers that pairs of a user and a host name.  To login in new
-server or logout, you should use `servers login`.  `gogh` uses the first server as the default one.
 When you specify a repository with ambiguous user or host, it will be interpolated with a default
-server.
+value. You may set them with `set-default`.
 
-I.E. when servers are:
+If you set them like below:
 
-```
-- github.com:
-  - user: kyoh86
-- example.com:
-  - user: foobar
-```
+| key     | value         |
+| -       | -             |
+| `host`  | `example.com` |
+| `owner` | `kyoh86`      |
 
-Ambiguous repository names will be interpolated:
+ambiguous repository names will be interpolated:
 
-| Ambiguous name | Interpolated name      |
-| --             | --                     |
-| `gogh`         | github.com/kyoh86/gogh |
-| `foobar/gogh`  | github.com/foobar/gogh |
+| Ambiguous name | Interpolated name       |
+| --             | --                      |
+| `gogh`         | example.com/kyoh86/gogh |
+| `foobar/gogh`  | example.com/foobar/gogh |
 
-## Commands
-
-Manual: [usage/gogh.md](./usage/gogh.md).
+NOTE: default host will be "github.com" if you don't set it.
 
 ## Directory structures
 

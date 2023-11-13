@@ -16,7 +16,7 @@ var loginFlags struct {
 
 var loginCommand = &cobra.Command{
 	Use:   "login",
-	Short: "Login for a server",
+	Short: "Login for the host and owner",
 	Args:  cobra.ExactArgs(0),
 	RunE: func(*cobra.Command, []string) error {
 		if err := survey.Ask([]*survey.Question{
@@ -45,7 +45,8 @@ var loginCommand = &cobra.Command{
 		}, &loginFlags); err != nil {
 			return err
 		}
-		return servers.Set(loginFlags.Host, loginFlags.User, loginFlags.Password)
+		tokens.Set(loginFlags.Host, loginFlags.User, gogh.Token(loginFlags.Password))
+		return nil
 	},
 }
 
@@ -60,11 +61,10 @@ func stringValidator(v func(s string) error) survey.Validator {
 }
 
 func init() {
-	setup()
 	loginCommand.Flags().
 		StringVarP(&loginFlags.Host, "host", "", gogh.DefaultHost, "Host name to login")
 	loginCommand.Flags().StringVarP(&loginFlags.User, "user", "", "", "User name to login")
 	loginCommand.Flags().
 		StringVarP(&loginFlags.Password, "password", "", "", "Password or developer private token")
-	serversCommand.AddCommand(loginCommand)
+	authCommand.AddCommand(loginCommand)
 }

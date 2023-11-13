@@ -49,6 +49,21 @@ func (mr *MockAdaptorMockRecorder) GetHost() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHost", reflect.TypeOf((*MockAdaptor)(nil).GetHost))
 }
 
+// GetMe mocks base method.
+func (m *MockAdaptor) GetMe(ctx context.Context) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMe", ctx)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMe indicates an expected call of GetMe.
+func (mr *MockAdaptorMockRecorder) GetMe(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockAdaptor)(nil).GetMe), ctx)
+}
+
 // RepositoryCreate mocks base method.
 func (m *MockAdaptor) RepositoryCreate(ctx context.Context, org string, repo *github.Repository) (*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()

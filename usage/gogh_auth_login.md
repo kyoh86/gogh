@@ -1,9 +1,9 @@
-## gogh servers login
+## gogh auth login
 
-Login for a server
+Login for the host and owner
 
 ```
-gogh servers login [flags]
+gogh auth login [flags]
 ```
 
 ### Options
@@ -17,5 +17,5 @@ gogh servers login [flags]
 
 ### SEE ALSO
 
-* [gogh servers](gogh_servers.md)	 - Manage servers
+* [gogh auth](gogh_auth.md)	 - Manage tokens
 

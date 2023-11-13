@@ -1,13 +1,11 @@
 linters:
   enable:
     - bodyclose
-    - depguard
     - dogsled
     - gocritic
     - godox
     - gofmt
     - goimports
-    - golint
     - misspell
     - nakedret
     - prealloc

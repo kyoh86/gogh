@@ -28,7 +28,7 @@ func TestSpecParser(t *testing.T) {
 			source: owner1 + "/" + name,
 		}} {
 			t.Run(testcase.title, func(t *testing.T) {
-				if _, _, err := parser.Parse(testcase.source); err == nil {
+				if _, err := parser.Parse(testcase.source); err == nil {
 					t.Fatal("expect error, but nil")
 				}
 			})
@@ -36,11 +36,7 @@ func TestSpecParser(t *testing.T) {
 	})
 
 	t.Run("DefaultHost", func(t *testing.T) {
-		server, err := testtarget.NewServer(owner1, "token")
-		if err != nil {
-			t.Fatalf("failed to create new server for %s: %v", owner1, err)
-		}
-		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
+		parser := testtarget.NewSpecParser(testtarget.DefaultHost, owner1)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -49,44 +45,33 @@ func TestSpecParser(t *testing.T) {
 				expectHost string
 				expectUser string
 				expectName string
-
-				expectServerUser string
-				expectToken      string
 			}{{
-				title:            "valid-name",
-				source:           name,
-				expectHost:       testtarget.DefaultHost,
-				expectUser:       owner1,
-				expectName:       name,
-				expectServerUser: owner1,
-				expectToken:      "token",
+				title:      "valid-name",
+				source:     name,
+				expectHost: testtarget.DefaultHost,
+				expectUser: owner1,
+				expectName: name,
 			}, {
-				title:            "default-owner,valid-name",
-				source:           owner1 + "/" + name,
-				expectHost:       testtarget.DefaultHost,
-				expectUser:       owner1,
-				expectName:       name,
-				expectServerUser: owner1,
-				expectToken:      "token",
+				title:      "default-owner,valid-name",
+				source:     owner1 + "/" + name,
+				expectHost: testtarget.DefaultHost,
+				expectUser: owner1,
+				expectName: name,
 			}, {
-				title:            "default-host,default-owner,valid-name",
-				source:           testtarget.DefaultHost + "/" + owner1 + "/" + name,
-				expectHost:       testtarget.DefaultHost,
-				expectUser:       owner1,
-				expectName:       name,
-				expectServerUser: owner1,
-				expectToken:      "token",
+				title:      "default-host,default-owner,valid-name",
+				source:     testtarget.DefaultHost + "/" + owner1 + "/" + name,
+				expectHost: testtarget.DefaultHost,
+				expectUser: owner1,
+				expectName: name,
 			}, {
-				title:            "valid-host,valid-owner,valid-name",
-				source:           host1 + "/" + owner2 + "/" + name,
-				expectHost:       host1,
-				expectUser:       owner2,
-				expectName:       name,
-				expectServerUser: owner2,
-				expectToken:      "",
+				title:      "valid-host,valid-owner,valid-name",
+				source:     host1 + "/" + owner2 + "/" + name,
+				expectHost: host1,
+				expectUser: owner2,
+				expectName: name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					spec, server, err := parser.Parse(testcase.source)
+					spec, err := parser.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
@@ -98,23 +83,6 @@ func TestSpecParser(t *testing.T) {
 					}
 					if testcase.expectName != spec.Name() {
 						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
-					}
-					if testcase.expectHost != server.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
-					}
-					if testcase.expectServerUser != server.User() {
-						t.Errorf(
-							"expect owner %q but %q gotten",
-							testcase.expectServerUser,
-							server.User(),
-						)
-					}
-					if testcase.expectToken != server.Token() {
-						t.Errorf(
-							"expect token %q but %q gotten",
-							testcase.expectToken,
-							server.Token(),
-						)
 					}
 				})
 			}
@@ -229,7 +197,7 @@ func TestSpecParser(t *testing.T) {
 				},
 			} {
 				t.Run(testcase.title, func(t *testing.T) {
-					spec, _, _, err := parser.ParseWithAlias(testcase.input)
+					spec, _, err := parser.ParseWithAlias(testcase.input)
 					if err == nil {
 						t.Fatalf(
 							"expect failure to parse %q but parsed to %+v",
@@ -259,11 +227,7 @@ func TestSpecParser(t *testing.T) {
 	})
 
 	t.Run("WithHost", func(t *testing.T) {
-		server, err := testtarget.NewServerFor(host1, owner1, "token")
-		if err != nil {
-			t.Fatalf("failed to create new server for %s: %v", owner1, err)
-		}
-		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
+		parser := testtarget.NewSpecParser(host1, owner1)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -272,43 +236,33 @@ func TestSpecParser(t *testing.T) {
 				expectHost string
 				expectUser string
 				expectName string
-
-				expectServerUser string
-				expectToken      string
 			}{{
-				title:            "valid-name",
-				source:           name,
-				expectHost:       host1,
-				expectUser:       owner1,
-				expectName:       name,
-				expectServerUser: owner1,
-				expectToken:      "token",
+				title:      "valid-name",
+				source:     name,
+				expectHost: host1,
+				expectUser: owner1,
+				expectName: name,
 			}, {
-				title:            "default-owner,valid-name",
-				source:           owner1 + "/" + name,
-				expectHost:       host1,
-				expectUser:       owner1,
-				expectName:       name,
-				expectServerUser: owner1,
-				expectToken:      "token",
+				title:      "default-owner,valid-name",
+				source:     owner1 + "/" + name,
+				expectHost: host1,
+				expectUser: owner1,
+				expectName: name,
 			}, {
-				title:            "default-host,default-owner,valid-name",
-				source:           host1 + "/" + owner1 + "/" + name,
-				expectHost:       host1,
-				expectUser:       owner1,
-				expectName:       name,
-				expectServerUser: owner1,
-				expectToken:      "token",
+				title:      "default-host,default-owner,valid-name",
+				source:     host1 + "/" + owner1 + "/" + name,
+				expectHost: host1,
+				expectUser: owner1,
+				expectName: name,
 			}, {
-				title:            "valid-host,valid-owner,valid-name",
-				source:           host2 + "/" + owner2 + "/" + name,
-				expectHost:       host2,
-				expectUser:       owner2,
-				expectServerUser: owner2,
-				expectName:       name,
+				title:      "valid-host,valid-owner,valid-name",
+				source:     host2 + "/" + owner2 + "/" + name,
+				expectHost: host2,
+				expectUser: owner2,
+				expectName: name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					spec, server, err := parser.Parse(testcase.source)
+					spec, err := parser.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
@@ -321,145 +275,13 @@ func TestSpecParser(t *testing.T) {
 					if testcase.expectName != spec.Name() {
 						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
 					}
-					if testcase.expectHost != server.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
-					}
-					if testcase.expectServerUser != server.User() {
-						t.Errorf(
-							"expect owner %q but %q gotten",
-							testcase.expectServerUser,
-							server.User(),
-						)
-					}
-					if testcase.expectToken != server.Token() {
-						t.Errorf(
-							"expect token %q but %q gotten",
-							testcase.expectToken,
-							server.Token(),
-						)
-					}
 				})
 			}
 		})
 	})
 
-	t.Run("WithMultipeServers", func(t *testing.T) {
-		// (default) github.com/kyoh86
-		server1, err := testtarget.NewServerFor(testtarget.DefaultHost, owner1, "token1")
-		if err != nil {
-			t.Fatalf(
-				"failed to create new server for %s@%s: %q",
-				owner1,
-				testtarget.DefaultHost,
-				err,
-			)
-		}
-		// example.com/anonymous
-		server2, err := testtarget.NewServerFor(host1, owner2, "token2")
-		if err != nil {
-			t.Fatalf("failed to create new server for %s@%s: %q", owner2, host1, err)
-		}
-		// kyoh86.dev/anonymous
-		server3, err := testtarget.NewServerFor(testtarget.DefaultHost, owner2, "token3")
-		if err != nil {
-			t.Fatalf(
-				"failed to create new server for %s@%s: %q",
-				owner2,
-				testtarget.DefaultHost,
-				err,
-			)
-		}
-
-		parser := testtarget.NewSpecParser(testtarget.NewServers(server1, server2, server3))
-
-		for _, testcase := range []struct {
-			title  string
-			source string
-
-			expectHost string
-			expectUser string
-			expectName string
-
-			expectServerUser string
-			expectToken      string
-		}{{
-			title:            "valid-name",
-			source:           name,
-			expectHost:       testtarget.DefaultHost,
-			expectUser:       owner1,
-			expectName:       name,
-			expectServerUser: owner1,
-			expectToken:      "token1",
-		}, {
-			title:            "valid-name,valid-owner",
-			source:           owner2 + "/" + name,
-			expectHost:       testtarget.DefaultHost,
-			expectUser:       owner2,
-			expectServerUser: owner1,
-			expectName:       name,
-			expectToken:      "token1",
-		}, {
-			title:            "full-name",
-			source:           testtarget.DefaultHost + "/" + owner2 + "/" + name,
-			expectHost:       testtarget.DefaultHost,
-			expectUser:       owner2,
-			expectName:       name,
-			expectServerUser: owner1,
-			expectToken:      "token1",
-		}, {
-			title:            "other-host",
-			source:           host1 + "/" + owner2 + "/" + name,
-			expectHost:       host1,
-			expectUser:       owner2,
-			expectName:       name,
-			expectServerUser: owner2,
-			expectToken:      "token2",
-		}, {
-			title:            "not-matched",
-			source:           host2 + "/" + owner2 + "/" + name,
-			expectHost:       host2,
-			expectUser:       owner2,
-			expectServerUser: owner2,
-			expectName:       name,
-			expectToken:      "",
-		}} {
-			t.Run(testcase.title, func(t *testing.T) {
-				spec, server, err := parser.Parse(testcase.source)
-				if err != nil {
-					t.Fatalf("failed to parse %q: %s", testcase.source, err)
-				}
-				if testcase.expectHost != spec.Host() {
-					t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
-				}
-				if testcase.expectUser != spec.Owner() {
-					t.Errorf("expect owner %q but %q gotten", testcase.expectUser, spec.Owner())
-				}
-				if testcase.expectName != spec.Name() {
-					t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
-				}
-				if testcase.expectHost != server.Host() {
-					t.Errorf("expect host %q but %q gotten", testcase.expectHost, server.Host())
-				}
-				if testcase.expectServerUser != server.User() {
-					t.Errorf(
-						"expect owner %q but %q gotten",
-						testcase.expectServerUser,
-						server.User(),
-					)
-				}
-				if testcase.expectToken != server.Token() {
-					t.Errorf("expect token %q but %q gotten", testcase.expectToken, server.Token())
-				}
-			})
-		}
-	})
-
 	t.Run("ParseWithAlias", func(t *testing.T) {
-		server, err := testtarget.NewServerFor(host1, owner1, "token")
-		if err != nil {
-			t.Fatalf("failed to create new server for %s: %v", owner1, err)
-		}
-		parser := testtarget.NewSpecParser(testtarget.NewServers(server))
+		parser := testtarget.NewSpecParser("default-host", "default-owner")
 		t.Run("WithoutAlias", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -471,7 +293,7 @@ func TestSpecParser(t *testing.T) {
 				title:  "same-name",
 				source: name + "=" + name,
 			}} {
-				_, alias, _, err := parser.ParseWithAlias(testcase.source)
+				_, alias, err := parser.ParseWithAlias(testcase.source)
 				if err != nil {
 					t.Fatalf("failed to parse %q: %s", testcase.source, err)
 				}
@@ -509,7 +331,7 @@ func TestSpecParser(t *testing.T) {
 				wantName: "alias",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					_, alias, _, err := parser.ParseWithAlias(testcase.source)
+					_, alias, err := parser.ParseWithAlias(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
@@ -556,7 +378,7 @@ func TestSpecParser(t *testing.T) {
 				source: name + "=example.com/baz/many",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					_, _, _, err := parser.ParseWithAlias(testcase.source)
+					_, _, err := parser.ParseWithAlias(testcase.source)
 					if err == nil {
 						t.Fatal("want error, but got nil")
 					}

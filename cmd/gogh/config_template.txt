@@ -1,14 +1,20 @@
 Now gogh is executed in the following context.
 
+## Default names
+  (from {{.configFilePath}})
+
+  Host: {{if ne .defaultHost ""}}{{.defaultHost}}{{else}}github.com{{end}}
+  {{if ne .defaultOwner ""}}Owner: {{.defaultOwner}}
+  {{end}}
 ## Root directories
   (from {{.configFilePath}})
 
 {{range .roots}}  {{.}}
 {{end}}
-## Servers
-  (from {{.serversFilePath}})
+## Tokens
+  (from {{.tokensFilePath}})
 
-{{range .servers}}  {{.}}
+{{range .tokens}}  {{.}}
 {{end}}
 ## Default flags
   (from {{.defaultFlagFilePath}})

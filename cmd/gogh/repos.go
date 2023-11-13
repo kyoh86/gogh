@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/view"
@@ -38,10 +39,6 @@ var (
 		Short: "List remote repositories",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			list, err := servers.List()
-			if err != nil {
-				return err
-			}
 			var listOption gogh.RemoteListOption
 			switch reposFlags.Limit {
 			case 0:
@@ -120,10 +117,15 @@ var (
 			defer cancel()
 			eg, ctx := errgroup.WithContext(ctx)
 
-			for _, server := range list {
-				server := server
+			entries := tokens.Entries()
+			if len(entries) == 0 {
+				log.FromContext(ctx).Warn("No valid token found: you need to set token by `gogh auth login`")
+				return nil
+			}
+			for _, entry := range entries {
+				entry := entry
 				eg.Go(func() error {
-					adaptor, err := github.NewAdaptor(ctx, server.Host(), server.Token())
+					adaptor, err := github.NewAdaptor(ctx, entry.Host, string(entry.Token))
 					if err != nil {
 						return err
 					}
@@ -169,7 +171,6 @@ func quoteEnums(values []string) string {
 }
 
 func init() {
-	setup()
 	repoFormatAccept = []string{"spec", "url", "json", "table"}
 	for _, v := range gogh.AllRepositoryOrderField {
 		repoSortAccept = append(repoSortAccept, v.String())

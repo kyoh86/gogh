@@ -14,6 +14,8 @@ import (
 	"github.com/wacul/ptr"
 )
 
+const DefaultHost = "github.com"
+
 type RemoteController struct {
 	adaptor github.Adaptor
 }
@@ -178,6 +180,16 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 		}
 	}
 	return opt
+}
+
+func (c *RemoteController) Me(
+	ctx context.Context,
+) (string, error) {
+	user, err := c.adaptor.GetMe(ctx)
+	if err != nil {
+		return "", fmt.Errorf("get a user: %w", err)
+	}
+	return user, nil
 }
 
 func (c *RemoteController) List(
