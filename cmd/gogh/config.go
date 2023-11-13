@@ -134,7 +134,7 @@ var configCommand = &cobra.Command{
 func init() {
 	setDefaultCommand.Flags().StringVarP(&setDefaultFlags.Host, "host", "", gogh.DefaultHost, "Host name")
 	setDefaultCommand.Flags().StringVarP(&setDefaultFlags.Owner, "owner", "", "", "Owner name")
-	facadeCommand.AddCommand(setDefaultCommand)
 	configCommand.AddCommand(setDefaultCommand)
+	facadeCommand.AddCommand(setDefaultCommand)
 	facadeCommand.AddCommand(configCommand)
 }
