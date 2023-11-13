@@ -1,7 +1,5 @@
 package gogh
 
-import "fmt"
-
 type Token string
 
 type TokenTarget struct {
@@ -54,9 +52,7 @@ func (t TokenTarget) MarshalText() ([]byte, error) {
 }
 
 func (t *TokenTarget) UnmarshalText(text []byte) error {
-	fmt.Println(string(text))
 	t.Host, t.Owner = splitHostOwner(string(text))
-	fmt.Println(t)
 	return nil
 }
 
@@ -117,7 +113,6 @@ func (t *TokenManager) UnmarshalYAML(unmarshaler func(interface{}) error) error 
 		if err := target.UnmarshalText([]byte(k)); err != nil {
 			return err
 		}
-		fmt.Println(target)
 		(*t)[target] = Token(v)
 	}
 	return nil
