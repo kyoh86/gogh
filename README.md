@@ -73,8 +73,9 @@ $ makepkg -i
 To login in new server or logout, you should use `auth login` with personal access tokens.
 
 You should generate personal access tokens with repository permissions:
-✔️ Read access to code and metadata
-✔️ Read and Write access to administration
+
+- ✔️ Read access to code and metadata
+- ✔️ Read and Write access to administration
 
 ## Available commands
 
