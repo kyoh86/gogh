@@ -7,7 +7,6 @@ linters:
     - godox
     - gofmt
     - goimports
-    - golint
     - misspell
     - nakedret
     - prealloc
