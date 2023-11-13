@@ -9,6 +9,7 @@ import (
 	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/level"
 	"github.com/apex/log/handlers/multi"
+	"github.com/kyoh86/gogh/v2/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +20,7 @@ var (
 )
 
 var facadeCommand = &cobra.Command{
-	Use:     appName,
+	Use:     cmdutil.AppName,
 	Short:   "GO GitHub project manager",
 	Version: fmt.Sprintf("%s-%s (%s)", version, commit, date),
 }
