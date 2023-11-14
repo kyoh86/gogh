@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var tokens gogh.TokenManager
+var tokens = gogh.TokenManager{}
 
 var authCommand = &cobra.Command{
 	Use:   "auth",
