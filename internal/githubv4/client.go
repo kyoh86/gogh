@@ -43,72 +43,129 @@ type Query struct {
 	SecurityAdvisory                         *SecurityAdvisory                  "json:\"securityAdvisory\" graphql:\"securityAdvisory\""
 	SecurityVulnerabilities                  SecurityVulnerabilityConnection    "json:\"securityVulnerabilities\" graphql:\"securityVulnerabilities\""
 	Sponsorables                             SponsorableItemConnection          "json:\"sponsorables\" graphql:\"sponsorables\""
-	SponsorsListing                          *SponsorsListing                   "json:\"sponsorsListing\" graphql:\"sponsorsListing\""
 	Topic                                    *Topic                             "json:\"topic\" graphql:\"topic\""
 	User                                     *User                              "json:\"user\" graphql:\"user\""
 	Viewer                                   User                               "json:\"viewer\" graphql:\"viewer\""
 }
 type Mutation struct {
+	AbortQueuedMigrations                                       *AbortQueuedMigrationsPayload                                       "json:\"abortQueuedMigrations\" graphql:\"abortQueuedMigrations\""
+	AbortRepositoryMigration                                    *AbortRepositoryMigrationPayload                                    "json:\"abortRepositoryMigration\" graphql:\"abortRepositoryMigration\""
 	AcceptEnterpriseAdministratorInvitation                     *AcceptEnterpriseAdministratorInvitationPayload                     "json:\"acceptEnterpriseAdministratorInvitation\" graphql:\"acceptEnterpriseAdministratorInvitation\""
 	AcceptTopicSuggestion                                       *AcceptTopicSuggestionPayload                                       "json:\"acceptTopicSuggestion\" graphql:\"acceptTopicSuggestion\""
 	AddAssigneesToAssignable                                    *AddAssigneesToAssignablePayload                                    "json:\"addAssigneesToAssignable\" graphql:\"addAssigneesToAssignable\""
 	AddComment                                                  *AddCommentPayload                                                  "json:\"addComment\" graphql:\"addComment\""
+	AddDiscussionComment                                        *AddDiscussionCommentPayload                                        "json:\"addDiscussionComment\" graphql:\"addDiscussionComment\""
+	AddDiscussionPollVote                                       *AddDiscussionPollVotePayload                                       "json:\"addDiscussionPollVote\" graphql:\"addDiscussionPollVote\""
+	AddEnterpriseOrganizationMember                             *AddEnterpriseOrganizationMemberPayload                             "json:\"addEnterpriseOrganizationMember\" graphql:\"addEnterpriseOrganizationMember\""
 	AddEnterpriseSupportEntitlement                             *AddEnterpriseSupportEntitlementPayload                             "json:\"addEnterpriseSupportEntitlement\" graphql:\"addEnterpriseSupportEntitlement\""
 	AddLabelsToLabelable                                        *AddLabelsToLabelablePayload                                        "json:\"addLabelsToLabelable\" graphql:\"addLabelsToLabelable\""
 	AddProjectCard                                              *AddProjectCardPayload                                              "json:\"addProjectCard\" graphql:\"addProjectCard\""
 	AddProjectColumn                                            *AddProjectColumnPayload                                            "json:\"addProjectColumn\" graphql:\"addProjectColumn\""
+	AddProjectV2DraftIssue                                      *AddProjectV2DraftIssuePayload                                      "json:\"addProjectV2DraftIssue\" graphql:\"addProjectV2DraftIssue\""
+	AddProjectV2ItemByID                                        *AddProjectV2ItemByIDPayload                                        "json:\"addProjectV2ItemById\" graphql:\"addProjectV2ItemById\""
 	AddPullRequestReview                                        *AddPullRequestReviewPayload                                        "json:\"addPullRequestReview\" graphql:\"addPullRequestReview\""
 	AddPullRequestReviewComment                                 *AddPullRequestReviewCommentPayload                                 "json:\"addPullRequestReviewComment\" graphql:\"addPullRequestReviewComment\""
 	AddPullRequestReviewThread                                  *AddPullRequestReviewThreadPayload                                  "json:\"addPullRequestReviewThread\" graphql:\"addPullRequestReviewThread\""
+	AddPullRequestReviewThreadReply                             *AddPullRequestReviewThreadReplyPayload                             "json:\"addPullRequestReviewThreadReply\" graphql:\"addPullRequestReviewThreadReply\""
 	AddReaction                                                 *AddReactionPayload                                                 "json:\"addReaction\" graphql:\"addReaction\""
 	AddStar                                                     *AddStarPayload                                                     "json:\"addStar\" graphql:\"addStar\""
+	AddUpvote                                                   *AddUpvotePayload                                                   "json:\"addUpvote\" graphql:\"addUpvote\""
 	AddVerifiableDomain                                         *AddVerifiableDomainPayload                                         "json:\"addVerifiableDomain\" graphql:\"addVerifiableDomain\""
+	ApproveDeployments                                          *ApproveDeploymentsPayload                                          "json:\"approveDeployments\" graphql:\"approveDeployments\""
 	ApproveVerifiableDomain                                     *ApproveVerifiableDomainPayload                                     "json:\"approveVerifiableDomain\" graphql:\"approveVerifiableDomain\""
+	ArchiveProjectV2Item                                        *ArchiveProjectV2ItemPayload                                        "json:\"archiveProjectV2Item\" graphql:\"archiveProjectV2Item\""
 	ArchiveRepository                                           *ArchiveRepositoryPayload                                           "json:\"archiveRepository\" graphql:\"archiveRepository\""
 	CancelEnterpriseAdminInvitation                             *CancelEnterpriseAdminInvitationPayload                             "json:\"cancelEnterpriseAdminInvitation\" graphql:\"cancelEnterpriseAdminInvitation\""
+	CancelSponsorship                                           *CancelSponsorshipPayload                                           "json:\"cancelSponsorship\" graphql:\"cancelSponsorship\""
 	ChangeUserStatus                                            *ChangeUserStatusPayload                                            "json:\"changeUserStatus\" graphql:\"changeUserStatus\""
 	ClearLabelsFromLabelable                                    *ClearLabelsFromLabelablePayload                                    "json:\"clearLabelsFromLabelable\" graphql:\"clearLabelsFromLabelable\""
+	ClearProjectV2ItemFieldValue                                *ClearProjectV2ItemFieldValuePayload                                "json:\"clearProjectV2ItemFieldValue\" graphql:\"clearProjectV2ItemFieldValue\""
 	CloneProject                                                *CloneProjectPayload                                                "json:\"cloneProject\" graphql:\"cloneProject\""
 	CloneTemplateRepository                                     *CloneTemplateRepositoryPayload                                     "json:\"cloneTemplateRepository\" graphql:\"cloneTemplateRepository\""
+	CloseDiscussion                                             *CloseDiscussionPayload                                             "json:\"closeDiscussion\" graphql:\"closeDiscussion\""
 	CloseIssue                                                  *CloseIssuePayload                                                  "json:\"closeIssue\" graphql:\"closeIssue\""
 	ClosePullRequest                                            *ClosePullRequestPayload                                            "json:\"closePullRequest\" graphql:\"closePullRequest\""
 	ConvertProjectCardNoteToIssue                               *ConvertProjectCardNoteToIssuePayload                               "json:\"convertProjectCardNoteToIssue\" graphql:\"convertProjectCardNoteToIssue\""
 	ConvertPullRequestToDraft                                   *ConvertPullRequestToDraftPayload                                   "json:\"convertPullRequestToDraft\" graphql:\"convertPullRequestToDraft\""
+	CopyProjectV2                                               *CopyProjectV2Payload                                               "json:\"copyProjectV2\" graphql:\"copyProjectV2\""
+	CreateAttributionInvitation                                 *CreateAttributionInvitationPayload                                 "json:\"createAttributionInvitation\" graphql:\"createAttributionInvitation\""
 	CreateBranchProtectionRule                                  *CreateBranchProtectionRulePayload                                  "json:\"createBranchProtectionRule\" graphql:\"createBranchProtectionRule\""
 	CreateCheckRun                                              *CreateCheckRunPayload                                              "json:\"createCheckRun\" graphql:\"createCheckRun\""
 	CreateCheckSuite                                            *CreateCheckSuitePayload                                            "json:\"createCheckSuite\" graphql:\"createCheckSuite\""
+	CreateCommitOnBranch                                        *CreateCommitOnBranchPayload                                        "json:\"createCommitOnBranch\" graphql:\"createCommitOnBranch\""
+	CreateDiscussion                                            *CreateDiscussionPayload                                            "json:\"createDiscussion\" graphql:\"createDiscussion\""
 	CreateEnterpriseOrganization                                *CreateEnterpriseOrganizationPayload                                "json:\"createEnterpriseOrganization\" graphql:\"createEnterpriseOrganization\""
+	CreateEnvironment                                           *CreateEnvironmentPayload                                           "json:\"createEnvironment\" graphql:\"createEnvironment\""
 	CreateIPAllowListEntry                                      *CreateIPAllowListEntryPayload                                      "json:\"createIpAllowListEntry\" graphql:\"createIpAllowListEntry\""
 	CreateIssue                                                 *CreateIssuePayload                                                 "json:\"createIssue\" graphql:\"createIssue\""
+	CreateLinkedBranch                                          *CreateLinkedBranchPayload                                          "json:\"createLinkedBranch\" graphql:\"createLinkedBranch\""
+	CreateMigrationSource                                       *CreateMigrationSourcePayload                                       "json:\"createMigrationSource\" graphql:\"createMigrationSource\""
 	CreateProject                                               *CreateProjectPayload                                               "json:\"createProject\" graphql:\"createProject\""
+	CreateProjectV2                                             *CreateProjectV2Payload                                             "json:\"createProjectV2\" graphql:\"createProjectV2\""
+	CreateProjectV2Field                                        *CreateProjectV2FieldPayload                                        "json:\"createProjectV2Field\" graphql:\"createProjectV2Field\""
 	CreatePullRequest                                           *CreatePullRequestPayload                                           "json:\"createPullRequest\" graphql:\"createPullRequest\""
 	CreateRef                                                   *CreateRefPayload                                                   "json:\"createRef\" graphql:\"createRef\""
 	CreateRepository                                            *CreateRepositoryPayload                                            "json:\"createRepository\" graphql:\"createRepository\""
+	CreateRepositoryRuleset                                     *CreateRepositoryRulesetPayload                                     "json:\"createRepositoryRuleset\" graphql:\"createRepositoryRuleset\""
+	CreateSavedNotificationThread                               *CreateSavedNotificationThreadPayload                               "json:\"createSavedNotificationThread\" graphql:\"createSavedNotificationThread\""
+	CreateSponsorsListing                                       *CreateSponsorsListingPayload                                       "json:\"createSponsorsListing\" graphql:\"createSponsorsListing\""
+	CreateSponsorsTier                                          *CreateSponsorsTierPayload                                          "json:\"createSponsorsTier\" graphql:\"createSponsorsTier\""
+	CreateSponsorship                                           *CreateSponsorshipPayload                                           "json:\"createSponsorship\" graphql:\"createSponsorship\""
+	CreateSponsorships                                          *CreateSponsorshipsPayload                                          "json:\"createSponsorships\" graphql:\"createSponsorships\""
 	CreateTeamDiscussion                                        *CreateTeamDiscussionPayload                                        "json:\"createTeamDiscussion\" graphql:\"createTeamDiscussion\""
 	CreateTeamDiscussionComment                                 *CreateTeamDiscussionCommentPayload                                 "json:\"createTeamDiscussionComment\" graphql:\"createTeamDiscussionComment\""
 	DeclineTopicSuggestion                                      *DeclineTopicSuggestionPayload                                      "json:\"declineTopicSuggestion\" graphql:\"declineTopicSuggestion\""
 	DeleteBranchProtectionRule                                  *DeleteBranchProtectionRulePayload                                  "json:\"deleteBranchProtectionRule\" graphql:\"deleteBranchProtectionRule\""
 	DeleteDeployment                                            *DeleteDeploymentPayload                                            "json:\"deleteDeployment\" graphql:\"deleteDeployment\""
+	DeleteDiscussion                                            *DeleteDiscussionPayload                                            "json:\"deleteDiscussion\" graphql:\"deleteDiscussion\""
+	DeleteDiscussionComment                                     *DeleteDiscussionCommentPayload                                     "json:\"deleteDiscussionComment\" graphql:\"deleteDiscussionComment\""
+	DeleteEnvironment                                           *DeleteEnvironmentPayload                                           "json:\"deleteEnvironment\" graphql:\"deleteEnvironment\""
 	DeleteIPAllowListEntry                                      *DeleteIPAllowListEntryPayload                                      "json:\"deleteIpAllowListEntry\" graphql:\"deleteIpAllowListEntry\""
 	DeleteIssue                                                 *DeleteIssuePayload                                                 "json:\"deleteIssue\" graphql:\"deleteIssue\""
 	DeleteIssueComment                                          *DeleteIssueCommentPayload                                          "json:\"deleteIssueComment\" graphql:\"deleteIssueComment\""
+	DeleteLinkedBranch                                          *DeleteLinkedBranchPayload                                          "json:\"deleteLinkedBranch\" graphql:\"deleteLinkedBranch\""
 	DeleteProject                                               *DeleteProjectPayload                                               "json:\"deleteProject\" graphql:\"deleteProject\""
 	DeleteProjectCard                                           *DeleteProjectCardPayload                                           "json:\"deleteProjectCard\" graphql:\"deleteProjectCard\""
 	DeleteProjectColumn                                         *DeleteProjectColumnPayload                                         "json:\"deleteProjectColumn\" graphql:\"deleteProjectColumn\""
+	DeleteProjectV2                                             *DeleteProjectV2Payload                                             "json:\"deleteProjectV2\" graphql:\"deleteProjectV2\""
+	DeleteProjectV2Field                                        *DeleteProjectV2FieldPayload                                        "json:\"deleteProjectV2Field\" graphql:\"deleteProjectV2Field\""
+	DeleteProjectV2Item                                         *DeleteProjectV2ItemPayload                                         "json:\"deleteProjectV2Item\" graphql:\"deleteProjectV2Item\""
+	DeleteProjectV2Workflow                                     *DeleteProjectV2WorkflowPayload                                     "json:\"deleteProjectV2Workflow\" graphql:\"deleteProjectV2Workflow\""
 	DeletePullRequestReview                                     *DeletePullRequestReviewPayload                                     "json:\"deletePullRequestReview\" graphql:\"deletePullRequestReview\""
 	DeletePullRequestReviewComment                              *DeletePullRequestReviewCommentPayload                              "json:\"deletePullRequestReviewComment\" graphql:\"deletePullRequestReviewComment\""
 	DeleteRef                                                   *DeleteRefPayload                                                   "json:\"deleteRef\" graphql:\"deleteRef\""
+	DeleteRepositoryRuleset                                     *DeleteRepositoryRulesetPayload                                     "json:\"deleteRepositoryRuleset\" graphql:\"deleteRepositoryRuleset\""
+	DeleteSavedNotificationThread                               *DeleteSavedNotificationThreadPayload                               "json:\"deleteSavedNotificationThread\" graphql:\"deleteSavedNotificationThread\""
 	DeleteTeamDiscussion                                        *DeleteTeamDiscussionPayload                                        "json:\"deleteTeamDiscussion\" graphql:\"deleteTeamDiscussion\""
 	DeleteTeamDiscussionComment                                 *DeleteTeamDiscussionCommentPayload                                 "json:\"deleteTeamDiscussionComment\" graphql:\"deleteTeamDiscussionComment\""
 	DeleteVerifiableDomain                                      *DeleteVerifiableDomainPayload                                      "json:\"deleteVerifiableDomain\" graphql:\"deleteVerifiableDomain\""
+	DequeuePullRequest                                          *DequeuePullRequestPayload                                          "json:\"dequeuePullRequest\" graphql:\"dequeuePullRequest\""
 	DisablePullRequestAutoMerge                                 *DisablePullRequestAutoMergePayload                                 "json:\"disablePullRequestAutoMerge\" graphql:\"disablePullRequestAutoMerge\""
 	DismissPullRequestReview                                    *DismissPullRequestReviewPayload                                    "json:\"dismissPullRequestReview\" graphql:\"dismissPullRequestReview\""
+	DismissRepositoryVulnerabilityAlert                         *DismissRepositoryVulnerabilityAlertPayload                         "json:\"dismissRepositoryVulnerabilityAlert\" graphql:\"dismissRepositoryVulnerabilityAlert\""
 	EnablePullRequestAutoMerge                                  *EnablePullRequestAutoMergePayload                                  "json:\"enablePullRequestAutoMerge\" graphql:\"enablePullRequestAutoMerge\""
+	EnqueuePullRequest                                          *EnqueuePullRequestPayload                                          "json:\"enqueuePullRequest\" graphql:\"enqueuePullRequest\""
+	FollowOrganization                                          *FollowOrganizationPayload                                          "json:\"followOrganization\" graphql:\"followOrganization\""
 	FollowUser                                                  *FollowUserPayload                                                  "json:\"followUser\" graphql:\"followUser\""
+	GrantEnterpriseOrganizationsMigratorRole                    *GrantEnterpriseOrganizationsMigratorRolePayload                    "json:\"grantEnterpriseOrganizationsMigratorRole\" graphql:\"grantEnterpriseOrganizationsMigratorRole\""
+	GrantMigratorRole                                           *GrantMigratorRolePayload                                           "json:\"grantMigratorRole\" graphql:\"grantMigratorRole\""
 	InviteEnterpriseAdmin                                       *InviteEnterpriseAdminPayload                                       "json:\"inviteEnterpriseAdmin\" graphql:\"inviteEnterpriseAdmin\""
+	LinkProjectV2ToRepository                                   *LinkProjectV2ToRepositoryPayload                                   "json:\"linkProjectV2ToRepository\" graphql:\"linkProjectV2ToRepository\""
+	LinkProjectV2ToTeam                                         *LinkProjectV2ToTeamPayload                                         "json:\"linkProjectV2ToTeam\" graphql:\"linkProjectV2ToTeam\""
 	LinkRepositoryToProject                                     *LinkRepositoryToProjectPayload                                     "json:\"linkRepositoryToProject\" graphql:\"linkRepositoryToProject\""
 	LockLockable                                                *LockLockablePayload                                                "json:\"lockLockable\" graphql:\"lockLockable\""
+	MarkDiscussionCommentAsAnswer                               *MarkDiscussionCommentAsAnswerPayload                               "json:\"markDiscussionCommentAsAnswer\" graphql:\"markDiscussionCommentAsAnswer\""
 	MarkFileAsViewed                                            *MarkFileAsViewedPayload                                            "json:\"markFileAsViewed\" graphql:\"markFileAsViewed\""
+	MarkNotificationAsDone                                      *MarkNotificationAsDonePayload                                      "json:\"markNotificationAsDone\" graphql:\"markNotificationAsDone\""
+	MarkNotificationAsRead                                      *MarkNotificationAsReadPayload                                      "json:\"markNotificationAsRead\" graphql:\"markNotificationAsRead\""
+	MarkNotificationAsUndone                                    *MarkNotificationAsUndonePayload                                    "json:\"markNotificationAsUndone\" graphql:\"markNotificationAsUndone\""
+	MarkNotificationAsUnread                                    *MarkNotificationAsUnreadPayload                                    "json:\"markNotificationAsUnread\" graphql:\"markNotificationAsUnread\""
+	MarkNotificationSubjectAsRead                               *MarkNotificationSubjectAsReadPayload                               "json:\"markNotificationSubjectAsRead\" graphql:\"markNotificationSubjectAsRead\""
+	MarkNotificationsAsDone                                     *MarkNotificationsAsDonePayload                                     "json:\"markNotificationsAsDone\" graphql:\"markNotificationsAsDone\""
+	MarkNotificationsAsRead                                     *MarkNotificationsAsReadPayload                                     "json:\"markNotificationsAsRead\" graphql:\"markNotificationsAsRead\""
+	MarkNotificationsAsUndone                                   *MarkNotificationsAsUndonePayload                                   "json:\"markNotificationsAsUndone\" graphql:\"markNotificationsAsUndone\""
+	MarkNotificationsAsUnread                                   *MarkNotificationsAsUnreadPayload                                   "json:\"markNotificationsAsUnread\" graphql:\"markNotificationsAsUnread\""
+	MarkProjectV2AsTemplate                                     *MarkProjectV2AsTemplatePayload                                     "json:\"markProjectV2AsTemplate\" graphql:\"markProjectV2AsTemplate\""
 	MarkPullRequestReadyForReview                               *MarkPullRequestReadyForReviewPayload                               "json:\"markPullRequestReadyForReview\" graphql:\"markPullRequestReadyForReview\""
 	MergeBranch                                                 *MergeBranchPayload                                                 "json:\"mergeBranch\" graphql:\"mergeBranch\""
 	MergePullRequest                                            *MergePullRequestPayload                                            "json:\"mergePullRequest\" graphql:\"mergePullRequest\""
@@ -116,40 +173,60 @@ type Mutation struct {
 	MoveProjectCard                                             *MoveProjectCardPayload                                             "json:\"moveProjectCard\" graphql:\"moveProjectCard\""
 	MoveProjectColumn                                           *MoveProjectColumnPayload                                           "json:\"moveProjectColumn\" graphql:\"moveProjectColumn\""
 	PinIssue                                                    *PinIssuePayload                                                    "json:\"pinIssue\" graphql:\"pinIssue\""
+	PublishSponsorsTier                                         *PublishSponsorsTierPayload                                         "json:\"publishSponsorsTier\" graphql:\"publishSponsorsTier\""
 	RegenerateEnterpriseIdentityProviderRecoveryCodes           *RegenerateEnterpriseIdentityProviderRecoveryCodesPayload           "json:\"regenerateEnterpriseIdentityProviderRecoveryCodes\" graphql:\"regenerateEnterpriseIdentityProviderRecoveryCodes\""
 	RegenerateVerifiableDomainToken                             *RegenerateVerifiableDomainTokenPayload                             "json:\"regenerateVerifiableDomainToken\" graphql:\"regenerateVerifiableDomainToken\""
+	RejectDeployments                                           *RejectDeploymentsPayload                                           "json:\"rejectDeployments\" graphql:\"rejectDeployments\""
 	RemoveAssigneesFromAssignable                               *RemoveAssigneesFromAssignablePayload                               "json:\"removeAssigneesFromAssignable\" graphql:\"removeAssigneesFromAssignable\""
 	RemoveEnterpriseAdmin                                       *RemoveEnterpriseAdminPayload                                       "json:\"removeEnterpriseAdmin\" graphql:\"removeEnterpriseAdmin\""
 	RemoveEnterpriseIdentityProvider                            *RemoveEnterpriseIdentityProviderPayload                            "json:\"removeEnterpriseIdentityProvider\" graphql:\"removeEnterpriseIdentityProvider\""
+	RemoveEnterpriseMember                                      *RemoveEnterpriseMemberPayload                                      "json:\"removeEnterpriseMember\" graphql:\"removeEnterpriseMember\""
 	RemoveEnterpriseOrganization                                *RemoveEnterpriseOrganizationPayload                                "json:\"removeEnterpriseOrganization\" graphql:\"removeEnterpriseOrganization\""
 	RemoveEnterpriseSupportEntitlement                          *RemoveEnterpriseSupportEntitlementPayload                          "json:\"removeEnterpriseSupportEntitlement\" graphql:\"removeEnterpriseSupportEntitlement\""
 	RemoveLabelsFromLabelable                                   *RemoveLabelsFromLabelablePayload                                   "json:\"removeLabelsFromLabelable\" graphql:\"removeLabelsFromLabelable\""
 	RemoveOutsideCollaborator                                   *RemoveOutsideCollaboratorPayload                                   "json:\"removeOutsideCollaborator\" graphql:\"removeOutsideCollaborator\""
 	RemoveReaction                                              *RemoveReactionPayload                                              "json:\"removeReaction\" graphql:\"removeReaction\""
 	RemoveStar                                                  *RemoveStarPayload                                                  "json:\"removeStar\" graphql:\"removeStar\""
+	RemoveUpvote                                                *RemoveUpvotePayload                                                "json:\"removeUpvote\" graphql:\"removeUpvote\""
+	ReopenDiscussion                                            *ReopenDiscussionPayload                                            "json:\"reopenDiscussion\" graphql:\"reopenDiscussion\""
 	ReopenIssue                                                 *ReopenIssuePayload                                                 "json:\"reopenIssue\" graphql:\"reopenIssue\""
 	ReopenPullRequest                                           *ReopenPullRequestPayload                                           "json:\"reopenPullRequest\" graphql:\"reopenPullRequest\""
 	RequestReviews                                              *RequestReviewsPayload                                              "json:\"requestReviews\" graphql:\"requestReviews\""
 	RerequestCheckSuite                                         *RerequestCheckSuitePayload                                         "json:\"rerequestCheckSuite\" graphql:\"rerequestCheckSuite\""
 	ResolveReviewThread                                         *ResolveReviewThreadPayload                                         "json:\"resolveReviewThread\" graphql:\"resolveReviewThread\""
+	RetireSponsorsTier                                          *RetireSponsorsTierPayload                                          "json:\"retireSponsorsTier\" graphql:\"retireSponsorsTier\""
+	RevertPullRequest                                           *RevertPullRequestPayload                                           "json:\"revertPullRequest\" graphql:\"revertPullRequest\""
+	RevokeEnterpriseOrganizationsMigratorRole                   *RevokeEnterpriseOrganizationsMigratorRolePayload                   "json:\"revokeEnterpriseOrganizationsMigratorRole\" graphql:\"revokeEnterpriseOrganizationsMigratorRole\""
+	RevokeMigratorRole                                          *RevokeMigratorRolePayload                                          "json:\"revokeMigratorRole\" graphql:\"revokeMigratorRole\""
 	SetEnterpriseIdentityProvider                               *SetEnterpriseIdentityProviderPayload                               "json:\"setEnterpriseIdentityProvider\" graphql:\"setEnterpriseIdentityProvider\""
 	SetOrganizationInteractionLimit                             *SetOrganizationInteractionLimitPayload                             "json:\"setOrganizationInteractionLimit\" graphql:\"setOrganizationInteractionLimit\""
 	SetRepositoryInteractionLimit                               *SetRepositoryInteractionLimitPayload                               "json:\"setRepositoryInteractionLimit\" graphql:\"setRepositoryInteractionLimit\""
 	SetUserInteractionLimit                                     *SetUserInteractionLimitPayload                                     "json:\"setUserInteractionLimit\" graphql:\"setUserInteractionLimit\""
+	StartOrganizationMigration                                  *StartOrganizationMigrationPayload                                  "json:\"startOrganizationMigration\" graphql:\"startOrganizationMigration\""
+	StartRepositoryMigration                                    *StartRepositoryMigrationPayload                                    "json:\"startRepositoryMigration\" graphql:\"startRepositoryMigration\""
 	SubmitPullRequestReview                                     *SubmitPullRequestReviewPayload                                     "json:\"submitPullRequestReview\" graphql:\"submitPullRequestReview\""
+	TransferEnterpriseOrganization                              *TransferEnterpriseOrganizationPayload                              "json:\"transferEnterpriseOrganization\" graphql:\"transferEnterpriseOrganization\""
 	TransferIssue                                               *TransferIssuePayload                                               "json:\"transferIssue\" graphql:\"transferIssue\""
+	UnarchiveProjectV2Item                                      *UnarchiveProjectV2ItemPayload                                      "json:\"unarchiveProjectV2Item\" graphql:\"unarchiveProjectV2Item\""
 	UnarchiveRepository                                         *UnarchiveRepositoryPayload                                         "json:\"unarchiveRepository\" graphql:\"unarchiveRepository\""
+	UnfollowOrganization                                        *UnfollowOrganizationPayload                                        "json:\"unfollowOrganization\" graphql:\"unfollowOrganization\""
 	UnfollowUser                                                *UnfollowUserPayload                                                "json:\"unfollowUser\" graphql:\"unfollowUser\""
+	UnlinkProjectV2FromRepository                               *UnlinkProjectV2FromRepositoryPayload                               "json:\"unlinkProjectV2FromRepository\" graphql:\"unlinkProjectV2FromRepository\""
+	UnlinkProjectV2FromTeam                                     *UnlinkProjectV2FromTeamPayload                                     "json:\"unlinkProjectV2FromTeam\" graphql:\"unlinkProjectV2FromTeam\""
 	UnlinkRepositoryFromProject                                 *UnlinkRepositoryFromProjectPayload                                 "json:\"unlinkRepositoryFromProject\" graphql:\"unlinkRepositoryFromProject\""
 	UnlockLockable                                              *UnlockLockablePayload                                              "json:\"unlockLockable\" graphql:\"unlockLockable\""
+	UnmarkDiscussionCommentAsAnswer                             *UnmarkDiscussionCommentAsAnswerPayload                             "json:\"unmarkDiscussionCommentAsAnswer\" graphql:\"unmarkDiscussionCommentAsAnswer\""
 	UnmarkFileAsViewed                                          *UnmarkFileAsViewedPayload                                          "json:\"unmarkFileAsViewed\" graphql:\"unmarkFileAsViewed\""
 	UnmarkIssueAsDuplicate                                      *UnmarkIssueAsDuplicatePayload                                      "json:\"unmarkIssueAsDuplicate\" graphql:\"unmarkIssueAsDuplicate\""
+	UnmarkProjectV2AsTemplate                                   *UnmarkProjectV2AsTemplatePayload                                   "json:\"unmarkProjectV2AsTemplate\" graphql:\"unmarkProjectV2AsTemplate\""
 	UnminimizeComment                                           *UnminimizeCommentPayload                                           "json:\"unminimizeComment\" graphql:\"unminimizeComment\""
 	UnpinIssue                                                  *UnpinIssuePayload                                                  "json:\"unpinIssue\" graphql:\"unpinIssue\""
 	UnresolveReviewThread                                       *UnresolveReviewThreadPayload                                       "json:\"unresolveReviewThread\" graphql:\"unresolveReviewThread\""
 	UpdateBranchProtectionRule                                  *UpdateBranchProtectionRulePayload                                  "json:\"updateBranchProtectionRule\" graphql:\"updateBranchProtectionRule\""
 	UpdateCheckRun                                              *UpdateCheckRunPayload                                              "json:\"updateCheckRun\" graphql:\"updateCheckRun\""
 	UpdateCheckSuitePreferences                                 *UpdateCheckSuitePreferencesPayload                                 "json:\"updateCheckSuitePreferences\" graphql:\"updateCheckSuitePreferences\""
+	UpdateDiscussion                                            *UpdateDiscussionPayload                                            "json:\"updateDiscussion\" graphql:\"updateDiscussion\""
+	UpdateDiscussionComment                                     *UpdateDiscussionCommentPayload                                     "json:\"updateDiscussionComment\" graphql:\"updateDiscussionComment\""
 	UpdateEnterpriseAdministratorRole                           *UpdateEnterpriseAdministratorRolePayload                           "json:\"updateEnterpriseAdministratorRole\" graphql:\"updateEnterpriseAdministratorRole\""
 	UpdateEnterpriseAllowPrivateRepositoryForkingSetting        *UpdateEnterpriseAllowPrivateRepositoryForkingSettingPayload        "json:\"updateEnterpriseAllowPrivateRepositoryForkingSetting\" graphql:\"updateEnterpriseAllowPrivateRepositoryForkingSetting\""
 	UpdateEnterpriseDefaultRepositoryPermissionSetting          *UpdateEnterpriseDefaultRepositoryPermissionSettingPayload          "json:\"updateEnterpriseDefaultRepositoryPermissionSetting\" graphql:\"updateEnterpriseDefaultRepositoryPermissionSetting\""
@@ -162,38 +239,53 @@ type Mutation struct {
 	UpdateEnterpriseMembersCanUpdateProtectedBranchesSetting    *UpdateEnterpriseMembersCanUpdateProtectedBranchesSettingPayload    "json:\"updateEnterpriseMembersCanUpdateProtectedBranchesSetting\" graphql:\"updateEnterpriseMembersCanUpdateProtectedBranchesSetting\""
 	UpdateEnterpriseMembersCanViewDependencyInsightsSetting     *UpdateEnterpriseMembersCanViewDependencyInsightsSettingPayload     "json:\"updateEnterpriseMembersCanViewDependencyInsightsSetting\" graphql:\"updateEnterpriseMembersCanViewDependencyInsightsSetting\""
 	UpdateEnterpriseOrganizationProjectsSetting                 *UpdateEnterpriseOrganizationProjectsSettingPayload                 "json:\"updateEnterpriseOrganizationProjectsSetting\" graphql:\"updateEnterpriseOrganizationProjectsSetting\""
+	UpdateEnterpriseOwnerOrganizationRole                       *UpdateEnterpriseOwnerOrganizationRolePayload                       "json:\"updateEnterpriseOwnerOrganizationRole\" graphql:\"updateEnterpriseOwnerOrganizationRole\""
 	UpdateEnterpriseProfile                                     *UpdateEnterpriseProfilePayload                                     "json:\"updateEnterpriseProfile\" graphql:\"updateEnterpriseProfile\""
 	UpdateEnterpriseRepositoryProjectsSetting                   *UpdateEnterpriseRepositoryProjectsSettingPayload                   "json:\"updateEnterpriseRepositoryProjectsSetting\" graphql:\"updateEnterpriseRepositoryProjectsSetting\""
 	UpdateEnterpriseTeamDiscussionsSetting                      *UpdateEnterpriseTeamDiscussionsSettingPayload                      "json:\"updateEnterpriseTeamDiscussionsSetting\" graphql:\"updateEnterpriseTeamDiscussionsSetting\""
 	UpdateEnterpriseTwoFactorAuthenticationRequiredSetting      *UpdateEnterpriseTwoFactorAuthenticationRequiredSettingPayload      "json:\"updateEnterpriseTwoFactorAuthenticationRequiredSetting\" graphql:\"updateEnterpriseTwoFactorAuthenticationRequiredSetting\""
+	UpdateEnvironment                                           *UpdateEnvironmentPayload                                           "json:\"updateEnvironment\" graphql:\"updateEnvironment\""
 	UpdateIPAllowListEnabledSetting                             *UpdateIPAllowListEnabledSettingPayload                             "json:\"updateIpAllowListEnabledSetting\" graphql:\"updateIpAllowListEnabledSetting\""
 	UpdateIPAllowListEntry                                      *UpdateIPAllowListEntryPayload                                      "json:\"updateIpAllowListEntry\" graphql:\"updateIpAllowListEntry\""
+	UpdateIPAllowListForInstalledAppsEnabledSetting             *UpdateIPAllowListForInstalledAppsEnabledSettingPayload             "json:\"updateIpAllowListForInstalledAppsEnabledSetting\" graphql:\"updateIpAllowListForInstalledAppsEnabledSetting\""
 	UpdateIssue                                                 *UpdateIssuePayload                                                 "json:\"updateIssue\" graphql:\"updateIssue\""
 	UpdateIssueComment                                          *UpdateIssueCommentPayload                                          "json:\"updateIssueComment\" graphql:\"updateIssueComment\""
 	UpdateNotificationRestrictionSetting                        *UpdateNotificationRestrictionSettingPayload                        "json:\"updateNotificationRestrictionSetting\" graphql:\"updateNotificationRestrictionSetting\""
+	UpdateOrganizationAllowPrivateRepositoryForkingSetting      *UpdateOrganizationAllowPrivateRepositoryForkingSettingPayload      "json:\"updateOrganizationAllowPrivateRepositoryForkingSetting\" graphql:\"updateOrganizationAllowPrivateRepositoryForkingSetting\""
+	UpdateOrganizationWebCommitSignoffSetting                   *UpdateOrganizationWebCommitSignoffSettingPayload                   "json:\"updateOrganizationWebCommitSignoffSetting\" graphql:\"updateOrganizationWebCommitSignoffSetting\""
 	UpdateProject                                               *UpdateProjectPayload                                               "json:\"updateProject\" graphql:\"updateProject\""
 	UpdateProjectCard                                           *UpdateProjectCardPayload                                           "json:\"updateProjectCard\" graphql:\"updateProjectCard\""
 	UpdateProjectColumn                                         *UpdateProjectColumnPayload                                         "json:\"updateProjectColumn\" graphql:\"updateProjectColumn\""
+	UpdateProjectV2                                             *UpdateProjectV2Payload                                             "json:\"updateProjectV2\" graphql:\"updateProjectV2\""
+	UpdateProjectV2Collaborators                                *UpdateProjectV2CollaboratorsPayload                                "json:\"updateProjectV2Collaborators\" graphql:\"updateProjectV2Collaborators\""
+	UpdateProjectV2DraftIssue                                   *UpdateProjectV2DraftIssuePayload                                   "json:\"updateProjectV2DraftIssue\" graphql:\"updateProjectV2DraftIssue\""
+	UpdateProjectV2ItemFieldValue                               *UpdateProjectV2ItemFieldValuePayload                               "json:\"updateProjectV2ItemFieldValue\" graphql:\"updateProjectV2ItemFieldValue\""
+	UpdateProjectV2ItemPosition                                 *UpdateProjectV2ItemPositionPayload                                 "json:\"updateProjectV2ItemPosition\" graphql:\"updateProjectV2ItemPosition\""
 	UpdatePullRequest                                           *UpdatePullRequestPayload                                           "json:\"updatePullRequest\" graphql:\"updatePullRequest\""
+	UpdatePullRequestBranch                                     *UpdatePullRequestBranchPayload                                     "json:\"updatePullRequestBranch\" graphql:\"updatePullRequestBranch\""
 	UpdatePullRequestReview                                     *UpdatePullRequestReviewPayload                                     "json:\"updatePullRequestReview\" graphql:\"updatePullRequestReview\""
 	UpdatePullRequestReviewComment                              *UpdatePullRequestReviewCommentPayload                              "json:\"updatePullRequestReviewComment\" graphql:\"updatePullRequestReviewComment\""
 	UpdateRef                                                   *UpdateRefPayload                                                   "json:\"updateRef\" graphql:\"updateRef\""
 	UpdateRepository                                            *UpdateRepositoryPayload                                            "json:\"updateRepository\" graphql:\"updateRepository\""
+	UpdateRepositoryRuleset                                     *UpdateRepositoryRulesetPayload                                     "json:\"updateRepositoryRuleset\" graphql:\"updateRepositoryRuleset\""
+	UpdateRepositoryWebCommitSignoffSetting                     *UpdateRepositoryWebCommitSignoffSettingPayload                     "json:\"updateRepositoryWebCommitSignoffSetting\" graphql:\"updateRepositoryWebCommitSignoffSetting\""
+	UpdateSponsorshipPreferences                                *UpdateSponsorshipPreferencesPayload                                "json:\"updateSponsorshipPreferences\" graphql:\"updateSponsorshipPreferences\""
 	UpdateSubscription                                          *UpdateSubscriptionPayload                                          "json:\"updateSubscription\" graphql:\"updateSubscription\""
 	UpdateTeamDiscussion                                        *UpdateTeamDiscussionPayload                                        "json:\"updateTeamDiscussion\" graphql:\"updateTeamDiscussion\""
 	UpdateTeamDiscussionComment                                 *UpdateTeamDiscussionCommentPayload                                 "json:\"updateTeamDiscussionComment\" graphql:\"updateTeamDiscussionComment\""
+	UpdateTeamsRepository                                       *UpdateTeamsRepositoryPayload                                       "json:\"updateTeamsRepository\" graphql:\"updateTeamsRepository\""
 	UpdateTopics                                                *UpdateTopicsPayload                                                "json:\"updateTopics\" graphql:\"updateTopics\""
 	VerifyVerifiableDomain                                      *VerifyVerifiableDomainPayload                                      "json:\"verifyVerifiableDomain\" graphql:\"verifyVerifiableDomain\""
-}
-type PageInfoFragment struct {
-	EndCursor   *string "json:\"endCursor\" graphql:\"endCursor\""
-	HasNextPage bool    "json:\"hasNextPage\" graphql:\"hasNextPage\""
 }
 type LanguageFragment struct {
 	Name string "json:\"name\" graphql:\"name\""
 }
 type OwnerFragment struct {
 	Login string "json:\"login\" graphql:\"login\""
+}
+type PageInfoFragment struct {
+	EndCursor   *string "json:\"endCursor\" graphql:\"endCursor\""
+	HasNextPage bool    "json:\"hasNextPage\" graphql:\"hasNextPage\""
 }
 type ParentRepositoryFragment struct {
 	Name  string        "json:\"name\" graphql:\"name\""
@@ -226,9 +318,9 @@ type ListRepos struct {
 	} "json:\"viewer\" graphql:\"viewer\""
 }
 
-const ListReposDocument = `query ListRepos ($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $ownerAffiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}) {
+const ListReposDocument = `query ListRepos ($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $affiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}) {
 	viewer {
-		repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $ownerAffiliations, orderBy: $orderBy) {
+		repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $affiliations, affiliations: $affiliations, orderBy: $orderBy) {
 			edges {
 				node {
 					... RepositoryFragment
@@ -241,9 +333,21 @@ const ListReposDocument = `query ListRepos ($first: Int = 30, $after: String, $i
 		}
 	}
 }
+fragment LanguageFragment on Language {
+	name
+}
+fragment OwnerFragment on RepositoryOwner {
+	login
+}
 fragment PageInfoFragment on PageInfo {
 	endCursor
 	hasNextPage
+}
+fragment ParentRepositoryFragment on Repository {
+	name
+	owner {
+		... OwnerFragment
+	}
 }
 fragment RepositoryFragment on Repository {
 	url
@@ -266,28 +370,16 @@ fragment RepositoryFragment on Repository {
 		... ParentRepositoryFragment
 	}
 }
-fragment LanguageFragment on Language {
-	name
-}
-fragment OwnerFragment on RepositoryOwner {
-	login
-}
-fragment ParentRepositoryFragment on Repository {
-	name
-	owner {
-		... OwnerFragment
-	}
-}
 `
 
-func (c *Client) ListRepos(ctx context.Context, first *int64, after *string, isFork *bool, privacy *RepositoryPrivacy, ownerAffiliations []*RepositoryAffiliation, orderBy *RepositoryOrder, httpRequestOptions ...client.HTTPRequestOption) (*ListRepos, error) {
+func (c *Client) ListRepos(ctx context.Context, first *int64, after *string, isFork *bool, privacy *RepositoryPrivacy, affiliations []*RepositoryAffiliation, orderBy *RepositoryOrder, httpRequestOptions ...client.HTTPRequestOption) (*ListRepos, error) {
 	vars := map[string]interface{}{
-		"first":             first,
-		"after":             after,
-		"isFork":            isFork,
-		"privacy":           privacy,
-		"ownerAffiliations": ownerAffiliations,
-		"orderBy":           orderBy,
+		"first":        first,
+		"after":        after,
+		"isFork":       isFork,
+		"privacy":      privacy,
+		"affiliations": affiliations,
+		"orderBy":      orderBy,
 	}
 
 	var res ListRepos
