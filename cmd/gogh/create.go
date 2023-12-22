@@ -143,6 +143,15 @@ var (
 				switch {
 				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
 					l.Info("waiting the remote repository is ready")
+				case errors.Is(err, transport.ErrEmptyRemoteRepository):
+					if _, err := local.Create(ctx, spec, nil); err != nil {
+						l.WithField("error", err).
+							WithField("error-type", fmt.Sprintf("%t", err)).
+							Error("failed to create empty repository")
+					} else {
+						l.Info("created empty repository")
+					}
+					return nil
 				case err == nil:
 					return nil
 				default:
