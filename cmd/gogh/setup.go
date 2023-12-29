@@ -62,8 +62,8 @@ func loadConfig() (string, error) {
 			expanded: raw,
 		}}
 	}
-	if config.DefaultHost == "" {
-		config.DefaultHost = "github.com"
+	if tokens.DefaultHost == "" {
+		tokens.DefaultHost = "github.com"
 	}
 	return path, nil
 }

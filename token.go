@@ -1,119 +1,119 @@
 package gogh
 
-type Token string
+type Token = string
+type Host = string
+type Owner = string
 
-type TokenTarget struct {
-	Host  string
-	Owner string
+type TokenManager struct {
+	Hosts       Map[Host, *TokenHost] `yaml:"hosts"`
+	DefaultHost Host                  `yaml:"default_host"`
 }
 
-func (t TokenTarget) String() string {
-	return t.Host + "/" + t.Owner
+type TokenHost struct {
+	Owners       Map[Owner, Token] `yaml:"owners"`
+	DefaultOwner Owner             `yaml:"default_owner"`
 }
 
-func ParseTokenTarget(s string) (TokenTarget, error) {
-	var target TokenTarget
-	if err := target.UnmarshalText([]byte(s)); err != nil {
-		return TokenTarget{}, err
+type Map[TKey comparable, TVal any] map[TKey]TVal
+
+func (m *Map[TKey, TVal]) Set(key TKey, val TVal) {
+	if *m == nil {
+		*m = map[TKey]TVal{}
 	}
-	return target, nil
+	(*m)[key] = val
 }
 
-func (t TokenTarget) MarshalYAML() (interface{}, error) {
-	return t.String(), nil
-}
-
-func (t *TokenTarget) UnmarshalYAML(unmarshaler func(interface{}) error) error {
-	var s string
-	if err := unmarshaler(&s); err != nil {
-		return err
-	}
-	t.Host, t.Owner = splitHostOwner(s)
-	return nil
-}
-
-func splitHostOwner(s string) (host, owner string) {
-	if s == "" {
+func (m *Map[TKey, TVal]) Delete(key TKey) {
+	if *m == nil {
 		return
 	}
-	if s[0] == '/' {
-		return s[1:], ""
+	delete(*m, key)
+}
+
+func (m *Map[TKey, TVal]) Has(key TKey) bool {
+	if *m == nil {
+		return false
 	}
-	for i, r := range s {
-		if r == '/' {
-			return s[:i], s[i+1:]
-		}
-	}
-	return s, ""
-}
-
-func (t TokenTarget) MarshalText() ([]byte, error) {
-	return []byte(t.String()), nil
-}
-
-func (t *TokenTarget) UnmarshalText(text []byte) error {
-	t.Host, t.Owner = splitHostOwner(string(text))
-	return nil
-}
-
-type TokenManager map[TokenTarget]Token
-
-func (t TokenManager) Get(host, owner string) Token {
-	return t[TokenTarget{Host: host, Owner: owner}]
-}
-
-func (t TokenManager) Set(host, owner string, token Token) {
-	t[TokenTarget{Host: host, Owner: owner}] = token
-}
-
-func (t TokenManager) Delete(host, owner string) {
-	delete(t, TokenTarget{Host: host, Owner: owner})
-}
-
-func (t TokenManager) Has(host, owner string) bool {
-	_, ok := t[TokenTarget{Host: host, Owner: owner}]
+	_, ok := (*m)[key]
 	return ok
 }
 
+func (m *Map[TKey, TVal]) Get(key TKey) TVal {
+	var v TVal
+	return m.TryGet(key, v)
+}
+
+func (m *Map[TKey, TVal]) TryGet(key TKey, def TVal) TVal {
+	if *m == nil {
+		*m = map[TKey]TVal{
+			key: def,
+		}
+		return def
+	}
+	if v, ok := (*m)[key]; ok {
+		return v
+	}
+	(*m)[key] = def
+	return def
+}
+
+func (t TokenManager) GetDefaultKey() (Host, Owner) {
+	host := t.Hosts.Get(t.DefaultHost)
+	owner := ""
+	if host != nil {
+		owner = host.DefaultOwner
+	}
+	return t.DefaultHost, owner
+}
+
+func (t *TokenHost) GetDefaultToken() (Owner, Token) {
+	if t == nil {
+		return "", ""
+	}
+	return t.DefaultOwner, t.Owners.Get(t.DefaultOwner)
+}
+
+func (t TokenManager) Get(host, owner string) Token {
+	return t.Hosts.TryGet(host, &TokenHost{}).Owners.Get(owner)
+}
+
+func (t *TokenManager) Set(host, owner string, token Token) {
+	hosts := t.Hosts.TryGet(host, &TokenHost{})
+	t.Hosts.Set(host, hosts)
+}
+
+func (t TokenManager) Delete(host, owner string) {
+	hosts := t.Hosts.Get(host)
+	if hosts == nil {
+		return
+	}
+	hosts.Owners.Delete(owner)
+}
+
+func (t TokenManager) Has(host, owner string) bool {
+	hosts := t.Hosts.Get(host)
+	if hosts == nil {
+		return false
+	}
+	return hosts.Owners.Has(owner)
+}
+
 type TokenEntry struct {
-	TokenTarget
+	Host  Host
+	Owner Owner
 	Token Token
 }
 
 func (t TokenManager) Entries() []TokenEntry {
-	entries := make([]TokenEntry, 0, len(t))
-	for k, v := range t {
-		entries = append(entries, TokenEntry{
-			TokenTarget: TokenTarget{
-				Host:  k.Host,
-				Owner: k.Owner,
-			},
-			Token: v,
-		})
+	var entries []TokenEntry
+	for hostName, hostEntry := range t.Hosts {
+		for owner, token := range hostEntry.Owners {
+			entries = append(entries, TokenEntry{
+				Host:  hostName,
+				Owner: owner,
+				Token: token,
+			})
+		}
 	}
 	return entries
-}
-
-func (t TokenManager) MarshalYAML() (interface{}, error) {
-	m := map[string]string{}
-	for k, v := range t {
-		m[k.String()] = string(v)
-	}
-	return m, nil
-}
-
-func (t *TokenManager) UnmarshalYAML(unmarshaler func(interface{}) error) error {
-	m := map[string]string{}
-	if err := unmarshaler(&m); err != nil {
-		return err
-	}
-	*t = TokenManager{}
-	for k, v := range m {
-		var target TokenTarget
-		if err := target.UnmarshalText([]byte(k)); err != nil {
-			return err
-		}
-		(*t)[target] = Token(v)
-	}
-	return nil
 }

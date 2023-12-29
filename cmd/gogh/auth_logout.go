@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +20,7 @@ var logoutCommand = &cobra.Command{
 			}
 			indices = make([]string, 0, len(configured))
 			for _, c := range configured {
-				indices = append(indices, c.String())
+				indices = append(indices, fmt.Sprintf("%s/%s", c.Host, c.Owner))
 			}
 
 			var selected []string
@@ -33,12 +35,12 @@ var logoutCommand = &cobra.Command{
 
 		for _, target := range indices {
 			log.FromContext(cmd.Context()).WithField("target", target).Info("logout from")
-			target, err := gogh.ParseTokenTarget(target)
-			if err != nil {
-				log.FromContext(cmd.Context()).WithField("target", target).Error("invalid target")
+			words := strings.SplitN(target, "/", 2)
+			if len(words) != 2 {
+				log.FromContext(cmd.Context()).WithField("target", target).Error("invalid target (must be host/owner)")
 				continue
 			}
-			tokens.Delete(target.Host, target.Owner)
+			tokens.Delete(words[0], words[1])
 		}
 		return nil
 	},

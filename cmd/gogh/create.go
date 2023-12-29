@@ -44,7 +44,7 @@ var (
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, specs []string) error {
 			var name string
-			parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
+			parser := gogh.NewSpecParser(tokens.GetDefaultKey())
 			if len(specs) == 0 {
 				if err := survey.AskOne(&survey.Input{
 					Message: "A spec of repository name to create",
@@ -80,7 +80,7 @@ var (
 			l := log.FromContext(ctx).WithFields(log.Fields{
 				"spec": spec,
 			})
-			token := tokens[gogh.TokenTarget{Host: spec.Host(), Owner: spec.Owner()}]
+			token := tokens.Get(spec.Host(), spec.Owner())
 
 			adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
 			if err != nil {

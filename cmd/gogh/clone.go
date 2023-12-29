@@ -64,7 +64,7 @@ var cloneCommand = &cobra.Command{
 }
 
 func cloneAll(ctx context.Context, specs []string, dryrun bool) error {
-	parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
+	parser := gogh.NewSpecParser(tokens.GetDefaultKey())
 	if dryrun {
 		for _, s := range specs {
 			spec, alias, err := parser.ParseWithAlias(s)
@@ -105,7 +105,7 @@ func cloneOneFunc(
 			return err
 		}
 
-		token := tokens[gogh.TokenTarget{Host: spec.Host(), Owner: spec.Owner()}]
+		token := tokens.Get(spec.Host(), spec.Owner())
 		// check forked
 		adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
 		if err != nil {

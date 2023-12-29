@@ -23,12 +23,12 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, specs []string) error {
 			ctx := cmd.Context()
-			parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
+			parser := gogh.NewSpecParser(tokens.GetDefaultKey())
 			spec, err := parser.Parse(specs[0])
 			if err != nil {
 				return err
 			}
-			token := tokens.Get(spec.Host(), spec.Owner())
+			_, token := tokens.Hosts.Get(spec.Host()).GetDefaultToken()
 			adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
 			if err != nil {
 				return err

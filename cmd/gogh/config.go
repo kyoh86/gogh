@@ -9,35 +9,16 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
-	"github.com/kyoh86/gogh/v2"
 	"github.com/spf13/cobra"
 )
 
 var config struct {
-	DefaultHost  string         `yaml:"default_host"`
-	DefaultOwner string         `yaml:"default_owner"`
-	Roots        []expandedPath `yaml:"roots"`
+	Roots []expandedPath `yaml:"roots"`
 }
 
 var setDefaultFlags struct {
 	Host  string
 	Owner string
-}
-
-var setDefaultCommand = &cobra.Command{
-	Use:   "set-default",
-	Short: "Set default host and owner",
-	PersistentPostRunE: func(*cobra.Command, []string) error {
-		return saveConfig()
-	},
-	Run: func(_ *cobra.Command, _ []string) {
-		if setDefaultFlags.Host != "" {
-			config.DefaultHost = setDefaultFlags.Host
-		}
-		if setDefaultFlags.Owner != "" {
-			config.DefaultOwner = setDefaultFlags.Owner
-		}
-	},
 }
 
 func defaultRoot() string {
@@ -122,8 +103,6 @@ var configCommand = &cobra.Command{
 			"roots":               roots(),
 			"tokens":              tokens.Entries(),
 			"defaultFlags":        defaultFlags,
-			"defaultHost":         config.DefaultHost,
-			"defaultOwner":        config.DefaultOwner,
 		}); err != nil {
 			log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")
 			return nil
@@ -134,9 +113,5 @@ var configCommand = &cobra.Command{
 }
 
 func init() {
-	setDefaultCommand.Flags().StringVarP(&setDefaultFlags.Host, "host", "", gogh.DefaultHost, "Host name")
-	setDefaultCommand.Flags().StringVarP(&setDefaultFlags.Owner, "owner", "", "", "Owner name")
-	configCommand.AddCommand(setDefaultCommand)
-	facadeCommand.AddCommand(setDefaultCommand)
 	facadeCommand.AddCommand(configCommand)
 }

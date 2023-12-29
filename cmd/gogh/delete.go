@@ -53,7 +53,7 @@ var deleteCommand = &cobra.Command{
 			selected = specs[0]
 		}
 
-		parser := gogh.NewSpecParser(config.DefaultHost, config.DefaultOwner)
+		parser := gogh.NewSpecParser(tokens.GetDefaultKey())
 		spec, err := parser.Parse(selected)
 		if err != nil {
 			return err
