@@ -82,7 +82,7 @@ var (
 			})
 			token := tokens.Get(spec.Host(), spec.Owner())
 
-			adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
+			adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
 			if err != nil {
 				return err
 			}
