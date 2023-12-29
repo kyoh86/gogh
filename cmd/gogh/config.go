@@ -16,11 +16,6 @@ var config struct {
 	Roots []expandedPath `yaml:"roots"`
 }
 
-var setDefaultFlags struct {
-	Host  string
-	Owner string
-}
-
 func defaultRoot() string {
 	return config.Roots[0].expanded
 }

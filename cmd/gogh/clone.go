@@ -39,7 +39,7 @@ var cloneCommand = &cobra.Command{
 		ctx := cmd.Context()
 		if len(specs) == 0 {
 			for _, entry := range tokens.Entries() {
-				adaptor, err := github.NewAdaptor(ctx, entry.Host, string(entry.Token))
+				adaptor, err := github.NewAdaptor(ctx, entry.Host, entry.Token)
 				if err != nil {
 					return err
 				}
