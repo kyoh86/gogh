@@ -139,7 +139,7 @@ var (
 				}
 			}
 			for i := 0; i < createFlags.CloneRetryLimit; i++ {
-				_, err := local.Clone(ctx, spec, string(token), nil)
+				_, err := local.Clone(ctx, spec, token, nil)
 				switch {
 				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
 					l.Info("waiting the remote repository is ready")
