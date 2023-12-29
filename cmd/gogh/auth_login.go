@@ -45,7 +45,7 @@ var loginCommand = &cobra.Command{
 		}, &loginFlags); err != nil {
 			return err
 		}
-		tokens.Set(loginFlags.Host, loginFlags.User, gogh.Token(loginFlags.Password))
+		tokens.Set(loginFlags.Host, loginFlags.User, loginFlags.Password)
 		return nil
 	},
 }

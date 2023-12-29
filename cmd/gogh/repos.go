@@ -125,7 +125,7 @@ var (
 			for _, entry := range entries {
 				entry := entry
 				eg.Go(func() error {
-					adaptor, err := github.NewAdaptor(ctx, entry.Host, string(entry.Token))
+					adaptor, err := github.NewAdaptor(ctx, entry.Host, entry.Token)
 					if err != nil {
 						return err
 					}

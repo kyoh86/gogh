@@ -107,7 +107,7 @@ func cloneOneFunc(
 
 		token := tokens.Get(spec.Host(), spec.Owner())
 		// check forked
-		adaptor, err := github.NewAdaptor(ctx, spec.Host(), string(token))
+		adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func cloneOneFunc(
 			"spec": spec,
 		})
 		l.Info("cloning")
-		if _, err = local.Clone(ctx, spec, string(token), &gogh.LocalCloneOption{Alias: alias}); err != nil {
+		if _, err = local.Clone(ctx, spec, token, &gogh.LocalCloneOption{Alias: alias}); err != nil {
 			l.WithField("error", err).Error("failed to get repository")
 			return nil
 		}
