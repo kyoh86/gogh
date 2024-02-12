@@ -33,7 +33,7 @@ jobs:
           check-retry-count: 5
           check-retry-interval: 20
       - name: Checkout Sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Bump-up Semantic Version
         uses: kyoh86/git-vertag-action@v1
         with:
