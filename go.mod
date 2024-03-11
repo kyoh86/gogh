@@ -6,7 +6,7 @@ toolchain go1.21.3
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/Yamashou/gqlgenc v0.16.2
+	github.com/Yamashou/gqlgenc v0.19.3
 	github.com/apex/log v1.9.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/goccy/go-yaml v1.11.2
@@ -22,7 +22,7 @@ require (
 	github.com/wacul/ptr v1.0.0
 	golang.org/x/oauth2 v0.16.0
 	golang.org/x/sync v0.6.0
-	golang.org/x/term v0.16.0
+	golang.org/x/term v0.17.0
 )
 
 require (
@@ -34,7 +34,7 @@ require (
 	cloud.google.com/go/storage v1.36.0 // indirect
 	code.gitea.io/sdk/gitea v0.17.1 // indirect
 	dario.cat/mergo v1.0.0 // indirect
-	github.com/99designs/gqlgen v0.17.42 // indirect
+	github.com/99designs/gqlgen v0.17.44 // indirect
 	github.com/AlekSi/pointer v1.2.0 // indirect
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.1 // indirect
@@ -59,7 +59,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
-	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/alessio/shellescape v1.4.2 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -114,7 +113,6 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/disgoorg/disgo v0.17.0 // indirect
 	github.com/disgoorg/json v1.1.0 // indirect
-	github.com/disgoorg/log v1.2.1 // indirect
 	github.com/disgoorg/snowflake/v2 v2.0.1 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/cli v24.0.7+incompatible // indirect
@@ -152,14 +150,13 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-containerregistry v0.17.0 // indirect
-	github.com/google/go-github/v56 v56.0.0 // indirect
 	github.com/google/go-github/v57 v57.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/ko v0.15.1 // indirect
 	github.com/google/rpmpack v0.5.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/safetext v0.0.0-20240104143208-7a7d9b3d812f // indirect
-	github.com/google/uuid v1.5.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
@@ -238,7 +235,7 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/urfave/cli/v2 v2.27.1 // indirect
 	github.com/vbatts/tar-split v0.11.5 // indirect
-	github.com/vektah/gqlparser/v2 v2.5.10 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.11 // indirect
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xanzy/go-gitlab v0.95.2 // indirect
@@ -255,14 +252,14 @@ require (
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	gocloud.dev v0.36.0 // indirect
-	golang.org/x/crypto v0.18.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3 // indirect
-	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/mod v0.15.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.17.0 // indirect
+	golang.org/x/tools v0.18.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.156.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
