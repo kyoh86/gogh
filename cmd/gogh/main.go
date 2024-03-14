@@ -42,7 +42,7 @@ func (h *StdoutLogHandler) HandleLog(e *log.Entry) error {
 func main() {
 	setup()
 	errLog := level.New(cli.New(os.Stderr), log.ErrorLevel)
-	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stdout)}
+	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stderr)}
 	ctx := log.NewContext(context.Background(), &log.Logger{
 		Handler: multi.New(stdLog, errLog),
 		Level:   log.InfoLevel,
