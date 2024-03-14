@@ -10,6 +10,6 @@ updates:
     schedule:
       interval: "weekly"
   - package-echosystem: "github-actions"
-    directory: ".github/workflows"
+    directory: "/"
     schedul:
       interval: "weekly"
