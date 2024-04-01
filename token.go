@@ -1,5 +1,7 @@
 package gogh
 
+import "fmt"
+
 type Token = string
 type Host = string
 type Owner = string
@@ -106,6 +108,10 @@ type TokenEntry struct {
 	Host  Host
 	Owner Owner
 	Token Token
+}
+
+func (e TokenEntry) String() string {
+	return fmt.Sprintf("%s/%s", e.Host, e.Owner)
 }
 
 func (t TokenManager) Entries() []TokenEntry {
