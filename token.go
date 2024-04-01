@@ -77,9 +77,13 @@ func (t TokenManager) Get(host, owner string) Token {
 	return t.Hosts.TryGet(host, &TokenHost{}).Owners.Get(owner)
 }
 
-func (t *TokenManager) Set(host, owner string, token Token) {
-	hosts := t.Hosts.TryGet(host, &TokenHost{})
-	t.Hosts.Set(host, hosts)
+func (t *TokenManager) Set(hostName, ownerName string, token Token) {
+	host := t.Hosts.TryGet(hostName, &TokenHost{})
+	if host.DefaultOwner == "" {
+		host.DefaultOwner = ownerName
+	}
+	host.Owners.Set(ownerName, token)
+	t.Hosts.Set(hostName, host)
 }
 
 func (t TokenManager) Delete(host, owner string) {
