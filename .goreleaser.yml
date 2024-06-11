@@ -24,7 +24,7 @@ brews:
     repository:
       owner: kyoh86
       name: homebrew-tap
-    folder: Formula
+    directory: Formula
     homepage: https://github.com/kyoh86/gogh
     description: GO GitHub project manager
     license: MIT
