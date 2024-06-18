@@ -16,7 +16,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15
 	github.com/morikuni/aec v1.0.0
 	github.com/saracen/walker v0.1.4
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/wacul/ptr v1.0.0
 	golang.org/x/oauth2 v0.21.0
