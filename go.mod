@@ -1,14 +1,14 @@
 module github.com/kyoh86/gogh/v2
 
 go 1.21
-toolchain go1.22.4
+toolchain go1.22.5
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Yamashou/gqlgenc v0.19.3
 	github.com/apex/log v1.9.0
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/goccy/go-yaml v1.11.3
+	github.com/goccy/go-yaml v1.12.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v35 v35.3.0
