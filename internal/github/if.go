@@ -56,7 +56,8 @@ type RepositoryListOptions struct {
 	Privacy           RepositoryPrivacy
 	OwnerAffiliations []RepositoryAffiliation
 	Limit             int
-	IsFork            bool
+	IsFork            *bool
+	IsArchived        *bool
 }
 
 type Adaptor interface {

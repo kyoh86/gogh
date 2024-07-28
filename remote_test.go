@@ -157,7 +157,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		{
 			title: "fork",
 			base: &testtarget.RemoteListOption{
-				IsFork: true,
+				IsFork: ptr(true),
 			},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
@@ -166,7 +166,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				},
 				Limit:             testtarget.RepositoryListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
-				IsFork:            true,
+				IsFork:            ptr(true),
 			},
 		},
 		{

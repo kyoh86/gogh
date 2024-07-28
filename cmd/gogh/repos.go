@@ -61,10 +61,10 @@ var (
 				return errors.New("specify only one of `--fork` or `--no-fork`")
 			}
 			if reposFlags.Fork {
-				listOption.IsFork = reposFlags.Fork // &true
+				listOption.IsFork = &reposFlags.Fork // &true
 			}
 			if reposFlags.NotFork {
-				listOption.IsFork = reposFlags.Fork // &false
+				listOption.IsFork = &reposFlags.Fork // &false
 			}
 		LOOP_CONVERT_RELATION:
 			for _, r := range reposFlags.Relation {

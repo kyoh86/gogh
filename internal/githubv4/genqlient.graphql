@@ -44,7 +44,7 @@ query ListRepos(
   $first: Int = 30,
   # @genqlient(omitempty: true)
   $after: String,
-  # @genqlient(omitempty: true)
+  # @genqlient(omitempty: true, pointer: true)
   $isFork: Boolean,
   # @genqlient(omitempty: true)
   $privacy: RepositoryPrivacy,
@@ -52,9 +52,20 @@ query ListRepos(
   $affiliations: [RepositoryAffiliation],
   # @genqlient(omitempty: true)
   $orderBy: RepositoryOrder = {field: PUSHED_AT, direction: DESC},
+  # @genqlient(omitempty: true, pointer: true)
+  $isArchived: Boolean,
 ) {
   viewer {
-    repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $affiliations, affiliations: $affiliations, orderBy: $orderBy) {
+    repositories(
+      first: $first,
+      after: $after,
+      isArchived: $isArchived,
+      isFork: $isFork,
+      privacy: $privacy,
+      ownerAffiliations: $affiliations,
+      affiliations: $affiliations,
+      orderBy: $orderBy
+    ) {
       edges {
         node {
           ...RepositoryFragment

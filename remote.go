@@ -104,18 +104,11 @@ var AllOrderDirection = []githubv4.OrderDirection{
 
 type RemoteListOption struct {
 	Private  *bool
+	IsFork   *bool
 	Order    OrderDirection
 	Sort     RepositoryOrderField
 	Relation []RepositoryRelation
 	Limit    int
-	IsFork   bool
-	// UNDONE:
-	// https://github.com/cli/cli/blob/5a2ec54685806a6576bdc185751afc09aba44408/pkg/cmd/repo/list/http.go#L60-L62
-	// >	if filter.Language != "" || filter.Archived || filter.NonArchived {
-	// >		return searchRepos(client, hostname, limit, owner, filter)
-	// >	}
-	// Language  string
-	// Archived  *bool
 }
 
 func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {

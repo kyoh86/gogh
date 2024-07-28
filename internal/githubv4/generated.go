@@ -1311,10 +1311,11 @@ const (
 type __ListReposInput struct {
 	First        int                     `json:"first"`
 	After        string                  `json:"after,omitempty"`
-	IsFork       bool                    `json:"isFork,omitempty"`
+	IsFork       *bool                   `json:"isFork,omitempty"`
 	Privacy      RepositoryPrivacy       `json:"privacy,omitempty"`
 	Affiliations []RepositoryAffiliation `json:"affiliations,omitempty"`
 	OrderBy      RepositoryOrder         `json:"orderBy,omitempty"`
+	IsArchived   *bool                   `json:"isArchived,omitempty"`
 }
 
 // GetFirst returns __ListReposInput.First, and is useful for accessing the field via an interface.
@@ -1324,7 +1325,7 @@ func (v *__ListReposInput) GetFirst() int { return v.First }
 func (v *__ListReposInput) GetAfter() string { return v.After }
 
 // GetIsFork returns __ListReposInput.IsFork, and is useful for accessing the field via an interface.
-func (v *__ListReposInput) GetIsFork() bool { return v.IsFork }
+func (v *__ListReposInput) GetIsFork() *bool { return v.IsFork }
 
 // GetPrivacy returns __ListReposInput.Privacy, and is useful for accessing the field via an interface.
 func (v *__ListReposInput) GetPrivacy() RepositoryPrivacy { return v.Privacy }
@@ -1335,11 +1336,14 @@ func (v *__ListReposInput) GetAffiliations() []RepositoryAffiliation { return v.
 // GetOrderBy returns __ListReposInput.OrderBy, and is useful for accessing the field via an interface.
 func (v *__ListReposInput) GetOrderBy() RepositoryOrder { return v.OrderBy }
 
+// GetIsArchived returns __ListReposInput.IsArchived, and is useful for accessing the field via an interface.
+func (v *__ListReposInput) GetIsArchived() *bool { return v.IsArchived }
+
 // The query or mutation executed by ListRepos.
 const ListRepos_Operation = `
-query ListRepos ($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $affiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}) {
+query ListRepos ($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $affiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}, $isArchived: Boolean) {
 	viewer {
-		repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $affiliations, affiliations: $affiliations, orderBy: $orderBy) {
+		repositories(first: $first, after: $after, isArchived: $isArchived, isFork: $isFork, privacy: $privacy, ownerAffiliations: $affiliations, affiliations: $affiliations, orderBy: $orderBy) {
 			edges {
 				node {
 					... RepositoryFragment
@@ -1398,10 +1402,11 @@ func ListRepos(
 	client_ graphql.Client,
 	first int,
 	after string,
-	isFork bool,
+	isFork *bool,
 	privacy RepositoryPrivacy,
 	affiliations []RepositoryAffiliation,
 	orderBy RepositoryOrder,
+	isArchived *bool,
 ) (*ListReposResponse, error) {
 	req_ := &graphql.Request{
 		OpName: "ListRepos",
@@ -1413,6 +1418,7 @@ func ListRepos(
 			Privacy:      privacy,
 			Affiliations: affiliations,
 			OrderBy:      orderBy,
+			IsArchived:   isArchived,
 		},
 	}
 	var err_ error

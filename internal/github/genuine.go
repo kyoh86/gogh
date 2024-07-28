@@ -126,6 +126,7 @@ func (a *genuineAdaptor) RepositoryList(
 		opts.Privacy,
 		opts.OwnerAffiliations,
 		opts.OrderBy,
+		opts.IsArchived,
 	)
 	if err != nil {
 		return nil, PageInfoFragment{}, err
