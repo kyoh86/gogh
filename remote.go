@@ -103,12 +103,13 @@ var AllOrderDirection = []githubv4.OrderDirection{
 }
 
 type RemoteListOption struct {
-	Private  *bool
-	IsFork   *bool
-	Order    OrderDirection
-	Sort     RepositoryOrderField
-	Relation []RepositoryRelation
-	Limit    int
+	Private    *bool
+	IsFork     *bool
+	IsArchived *bool
+	Order      OrderDirection
+	Sort       RepositoryOrderField
+	Relation   []RepositoryRelation
+	Limit      int
 }
 
 func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
@@ -124,7 +125,8 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 		}
 	}
 	opt := &github.RepositoryListOptions{
-		IsFork: o.IsFork,
+		IsFork:     o.IsFork,
+		IsArchived: o.IsArchived,
 	}
 
 	if o.Sort == "" {

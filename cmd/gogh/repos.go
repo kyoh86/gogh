@@ -19,16 +19,18 @@ import (
 )
 
 type reposFlagsStruct struct {
-	Format   string   `yaml:"format,omitempty"`
-	Color    string   `yaml:"color,omitempty"`
-	Sort     string   `yaml:"sort,omitempty"`
-	Order    string   `yaml:"order,omitempty"`
-	Relation []string `yaml:"relation,omitempty"`
-	Limit    int      `yaml:"limit,omitempty"`
-	Private  bool     `yaml:"private,omitempty"`
-	Public   bool     `yaml:"public,omitempty"`
-	Fork     bool     `yaml:"fork,omitempty"`
-	NotFork  bool     `yaml:"notFork,omitempty"`
+	Format      string   `yaml:"format,omitempty"`
+	Color       string   `yaml:"color,omitempty"`
+	Sort        string   `yaml:"sort,omitempty"`
+	Order       string   `yaml:"order,omitempty"`
+	Relation    []string `yaml:"relation,omitempty"`
+	Limit       int      `yaml:"limit,omitempty"`
+	Private     bool     `yaml:"private,omitempty"`
+	Public      bool     `yaml:"public,omitempty"`
+	Fork        bool     `yaml:"fork,omitempty"`
+	NotFork     bool     `yaml:"notFork,omitempty"`
+	Archived    bool     `yaml:"archived,omitempty"`
+	NotArchived bool     `yaml:"notArchived,omitempty"`
 }
 
 var (
@@ -65,6 +67,16 @@ var (
 			}
 			if reposFlags.NotFork {
 				listOption.IsFork = &reposFlags.Fork // &false
+			}
+
+			if reposFlags.Archived && reposFlags.NotArchived {
+				return errors.New("specify only one of `--archived` or `--no-archived`")
+			}
+			if reposFlags.Archived {
+				listOption.IsArchived = &reposFlags.Archived // &true
+			}
+			if reposFlags.NotArchived {
+				listOption.IsArchived = &reposFlags.Archived // &false
 			}
 		LOOP_CONVERT_RELATION:
 			for _, r := range reposFlags.Relation {
@@ -184,6 +196,11 @@ func init() {
 		BoolVarP(&reposFlags.Fork, "fork", "", defaultFlag.Repos.Fork, "Show only forks")
 	reposCommand.Flags().
 		BoolVarP(&reposFlags.NotFork, "no-fork", "", defaultFlag.Repos.NotFork, "Omit forks")
+
+	reposCommand.Flags().
+		BoolVarP(&reposFlags.Archived, "archived", "", defaultFlag.Repos.Archived, "Show only archived repositories")
+	reposCommand.Flags().
+		BoolVarP(&reposFlags.NotArchived, "no-archived", "", defaultFlag.Repos.NotArchived, "Omit archived repositories")
 
 	reposCommand.Flags().
 		StringVarP(&reposFlags.Format, "format", "", defaultString(defaultFlag.Repos.Format, "table"), fmt.Sprintf("The formatting style for each repository; it can accept %s", quoteEnums(repoFormatAccept)))
