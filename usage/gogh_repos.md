@@ -19,7 +19,7 @@ gogh repos [flags]
       --private            Show only private repositories
       --public             Show only public repositories
       --relation strings   The relation of user to each repository; it can accept "owner", "organizationMember" or "collaborator" (default [owner,organizationMember])
-      --sort string        Property by which repository be ordered; it can accept "CREATED_AT", "UPDATED_AT", "PUSHED_AT", "NAME" or "STARGAZERS"
+      --sort string        Property by which repository be ordered; it can accept "CREATED_AT", "NAME", "PUSHED_AT", "STARGAZERS" or "UPDATED_AT"
 ```
 
 ### SEE ALSO

@@ -8,14 +8,13 @@ import (
 	exgithub "github.com/google/go-github/v35/github"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
-	"github.com/wacul/ptr"
 )
 
 func TestParseSpec(t *testing.T) {
 	t.Run("valid http URL", func(t *testing.T) {
 		want := Spec{host: "github.com", owner: "kyoh86", name: "gogh"}
 		got, err := parseSpec(&github.Repository{
-			CloneURL: ptr.String("https://github.com/kyoh86/gogh"),
+			CloneURL: ptr("https://github.com/kyoh86/gogh"),
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
@@ -27,7 +26,7 @@ func TestParseSpec(t *testing.T) {
 
 	t.Run("unsupported (ssh) URL", func(t *testing.T) {
 		_, err := parseSpec(&github.Repository{
-			CloneURL: ptr.String("git@github.com:kyoh86/gogh.git"),
+			CloneURL: ptr("git@github.com:kyoh86/gogh.git"),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")
@@ -52,18 +51,18 @@ func TestIngestRepository(t *testing.T) {
 			Parent:      &Spec{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
 		}
 		got, err := ingestRepository(&github.Repository{
-			Description: ptr.String("valid description"),
-			Homepage:    ptr.String("valid homepage"),
+			Description: ptr("valid description"),
+			Homepage:    ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    ptr.String("https://github.com/kyoh86/gogh"),
-			Language:    ptr.String("valid language"),
-			Fork:        ptr.Bool(false),
+			CloneURL:    ptr("https://github.com/kyoh86/gogh"),
+			Language:    ptr("valid language"),
+			Fork:        ptr(false),
 			Parent: &github.Repository{
-				CloneURL: ptr.String("https://github.com/kyoh86-tryouts/test"),
+				CloneURL: ptr("https://github.com/kyoh86-tryouts/test"),
 			},
-			Archived:   ptr.Bool(true),
-			Private:    ptr.Bool(false),
-			IsTemplate: ptr.Bool(true),
+			Archived:   ptr(true),
+			Private:    ptr(false),
+			IsTemplate: ptr(true),
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
@@ -76,18 +75,18 @@ func TestIngestRepository(t *testing.T) {
 	t.Run("unsupported (ssh) URL", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
 		_, err := ingestRepository(&github.Repository{
-			Description: ptr.String("valid description"),
-			Homepage:    ptr.String("valid homepage"),
+			Description: ptr("valid description"),
+			Homepage:    ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    ptr.String("git@github.com:kyoh86/gogh.git"),
-			Language:    ptr.String("valid language"),
-			Fork:        ptr.Bool(false),
+			CloneURL:    ptr("git@github.com:kyoh86/gogh.git"),
+			Language:    ptr("valid language"),
+			Fork:        ptr(false),
 			Parent: &github.Repository{
-				CloneURL: ptr.String("https://github.com/kyoh86-tryouts/test"),
+				CloneURL: ptr("https://github.com/kyoh86-tryouts/test"),
 			},
-			Archived:   ptr.Bool(true),
-			Private:    ptr.Bool(false),
-			IsTemplate: ptr.Bool(true),
+			Archived:   ptr(true),
+			Private:    ptr(false),
+			IsTemplate: ptr(true),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")
@@ -97,18 +96,18 @@ func TestIngestRepository(t *testing.T) {
 	t.Run("unsupported (ssh) parent URL", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
 		_, err := ingestRepository(&github.Repository{
-			Description: ptr.String("valid description"),
-			Homepage:    ptr.String("valid homepage"),
+			Description: ptr("valid description"),
+			Homepage:    ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    ptr.String("https://github.com/kyoh86/gogh"),
-			Language:    ptr.String("valid language"),
-			Fork:        ptr.Bool(false),
+			CloneURL:    ptr("https://github.com/kyoh86/gogh"),
+			Language:    ptr("valid language"),
+			Fork:        ptr(false),
 			Parent: &github.Repository{
-				CloneURL: ptr.String("git@github.com:kyoh86-tryouts/test"),
+				CloneURL: ptr("git@github.com:kyoh86-tryouts/test"),
 			},
-			Archived:   ptr.Bool(true),
-			Private:    ptr.Bool(false),
-			IsTemplate: ptr.Bool(true),
+			Archived:   ptr(true),
+			Private:    ptr(false),
+			IsTemplate: ptr(true),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")
@@ -122,7 +121,7 @@ func TestIngestRepositoryFragment(t *testing.T) {
 		want := Repository{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
-			Homepage:    "valid homepage",
+			Homepage:    "https://example.com",
 			Language:    "valid language",
 			UpdatedAt:   tim,
 			Archived:    true,
@@ -133,17 +132,19 @@ func TestIngestRepositoryFragment(t *testing.T) {
 			Parent:      &Spec{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
 		}
 		got, err := ingestRepositoryFragment("github.com", &github.RepositoryFragment{
-			Owner:           githubv4.OwnerFragment{Login: "kyoh86"},
+			Owner:           &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: "kyoh86"}},
 			Name:            "gogh",
-			Description:     ptr.String("valid description"),
-			HomepageURL:     ptr.String("valid homepage"),
-			UpdatedAt:       tim.Format(time.RFC3339),
-			URL:             "https://github.com/kyoh86/gogh",
-			PrimaryLanguage: &githubv4.LanguageFragment{Name: "valid language"},
+			Description:     "valid description",
+			HomepageUrl:     "https://example.com",
+			UpdatedAt:       tim,
+			Url:             "https://github.com/kyoh86/gogh",
+			PrimaryLanguage: githubv4.RepositoryFragmentPrimaryLanguage{LanguageFragment: githubv4.LanguageFragment{Name: "valid language"}},
 			IsFork:          false,
-			Parent: &github.ParentRepositoryFragment{
-				Owner: githubv4.OwnerFragment{Login: "kyoh86-tryouts"},
-				Name:  "test",
+			Parent: githubv4.RepositoryFragmentParentRepository{
+				ParentRepositoryFragment: githubv4.ParentRepositoryFragment{
+					Owner: &githubv4.ParentRepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: "kyoh86-tryouts"}},
+					Name:  "test",
+				},
 			},
 			IsArchived: true,
 			IsPrivate:  false,
@@ -157,28 +158,12 @@ func TestIngestRepositoryFragment(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid time", func(t *testing.T) {
-		_, err := ingestRepositoryFragment("github.com", &github.RepositoryFragment{
-			Owner:      githubv4.OwnerFragment{Login: "kyoh86"},
-			Name:       "gogh",
-			URL:        "https://github.com/kyoh86/gogh",
-			UpdatedAt:  "invalid time",
-			IsFork:     false,
-			IsArchived: true,
-			IsPrivate:  false,
-			IsTemplate: true,
-		})
-		if err == nil {
-			t.Fatal("expected error, but not")
-		}
-	})
-
 	t.Run("invalid owner", func(t *testing.T) {
 		_, err := ingestRepositoryFragment("github.com", &github.RepositoryFragment{
-			Owner:      githubv4.OwnerFragment{Login: ".."},
+			Owner:      &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: ".."}},
 			Name:       "gogh",
-			URL:        "https://github.com/kyoh86/gogh",
-			UpdatedAt:  tim.Format(time.RFC3339),
+			Url:        "https://github.com/kyoh86/gogh",
+			UpdatedAt:  tim,
 			IsFork:     false,
 			IsArchived: true,
 			IsPrivate:  false,
@@ -191,13 +176,15 @@ func TestIngestRepositoryFragment(t *testing.T) {
 
 	t.Run("invalid parent", func(t *testing.T) {
 		_, err := ingestRepositoryFragment("github.com", &github.RepositoryFragment{
-			Owner:     githubv4.OwnerFragment{Login: "kyoh86"},
+			Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: "kyoh86"}},
 			Name:      "gogh",
-			URL:       "https://github.com/kyoh86/gogh",
-			UpdatedAt: tim.Format(time.RFC3339),
-			Parent: &github.ParentRepositoryFragment{
-				Owner: githubv4.OwnerFragment{Login: ".."},
-				Name:  "..",
+			Url:       "https://github.com/kyoh86/gogh",
+			UpdatedAt: tim,
+			Parent: githubv4.RepositoryFragmentParentRepository{
+				ParentRepositoryFragment: githubv4.ParentRepositoryFragment{
+					Owner: &githubv4.ParentRepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: ".."}},
+					Name:  "..",
+				},
 			},
 			IsFork:     false,
 			IsArchived: true,

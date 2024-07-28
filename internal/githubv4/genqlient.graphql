@@ -40,7 +40,19 @@ fragment RepositoryFragment on Repository {
   }
 }
 
-query ListRepos($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $affiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field: PUSHED_AT, direction: DESC}) {
+query ListRepos(
+  $first: Int = 30,
+  # @genqlient(omitempty: true)
+  $after: String,
+  # @genqlient(omitempty: true)
+  $isFork: Boolean,
+  # @genqlient(omitempty: true)
+  $privacy: RepositoryPrivacy,
+  # @genqlient(omitempty: true)
+  $affiliations: [RepositoryAffiliation],
+  # @genqlient(omitempty: true)
+  $orderBy: RepositoryOrder = {field: PUSHED_AT, direction: DESC},
+) {
   viewer {
     repositories(first: $first, after: $after, isFork: $isFork, privacy: $privacy, ownerAffiliations: $affiliations, affiliations: $affiliations, orderBy: $orderBy) {
       edges {

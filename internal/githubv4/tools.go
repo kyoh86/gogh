@@ -1,7 +1,7 @@
-//+build tools
+//go:build tools
 
 package githubv4
 
 import (
-	_ "github.com/Yamashou/gqlgenc"
+	_ "github.com/Khan/genqlient"
 )

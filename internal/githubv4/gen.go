@@ -1,5 +1,5 @@
-//+build gengraphql
+//go:build gengraphql
 
 package githubv4
 
-//go:generate go run github.com/Yamashou/gqlgenc
+//go:generate go run github.com/Khan/genqlient

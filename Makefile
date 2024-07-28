@@ -5,14 +5,22 @@ DATE    ?= `date --iso-8601`
 generate-clear: gen-clear
 .PHONY: generate-clear
 
-gen-clear:
+gen-clear: clear-sdl
 	rm -rf ./**/*_gen.go
 .PHONY: gen-clear
+
+clear-sdl:
+	rm -f ./internal/githubv4/schema.graphql
+.PHONY: clear-sdl
+
+get-sdl:
+	curl -Lo ./internal/githubv4/schema.graphql https://docs.github.com/public/fpt/schema.docs.graphql
+.PHONY: get-sdl
 
 generate: gen
 .PHONY: generate
 
-gen: gen-clear
+gen: gen-clear get-sdl
 	go generate -x ./...
 .PHONY: gen
 

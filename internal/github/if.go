@@ -51,12 +51,12 @@ const (
 )
 
 type RepositoryListOptions struct {
-	Limit             *int64
-	After             *string
-	IsFork            *bool
-	Privacy           *RepositoryPrivacy
-	OrderBy           *RepositoryOrder
-	OwnerAffiliations []*RepositoryAffiliation
+	OrderBy           RepositoryOrder
+	After             string
+	Privacy           RepositoryPrivacy
+	OwnerAffiliations []RepositoryAffiliation
+	Limit             int
+	IsFork            bool
 }
 
 type Adaptor interface {

@@ -1,5 +1,0 @@
-schema: https://api.github.com/graphql/
-extensions:
-  endpoints:
-    default:
-      url: https://api.github.com/graphql/

@@ -5,15 +5,16 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/Khan/genqlient/graphql"
 	github "github.com/google/go-github/v35/github"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
 	"golang.org/x/oauth2"
 )
 
 type genuineAdaptor struct {
-	host       string
+	gqlClient  graphql.Client
 	restClient *github.Client
-	gqlClient  *githubv4.Client
+	host       string
 }
 
 func (a *genuineAdaptor) GetHost() string {
@@ -78,7 +79,7 @@ func newGenuineAdaptor(host string, httpClient *http.Client) Adaptor {
 	return &genuineAdaptor{
 		host:       host,
 		restClient: github.NewClient(httpClient),
-		gqlClient:  githubv4.NewClient(httpClient, "https://"+DefaultAPIHost+"/graphql"),
+		gqlClient:  graphql.NewClient("https://"+DefaultAPIHost+"/graphql", httpClient),
 	}
 }
 
@@ -94,7 +95,7 @@ func newGenuineEnterpriseAdaptor(
 	return &genuineAdaptor{
 		host:       host,
 		restClient: restClient,
-		gqlClient:  githubv4.NewClient(httpClient, baseGQLURL),
+		gqlClient:  graphql.NewClient(baseGQLURL, httpClient),
 	}, nil
 }
 
@@ -116,8 +117,9 @@ func (a *genuineAdaptor) RepositoryList(
 	ctx context.Context,
 	opts *RepositoryListOptions,
 ) ([]*RepositoryFragment, PageInfoFragment, error) {
-	repos, err := a.gqlClient.ListRepos(
+	repos, err := githubv4.ListRepos(
 		ctx,
+		a.gqlClient,
 		opts.Limit,
 		opts.After,
 		opts.IsFork,
@@ -130,9 +132,10 @@ func (a *genuineAdaptor) RepositoryList(
 	}
 	ingrepos := make([]*RepositoryFragment, 0, len(repos.Viewer.Repositories.Edges))
 	for _, edge := range repos.Viewer.Repositories.Edges {
-		ingrepos = append(ingrepos, edge.Node)
+		f := edge.Node.RepositoryFragment
+		ingrepos = append(ingrepos, &f)
 	}
-	return ingrepos, repos.Viewer.Repositories.PageInfo, nil
+	return ingrepos, repos.Viewer.Repositories.PageInfo.PageInfoFragment, nil
 }
 
 func (a *genuineAdaptor) RepositoryCreate(

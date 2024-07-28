@@ -13,8 +13,11 @@ import (
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/internal/github_mock"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
-	"github.com/wacul/ptr"
 )
+
+func ptr[T any](v T) *T {
+	return &v
+}
 
 func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
 	ctrl := gomock.NewController(t)
@@ -43,7 +46,7 @@ func TestRemoteController_Get(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(&github.Repository{
-			CloneURL: ptr.String("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
+			CloneURL: ptr("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
 		}, nil, nil)
 
 		actual, err := remote.Get(ctx, user, "gogh", nil)
@@ -77,62 +80,62 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 			title: "nil",
 			base:  nil,
 			want: &github.RepositoryListOptions{
-				OrderBy: &github.RepositoryOrder{
+				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 			},
 		},
 		{
 			title: "empty",
 			base:  &testtarget.RemoteListOption{},
 			want: &github.RepositoryListOptions{
-				OrderBy: &github.RepositoryOrder{
+				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 			},
 		},
 		{
 			title: "private",
-			base:  &testtarget.RemoteListOption{Private: ptr.Bool(true)},
+			base:  &testtarget.RemoteListOption{Private: ptr(true)},
 			want: &github.RepositoryListOptions{
-				OrderBy: &github.RepositoryOrder{
+				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-				Privacy:           &private,
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
+				Privacy:           private,
 			},
 		},
 		{
 			title: "public",
-			base:  &testtarget.RemoteListOption{Private: ptr.Bool(false)},
+			base:  &testtarget.RemoteListOption{Private: ptr(false)},
 			want: &github.RepositoryListOptions{
-				OrderBy: &github.RepositoryOrder{
+				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-				Privacy:           &public,
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
+				Privacy:           public,
 			},
 		},
 		{
 			title: "limit",
-			base:  &testtarget.RemoteListOption{Limit: ptr.Int(1)},
+			base:  &testtarget.RemoteListOption{Limit: 1},
 			want: &github.RepositoryListOptions{
-				OrderBy: &github.RepositoryOrder{
+				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             ptr.Int64(1),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+				Limit:             1,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 			},
 		},
 		{
@@ -143,27 +146,27 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				testtarget.RepositoryRelationCollaborator,
 			}},
 			want: &github.RepositoryListOptions{
-				OrderBy: &github.RepositoryOrder{
+				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner, &member, &collabo},
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner, member, collabo},
 			},
 		},
 		{
 			title: "fork",
 			base: &testtarget.RemoteListOption{
-				IsFork: ptr.Bool(true),
+				IsFork: true,
 			},
 			want: &github.RepositoryListOptions{
-				OrderBy: &github.RepositoryOrder{
+				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-				IsFork:            ptr.Bool(true),
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
+				IsFork:            true,
 			},
 		},
 		{
@@ -172,9 +175,9 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				Sort: github.RepositoryOrderFieldName,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-				OrderBy: &github.RepositoryOrder{
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
+				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldName,
 					Direction: github.OrderDirectionAsc,
 				},
@@ -186,9 +189,9 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				Sort: github.RepositoryOrderFieldStargazers,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-				OrderBy: &github.RepositoryOrder{
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
+				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldStargazers,
 					Direction: github.OrderDirectionDesc,
 				},
@@ -201,9 +204,9 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				Order: github.OrderDirectionAsc,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-				OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-				OrderBy: &github.RepositoryOrder{
+				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				OwnerAffiliations: []github.RepositoryAffiliation{owner},
+				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldStargazers,
 					Direction: github.OrderDirectionAsc,
 				},
@@ -224,12 +227,12 @@ func TestRemoteController_List(t *testing.T) {
 
 	owner := github.RepositoryAffiliationOwner
 	emptyOption := &github.RepositoryListOptions{
-		OrderBy: &github.RepositoryOrder{
+		OrderBy: github.RepositoryOrder{
 			Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 			Direction: githubv4.OrderDirectionDesc,
 		},
-		Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-		OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+		Limit:             testtarget.RepositoryListMaxLimitPerPage,
+		OwnerAffiliations: []github.RepositoryAffiliation{owner},
 	}
 	host := testtarget.DefaultHost
 	user := "kyoh86"
@@ -263,10 +266,10 @@ func TestRemoteController_List(t *testing.T) {
 			DoAndReturn(func(_ context.Context, _ *github.RepositoryListOptions) ([]*github.RepositoryFragment, github.PageInfoFragment, error) {
 				<-time.After(sleep)
 				return []*github.RepositoryFragment{{
-					Owner: github.OwnerFragment{Login: org},
+					Owner: &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}},
 					Name:  "org-repo-1.git",
 				}, {
-					Owner: github.OwnerFragment{Login: org},
+					Owner: &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}},
 					Name:  "org-repo-2.git",
 				}}, github.PageInfoFragment{}, nil
 			})
@@ -283,7 +286,7 @@ func TestRemoteController_List(t *testing.T) {
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
-				Owner: github.OwnerFragment{Login: "."}, Name: ".",
+				Owner: &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: "."}},
 			}}, github.PageInfoFragment{}, nil)
 
 		if _, err := remote.List(ctx, nil); err == nil {
@@ -298,17 +301,21 @@ func TestRemoteController_List(t *testing.T) {
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-1",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}},
+				Name:      "user-repo-1",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-2",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}},
+				Name:      "user-repo-2",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: org}, Name: "org-repo-1",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}},
+				Name:      "org-repo-1",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: org}, Name: "org-repo-2",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}},
+				Name:      "org-repo-2",
 			}}, github.PageInfoFragment{}, nil)
 
 		specs, err := remote.List(ctx, nil)
@@ -359,28 +366,30 @@ func TestRemoteController_List(t *testing.T) {
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-1",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}},
+				Name:      "user-repo-1",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-2",
-			}}, github.PageInfoFragment{HasNextPage: true, EndCursor: ptr.String("next-page")}, nil)
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}},
+				Name:      "user-repo-2",
+			}}, github.PageInfoFragment{HasNextPage: true, EndCursor: "next-page"}, nil)
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
-			OrderBy: &github.RepositoryOrder{
+			OrderBy: github.RepositoryOrder{
 				Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 				Direction: githubv4.OrderDirectionDesc,
 			},
-			After:             ptr.String("next-page"),
-			Limit:             ptr.Int64(testtarget.RepositoryListMaxLimitPerPage),
-			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+			After:             "next-page",
+			Limit:             testtarget.RepositoryListMaxLimitPerPage,
+			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}}).Return([]*github.RepositoryFragment{{
-			UpdatedAt: "2021-05-01T01:00:00.000Z",
-			Owner:     github.OwnerFragment{Login: org}, Name: "org-repo-1",
+			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+			Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-1",
 		}, {
-			UpdatedAt: "2021-05-01T01:00:00.000Z",
-			Owner:     github.OwnerFragment{Login: org}, Name: "org-repo-2",
+			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+			Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-2",
 		}}, github.PageInfoFragment{}, nil)
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: ptr.Int(0)})
+		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: 0})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -431,38 +440,38 @@ func TestRemoteController_List(t *testing.T) {
 			limit   = perPage + 2
 		)
 		var responses []*github.RepositoryFragment
-		for i := 0; i < limit+1; i++ { // getting limit +1 items but ignore it.
+		for i := int64(0); i < limit+1; i++ { // getting limit +1 items but ignore it.
 			responses = append(responses, &github.RepositoryFragment{
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user},
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}},
 				Name:      fmt.Sprintf("user-repo-%03d", i+1),
 			})
 		}
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
-			OrderBy: &github.RepositoryOrder{
+			OrderBy: github.RepositoryOrder{
 				Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 				Direction: githubv4.OrderDirectionDesc,
 			},
-			Limit:             ptr.Int64(perPage),
-			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
-		}}).Return(responses[0:perPage], github.PageInfoFragment{HasNextPage: true, EndCursor: ptr.String("next-page")}, nil)
+			Limit:             perPage,
+			OwnerAffiliations: []github.RepositoryAffiliation{owner},
+		}}).Return(responses[0:perPage], github.PageInfoFragment{HasNextPage: true, EndCursor: "next-page"}, nil)
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
-			After: ptr.String("next-page"),
-			OrderBy: &github.RepositoryOrder{
+			After: "next-page",
+			OrderBy: github.RepositoryOrder{
 				Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 				Direction: githubv4.OrderDirectionDesc,
 			},
-			Limit:             ptr.Int64(perPage),
-			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+			Limit:             perPage,
+			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}}).Return(responses[perPage:], github.PageInfoFragment{}, nil)
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: ptr.Int(limit)})
+		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: limit})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if len(specs) != limit {
+		if int64(len(specs)) != limit {
 			t.Fatalf("expect some specs, but %d is gotten", len(specs))
 		}
-		for i := 0; i < limit; i++ {
+		for i := int64(0); i < limit; i++ {
 			got := specs[i]
 			want := fmt.Sprintf("user-repo-%03d", i+1)
 			if want != got.Name() {
@@ -478,17 +487,17 @@ func TestRemoteController_List(t *testing.T) {
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-1",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-1",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-2",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-2",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: org}, Name: "org-repo-1",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-1",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: org}, Name: "org-repo-2",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-2",
 			}}, github.PageInfoFragment{}, nil)
 
 		specs, err := remote.List(ctx, &testtarget.RemoteListOption{})
@@ -539,11 +548,11 @@ func TestRemoteController_List(t *testing.T) {
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-1",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-1",
 			}, {
-				UpdatedAt: "2021-05-01T01:00:00.000Z",
-				Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-2",
+				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-2",
 			}}, github.PageInfoFragment{}, nil)
 		specs, err := remote.List(ctx, &testtarget.RemoteListOption{})
 		if err != nil {
@@ -584,23 +593,23 @@ func TestRemoteController_List(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		public := github.RepositoryPrivacyPublic
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
-			OrderBy: &github.RepositoryOrder{
+			OrderBy: github.RepositoryOrder{
 				Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 				Direction: githubv4.OrderDirectionDesc,
 			},
-			Privacy:           &public,
+			Privacy:           public,
 			OwnerAffiliations: emptyOption.OwnerAffiliations,
 			Limit:             emptyOption.Limit,
 		}}).Return([]*github.RepositoryFragment{{
-			UpdatedAt: "2021-05-01T01:00:00.000Z",
-			Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-1",
+			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+			Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-1",
 		}, {
-			UpdatedAt: "2021-05-01T01:00:00.000Z",
-			Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-2",
+			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+			Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-2",
 		}}, github.PageInfoFragment{}, nil)
 
 		specs, err := remote.List(ctx, &testtarget.RemoteListOption{
-			Private: ptr.Bool(false),
+			Private: ptr(false),
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
@@ -640,23 +649,25 @@ func TestRemoteController_List(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		public := github.RepositoryPrivacyPublic
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{github.RepositoryListOptions{
-			OrderBy: &github.RepositoryOrder{
+			OrderBy: github.RepositoryOrder{
 				Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 				Direction: githubv4.OrderDirectionDesc,
 			},
-			Privacy:           &public,
+			Privacy:           public,
 			OwnerAffiliations: emptyOption.OwnerAffiliations,
 			Limit:             emptyOption.Limit,
 		}}).Return([]*github.RepositoryFragment{{
-			UpdatedAt: "2021-05-01T01:00:00.000Z",
-			Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-1",
+			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+			Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}},
+			Name:      "user-repo-1",
 		}, {
-			UpdatedAt: "2021-05-01T01:00:00.000Z",
-			Owner:     github.OwnerFragment{Login: user}, Name: "user-repo-2",
+			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
+			Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}},
+			Name:      "user-repo-2",
 		}}, github.PageInfoFragment{}, nil)
 
 		specs, err := remote.List(ctx, &testtarget.RemoteListOption{
-			Private: ptr.Bool(false),
+			Private: ptr(false),
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
@@ -703,7 +714,7 @@ func TestRemoteController_Create(t *testing.T) {
 		internalError := errors.New("test error")
 
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name: ptr.String("gogh"),
+			Name: ptr("gogh"),
 		}}).Return(nil, nil, internalError)
 
 		if _, err := remote.Create(ctx, "gogh", nil); !errors.Is(err, internalError) {
@@ -716,9 +727,9 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name: ptr.String("gogh"),
+			Name: ptr("gogh"),
 		}}).Return(&github.Repository{
-			CloneURL: ptr.String("https://github.com/" + user + "/gogh.git"),
+			CloneURL: ptr("https://github.com/" + user + "/gogh.git"),
 		}, nil, nil)
 		spec, err := remote.Create(ctx, "gogh", nil)
 		if err != nil {
@@ -745,9 +756,9 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name: ptr.String("user-repo-1"),
+			Name: ptr("user-repo-1"),
 		}}).Return(&github.Repository{
-			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+			CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{})
@@ -775,13 +786,13 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name:       ptr.String("user-repo-1"),
-			Homepage:   ptr.String("https://kyoh86.dev"),
-			TeamID:     ptr.Int64(3),
-			HasIssues:  ptr.Bool(false),
-			IsTemplate: ptr.Bool(true),
+			Name:       ptr("user-repo-1"),
+			Homepage:   ptr("https://kyoh86.dev"),
+			TeamID:     ptr(int64(3)),
+			HasIssues:  ptr(false),
+			IsTemplate: ptr(true),
 		}}).Return(&github.Repository{
-			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+			CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{
@@ -814,9 +825,9 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, org, &github.Repository{
-			Name: ptr.String("org-repo-1"),
+			Name: ptr("org-repo-1"),
 		}).Return(&github.Repository{
-			CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
+			CloneURL: ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
@@ -842,10 +853,10 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, org, &github.Repository{
-			Name:     ptr.String("org-repo-1"),
-			Homepage: ptr.String("https://kyoh86.dev"),
+			Name:     ptr("org-repo-1"),
+			Homepage: ptr("https://kyoh86.dev"),
 		}).Return(&github.Repository{
-			CloneURL: ptr.String("https://github.com/" + org + "/org-repo-1.git"),
+			CloneURL: ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
@@ -880,7 +891,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name: ptr.String("gogh"),
+				Name: ptr("gogh"),
 			}}).
 			Return(nil, nil, internalError)
 
@@ -898,10 +909,10 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name: ptr.String("gogh"),
+				Name: ptr("gogh"),
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr.String("https://github.com/" + user + "/gogh.git"),
+				CloneURL: ptr("https://github.com/" + user + "/gogh.git"),
 			}, nil, nil)
 		spec, err := remote.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil)
 		if err != nil {
@@ -929,10 +940,10 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name: ptr.String("user-repo-1"),
+				Name: ptr("user-repo-1"),
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+				CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.CreateFromTemplate(
@@ -967,11 +978,11 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name:  ptr.String("user-repo-1"),
-				Owner: ptr.String("custom-user"),
+				Name:  ptr("user-repo-1"),
+				Owner: ptr("custom-user"),
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr.String("https://github.com/custom-user/user-repo-1.git"),
+				CloneURL: ptr("https://github.com/custom-user/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.CreateFromTemplate(
@@ -1028,7 +1039,7 @@ func TestRemoteController_Fork(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", nil).Return(&github.Repository{
-			CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+			CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 		spec, err := remote.Fork(ctx, user, "user-repo-1", nil)
 		if err != nil {
@@ -1057,7 +1068,7 @@ func TestRemoteController_Fork(t *testing.T) {
 		mock.EXPECT().
 			RepositoryCreateFork(ctx, user, "user-repo-1", jsonMatcher{&github.RepositoryCreateForkOptions{}}).
 			Return(&github.Repository{
-				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+				CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{})
@@ -1089,7 +1100,7 @@ func TestRemoteController_Fork(t *testing.T) {
 				Organization: org,
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr.String("https://github.com/" + user + "/user-repo-1.git"),
+				CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{

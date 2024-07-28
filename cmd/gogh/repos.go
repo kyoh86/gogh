@@ -14,7 +14,6 @@ import (
 	"github.com/kyoh86/gogh/v2/view"
 	"github.com/kyoh86/gogh/v2/view/repotab"
 	"github.com/spf13/cobra"
-	"github.com/wacul/ptr"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/term"
 )
@@ -42,11 +41,11 @@ var (
 			var listOption gogh.RemoteListOption
 			switch reposFlags.Limit {
 			case 0:
-				listOption.Limit = ptr.Int(30)
+				listOption.Limit = 30
 			case -1:
-				listOption.Limit = ptr.Int(0) // no limit
+				listOption.Limit = 0 // no limit
 			default:
-				listOption.Limit = &reposFlags.Limit
+				listOption.Limit = reposFlags.Limit
 			}
 			if reposFlags.Private && reposFlags.Public {
 				return errors.New("specify only one of `--private` or `--public`")
@@ -62,10 +61,10 @@ var (
 				return errors.New("specify only one of `--fork` or `--no-fork`")
 			}
 			if reposFlags.Fork {
-				listOption.IsFork = &reposFlags.Fork // &true
+				listOption.IsFork = reposFlags.Fork // &true
 			}
 			if reposFlags.NotFork {
-				listOption.IsFork = &reposFlags.Fork // &false
+				listOption.IsFork = reposFlags.Fork // &false
 			}
 		LOOP_CONVERT_RELATION:
 			for _, r := range reposFlags.Relation {
@@ -100,18 +99,10 @@ var (
 			}
 			defer format.Close()
 			if reposFlags.Sort != "" {
-				sort := gogh.RepositoryOrderField(reposFlags.Sort)
-				if !sort.IsValid() {
-					return fmt.Errorf("invalid sort %q; %s", reposFlags.Sort, fmt.Sprintf("it can accept %s", quoteEnums(repoSortAccept)))
-				}
-				listOption.Sort = sort
+				listOption.Sort = gogh.RepositoryOrderField(reposFlags.Sort)
 			}
 			if reposFlags.Order != "" {
-				order := gogh.OrderDirection(reposFlags.Order)
-				if !order.IsValid() {
-					return fmt.Errorf("invalid order %q; %s", reposFlags.Order, fmt.Sprintf("it can accept %s", quoteEnums(repoOrderAccept)))
-				}
-				listOption.Order = order
+				listOption.Order = gogh.OrderDirection(reposFlags.Order)
 			}
 			ctx, cancel := context.WithCancel(cmd.Context())
 			defer cancel()
@@ -173,10 +164,10 @@ func quoteEnums(values []string) string {
 func init() {
 	repoFormatAccept = []string{"spec", "url", "json", "table"}
 	for _, v := range gogh.AllRepositoryOrderField {
-		repoSortAccept = append(repoSortAccept, v.String())
+		repoSortAccept = append(repoSortAccept, string(v))
 	}
 	for _, v := range gogh.AllOrderDirection {
-		repoOrderAccept = append(repoOrderAccept, v.String())
+		repoOrderAccept = append(repoOrderAccept, string(v))
 	}
 	for _, v := range gogh.AllRepositoryRelation {
 		repoRelationAccept = append(repoRelationAccept, v.String())

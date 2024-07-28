@@ -21,5 +21,4 @@ GO GitHub project manager
 * [gogh list](gogh_list.md)	 - List local projects
 * [gogh repos](gogh_repos.md)	 - List remote repositories
 * [gogh roots](gogh_roots.md)	 - Manage roots
-* [gogh set-default](gogh_set-default.md)	 - Set default host and owner
 

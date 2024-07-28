@@ -7,11 +7,9 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
-	"github.com/wacul/ptr"
 )
 
 const DefaultHost = "github.com"
@@ -89,19 +87,28 @@ func (r RepositoryRelation) String() string {
 
 type RepositoryOrderField = githubv4.RepositoryOrderField
 
-var AllRepositoryOrderField = githubv4.AllRepositoryOrderField
+var AllRepositoryOrderField = []githubv4.RepositoryOrderField{
+	githubv4.RepositoryOrderFieldCreatedAt,
+	githubv4.RepositoryOrderFieldName,
+	githubv4.RepositoryOrderFieldPushedAt,
+	githubv4.RepositoryOrderFieldStargazers,
+	githubv4.RepositoryOrderFieldUpdatedAt,
+}
 
 type OrderDirection = githubv4.OrderDirection
 
-var AllOrderDirection = githubv4.AllOrderDirection
+var AllOrderDirection = []githubv4.OrderDirection{
+	githubv4.OrderDirectionAsc,
+	githubv4.OrderDirectionDesc,
+}
 
 type RemoteListOption struct {
 	Private  *bool
-	Limit    *int
-	IsFork   *bool
 	Order    OrderDirection
 	Sort     RepositoryOrderField
 	Relation []RepositoryRelation
+	Limit    int
+	IsFork   bool
 	// UNDONE:
 	// https://github.com/cli/cli/blob/5a2ec54685806a6576bdc185751afc09aba44408/pkg/cmd/repo/list/http.go#L60-L62
 	// >	if filter.Language != "" || filter.Archived || filter.NonArchived {
@@ -115,12 +122,12 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	owner := github.RepositoryAffiliationOwner
 	if o == nil {
 		return &github.RepositoryListOptions{
-			OrderBy: &github.RepositoryOrder{
+			OrderBy: github.RepositoryOrder{
 				Field:     github.RepositoryOrderFieldUpdatedAt,
 				Direction: githubv4.OrderDirectionDesc,
 			},
-			Limit:             ptr.Int64(RepositoryListMaxLimitPerPage),
-			OwnerAffiliations: []*github.RepositoryAffiliation{&owner},
+			Limit:             RepositoryListMaxLimitPerPage,
+			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}
 	}
 	opt := &github.RepositoryListOptions{
@@ -128,12 +135,12 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	}
 
 	if o.Sort == "" {
-		opt.OrderBy = &github.RepositoryOrder{
+		opt.OrderBy = github.RepositoryOrder{
 			Field:     github.RepositoryOrderFieldUpdatedAt,
 			Direction: githubv4.OrderDirectionDesc,
 		}
 	} else {
-		opt.OrderBy = &github.RepositoryOrder{
+		opt.OrderBy = github.RepositoryOrder{
 			Field: o.Sort,
 		}
 		if o.Order == "" {
@@ -146,26 +153,25 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 			opt.OrderBy.Direction = o.Order
 		}
 	}
-	if o.Limit == nil {
-		opt.Limit = ptr.Int64(RepositoryListMaxLimitPerPage)
+	if o.Limit == 0 {
+		opt.Limit = RepositoryListMaxLimitPerPage
 	} else {
-		limit := int64(*o.Limit)
-		opt.Limit = &limit
+		opt.Limit = o.Limit
 	}
 
 	if len(o.Relation) == 0 {
-		opt.OwnerAffiliations = []*github.RepositoryAffiliation{&owner}
+		opt.OwnerAffiliations = []github.RepositoryAffiliation{owner}
 	} else {
 		member := github.RepositoryAffiliationOrganizationMember
 		collabo := github.RepositoryAffiliationCollaborator
 		for _, r := range o.Relation {
 			switch r {
 			case RepositoryRelationOwner:
-				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &owner)
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, owner)
 			case RepositoryRelationOrganizationMember:
-				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &member)
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, member)
 			case RepositoryRelationCollaborator:
-				opt.OwnerAffiliations = append(opt.OwnerAffiliations, &collabo)
+				opt.OwnerAffiliations = append(opt.OwnerAffiliations, collabo)
 			}
 		}
 	}
@@ -173,10 +179,10 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 	if o.Private != nil {
 		if *o.Private {
 			private := github.RepositoryPrivacyPrivate
-			opt.Privacy = &private
+			opt.Privacy = private
 		} else {
 			public := github.RepositoryPrivacyPublic
-			opt.Privacy = &public
+			opt.Privacy = public
 		}
 	}
 	return opt
@@ -220,32 +226,23 @@ func ingestRepositoryFragment(
 	host string,
 	repo *github.RepositoryFragment,
 ) (ret Repository, _ error) {
-	ret.URL = repo.URL
+	ret.URL = repo.Url
 	ret.IsTemplate = repo.IsTemplate
 	ret.Archived = repo.IsArchived
 	ret.Private = repo.IsPrivate
 	ret.Fork = repo.IsFork
-	spec, err := NewSpec(host, repo.Owner.Login, repo.Name)
+	spec, err := NewSpec(host, repo.Owner.GetLogin(), repo.Name)
 	if err != nil {
 		return Repository{}, err
 	}
 	ret.Spec = spec
-	if repo.Description != nil {
-		ret.Description = *repo.Description
-	}
-	if repo.HomepageURL != nil {
-		ret.Homepage = *repo.HomepageURL
-	}
-	if repo.PrimaryLanguage != nil {
-		ret.Language = repo.PrimaryLanguage.Name
-	}
-	uat, err := time.Parse(time.RFC3339, repo.UpdatedAt)
-	if err != nil {
-		return ret, fmt.Errorf("parse updatedAt: %w", err)
-	}
-	ret.UpdatedAt = uat
-	if repo.Parent != nil {
-		parent, err := NewSpec(host, repo.Parent.Owner.Login, repo.Parent.Name)
+	ret.Description = repo.Description
+	ret.Homepage = repo.HomepageUrl
+	ret.Language = repo.PrimaryLanguage.Name
+	ret.UpdatedAt = repo.UpdatedAt
+
+	if repo.Parent.Owner != nil && repo.Parent.Name != "" {
+		parent, err := NewSpec(host, repo.Parent.Owner.GetLogin(), repo.Parent.Name)
 		if err != nil {
 			return Repository{}, err
 		}
@@ -258,8 +255,8 @@ var errOverLimit = errors.New("over limit")
 
 func (c *RemoteController) repoListSpecList(
 	repos []*github.RepositoryFragment,
-	count *int64,
-	limit int64,
+	count *int,
+	limit int,
 	ch chan<- Repository,
 ) error {
 	for _, repo := range repos {
@@ -276,6 +273,10 @@ func (c *RemoteController) repoListSpecList(
 	return nil
 }
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
 func (c *RemoteController) ListAsync(
 	ctx context.Context,
 	option *RemoteListOption,
@@ -287,17 +288,17 @@ func (c *RemoteController) ListAsync(
 		defer close(sch)
 		defer close(ech)
 
-		var count int64
-		var limit int64
+		var count int
+		var limit int
 		switch {
-		case opt.Limit == nil || *opt.Limit == 0:
+		case opt.Limit == 0:
 			limit = 0
-			opt.Limit = ptr.Int64(RepositoryListMaxLimitPerPage)
-		case *opt.Limit > RepositoryListMaxLimitPerPage:
-			limit = *opt.Limit
-			*opt.Limit = RepositoryListMaxLimitPerPage
+			opt.Limit = RepositoryListMaxLimitPerPage
+		case opt.Limit > RepositoryListMaxLimitPerPage:
+			limit = opt.Limit
+			opt.Limit = RepositoryListMaxLimitPerPage
 		default:
-			limit = *opt.Limit
+			limit = opt.Limit
 		}
 		for {
 			repos, page, err := c.adaptor.RepositoryList(ctx, opt)
@@ -322,15 +323,15 @@ func (c *RemoteController) ListAsync(
 }
 
 type RemoteCreateOption struct {
-	Organization        string
 	Description         string
 	Homepage            string
-	Private             bool
+	Organization        string
 	LicenseTemplate     string
 	GitignoreTemplate   string
 	TeamID              int64
-	IsTemplate          bool
 	DisableDownloads    bool
+	IsTemplate          bool
+	Private             bool
 	DisableWiki         bool
 	AutoInit            bool
 	DisableProjects     bool
