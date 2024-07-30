@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/Yamashou/gqlgenc v0.19.3
+	github.com/Khan/genqlient v0.7.0
 	github.com/apex/log v1.9.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/goccy/go-yaml v1.12.0
@@ -19,7 +19,6 @@ require (
 	github.com/saracen/walker v0.1.4
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
-	github.com/wacul/ptr v1.0.0
 	golang.org/x/oauth2 v0.21.0
 	golang.org/x/sync v0.7.0
 	golang.org/x/term v0.22.0
@@ -33,7 +32,6 @@ require (
 	cloud.google.com/go/storage v1.40.0 // indirect
 	code.gitea.io/sdk/gitea v0.18.0 // indirect
 	dario.cat/mergo v1.0.0 // indirect
-	github.com/99designs/gqlgen v0.17.45 // indirect
 	github.com/AlekSi/pointer v1.2.0 // indirect
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1 // indirect
@@ -53,7 +51,6 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
 	github.com/BurntSushi/toml v1.3.2 // indirect
-	github.com/Khan/genqlient v0.7.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
@@ -126,7 +123,7 @@ require (
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v26.0.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
-	github.com/docker/docker v26.1.3+incompatible // indirect
+	github.com/docker/docker v26.1.4+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.1 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -265,7 +262,6 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.2.2 // indirect
 	github.com/slack-go/slack v0.13.0 // indirect
-	github.com/sosodev/duration v1.2.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
@@ -275,7 +271,6 @@ require (
 	github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
-	github.com/urfave/cli/v2 v2.27.1 // indirect
 	github.com/vbatts/tar-split v0.11.5 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.16 // indirect
 	github.com/wagoodman/go-partybus v0.0.0-20230516145632-8ccac152c651 // indirect
@@ -284,7 +279,6 @@ require (
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xanzy/go-gitlab v0.105.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
 	gitlab.com/digitalxero/go-conventional-commit v1.0.7 // indirect
 	go.mongodb.org/mongo-driver v1.15.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
