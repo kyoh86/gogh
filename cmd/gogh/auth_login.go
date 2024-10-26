@@ -40,6 +40,10 @@ var loginCommand = &cobra.Command{
 				Name: "password",
 				Prompt: &survey.Password{
 					Message: "Password or developer private token",
+					Help: `You should generate personal access tokens with "Repository permissions":
+
+- ✅ Read-only access to "Contents" and "Metadata"
+- ✅ Read and write access to "Administration"`,
 				},
 			},
 		}, &loginFlags); err != nil {
@@ -65,6 +69,11 @@ func init() {
 		StringVarP(&loginFlags.Host, "host", "", gogh.DefaultHost, "Host name to login")
 	loginCommand.Flags().StringVarP(&loginFlags.User, "user", "", "", "User name to login")
 	loginCommand.Flags().
-		StringVarP(&loginFlags.Password, "password", "", "", "Password or developer private token")
+		StringVarP(&loginFlags.Password, "password", "", "", `Password or developer private token
+
+You should generate personal access tokens with "Repository permissions":
+
+- ✅ Read-only access to "Contents" and "Metadata"
+- ✅ Read and write access to "Administration"`)
 	authCommand.AddCommand(loginCommand)
 }

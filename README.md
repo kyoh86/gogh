@@ -72,10 +72,10 @@ $ makepkg -i
 `gogh` manages repositories in multiple servers that is pairs of an owner and a host name.
 To login in new server or logout, you should use `auth login` with personal access tokens.
 
-You should generate personal access tokens with repository permissions:
+You should generate personal access tokens with "Repository permissions":
 
-- ✔️ Read access to code and metadata
-- ✔️ Read and Write access to administration
+- ✅ Read-only access to "Contents" and "Metadata"
+- ✅ Read and write access to "Administration"
 
 ## Available commands
 
