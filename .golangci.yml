@@ -9,7 +9,6 @@ linters:
     - misspell
     - nakedret
     - prealloc
-    - exportloopref
     - stylecheck
     - unconvert
     - unparam

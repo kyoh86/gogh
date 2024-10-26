@@ -52,7 +52,7 @@ jobs:
       - name: Search diagnostics
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.55.2
+          version: v1.61.0
   test-covers:
     name: Take test coverages
     runs-on: ubuntu-latest

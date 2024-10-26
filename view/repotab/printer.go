@@ -185,7 +185,6 @@ func (p *Printer) Close() error {
 	}
 	if p.styled {
 		for i, picker := range pickers {
-			picker := picker
 			pickers[i] = func(c cell) *cell {
 				newc := picker(c)
 				newc.content = newc.style.Apply(newc.content)
