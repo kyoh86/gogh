@@ -29,7 +29,6 @@ jobs:
           sha: ${{ github.sha }}
           status: releasable
           token: ${{ github.token }}
-          check-timeout: 120
           check-retry-count: 5
           check-retry-interval: 20
       - name: Checkout Sources
@@ -42,11 +41,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.21
+          go-version: 1.23
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
         with:
-          version: latest
+          version: ~> v2
           args: release --clean
