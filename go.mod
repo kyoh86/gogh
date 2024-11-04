@@ -9,8 +9,9 @@ require (
 	github.com/Khan/genqlient v0.7.0
 	github.com/apex/log v1.9.0
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/goccy/go-yaml v1.12.0
+	github.com/goccy/go-yaml v1.13.4
 	github.com/golang/mock v1.6.0
+	github.com/golangci/golangci-lint v1.61.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v35 v35.3.0
 	github.com/goreleaser/goreleaser v1.26.2
@@ -229,7 +230,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golangci/dupl v0.0.0-20180902072040-3e9179ac440a // indirect
 	github.com/golangci/gofmt v0.0.0-20240816233607-d8596aa466a9 // indirect
-	github.com/golangci/golangci-lint v1.61.0 // indirect
 	github.com/golangci/misspell v0.6.0 // indirect
 	github.com/golangci/modinfo v0.3.4 // indirect
 	github.com/golangci/plugin-module-register v0.1.1 // indirect
