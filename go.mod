@@ -9,7 +9,7 @@ require (
 	github.com/Khan/genqlient v0.7.0
 	github.com/apex/log v1.9.0
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/goccy/go-yaml v1.13.4
+	github.com/goccy/go-yaml v1.13.7
 	github.com/golang/mock v1.6.0
 	github.com/golangci/golangci-lint v1.61.0
 	github.com/google/go-cmp v0.6.0
