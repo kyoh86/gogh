@@ -43,9 +43,13 @@ func main() {
 	setup()
 	errLog := level.New(cli.New(os.Stderr), log.ErrorLevel)
 	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stderr)}
+	level := log.InfoLevel
+	if os.Getenv("GOGH_DEBUG") == "1" {
+		level = log.DebugLevel
+	}
 	ctx := log.NewContext(context.Background(), &log.Logger{
 		Handler: multi.New(stdLog, errLog),
-		Level:   log.InfoLevel,
+		Level:   level,
 	})
 	if err := facadeCommand.ExecuteContext(ctx); err != nil {
 		log.FromContext(ctx).Error(err.Error())
