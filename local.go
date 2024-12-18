@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/apex/log"
 	git "github.com/go-git/go-git/v5"
@@ -208,6 +209,8 @@ type LocalWalkOption struct {
 	Query string
 }
 
+var mu sync.Mutex
+
 func (l *LocalController) Walk(
 	ctx context.Context,
 	opt *LocalWalkOption,
@@ -251,6 +254,8 @@ func (l *LocalController) Walk(
 		if opt != nil && !strings.Contains(p.RelPath(), opt.Query) {
 			return nil
 		}
+		mu.Lock()
+		defer mu.Unlock()
 		return walkFn(p)
 	})
 }

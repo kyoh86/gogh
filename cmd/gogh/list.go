@@ -38,6 +38,7 @@ var (
 				if err != nil {
 					return err
 				}
+				log.FromContext(ctx).Debugf("found %d projects in %q", len(projects), root)
 				for _, project := range projects {
 					str, err := f.Format(project)
 					if err != nil {
