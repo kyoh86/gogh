@@ -8,7 +8,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Khan/genqlient v0.7.0
 	github.com/apex/log v1.9.0
-	github.com/go-git/go-git/v5 v5.13.0
+	github.com/go-git/go-git/v5 v5.13.1
 	github.com/goccy/go-yaml v1.15.13
 	github.com/golang/mock v1.6.0
 	github.com/golangci/golangci-lint v1.62.2
@@ -160,7 +160,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/curioswitch/go-reassign v0.3.0 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20231217050601-ba74d44ecf5f // indirect
-	github.com/cyphar/filepath-securejoin v0.3.5 // indirect
+	github.com/cyphar/filepath-securejoin v0.3.6 // indirect
 	github.com/daixiang0/gci v0.13.5 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
@@ -197,7 +197,7 @@ require (
 	github.com/go-critic/go-critic v0.11.5 // indirect
 	github.com/go-fed/httpsig v1.1.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.6.0 // indirect
+	github.com/go-git/go-billy/v5 v5.6.1 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
