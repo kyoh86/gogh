@@ -7,7 +7,7 @@ require (
 	github.com/Khan/genqlient v0.7.0
 	github.com/apex/log v1.9.0
 	github.com/go-git/go-git/v5 v5.13.1
-	github.com/goccy/go-yaml v1.15.13
+	github.com/goccy/go-yaml v1.15.15
 	github.com/golang/mock v1.6.0
 	github.com/golangci/golangci-lint v1.63.4
 	github.com/google/go-cmp v0.6.0
@@ -26,6 +26,7 @@ require (
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect
 	4d63.com/gochecknoglobals v0.2.1 // indirect
+	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	cel.dev/expr v0.19.1 // indirect
 	cloud.google.com/go v0.118.0 // indirect
 	cloud.google.com/go/auth v0.13.0 // indirect
@@ -178,6 +179,7 @@ require (
 	github.com/elliotchance/orderedmap/v2 v2.7.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.32.3 // indirect
+	github.com/envoyproxy/go-control-plane/ratelimit v0.1.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.1.0 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/ettle/strcase v0.2.0 // indirect
