@@ -151,12 +151,12 @@ Local projects are placed under `gogh.roots` with named `*host*/*user*/*repo*.
 ```
 ~/Projects
 +-- github.com/
-|-- google/
-|   +-- go-github/
-|-- kyoh86/
-|   +-- gogh/
-+-- alecthomas/
-  +-- kingpin/
+    |-- google/
+    |   +-- go-github/
+    |-- kyoh86/
+    |   +-- gogh/
+    +-- alecthomas/
+        +-- kingpin/
 ```
 
 # LICENSE
