@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/Khan/genqlient v0.7.0
+	github.com/Khan/genqlient v0.8.0
 	github.com/apex/log v1.9.0
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/goccy/go-yaml v1.15.15
@@ -26,6 +26,7 @@ require (
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect
 	4d63.com/gochecknoglobals v0.2.1 // indirect
+	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	cel.dev/expr v0.19.2 // indirect
 	cloud.google.com/go v0.118.0 // indirect
 	cloud.google.com/go/auth v0.14.1 // indirect
@@ -126,6 +127,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/blizzy78/varnamelen v0.8.0 // indirect
 	github.com/bluesky-social/indigo v0.0.0-20250123072624-9e3b84fdbb20 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/bombsimon/wsl/v4 v4.5.0 // indirect
 	github.com/breml/bidichk v0.3.2 // indirect
 	github.com/breml/errchkjson v0.4.0 // indirect
@@ -326,7 +328,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/mmcloughlin/avo v0.6.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moricho/tparallel v0.3.2 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
