@@ -3,9 +3,22 @@ package main
 import (
 	"errors"
 
+	"context"
+	"fmt"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/spf13/cobra"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
+)
+
+var (
+	oauthConfig = &oauth2.Config{
+		ClientID:    "Ov23li6aEWIxek6F8P5L",
+		RedirectURL: "http://localhost",
+		Endpoint:    github.Endpoint,
+		Scopes:      []string{"repo"},
+	}
 )
 
 var loginFlags struct {
@@ -18,38 +31,25 @@ var loginCommand = &cobra.Command{
 	Use:   "login",
 	Short: "Login for the host and owner",
 	Args:  cobra.ExactArgs(0),
-	RunE: func(*cobra.Command, []string) error {
-		if err := survey.Ask([]*survey.Question{
-			{
-				Name: "host",
-				Prompt: &survey.Input{
-					Message: "Host name",
-					Default: loginFlags.Host,
-				},
-				Validate: stringValidator(gogh.ValidateHost),
-			},
-			{
-				Name: "user",
-				Prompt: &survey.Input{
-					Message: "User name",
-					Default: loginFlags.User,
-				},
-				Validate: stringValidator(gogh.ValidateOwner),
-			},
-			{
-				Name: "password",
-				Prompt: &survey.Password{
-					Message: "Password or developer private token",
-					Help: `You should generate personal access tokens with "Repository permissions":
+	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := context.Background()
+		authCodeURL := oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
 
-- ✅ Read-only access to "Contents" and "Metadata"
-- ✅ Read and write access to "Administration"`,
-				},
-			},
-		}, &loginFlags); err != nil {
+		fmt.Printf("Visit the URL for the auth dialog: %v\n", authCodeURL)
+
+		var authCode string
+		if err := survey.AskOne(&survey.Input{
+			Message: "Enter the authorization code:",
+		}, &authCode); err != nil {
 			return err
 		}
-		tokens.Set(loginFlags.Host, loginFlags.User, loginFlags.Password)
+
+		token, err := oauthConfig.Exchange(ctx, authCode)
+		if err != nil {
+			return fmt.Errorf("failed to exchange token: %w", err)
+		}
+
+		tokens.Set(loginFlags.Host, loginFlags.User, token.AccessToken)
 		return nil
 	},
 }

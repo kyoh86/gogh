@@ -18,7 +18,7 @@ require (
 	github.com/saracen/walker v0.1.4
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6
-	golang.org/x/oauth2 v0.25.0
+	golang.org/x/oauth2 v0.26.0
 	golang.org/x/sync v0.10.0
 	golang.org/x/term v0.28.0
 )
