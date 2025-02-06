@@ -113,6 +113,10 @@ func (a *genuineAdaptor) GetMe(
 	return me.GetLogin(), nil
 }
 
+func (a *genuineAdaptor) GetAuthenticatedUser(ctx context.Context) (*User, *Response, error) {
+	return a.restClient.Users.Get(ctx, "")
+}
+
 func (a *genuineAdaptor) RepositoryList(
 	ctx context.Context,
 	opts *RepositoryListOptions,

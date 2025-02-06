@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,18 +9,17 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
 
 var loginFlags struct {
 	Host     string
-	User     string
 	Password string
 }
 
-const clientID = "Ov23li6aEWIxek6F8P5L" // ここに正しいClient IDを設定
+const clientID = "Ov23li6aEWIxek6F8P5L"
 
 type DeviceCodeResponse struct {
 	DeviceCode              string
@@ -47,17 +47,22 @@ var loginCommand = &cobra.Command{
 	Short: "Login for the host and owner",
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		host := loginFlags.Host
+		if host == "" {
+			host = github.DefaultHost
+		}
+
 		oauthConfig := &oauth2.Config{
 			ClientID: clientID,
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  "https://github.com/login/device/code",
-				TokenURL: "https://github.com/login/oauth/access_token",
+				AuthURL:  fmt.Sprintf("https://%s/login/device/code", host),
+				TokenURL: fmt.Sprintf("https://%s/login/oauth/access_token", host),
 			},
 			Scopes: []string{"repo"},
 		}
 
 		// Request device code
-		deviceCodeResp, err := requestDeviceCode(oauthConfig.ClientID)
+		deviceCodeResp, err := requestDeviceCode(oauthConfig.ClientID, oauthConfig.Endpoint.AuthURL)
 		if err != nil {
 			return fmt.Errorf("failed to request device code: %w", err)
 		}
@@ -70,15 +75,25 @@ var loginCommand = &cobra.Command{
 			return fmt.Errorf("failed to poll for token: %w", err)
 		}
 
-		tokens.Set(loginFlags.Host, loginFlags.User, tokenResp.AccessToken)
+		// Get user info
+		adaptor, err := github.NewAdaptor(context.Background(), host, tokenResp.AccessToken)
+		if err != nil {
+			return fmt.Errorf("failed to create GitHub adaptor: %w", err)
+		}
+		user, _, err := adaptor.GetAuthenticatedUser(context.Background())
+		if err != nil {
+			return fmt.Errorf("failed to get authenticated user info: %w", err)
+		}
+
+		tokens.Set(host, user.GetLogin(), tokenResp.AccessToken)
 
 		fmt.Println("Login successful!")
 		return nil
 	},
 }
 
-func requestDeviceCode(clientID string) (*DeviceCodeResponse, error) {
-	resp, err := http.PostForm("https://github.com/login/device/code", url.Values{
+func requestDeviceCode(clientID, authURL string) (*DeviceCodeResponse, error) {
+	resp, err := http.PostForm(authURL, url.Values{
 		"client_id": {clientID},
 		"scope":     {"repo"},
 	})
@@ -91,8 +106,6 @@ func requestDeviceCode(clientID string) (*DeviceCodeResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("Device code response body: %s\n", string(body)) // デバッグ出力
 
 	values, err := url.ParseQuery(string(body))
 	if err != nil {
@@ -121,7 +134,7 @@ func atoi(str string) int {
 
 func pollForToken(oauthConfig *oauth2.Config, deviceCodeResp *DeviceCodeResponse) (*TokenResponse, error) {
 	for {
-		time.Sleep(time.Duration(deviceCodeResp.Interval*2) * time.Second)
+		time.Sleep(time.Duration(deviceCodeResp.Interval*2) * time.Second) // Intervalを2倍にしてリクエスト頻度を下げる
 
 		resp, err := http.PostForm(oauthConfig.Endpoint.TokenURL, url.Values{
 			"client_id":   {oauthConfig.ClientID},
@@ -137,8 +150,6 @@ func pollForToken(oauthConfig *oauth2.Config, deviceCodeResp *DeviceCodeResponse
 		if err != nil {
 			return nil, err
 		}
-
-		fmt.Printf("Token response body: %s\n", string(body)) // デバッグ出力
 
 		values, err := url.ParseQuery(string(body))
 		if err != nil {
@@ -162,8 +173,7 @@ func pollForToken(oauthConfig *oauth2.Config, deviceCodeResp *DeviceCodeResponse
 }
 
 func init() {
-	loginCommand.Flags().StringVarP(&loginFlags.Host, "host", "", gogh.DefaultHost, "Host name to login")
-	loginCommand.Flags().StringVarP(&loginFlags.User, "user", "", "", "User name to login")
+	loginCommand.Flags().StringVarP(&loginFlags.Host, "host", "", github.DefaultHost, "Host name to login")
 	loginCommand.Flags().StringVarP(&loginFlags.Password, "password", "", "", `Password or developer private token
 
 You should generate personal access tokens with "Repository permissions":
