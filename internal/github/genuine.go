@@ -88,7 +88,7 @@ func newGenuineEnterpriseAdaptor(
 	baseRESTURL, uploadRESTURL, baseGQLURL string,
 	httpClient *http.Client,
 ) (Adaptor, error) {
-	restClient, err := github.NewEnterpriseClient(baseRESTURL, uploadRESTURL, httpClient)
+	restClient, err := github.NewClient(httpClient).WithEnterpriseURLs(baseRESTURL, uploadRESTURL)
 	if err != nil {
 		return nil, err
 	}
