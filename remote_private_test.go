@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	exgithub "github.com/google/go-github/v35/github"
+	exgithub "github.com/google/go-github/v69/github"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
 )

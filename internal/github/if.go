@@ -3,7 +3,7 @@ package github
 import (
 	"context"
 
-	github "github.com/google/go-github/v35/github"
+	github "github.com/google/go-github/v69/github"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
 )
 
@@ -63,6 +63,7 @@ type RepositoryListOptions struct {
 type Adaptor interface {
 	GetHost() string
 	GetMe(ctx context.Context) (string, error)
+	GetAuthenticatedUser(ctx context.Context) (*User, *Response, error)
 	UserGet(ctx context.Context, user string) (*User, *Response, error)
 	RepositoryList(
 		ctx context.Context,

@@ -9,10 +9,8 @@ gogh auth login [flags]
 ### Options
 
 ```
-  -h, --help              help for login
-      --host string       Host name to login (default "github.com")
-      --password string   Password or developer private token
-      --user string       User name to login
+  -h, --help          help for login
+      --host string   Host name to login (default "github.com")
 ```
 
 ### SEE ALSO

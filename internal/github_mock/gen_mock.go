@@ -35,6 +35,22 @@ func (m *MockAdaptor) EXPECT() *MockAdaptorMockRecorder {
 	return m.recorder
 }
 
+// GetAuthenticatedUser mocks base method.
+func (m *MockAdaptor) GetAuthenticatedUser(ctx context.Context) (*github.User, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAuthenticatedUser", ctx)
+	ret0, _ := ret[0].(*github.User)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetAuthenticatedUser indicates an expected call of GetAuthenticatedUser.
+func (mr *MockAdaptorMockRecorder) GetAuthenticatedUser(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthenticatedUser", reflect.TypeOf((*MockAdaptor)(nil).GetAuthenticatedUser), ctx)
+}
+
 // GetHost mocks base method.
 func (m *MockAdaptor) GetHost() string {
 	m.ctrl.T.Helper()
