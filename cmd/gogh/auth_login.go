@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,14 +10,15 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
 
 var loginFlags struct {
-	Host     string
-	Password string
+	Host string
 }
 
 const clientID = "Ov23li6aEWIxek6F8P5L"
@@ -47,6 +49,18 @@ var loginCommand = &cobra.Command{
 	Short: "Login for the host and owner",
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := survey.Ask([]*survey.Question{
+			{
+				Name: "host",
+				Prompt: &survey.Input{
+					Message: "Host name",
+					Default: loginFlags.Host,
+				},
+				Validate: stringValidator(gogh.ValidateHost),
+			},
+		}, &loginFlags); err != nil {
+			return err
+		}
 		host := loginFlags.Host
 		if host == "" {
 			host = github.DefaultHost
@@ -172,13 +186,17 @@ func pollForToken(oauthConfig *oauth2.Config, deviceCodeResp *DeviceCodeResponse
 	}
 }
 
+func stringValidator(v func(s string) error) survey.Validator {
+	return func(i interface{}) error {
+		s, ok := i.(string)
+		if !ok {
+			return errors.New("invalid type")
+		}
+		return v(s)
+	}
+}
+
 func init() {
 	loginCommand.Flags().StringVarP(&loginFlags.Host, "host", "", github.DefaultHost, "Host name to login")
-	loginCommand.Flags().StringVarP(&loginFlags.Password, "password", "", "", `Password or developer private token
-
-You should generate personal access tokens with "Repository permissions":
-
-- ✅ Read-only access to "Contents" and "Metadata"
-- ✅ Read and write access to "Administration"`)
 	authCommand.AddCommand(loginCommand)
 }
