@@ -44,6 +44,8 @@ type ErrorResponse struct {
 	ErrorURI         string
 }
 
+var scopes = []string{"repo", "delete_repo"}
+
 var loginCommand = &cobra.Command{
 	Use:   "login",
 	Short: "Login for the host and owner",
@@ -72,7 +74,7 @@ var loginCommand = &cobra.Command{
 				AuthURL:  fmt.Sprintf("https://%s/login/device/code", host),
 				TokenURL: fmt.Sprintf("https://%s/login/oauth/access_token", host),
 			},
-			Scopes: []string{"repo", "delete_repo"},
+			Scopes: scopes,
 		}
 
 		// Request device code
@@ -109,7 +111,7 @@ var loginCommand = &cobra.Command{
 func requestDeviceCode(clientID, authURL string) (*DeviceCodeResponse, error) {
 	resp, err := http.PostForm(authURL, url.Values{
 		"client_id": {clientID},
-		"scope":     {"repo", "delete_repo"},
+		"scope":     scopes,
 	})
 	if err != nil {
 		return nil, err
