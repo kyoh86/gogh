@@ -149,6 +149,7 @@ func atoi(str string) int {
 }
 
 func pollForToken(oauthConfig *oauth2.Config, deviceCodeResp *DeviceCodeResponse) (*TokenResponse, error) {
+POLL_LOOP:
 	for {
 		time.Sleep(time.Duration(deviceCodeResp.Interval*2) * time.Second) // Intervalを2倍にしてリクエスト頻度を下げる
 
@@ -172,16 +173,17 @@ func pollForToken(oauthConfig *oauth2.Config, deviceCodeResp *DeviceCodeResponse
 			return nil, err
 		}
 
-		if resp.StatusCode == http.StatusOK && values.Get("error") == "" {
+		switch {
+		case resp.StatusCode == http.StatusOK && values.Get("error") == "":
 			tokenResp := &TokenResponse{
 				AccessToken: values.Get("access_token"),
 				Scope:       values.Get("scope"),
 				TokenType:   values.Get("token_type"),
 			}
 			return tokenResp, nil
-		} else if values.Get("error") == "authorization_pending" {
-			continue
-		} else {
+		case values.Get("error") == "authorization_pending":
+			continue POLL_LOOP
+		default:
 			return nil, fmt.Errorf("error: %s, description: %s, uri: %s",
 				values.Get("error"), values.Get("error_description"), values.Get("error_uri"))
 		}
