@@ -6,9 +6,6 @@ import (
 	testtarget "github.com/kyoh86/gogh/v2"
 )
 
-import (
-)
-
 func TestPtr(t *testing.T) {
     t.Run("int", func(t *testing.T) {
         val := 42
