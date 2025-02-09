@@ -115,6 +115,12 @@ See [usage/gogh.md](./usage/gogh.md) for detailed command usage.
 Use `gogh [command] --help` for more information about a command.
 Or see the manual in [usage/gogh.md](./usage/gogh.md).
 
+## Environment variables
+
+- `GOGH_CONFIG_PATH`: The path to the configuration file. Default: `${XDG_CONFIG_HOME}/gogh/config.yaml`.
+- `GOGH_FLAG_PATH`: The path to the configuration file. Default: `${XDG_CONFIG_HOME}/gogh/flag.yaml`.
+- `GOGH_TOKENS_PATH`: The path to the configuration file. Default: `${XDG_CACHE_HOME}/gogh/tokens.yaml`.
+
 ## Configurations
 
 ### Roots
