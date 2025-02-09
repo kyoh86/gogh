@@ -7,10 +7,12 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"strconv"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
@@ -83,7 +85,11 @@ var loginCommand = &cobra.Command{
 			return fmt.Errorf("failed to request device code: %w", err)
 		}
 
-		fmt.Printf("Visit %s and enter the code: %s\n", deviceCodeResp.VerificationURI, deviceCodeResp.UserCode)
+		if errors.Is(browser.OpenURL(deviceCodeResp.VerificationURI), exec.ErrNotFound) {
+			fmt.Printf("Visit %s and enter the code: %s\n", deviceCodeResp.VerificationURI, deviceCodeResp.UserCode)
+		} else {
+			fmt.Printf("Opened %s, so enter the code: %s\n", deviceCodeResp.VerificationURI, deviceCodeResp.UserCode)
+		}
 
 		// Poll for token
 		tokenResp, err := pollForToken(oauthConfig, deviceCodeResp)

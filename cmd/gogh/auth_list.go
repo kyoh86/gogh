@@ -20,8 +20,13 @@ var authListCommand = &cobra.Command{
 			log.FromContext(ctx).Warn("No valid token found: you need to set token by `gogh auth login`")
 			return nil
 		}
+		host, owner := tokens.GetDefaultKey()
 		for _, entry := range entries {
-			fmt.Println(entry)
+			if entry.Host == host && entry.Owner == owner {
+				fmt.Printf("* %s\n", entry)
+			} else {
+				fmt.Printf("  %s\n", entry)
+			}
 		}
 		return nil
 	},
