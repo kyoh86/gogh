@@ -42,7 +42,7 @@ You can also do:
 - Delete a project (`gogh delete`).
 - List remote repositories (`gogh repos`).
 
-See [#Available commands](#Available+commands) for more information.
+See [#Available commands](#available-commands) for more information.
 
 ## Install
 
