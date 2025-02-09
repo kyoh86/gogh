@@ -10,7 +10,7 @@ gogh auth login [flags]
 
 ```
   -h, --help          help for login
-      --host string   Host name to login (default "github.com")
+      --host string   Host name to login
 ```
 
 ### SEE ALSO
