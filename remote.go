@@ -338,23 +338,23 @@ func (o *RemoteCreateOption) buildRepository(name string) *github.Repository {
 		return &github.Repository{Name: &name}
 	}
 	return &github.Repository{
-		Name:                nilablePtr(name),
-		Description:         nilablePtr(o.Description),
-		Homepage:            nilablePtr(o.Homepage),
-		Private:             nilablePtr(o.Private),
-		HasIssues:           falsePtr(o.DisableIssues),
-		HasProjects:         falsePtr(o.DisableProjects),
-		HasWiki:             falsePtr(o.DisableWiki),
-		HasDownloads:        falsePtr(o.DisableDownloads),
-		IsTemplate:          nilablePtr(o.IsTemplate),
-		TeamID:              nilablePtr(o.TeamID),
-		AutoInit:            nilablePtr(o.AutoInit),
-		GitignoreTemplate:   nilablePtr(o.GitignoreTemplate),
-		LicenseTemplate:     nilablePtr(o.LicenseTemplate),
-		AllowSquashMerge:    falsePtr(o.PreventSquashMerge),
-		AllowMergeCommit:    falsePtr(o.PreventMergeCommit),
-		AllowRebaseMerge:    falsePtr(o.PreventRebaseMerge),
-		DeleteBranchOnMerge: nilablePtr(o.DeleteBranchOnMerge),
+		Name:                NilablePtr(name),
+		Description:         NilablePtr(o.Description),
+		Homepage:            NilablePtr(o.Homepage),
+		Private:             NilablePtr(o.Private),
+		HasIssues:           FalsePtr(o.DisableIssues),
+		HasProjects:         FalsePtr(o.DisableProjects),
+		HasWiki:             FalsePtr(o.DisableWiki),
+		HasDownloads:        FalsePtr(o.DisableDownloads),
+		IsTemplate:          NilablePtr(o.IsTemplate),
+		TeamID:              NilablePtr(o.TeamID),
+		AutoInit:            NilablePtr(o.AutoInit),
+		GitignoreTemplate:   NilablePtr(o.GitignoreTemplate),
+		LicenseTemplate:     NilablePtr(o.LicenseTemplate),
+		AllowSquashMerge:    FalsePtr(o.PreventSquashMerge),
+		AllowMergeCommit:    FalsePtr(o.PreventMergeCommit),
+		AllowRebaseMerge:    FalsePtr(o.PreventRebaseMerge),
+		DeleteBranchOnMerge: NilablePtr(o.DeleteBranchOnMerge),
 	}
 }
 
@@ -394,10 +394,10 @@ func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(
 		return &github.TemplateRepoRequest{Name: &name}
 	}
 	return &github.TemplateRepoRequest{
-		Name:        nilablePtr(name),
-		Owner:       nilablePtr(o.Owner),
-		Description: nilablePtr(o.Description),
-		Private:     falsePtr(o.Private),
+		Name:        NilablePtr(name),
+		Owner:       NilablePtr(o.Owner),
+		Description: NilablePtr(o.Description),
+		Private:     FalsePtr(o.Private),
 	}
 }
 

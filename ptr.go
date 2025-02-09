@@ -1,7 +1,7 @@
 package gogh
 
-// falsePtr converts bool (default: false) to *bool (default: nil as true)
-func falsePtr(b bool) *bool {
+// FalsePtr converts bool (default: false) to *bool (default: nil as true)
+func FalsePtr(b bool) *bool {
 	if b {
 		f := false
 		return &f
@@ -9,8 +9,8 @@ func falsePtr(b bool) *bool {
 	return nil // == &true
 }
 
-// nilablePtr converts a value of any type to a pointer, returning nil if the value is the zero value.
-func nilablePtr[T comparable](v T) *T {
+// NilablePtr converts a value of any type to a pointer, returning nil if the value is the zero value.
+func NilablePtr[T comparable](v T) *T {
 	if v == defaultValue[T]() {
 		return nil
 	}
@@ -23,7 +23,7 @@ func defaultValue[T any]() T {
 	return zero
 }
 
-// ptr converts a value of any type to a pointer to that value.
-func ptr[T any](v T) *T {
+// Ptr converts a value of any type to a pointer to that value.
+func Ptr[T any](v T) *T {
 	return &v
 }
