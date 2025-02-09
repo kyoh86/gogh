@@ -1,14 +1,18 @@
 package gogh
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/kyoh86/gogh/v2/internal/github"
+)
 
 type Token = string
 type Host = string
 type Owner = string
 
 type TokenManager struct {
-	Hosts       Map[Host, *TokenHost] `yaml:"hosts"`
-	DefaultHost Host                  `yaml:"default_host"`
+	Hosts       Map[Host, *TokenHost] `yaml:"hosts,omitempty"`
+	DefaultHost Host                  `yaml:"default_host,omitempty"`
 }
 
 type TokenHost struct {
@@ -60,12 +64,16 @@ func (m *Map[TKey, TVal]) TryGet(key TKey, def TVal) TVal {
 }
 
 func (t TokenManager) GetDefaultKey() (Host, Owner) {
-	host := t.Hosts.Get(t.DefaultHost)
+	hostName := t.DefaultHost
+	if hostName == "" {
+		hostName = github.DefaultHost
+	}
+	host := t.Hosts.Get(hostName)
 	owner := ""
 	if host != nil {
 		owner = host.DefaultOwner
 	}
-	return t.DefaultHost, owner
+	return hostName, owner
 }
 
 func (t *TokenHost) GetDefaultToken() (Owner, Token) {
@@ -86,14 +94,47 @@ func (t *TokenManager) Set(hostName, ownerName string, token Token) {
 	}
 	host.Owners.Set(ownerName, token)
 	t.Hosts.Set(hostName, host)
+	if t.DefaultHost == "" {
+		t.DefaultHost = hostName
+	}
 }
 
-func (t TokenManager) Delete(host, owner string) {
+func (t *TokenManager) SetDefaultHost(hostName string) error {
+	if !t.Hosts.Has(hostName) {
+		return fmt.Errorf("host %s is not registered", hostName)
+	}
+	t.DefaultHost = hostName
+	return nil
+}
+
+func (t *TokenManager) SetDefaultOwner(hostName, ownerName string) error {
+	if !t.Hosts.Has(hostName) {
+		return fmt.Errorf("host %s is not registered", hostName)
+	}
+	host := t.Hosts.Get(hostName)
+	if !host.Owners.Has(ownerName) {
+		return fmt.Errorf("owner %s is not registered in host %s", ownerName, hostName)
+	}
+	host.DefaultOwner = ownerName
+	t.Hosts.Set(hostName, host)
+	return nil
+}
+
+func (t *TokenManager) Delete(host, owner string) {
 	hosts := t.Hosts.Get(host)
 	if hosts == nil {
 		return
 	}
 	hosts.Owners.Delete(owner)
+	if hosts.DefaultOwner == owner {
+		hosts.DefaultOwner = ""
+	}
+	if len(hosts.Owners) == 0 {
+		t.Hosts.Delete(host)
+		if t.DefaultHost == host {
+			t.DefaultHost = ""
+		}
+	}
 }
 
 func (t TokenManager) Has(host, owner string) bool {

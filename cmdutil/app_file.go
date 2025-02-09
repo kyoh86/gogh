@@ -39,11 +39,15 @@ func saveYAML(path string, obj interface{}) error {
 }
 
 type AppFile struct {
+	EnvName  string
 	Dir      func() (string, error)
 	Basename string
 }
 
 func (h AppFile) appFilePath() (string, error) {
+	if env := os.Getenv(h.EnvName); env != "" {
+		return env, nil
+	}
 	dir, err := h.Dir()
 	if err != nil {
 		return "", fmt.Errorf("search app file dir for %s: %w", h.Basename, err)

@@ -40,10 +40,19 @@ func setupCore() (err error) {
 	return nil
 }
 
+func envOrDir(envName string, dirHandler func() (string, error)) func() (string, error) {
+	return func() (string, error) {
+		if env := os.Getenv(envName); env != "" {
+			return env, nil
+		}
+		return dirHandler()
+	}
+}
+
 var (
-	configFileHandler      = cmdutil.AppFile{Dir: os.UserConfigDir, Basename: "config.yaml"}
-	tokensFileHandler      = cmdutil.AppFile{Dir: os.UserCacheDir, Basename: "tokens.yaml"}
-	defaultFlagFileHandler = cmdutil.AppFile{Dir: os.UserConfigDir, Basename: "flag.yaml"}
+	configFileHandler      = cmdutil.AppFile{EnvName: "GOGH_CONFIG_PATH", Dir: os.UserConfigDir, Basename: "config.yaml"}
+	defaultFlagFileHandler = cmdutil.AppFile{EnvName: "GOGH_FLAG_PATH", Dir: os.UserConfigDir, Basename: "flag.yaml"}
+	tokensFileHandler      = cmdutil.AppFile{EnvName: "GOGH_TOKENS_PATH", Dir: os.UserCacheDir, Basename: "tokens.yaml"}
 )
 
 func loadConfig() (string, error) {
@@ -61,9 +70,6 @@ func loadConfig() (string, error) {
 			raw:      raw,
 			expanded: raw,
 		}}
-	}
-	if tokens.DefaultHost == "" {
-		tokens.DefaultHost = "github.com"
 	}
 	return path, nil
 }

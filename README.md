@@ -132,7 +132,7 @@ Default: `~/Projects`.
 ### Default Host and Owner
 
 When you specify a repository with ambiguous user or host, it will be interpolated with a default
-value. You may set them with `set-default`.
+value. You may set them with `auth set-default`.
 
 If you set them like below:
 

@@ -47,26 +47,26 @@ type ErrorResponse struct {
 var scopes = []string{"repo", "delete_repo"}
 
 var loginCommand = &cobra.Command{
-	Use:   "login",
-	Short: "Login for the host and owner",
-	Args:  cobra.ExactArgs(0),
+	Use:     "login",
+	Aliases: []string{"signin", "add"},
+	Short:   "Login for the host and owner",
+	Args:    cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := survey.Ask([]*survey.Question{
-			{
-				Name: "host",
-				Prompt: &survey.Input{
-					Message: "Host name",
-					Default: loginFlags.Host,
+		if loginFlags.Host == "" {
+			if err := survey.Ask([]*survey.Question{
+				{
+					Name: "host",
+					Prompt: &survey.Input{
+						Message: "Host name",
+						Default: github.DefaultHost,
+					},
+					Validate: stringValidator(gogh.ValidateHost),
 				},
-				Validate: stringValidator(gogh.ValidateHost),
-			},
-		}, &loginFlags); err != nil {
-			return err
+			}, &loginFlags); err != nil {
+				return err
+			}
 		}
 		host := loginFlags.Host
-		if host == "" {
-			host = github.DefaultHost
-		}
 
 		oauthConfig := &oauth2.Config{
 			ClientID: clientID,
@@ -201,6 +201,6 @@ func stringValidator(v func(s string) error) survey.Validator {
 }
 
 func init() {
-	loginCommand.Flags().StringVarP(&loginFlags.Host, "host", "", github.DefaultHost, "Host name to login")
+	loginCommand.Flags().StringVarP(&loginFlags.Host, "host", "", "", "Host name to login")
 	authCommand.AddCommand(loginCommand)
 }

@@ -10,8 +10,9 @@ import (
 )
 
 var logoutCommand = &cobra.Command{
-	Use:   "logout",
-	Short: "Logout from the host and owner",
+	Use:     "logout",
+	Aliases: []string{"signout", "remove"},
+	Short:   "Logout from the host and owner",
 	RunE: func(cmd *cobra.Command, indices []string) error {
 		if len(indices) == 0 {
 			configured := tokens.Entries()
