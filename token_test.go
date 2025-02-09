@@ -66,15 +66,21 @@ func TestTokenManager(t *testing.T) {
 		tm.Set("host1", "owner1-2", "token")
 		tm.Set("host2", "owner2-1", "token")
 		tm.Set("host2", "owner2-2", "token")
-		tm.SetDefaultOwner("host1", "owner1-2")
+		if err := tm.SetDefaultOwner("host1", "owner1-2"); err != nil {
+			t.Errorf("TokenManager.SetDefaultOwner() = %v, want %v", err, nil)
+		}
 		if gotHost, gotToken := tm.GetDefaultKey(); gotHost != "host1" || gotToken != "owner1-2" {
 			t.Errorf("TokenManager.GetDefaultKey() = %v, %v, want %v, %v", gotHost, gotToken, "host1", "owner1-2")
 		}
-		tm.SetDefaultOwner("host2", "owner2-2")
+		if err := tm.SetDefaultOwner("host2", "owner2-2"); err != nil {
+			t.Errorf("TokenManager.SetDefaultOwner() = %v, want %v", err, nil)
+		}
 		if gotHost, gotToken := tm.GetDefaultKey(); gotHost != "host1" || gotToken != "owner1-2" {
 			t.Errorf("TokenManager.GetDefaultKey() = %v, %v, want %v, %v", gotHost, gotToken, "host1", "owner1-2")
 		}
-		tm.SetDefaultHost("host2")
+		if err := tm.SetDefaultHost("host2"); err != nil {
+			t.Errorf("TokenManager.SetDefaultHost() = %v, want %v", err, nil)
+		}
 		if gotHost, gotToken := tm.GetDefaultKey(); gotHost != "host2" || gotToken != "owner2-2" {
 			t.Errorf("TokenManager.GetDefaultKey() = %v, %v, want %v, %v", gotHost, gotToken, "host2", "owner2-2")
 		}
