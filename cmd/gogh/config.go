@@ -72,7 +72,7 @@ var configTemplate string
 
 var configCommand = &cobra.Command{
 	Use:     "config",
-	Short:   "Manage config",
+	Short:   "Show configurations",
 	Aliases: []string{"conf", "setting", "context"},
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		logger := log.FromContext(cmd.Context())
