@@ -14,7 +14,7 @@ func TestParseSpec(t *testing.T) {
 	t.Run("valid http URL", func(t *testing.T) {
 		want := Spec{host: "github.com", owner: "kyoh86", name: "gogh"}
 		got, err := parseSpec(&github.Repository{
-			CloneURL: ptr("https://github.com/kyoh86/gogh"),
+			CloneURL: Ptr("https://github.com/kyoh86/gogh"),
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
@@ -26,7 +26,7 @@ func TestParseSpec(t *testing.T) {
 
 	t.Run("unsupported (ssh) URL", func(t *testing.T) {
 		_, err := parseSpec(&github.Repository{
-			CloneURL: ptr("git@github.com:kyoh86/gogh.git"),
+			CloneURL: Ptr("git@github.com:kyoh86/gogh.git"),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")
@@ -51,18 +51,18 @@ func TestIngestRepository(t *testing.T) {
 			Parent:      &Spec{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
 		}
 		got, err := ingestRepository(&github.Repository{
-			Description: ptr("valid description"),
-			Homepage:    ptr("valid homepage"),
+			Description: Ptr("valid description"),
+			Homepage:    Ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    ptr("https://github.com/kyoh86/gogh"),
-			Language:    ptr("valid language"),
-			Fork:        ptr(false),
+			CloneURL:    Ptr("https://github.com/kyoh86/gogh"),
+			Language:    Ptr("valid language"),
+			Fork:        Ptr(false),
 			Parent: &github.Repository{
-				CloneURL: ptr("https://github.com/kyoh86-tryouts/test"),
+				CloneURL: Ptr("https://github.com/kyoh86-tryouts/test"),
 			},
-			Archived:   ptr(true),
-			Private:    ptr(false),
-			IsTemplate: ptr(true),
+			Archived:   Ptr(true),
+			Private:    Ptr(false),
+			IsTemplate: Ptr(true),
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
@@ -75,18 +75,18 @@ func TestIngestRepository(t *testing.T) {
 	t.Run("unsupported (ssh) URL", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
 		_, err := ingestRepository(&github.Repository{
-			Description: ptr("valid description"),
-			Homepage:    ptr("valid homepage"),
+			Description: Ptr("valid description"),
+			Homepage:    Ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    ptr("git@github.com:kyoh86/gogh.git"),
-			Language:    ptr("valid language"),
-			Fork:        ptr(false),
+			CloneURL:    Ptr("git@github.com:kyoh86/gogh.git"),
+			Language:    Ptr("valid language"),
+			Fork:        Ptr(false),
 			Parent: &github.Repository{
-				CloneURL: ptr("https://github.com/kyoh86-tryouts/test"),
+				CloneURL: Ptr("https://github.com/kyoh86-tryouts/test"),
 			},
-			Archived:   ptr(true),
-			Private:    ptr(false),
-			IsTemplate: ptr(true),
+			Archived:   Ptr(true),
+			Private:    Ptr(false),
+			IsTemplate: Ptr(true),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")
@@ -96,18 +96,18 @@ func TestIngestRepository(t *testing.T) {
 	t.Run("unsupported (ssh) parent URL", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
 		_, err := ingestRepository(&github.Repository{
-			Description: ptr("valid description"),
-			Homepage:    ptr("valid homepage"),
+			Description: Ptr("valid description"),
+			Homepage:    Ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    ptr("https://github.com/kyoh86/gogh"),
-			Language:    ptr("valid language"),
-			Fork:        ptr(false),
+			CloneURL:    Ptr("https://github.com/kyoh86/gogh"),
+			Language:    Ptr("valid language"),
+			Fork:        Ptr(false),
 			Parent: &github.Repository{
-				CloneURL: ptr("git@github.com:kyoh86-tryouts/test"),
+				CloneURL: Ptr("git@github.com:kyoh86-tryouts/test"),
 			},
-			Archived:   ptr(true),
-			Private:    ptr(false),
-			IsTemplate: ptr(true),
+			Archived:   Ptr(true),
+			Private:    Ptr(false),
+			IsTemplate: Ptr(true),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")

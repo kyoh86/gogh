@@ -268,10 +268,6 @@ func (c *RemoteController) repoListSpecList(
 	return nil
 }
 
-func ptr[T any](v T) *T {
-	return &v
-}
-
 func (c *RemoteController) ListAsync(
 	ctx context.Context,
 	option *RemoteListOption,
@@ -342,23 +338,23 @@ func (o *RemoteCreateOption) buildRepository(name string) *github.Repository {
 		return &github.Repository{Name: &name}
 	}
 	return &github.Repository{
-		Name:                stringPtr(name),
-		Description:         stringPtr(o.Description),
-		Homepage:            stringPtr(o.Homepage),
-		Private:             boolPtr(o.Private),
-		HasIssues:           falsePtr(o.DisableIssues),
-		HasProjects:         falsePtr(o.DisableProjects),
-		HasWiki:             falsePtr(o.DisableWiki),
-		HasDownloads:        falsePtr(o.DisableDownloads),
-		IsTemplate:          boolPtr(o.IsTemplate),
-		TeamID:              int64Ptr(o.TeamID),
-		AutoInit:            boolPtr(o.AutoInit),
-		GitignoreTemplate:   stringPtr(o.GitignoreTemplate),
-		LicenseTemplate:     stringPtr(o.LicenseTemplate),
-		AllowSquashMerge:    falsePtr(o.PreventSquashMerge),
-		AllowMergeCommit:    falsePtr(o.PreventMergeCommit),
-		AllowRebaseMerge:    falsePtr(o.PreventRebaseMerge),
-		DeleteBranchOnMerge: boolPtr(o.DeleteBranchOnMerge),
+		Name:                NilablePtr(name),
+		Description:         NilablePtr(o.Description),
+		Homepage:            NilablePtr(o.Homepage),
+		Private:             NilablePtr(o.Private),
+		HasIssues:           FalsePtr(o.DisableIssues),
+		HasProjects:         FalsePtr(o.DisableProjects),
+		HasWiki:             FalsePtr(o.DisableWiki),
+		HasDownloads:        FalsePtr(o.DisableDownloads),
+		IsTemplate:          NilablePtr(o.IsTemplate),
+		TeamID:              NilablePtr(o.TeamID),
+		AutoInit:            NilablePtr(o.AutoInit),
+		GitignoreTemplate:   NilablePtr(o.GitignoreTemplate),
+		LicenseTemplate:     NilablePtr(o.LicenseTemplate),
+		AllowSquashMerge:    FalsePtr(o.PreventSquashMerge),
+		AllowMergeCommit:    FalsePtr(o.PreventMergeCommit),
+		AllowRebaseMerge:    FalsePtr(o.PreventRebaseMerge),
+		DeleteBranchOnMerge: NilablePtr(o.DeleteBranchOnMerge),
 	}
 }
 
@@ -398,10 +394,10 @@ func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(
 		return &github.TemplateRepoRequest{Name: &name}
 	}
 	return &github.TemplateRepoRequest{
-		Name:        stringPtr(name),
-		Owner:       stringPtr(o.Owner),
-		Description: stringPtr(o.Description),
-		Private:     falsePtr(o.Private),
+		Name:        NilablePtr(name),
+		Owner:       NilablePtr(o.Owner),
+		Description: NilablePtr(o.Description),
+		Private:     FalsePtr(o.Private),
 	}
 }
 

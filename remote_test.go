@@ -15,10 +15,6 @@ import (
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
 )
 
-func ptr[T any](v T) *T {
-	return &v
-}
-
 func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
 	ctrl := gomock.NewController(t)
 	mock := github_mock.NewMockAdaptor(ctrl)
@@ -46,7 +42,7 @@ func TestRemoteController_Get(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(&github.Repository{
-			CloneURL: ptr("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
+			CloneURL: testtarget.Ptr("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
 		}, nil, nil)
 
 		actual, err := remote.Get(ctx, user, "gogh", nil)
@@ -102,7 +98,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		},
 		{
 			title: "private",
-			base:  &testtarget.RemoteListOption{Private: ptr(true)},
+			base:  &testtarget.RemoteListOption{Private: testtarget.Ptr(true)},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
@@ -115,7 +111,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		},
 		{
 			title: "public",
-			base:  &testtarget.RemoteListOption{Private: ptr(false)},
+			base:  &testtarget.RemoteListOption{Private: testtarget.Ptr(false)},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
@@ -157,7 +153,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		{
 			title: "fork",
 			base: &testtarget.RemoteListOption{
-				IsFork: ptr(true),
+				IsFork: testtarget.Ptr(true),
 			},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
@@ -166,7 +162,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				},
 				Limit:             testtarget.RepositoryListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
-				IsFork:            ptr(true),
+				IsFork:            testtarget.Ptr(true),
 			},
 		},
 		{
@@ -609,7 +605,7 @@ func TestRemoteController_List(t *testing.T) {
 		}}, github.PageInfoFragment{}, nil)
 
 		specs, err := remote.List(ctx, &testtarget.RemoteListOption{
-			Private: ptr(false),
+			Private: testtarget.Ptr(false),
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
@@ -667,7 +663,7 @@ func TestRemoteController_List(t *testing.T) {
 		}}, github.PageInfoFragment{}, nil)
 
 		specs, err := remote.List(ctx, &testtarget.RemoteListOption{
-			Private: ptr(false),
+			Private: testtarget.Ptr(false),
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
@@ -714,7 +710,7 @@ func TestRemoteController_Create(t *testing.T) {
 		internalError := errors.New("test error")
 
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name: ptr("gogh"),
+			Name: testtarget.Ptr("gogh"),
 		}}).Return(nil, nil, internalError)
 
 		if _, err := remote.Create(ctx, "gogh", nil); !errors.Is(err, internalError) {
@@ -727,9 +723,9 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name: ptr("gogh"),
+			Name: testtarget.Ptr("gogh"),
 		}}).Return(&github.Repository{
-			CloneURL: ptr("https://github.com/" + user + "/gogh.git"),
+			CloneURL: testtarget.Ptr("https://github.com/" + user + "/gogh.git"),
 		}, nil, nil)
 		spec, err := remote.Create(ctx, "gogh", nil)
 		if err != nil {
@@ -756,9 +752,9 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name: ptr("user-repo-1"),
+			Name: testtarget.Ptr("user-repo-1"),
 		}}).Return(&github.Repository{
-			CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
+			CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{})
@@ -786,13 +782,13 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
-			Name:       ptr("user-repo-1"),
-			Homepage:   ptr("https://kyoh86.dev"),
-			TeamID:     ptr(int64(3)),
-			HasIssues:  ptr(false),
-			IsTemplate: ptr(true),
+			Name:       testtarget.Ptr("user-repo-1"),
+			Homepage:   testtarget.Ptr("https://kyoh86.dev"),
+			TeamID:     testtarget.Ptr(int64(3)),
+			HasIssues:  testtarget.Ptr(false),
+			IsTemplate: testtarget.Ptr(true),
 		}}).Return(&github.Repository{
-			CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
+			CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{
@@ -825,9 +821,9 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, org, &github.Repository{
-			Name: ptr("org-repo-1"),
+			Name: testtarget.Ptr("org-repo-1"),
 		}).Return(&github.Repository{
-			CloneURL: ptr("https://github.com/" + org + "/org-repo-1.git"),
+			CloneURL: testtarget.Ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
@@ -853,10 +849,10 @@ func TestRemoteController_Create(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, org, &github.Repository{
-			Name:     ptr("org-repo-1"),
-			Homepage: ptr("https://kyoh86.dev"),
+			Name:     testtarget.Ptr("org-repo-1"),
+			Homepage: testtarget.Ptr("https://kyoh86.dev"),
 		}).Return(&github.Repository{
-			CloneURL: ptr("https://github.com/" + org + "/org-repo-1.git"),
+			CloneURL: testtarget.Ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
 		spec, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
@@ -891,7 +887,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name: ptr("gogh"),
+				Name: testtarget.Ptr("gogh"),
 			}}).
 			Return(nil, nil, internalError)
 
@@ -909,10 +905,10 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name: ptr("gogh"),
+				Name: testtarget.Ptr("gogh"),
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr("https://github.com/" + user + "/gogh.git"),
+				CloneURL: testtarget.Ptr("https://github.com/" + user + "/gogh.git"),
 			}, nil, nil)
 		spec, err := remote.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil)
 		if err != nil {
@@ -940,10 +936,10 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name: ptr("user-repo-1"),
+				Name: testtarget.Ptr("user-repo-1"),
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
+				CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.CreateFromTemplate(
@@ -978,11 +974,11 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
-				Name:  ptr("user-repo-1"),
-				Owner: ptr("custom-user"),
+				Name:  testtarget.Ptr("user-repo-1"),
+				Owner: testtarget.Ptr("custom-user"),
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr("https://github.com/custom-user/user-repo-1.git"),
+				CloneURL: testtarget.Ptr("https://github.com/custom-user/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.CreateFromTemplate(
@@ -1039,7 +1035,7 @@ func TestRemoteController_Fork(t *testing.T) {
 		defer teardown()
 		remote := testtarget.NewRemoteController(mock)
 		mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", nil).Return(&github.Repository{
-			CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
+			CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 		spec, err := remote.Fork(ctx, user, "user-repo-1", nil)
 		if err != nil {
@@ -1068,7 +1064,7 @@ func TestRemoteController_Fork(t *testing.T) {
 		mock.EXPECT().
 			RepositoryCreateFork(ctx, user, "user-repo-1", jsonMatcher{&github.RepositoryCreateForkOptions{}}).
 			Return(&github.Repository{
-				CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
+				CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{})
@@ -1100,7 +1096,7 @@ func TestRemoteController_Fork(t *testing.T) {
 				Organization: org,
 			}}).
 			Return(&github.Repository{
-				CloneURL: ptr("https://github.com/" + user + "/user-repo-1.git"),
+				CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
 		spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{
