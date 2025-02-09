@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	github "github.com/kyoh86/gogh/v2/internal/github"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockAdaptor is a mock of Adaptor interface.

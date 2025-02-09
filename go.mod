@@ -9,7 +9,6 @@ require (
 	github.com/cli/browser v1.3.0
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/goccy/go-yaml v1.15.17
-	github.com/golang/mock v1.6.0
 	github.com/golangci/golangci-lint v1.63.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v69 v69.0.0
@@ -19,6 +18,7 @@ require (
 	github.com/saracen/walker v0.1.4
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6
+	go.uber.org/mock v0.5.0
 	golang.org/x/oauth2 v0.26.0
 	golang.org/x/sync v0.10.0
 	golang.org/x/term v0.28.0

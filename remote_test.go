@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/kyoh86/gogh/v2/internal/github_mock"
 	"github.com/kyoh86/gogh/v2/internal/githubv4"
+	"go.uber.org/mock/gomock"
 )
 
 func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
