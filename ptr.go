@@ -9,23 +9,21 @@ func falsePtr(b bool) *bool {
 	return nil // == &true
 }
 
-func boolPtr(b bool) *bool {
-	if !b {
+// nilablePtr converts a value of any type to a pointer, returning nil if the value is the zero value.
+func nilablePtr[T comparable](v T) *T {
+	if v == defaultValue[T]() {
 		return nil
 	}
-	return &b
+	return &v
 }
 
-func stringPtr(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
+// defaultValue returns the zero value for a given type.
+func defaultValue[T any]() T {
+	var zero T
+	return zero
 }
 
-func int64Ptr(i int64) *int64 {
-	if i == 0 {
-		return nil
-	}
-	return &i
+// ptr converts a value of any type to a pointer to that value.
+func ptr[T any](v T) *T {
+	return &v
 }

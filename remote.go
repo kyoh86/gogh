@@ -268,10 +268,6 @@ func (c *RemoteController) repoListSpecList(
 	return nil
 }
 
-func ptr[T any](v T) *T {
-	return &v
-}
-
 func (c *RemoteController) ListAsync(
 	ctx context.Context,
 	option *RemoteListOption,
@@ -342,23 +338,23 @@ func (o *RemoteCreateOption) buildRepository(name string) *github.Repository {
 		return &github.Repository{Name: &name}
 	}
 	return &github.Repository{
-		Name:                stringPtr(name),
-		Description:         stringPtr(o.Description),
-		Homepage:            stringPtr(o.Homepage),
-		Private:             boolPtr(o.Private),
+		Name:                nilablePtr(name),
+		Description:         nilablePtr(o.Description),
+		Homepage:            nilablePtr(o.Homepage),
+		Private:             nilablePtr(o.Private),
 		HasIssues:           falsePtr(o.DisableIssues),
 		HasProjects:         falsePtr(o.DisableProjects),
 		HasWiki:             falsePtr(o.DisableWiki),
 		HasDownloads:        falsePtr(o.DisableDownloads),
-		IsTemplate:          boolPtr(o.IsTemplate),
-		TeamID:              int64Ptr(o.TeamID),
-		AutoInit:            boolPtr(o.AutoInit),
-		GitignoreTemplate:   stringPtr(o.GitignoreTemplate),
-		LicenseTemplate:     stringPtr(o.LicenseTemplate),
+		IsTemplate:          nilablePtr(o.IsTemplate),
+		TeamID:              nilablePtr(o.TeamID),
+		AutoInit:            nilablePtr(o.AutoInit),
+		GitignoreTemplate:   nilablePtr(o.GitignoreTemplate),
+		LicenseTemplate:     nilablePtr(o.LicenseTemplate),
 		AllowSquashMerge:    falsePtr(o.PreventSquashMerge),
 		AllowMergeCommit:    falsePtr(o.PreventMergeCommit),
 		AllowRebaseMerge:    falsePtr(o.PreventRebaseMerge),
-		DeleteBranchOnMerge: boolPtr(o.DeleteBranchOnMerge),
+		DeleteBranchOnMerge: nilablePtr(o.DeleteBranchOnMerge),
 	}
 }
 
@@ -398,9 +394,9 @@ func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(
 		return &github.TemplateRepoRequest{Name: &name}
 	}
 	return &github.TemplateRepoRequest{
-		Name:        stringPtr(name),
-		Owner:       stringPtr(o.Owner),
-		Description: stringPtr(o.Description),
+		Name:        nilablePtr(name),
+		Owner:       nilablePtr(o.Owner),
+		Description: nilablePtr(o.Description),
 		Private:     falsePtr(o.Private),
 	}
 }
