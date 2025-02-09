@@ -40,15 +40,6 @@ func setupCore() (err error) {
 	return nil
 }
 
-func envOrDir(envName string, dirHandler func() (string, error)) func() (string, error) {
-	return func() (string, error) {
-		if env := os.Getenv(envName); env != "" {
-			return env, nil
-		}
-		return dirHandler()
-	}
-}
-
 var (
 	configFileHandler      = cmdutil.AppFile{EnvName: "GOGH_CONFIG_PATH", Dir: os.UserConfigDir, Basename: "config.yaml"}
 	defaultFlagFileHandler = cmdutil.AppFile{EnvName: "GOGH_FLAG_PATH", Dir: os.UserConfigDir, Basename: "flag.yaml"}
