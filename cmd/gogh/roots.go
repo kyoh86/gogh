@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
@@ -44,10 +44,18 @@ var rootsRemoveCommand = &cobra.Command{
 	RunE: func(_ *cobra.Command, rootList []string) error {
 		var selected string
 		if len(rootList) == 0 {
-			if err := survey.AskOne(&survey.Select{
-				Message: "Roots to remove",
-				Options: roots(),
-			}, &selected); err != nil {
+			options := make([]huh.Option[string], 0, len(roots()))
+			for _, root := range roots() {
+				options = append(options, huh.Option[string]{Key: root, Value: root})
+			}
+
+			form := huh.NewForm(huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("Roots to remove").
+					Options(options...).
+					Value(&selected),
+			))
+			if err := form.Run(); err != nil {
 				return err
 			}
 		} else {
@@ -65,10 +73,18 @@ var rootsSetDefaultCommand = &cobra.Command{
 	RunE: func(_ *cobra.Command, rootList []string) error {
 		var selected string
 		if len(rootList) == 0 {
-			if err := survey.AskOne(&survey.Select{
-				Message: "A directory to set as default root",
-				Options: roots(),
-			}, &selected); err != nil {
+			options := make([]huh.Option[string], 0, len(roots()))
+			for _, root := range roots() {
+				options = append(options, huh.Option[string]{Key: root, Value: root})
+			}
+
+			form := huh.NewForm(huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("A directory to set as default root").
+					Options(options...).
+					Value(&selected),
+			))
+			if err := form.Run(); err != nil {
 				return err
 			}
 		} else {

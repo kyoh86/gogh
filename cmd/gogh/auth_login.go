@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
@@ -55,16 +55,13 @@ var loginCommand = &cobra.Command{
 	Args:    cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if loginFlags.Host == "" {
-			if err := survey.Ask([]*survey.Question{
-				{
-					Name: "host",
-					Prompt: &survey.Input{
-						Message: "Host name",
-						Default: github.DefaultHost,
-					},
-					Validate: stringValidator(gogh.ValidateHost),
-				},
-			}, &loginFlags); err != nil {
+			loginFlags.Host = github.DefaultHost
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewInput().
+					Title("Host name").
+					Validate(gogh.ValidateHost).
+					Value(&loginFlags.Host),
+			)).Run(); err != nil {
 				return err
 			}
 		}
@@ -193,16 +190,6 @@ POLL_LOOP:
 			return nil, fmt.Errorf("error: %s, description: %s, uri: %s",
 				values.Get("error"), values.Get("error_description"), values.Get("error_uri"))
 		}
-	}
-}
-
-func stringValidator(v func(s string) error) survey.Validator {
-	return func(i interface{}) error {
-		s, ok := i.(string)
-		if !ok {
-			return errors.New("invalid type")
-		}
-		return v(s)
 	}
 }
 

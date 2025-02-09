@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
@@ -19,16 +19,19 @@ var logoutCommand = &cobra.Command{
 			if len(configured) == 0 {
 				return nil
 			}
-			indices = make([]string, 0, len(configured))
+			options := make([]huh.Option[string], 0, len(configured))
 			for _, c := range configured {
-				indices = append(indices, fmt.Sprintf("%s/%s", c.Host, c.Owner))
+				name := fmt.Sprintf("%s/%s", c.Host, c.Owner)
+				options = append(options, huh.Option[string]{Key: name, Value: name})
 			}
 
 			var selected []string
-			if err := survey.AskOne(&survey.MultiSelect{
-				Message: "Hosts to logout from",
-				Options: indices,
-			}, &selected); err != nil {
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewMultiSelect[string]().
+					Title("Hosts to logout from").
+					Options(options...).
+					Value(&selected),
+			)).Run(); err != nil {
 				return err
 			}
 			indices = selected

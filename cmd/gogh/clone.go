@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
+	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
@@ -38,7 +38,9 @@ var cloneCommand = &cobra.Command{
 	RunE: func(cmd *cobra.Command, specs []string) error {
 		ctx := cmd.Context()
 		if len(specs) == 0 {
-			for _, entry := range tokens.Entries() {
+			entries := tokens.Entries()
+			var options []huh.Option[string]
+			for _, entry := range entries {
 				adaptor, err := github.NewAdaptor(ctx, entry.Host, entry.Token)
 				if err != nil {
 					return err
@@ -49,13 +51,18 @@ var cloneCommand = &cobra.Command{
 					return err
 				}
 				for _, s := range founds {
-					specs = append(specs, s.Spec.String())
+					options = append(options, huh.Option[string]{
+						Key:   s.Spec.String(),
+						Value: s.Spec.String(),
+					})
 				}
 			}
-			if err := survey.AskOne(&survey.MultiSelect{
-				Message: "A repository to clone",
-				Options: specs,
-			}, &specs); err != nil {
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewMultiSelect[string]().
+					Title("A repository to clone").
+					Options(options...).
+					Value(&specs),
+			)).Run(); err != nil {
 				return err
 			}
 		}

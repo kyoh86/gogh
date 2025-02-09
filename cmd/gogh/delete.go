@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
+	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
@@ -29,6 +29,7 @@ var deleteCommand = &cobra.Command{
 		ctx := cmd.Context()
 		var selected string
 		if len(specs) == 0 {
+			var options []huh.Option[string]
 			for _, entry := range tokens.Entries() {
 				adaptor, err := github.NewAdaptor(ctx, entry.Host, entry.Token)
 				if err != nil {
@@ -40,13 +41,18 @@ var deleteCommand = &cobra.Command{
 					return err
 				}
 				for _, s := range founds {
-					specs = append(specs, s.Spec.String())
+					options = append(options, huh.Option[string]{
+						Key:   s.Spec.String(),
+						Value: s.Spec.String(),
+					})
 				}
 			}
-			if err := survey.AskOne(&survey.Select{
-				Message: "A repository to delete",
-				Options: specs,
-			}, &selected); err != nil {
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("A repository to delete").
+					Options(options...).
+					Value(&selected),
+			)).Run(); err != nil {
 				return err
 			}
 		} else {
@@ -63,9 +69,11 @@ var deleteCommand = &cobra.Command{
 			local := gogh.NewLocalController(defaultRoot())
 			if !deleteFlags.force {
 				var confirmed bool
-				if err := survey.AskOne(&survey.Confirm{
-					Message: fmt.Sprintf("Are you sure you want to delete local-project %s?", spec.String()),
-				}, &confirmed); err != nil {
+				if err := huh.NewForm(huh.NewGroup(
+					huh.NewConfirm().
+						Title(fmt.Sprintf("Are you sure you want to delete local-project %s?", spec.String())).
+						Value(&confirmed),
+				)).Run(); err != nil {
 					return err
 				}
 				if !confirmed {
@@ -84,9 +92,11 @@ var deleteCommand = &cobra.Command{
 		if deleteFlags.remote {
 			if !deleteFlags.force {
 				var confirmed bool
-				if err := survey.AskOne(&survey.Confirm{
-					Message: fmt.Sprintf("Are you sure you want to delete remote-repository %s?", spec.String()),
-				}, &confirmed); err != nil {
+				if err := huh.NewForm(huh.NewGroup(
+					huh.NewConfirm().
+						Title(fmt.Sprintf("Are you sure you want to delete remote-repository %s?", spec.String())).
+						Value(&confirmed),
+				)).Run(); err != nil {
 					return err
 				}
 				if !confirmed {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/apex/log"
+	"github.com/charmbracelet/huh"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/kyoh86/gogh/v2"
@@ -46,16 +46,15 @@ var (
 			var name string
 			parser := gogh.NewSpecParser(tokens.GetDefaultKey())
 			if len(specs) == 0 {
-				if err := survey.AskOne(&survey.Input{
-					Message: "A spec of repository name to create",
-				}, &name, survey.WithValidator(func(input interface{}) error {
-					s, ok := input.(string)
-					if !ok {
-						return errors.New("invalid type")
-					}
-					_, err := parser.Parse(s)
-					return err
-				})); err != nil {
+				if err := huh.NewForm(huh.NewGroup(
+					huh.NewInput().
+						Title("A spec of repository name to create").
+						Validate(func(s string) error {
+							_, err := parser.Parse(s)
+							return err
+						}).
+						Value(&name),
+				)).Run(); err != nil {
 					return err
 				}
 			} else {
