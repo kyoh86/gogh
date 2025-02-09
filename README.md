@@ -1,11 +1,11 @@
 # Gogh
 
-GO GitHub project manager
+Gogh is a tool to manage GitHub repositories efficiently, inspired by [`ghq`](https://github.com/motemen/ghq).
 
 [![`PkgGoDev`](https://pkg.go.dev/badge/kyoh86/gogh)](https://pkg.go.dev/kyoh86/gogh)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kyoh86/gogh)](https://goreportcard.com/report/github.com/kyoh86/gogh)
 [![Coverage Status](https://img.shields.io/codecov/c/github/kyoh86/gogh.svg)](https://codecov.io/gh/kyoh86/gogh)
-[![Release](https://github.com/kyoh86/gogh/workflows/Release/badge.svg)](https://github.com/kyoh86/gogh/releases)
+[![GitHub release](https://github.com/kyoh86/gogh/actions/workflows/release.yml/badge.svg)](https://github.com/kyoh86/gogh/releases)
 
 ![](./image/gogh.jpg)
 
@@ -33,11 +33,22 @@ $ gogh get https://github.com/kyoh86/gogh
 # Runs `git clone https://github.com/kyoh86/gogh ~/go/src/github.com/kyoh86/gogh`
 ```
 
-You can also list projects (local repositories) (`gogh list`).
+You can also do:
+
+- List projects (local repositories) (`gogh list`).
+- Create a new project (`gogh new`).
+- Fork a repository (`gogh fork`).
+- Clone a repository (`gogh clone`).
+- Delete a project (`gogh delete`).
+- List remote repositories (`gogh repos`).
+
+See [#Available commands](#Available+commands) for more information.
 
 ## Install
 
 ### For Golang developers
+
+Ensure you have Go installed before running the following commands.
 
 ```console
 $ go install github.com/kyoh86/gogh/cmd/gogh@latest
@@ -70,16 +81,11 @@ $ makepkg -i
 ## Setup
 
 `gogh` manages repositories in multiple servers that is pairs of an owner and a host name.
-To login in new server or logout, you should use `auth login` with personal access tokens.
-
-You should generate personal access tokens with "Repository permissions":
-
-- ✅ Read-only access to "Contents" and "Metadata"
-- ✅ Read and write access to "Administration"
+To login in new server or logout, you should use `auth login`.
 
 ## Available commands
 
-See manual for detail: [usage/gogh.md](./usage/gogh.md).
+See [usage/gogh.md](./usage/gogh.md) for detailed command usage.
 
 ### Show projects
 
