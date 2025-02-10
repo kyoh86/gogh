@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/huh v0.6.0
 	github.com/cli/browser v1.3.0
 	github.com/go-git/go-git/v5 v5.13.2
-	github.com/goccy/go-yaml v1.15.17
+	github.com/goccy/go-yaml v1.15.19
 	github.com/golangci/golangci-lint v1.63.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v69 v69.0.0
