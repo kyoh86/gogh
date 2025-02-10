@@ -62,7 +62,7 @@ var loginCommand = &cobra.Command{
 		}
 
 		// Poll for token
-		deviceCodeResp.Interval = deviceCodeResp.Interval + 1 // Add a second for safety
+		deviceCodeResp.Interval++ // Add a second for safety
 		tokenResp, err := oauthConfig.DeviceAccessToken(cmd.Context(), deviceCodeResp)
 		if err != nil {
 			return fmt.Errorf("failed to poll for token: %w", err)
