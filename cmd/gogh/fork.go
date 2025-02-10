@@ -29,7 +29,6 @@ var (
 				return err
 			}
 			_, token := tokens.Hosts.Get(spec.Host()).GetDefaultToken()
-			fmt.Println(spec.Host(), token)
 			adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
 			if err != nil {
 				return err
