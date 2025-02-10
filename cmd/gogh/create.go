@@ -137,8 +137,13 @@ var (
 					}
 				}
 			}
+			accessToken, err := adaptor.GetAccessToken()
+			if err != nil {
+				l.WithField("error", err).Error("failed to get access token")
+				return nil
+			}
 			for i := 0; i < createFlags.CloneRetryLimit; i++ {
-				_, err := local.Clone(ctx, spec, token, nil)
+				_, err := local.Clone(ctx, spec, accessToken, nil)
 				switch {
 				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
 					l.Info("waiting the remote repository is ready")

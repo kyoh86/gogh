@@ -14,7 +14,7 @@ GO GitHub project manager
 * [gogh bundle](gogh_bundle.md)	 - Manage bundle
 * [gogh clone](gogh_clone.md)	 - Clone repositories to local
 * [gogh completion](gogh_completion.md)	 - Generate the autocompletion script for the specified shell
-* [gogh config](gogh_config.md)	 - Manage config
+* [gogh config](gogh_config.md)	 - Show configurations
 * [gogh create](gogh_create.md)	 - Create a new project with a remote repository
 * [gogh delete](gogh_delete.md)	 - Delete a project with a remote repository
 * [gogh fork](gogh_fork.md)	 - Fork a repository

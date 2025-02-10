@@ -2,7 +2,7 @@ package github
 
 import (
 	"context"
-	"net/http"
+	"fmt"
 	"net/url"
 
 	"github.com/Khan/genqlient/graphql"
@@ -12,9 +12,10 @@ import (
 )
 
 type genuineAdaptor struct {
-	gqlClient  graphql.Client
-	restClient *github.Client
-	host       string
+	gqlClient   graphql.Client
+	restClient  *github.Client
+	host        string
+	tokenSource oauth2.TokenSource
 }
 
 func (a *genuineAdaptor) GetHost() string {
@@ -36,13 +37,24 @@ func WithScheme(scheme string) Option {
 	}
 }
 
-func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Adaptor, error) {
-	var client *http.Client
-	if token != "" {
-		client = NewAuthClient(ctx, token)
+const ClientID = "Ov23li6aEWIxek6F8P5L"
+
+func OAuth2Config(host string) *oauth2.Config {
+	return &oauth2.Config{
+		ClientID: ClientID,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:       fmt.Sprintf("https://%s/login/oauth/authorize", host),
+			TokenURL:      fmt.Sprintf("https://%s/login/oauth/access_token", host),
+			DeviceAuthURL: fmt.Sprintf("https://%s/login/device/code", host),
+		},
+		Scopes: []string{string(github.ScopeRepo), string(github.ScopeDeleteRepo)},
 	}
+}
+
+func NewAdaptor(ctx context.Context, host string, token Token, options ...Option) (Adaptor, error) {
+	tokenSource := oauth2.ReuseTokenSource(&token, &tokenSource{ctx: ctx, host: host, token: &token})
 	if host == DefaultHost || host == DefaultAPIHost {
-		return newGenuineAdaptor(DefaultHost, client), nil
+		return newGenuineAdaptor(ctx, DefaultHost, tokenSource), nil
 	}
 	baseRESTURL := &url.URL{
 		Scheme: "https://",
@@ -63,40 +75,78 @@ func NewAdaptor(ctx context.Context, host, token string, options ...Option) (Ada
 		option(baseRESTURL, uploadRESTURL, baseGQLURL)
 	}
 	return newGenuineEnterpriseAdaptor(
+		ctx,
 		host,
 		baseRESTURL.String(),
 		uploadRESTURL.String(),
 		baseGQLURL.String(),
-		client,
+		tokenSource,
 	)
 }
 
-func NewAuthClient(ctx context.Context, accessToken string) *http.Client {
-	return oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}))
+type tokenSource struct {
+	ctx   context.Context
+	host  string
+	token *oauth2.Token
 }
 
-func newGenuineAdaptor(host string, httpClient *http.Client) Adaptor {
+func (s *tokenSource) Token() (*oauth2.Token, error) {
+	if s.token.Valid() {
+		return s.token, nil
+	}
+	newToken, err := refreshAccessToken(s.ctx, s.host, s.token)
+	if err != nil {
+		return nil, err
+	}
+	s.token = newToken
+	return newToken, nil
+}
+
+func refreshAccessToken(ctx context.Context, host string, token *oauth2.Token) (*oauth2.Token, error) {
+	oauthConfig := OAuth2Config(host)
+	tokenSource := oauthConfig.TokenSource(ctx, &oauth2.Token{RefreshToken: token.RefreshToken})
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		return nil, err
+	}
+	return newToken, nil
+}
+
+func newGenuineAdaptor(ctx context.Context, host string, tokenSource oauth2.TokenSource) Adaptor {
+	httpClient := oauth2.NewClient(ctx, tokenSource)
 	return &genuineAdaptor{
-		host:       host,
-		restClient: github.NewClient(httpClient),
-		gqlClient:  graphql.NewClient("https://"+DefaultAPIHost+"/graphql", httpClient),
+		host:        host,
+		tokenSource: tokenSource,
+		restClient:  github.NewClient(httpClient),
+		gqlClient:   graphql.NewClient("https://"+DefaultAPIHost+"/graphql", httpClient),
 	}
 }
 
 func newGenuineEnterpriseAdaptor(
+	ctx context.Context,
 	host string,
 	baseRESTURL, uploadRESTURL, baseGQLURL string,
-	httpClient *http.Client,
+	tokenSource oauth2.TokenSource,
 ) (Adaptor, error) {
+	httpClient := oauth2.NewClient(ctx, tokenSource)
 	restClient, err := github.NewClient(httpClient).WithEnterpriseURLs(baseRESTURL, uploadRESTURL)
 	if err != nil {
 		return nil, err
 	}
 	return &genuineAdaptor{
-		host:       host,
-		restClient: restClient,
-		gqlClient:  graphql.NewClient(baseGQLURL, httpClient),
+		host:        host,
+		tokenSource: tokenSource,
+		restClient:  restClient,
+		gqlClient:   graphql.NewClient(baseGQLURL, httpClient),
 	}, nil
+}
+
+func (a *genuineAdaptor) GetAccessToken() (string, error) {
+	token, err := a.tokenSource.Token()
+	if err != nil {
+		return "", err
+	}
+	return token.AccessToken, nil
 }
 
 func (a *genuineAdaptor) UserGet(ctx context.Context, user string) (*User, *Response, error) {

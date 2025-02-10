@@ -61,6 +61,7 @@ type RepositoryListOptions struct {
 }
 
 type Adaptor interface {
+	GetAccessToken() (string, error)
 	GetHost() string
 	GetMe(ctx context.Context) (string, error)
 	GetAuthenticatedUser(ctx context.Context) (*User, *Response, error)

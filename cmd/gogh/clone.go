@@ -128,7 +128,12 @@ func cloneOneFunc(
 			"spec": spec,
 		})
 		l.Info("cloning")
-		if _, err = local.Clone(ctx, spec, token, &gogh.LocalCloneOption{Alias: alias}); err != nil {
+		accessToken, err := adaptor.GetAccessToken()
+		if err != nil {
+			l.WithField("error", err).Error("failed to get access token")
+			return nil
+		}
+		if _, err = local.Clone(ctx, spec, accessToken, &gogh.LocalCloneOption{Alias: alias}); err != nil {
 			l.WithField("error", err).Error("failed to get repository")
 			return nil
 		}

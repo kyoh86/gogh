@@ -1,6 +1,6 @@
 ## gogh config
 
-Manage config
+Show configurations
 
 ```
 gogh config [flags]

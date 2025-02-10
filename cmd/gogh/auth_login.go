@@ -11,14 +11,11 @@ import (
 	"github.com/kyoh86/gogh/v2"
 	"github.com/kyoh86/gogh/v2/internal/github"
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
 )
 
 var loginFlags struct {
 	Host string
 }
-
-const clientID = "Ov23li6aEWIxek6F8P5L"
 
 type TokenResponse struct {
 	AccessToken string
@@ -50,15 +47,7 @@ var loginCommand = &cobra.Command{
 			}
 		}
 
-		oauthConfig := &oauth2.Config{
-			ClientID: clientID,
-			Endpoint: oauth2.Endpoint{
-				AuthURL:       fmt.Sprintf("https://%s/login/oauth/authorize", loginFlags.Host),
-				TokenURL:      fmt.Sprintf("https://%s/login/oauth/access_token", loginFlags.Host),
-				DeviceAuthURL: fmt.Sprintf("https://%s/login/device/code", loginFlags.Host),
-			},
-			Scopes: []string{"repo", "delete_repo"},
-		}
+		oauthConfig := github.OAuth2Config(loginFlags.Host)
 
 		// Request device code
 		deviceCodeResp, err := oauthConfig.DeviceAuth(cmd.Context())
@@ -79,8 +68,12 @@ var loginCommand = &cobra.Command{
 			return fmt.Errorf("failed to poll for token: %w", err)
 		}
 
+		if tokenResp == nil {
+			return fmt.Errorf("got nil token response")
+		}
+
 		// Get user info
-		adaptor, err := github.NewAdaptor(context.Background(), loginFlags.Host, tokenResp.AccessToken)
+		adaptor, err := github.NewAdaptor(context.Background(), loginFlags.Host, *tokenResp)
 		if err != nil {
 			return fmt.Errorf("failed to create GitHub adaptor: %w", err)
 		}
@@ -89,7 +82,7 @@ var loginCommand = &cobra.Command{
 			return fmt.Errorf("failed to get authenticated user info: %w", err)
 		}
 
-		tokens.Set(loginFlags.Host, user.GetLogin(), tokenResp.AccessToken)
+		tokens.Set(loginFlags.Host, user.GetLogin(), *tokenResp)
 
 		fmt.Println("Login successful!")
 		return nil

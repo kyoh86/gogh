@@ -6,7 +6,6 @@ import (
 	"github.com/kyoh86/gogh/v2/internal/github"
 )
 
-type Token = string
 type Host = string
 type Owner = string
 
@@ -16,8 +15,8 @@ type TokenManager struct {
 }
 
 type TokenHost struct {
-	Owners       Map[Owner, Token] `yaml:"owners"`
-	DefaultOwner Owner             `yaml:"default_owner"`
+	Owners       Map[Owner, github.Token] `yaml:"owners"`
+	DefaultOwner Owner                    `yaml:"default_owner"`
 }
 
 type Map[TKey comparable, TVal any] map[TKey]TVal
@@ -76,18 +75,18 @@ func (t TokenManager) GetDefaultKey() (Host, Owner) {
 	return hostName, owner
 }
 
-func (t *TokenHost) GetDefaultToken() (Owner, Token) {
+func (t *TokenHost) GetDefaultToken() (Owner, github.Token) {
 	if t == nil {
-		return "", ""
+		return "", github.Token{}
 	}
 	return t.DefaultOwner, t.Owners.Get(t.DefaultOwner)
 }
 
-func (t TokenManager) Get(host, owner string) Token {
+func (t TokenManager) Get(host, owner string) github.Token {
 	return t.Hosts.TryGet(host, &TokenHost{}).Owners.Get(owner)
 }
 
-func (t *TokenManager) Set(hostName, ownerName string, token Token) {
+func (t *TokenManager) Set(hostName, ownerName string, token github.Token) {
 	host := t.Hosts.TryGet(hostName, &TokenHost{})
 	if host.DefaultOwner == "" {
 		host.DefaultOwner = ownerName
@@ -148,7 +147,7 @@ func (t TokenManager) Has(host, owner string) bool {
 type TokenEntry struct {
 	Host  Host
 	Owner Owner
-	Token Token
+	Token github.Token
 }
 
 func (e TokenEntry) String() string {

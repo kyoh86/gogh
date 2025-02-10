@@ -29,6 +29,7 @@ var (
 				return err
 			}
 			_, token := tokens.Hosts.Get(spec.Host()).GetDefaultToken()
+			fmt.Println(spec.Host(), token)
 			adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
 			if err != nil {
 				return err
@@ -49,7 +50,12 @@ var (
 				localSpec = forked.Spec
 			}
 			log.FromContext(ctx).Infof("git clone %q", spec.URL())
-			if _, err := local.Clone(ctx, spec, token, opt); err != nil {
+			accessToken, err := adaptor.GetAccessToken()
+			if err != nil {
+				log.FromContext(ctx).WithField("error", err).Error("failed to get access token")
+				return nil
+			}
+			if _, err := local.Clone(ctx, spec, accessToken, opt); err != nil {
 				return fmt.Errorf("cloning the repository %q: %w", spec, err)
 			}
 			return local.SetRemoteSpecs(ctx, localSpec, map[string][]gogh.Spec{
