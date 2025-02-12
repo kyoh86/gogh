@@ -89,10 +89,11 @@ See [usage/gogh.md](./usage/gogh.md) for detailed command usage.
 
 ### Show projects
 
-| Command        | Description              |
-| --             | --                       |
-| `gogh list`    | List local projects      |
-| `gogh repos`   | List remote repositories |
+| Command        | Description                                    |
+| --             | --                                             |
+| `gogh list`    | List local projects                            |
+| `gogh repos`   | List remote repositories                       |
+| `gogh cwd`     | Print the project in current working directory |
 
 ### Manipulate projects
 

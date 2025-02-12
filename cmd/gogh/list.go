@@ -61,6 +61,10 @@ Print each project in a given format, where [format] can be one of "rel-path", "
 "full-file-path", "json", "url", "fields" or "fields:[separator]".
 `
 
+func completeFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return []string{"rel-path", "rel-file-path", "full-file-path", "json", "url", "fields", "fields:"}, cobra.ShellCompDirectiveDefault
+}
+
 func init() {
 	listFlags.Format = defaultFlag.List.Format
 	listCommand.Flags().
@@ -68,9 +72,7 @@ func init() {
 	listCommand.Flags().
 		BoolVarP(&listFlags.Primary, "primary", "", defaultFlag.List.Primary, "List up projects in just a primary root")
 	listCommand.Flags().VarP(&listFlags.Format, "format", "f", formatShortUsage)
-	if err := listCommand.RegisterFlagCompletionFunc("format", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"rel-path", "rel-file-path", "full-file-path", "json", "url", "fields", "fields:"}, cobra.ShellCompDirectiveDefault
-	}); err != nil {
+	if err := listCommand.RegisterFlagCompletionFunc("format", completeFormat); err != nil {
 		panic(err)
 	}
 	facadeCommand.AddCommand(listCommand)
