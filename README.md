@@ -51,7 +51,7 @@ See [#Available commands](#available-commands) for more information.
 Ensure you have Go installed before running the following commands.
 
 ```console
-$ go install github.com/kyoh86/gogh/v3/cmd/gogh@latest
+$ go install github.com/kyoh86/gogh/v3/cmd/gogh
 ```
 
 If you want zsh-completions, you can create completions file like this:
