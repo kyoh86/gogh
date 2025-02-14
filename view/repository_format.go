@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v3"
 )
 
 type RepositoryPrinter interface {

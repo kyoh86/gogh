@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/view"
+	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/view"
 	"github.com/morikuni/aec"
 )
 

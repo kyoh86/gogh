@@ -3,7 +3,7 @@ package gogh
 import (
 	"fmt"
 
-	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v3/internal/github"
 )
 
 type Host = string

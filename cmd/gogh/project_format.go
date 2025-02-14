@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyoh86/gogh/v2/view"
+	"github.com/kyoh86/gogh/v3/view"
 	"github.com/spf13/pflag"
 )
 

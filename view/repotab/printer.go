@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v3"
 	"github.com/mattn/go-runewidth"
 	"github.com/morikuni/aec"
 )

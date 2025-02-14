@@ -8,8 +8,8 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
-	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/internal/github"
 	"github.com/spf13/cobra"
 )
 

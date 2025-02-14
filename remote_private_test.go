@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	exgithub "github.com/google/go-github/v69/github"
-	"github.com/kyoh86/gogh/v2/internal/github"
-	"github.com/kyoh86/gogh/v2/internal/githubv4"
+	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/internal/githubv4"
 )
 
 func TestParseSpec(t *testing.T) {

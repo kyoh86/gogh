@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/kyoh86/gogh/v2/cmdutil"
+	"github.com/kyoh86/gogh/v3/cmdutil"
 	"github.com/spf13/cobra"
 )
 

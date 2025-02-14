@@ -9,7 +9,7 @@ import (
 	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/level"
 	"github.com/apex/log/handlers/multi"
-	"github.com/kyoh86/gogh/v2/cmdutil"
+	"github.com/kyoh86/gogh/v3/cmdutil"
 	"github.com/spf13/cobra"
 )
 

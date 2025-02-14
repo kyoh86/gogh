@@ -9,7 +9,7 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/google/go-cmp/cmp"
-	testtarget "github.com/kyoh86/gogh/v2"
+	testtarget "github.com/kyoh86/gogh/v3"
 )
 
 func mustSpec(t *testing.T, host, owner, name string) testtarget.Spec {

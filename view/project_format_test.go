@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/kyoh86/gogh/v2"
-	testtarget "github.com/kyoh86/gogh/v2/view"
+	"github.com/kyoh86/gogh/v3"
+	testtarget "github.com/kyoh86/gogh/v3/view"
 )
 
 func TestProjectFormat(t *testing.T) {

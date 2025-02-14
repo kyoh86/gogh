@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kyoh86/gogh/v2"
+	"github.com/kyoh86/gogh/v3"
 	"github.com/spf13/cobra"
 )
 

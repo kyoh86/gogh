@@ -5,8 +5,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
-	"github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/internal/github"
 	"github.com/spf13/cobra"
 )
 

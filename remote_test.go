@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	testtarget "github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/internal/github"
-	"github.com/kyoh86/gogh/v2/internal/github_mock"
-	"github.com/kyoh86/gogh/v2/internal/githubv4"
+	testtarget "github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/internal/github_mock"
+	"github.com/kyoh86/gogh/v3/internal/githubv4"
 	"go.uber.org/mock/gomock"
 )
 

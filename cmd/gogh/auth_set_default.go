@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v2/internal/github"
+	"github.com/kyoh86/gogh/v3/internal/github"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

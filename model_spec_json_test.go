@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	testtarget "github.com/kyoh86/gogh/v2"
+	testtarget "github.com/kyoh86/gogh/v3"
 )
 
 func TestSpecJSON(t *testing.T) {

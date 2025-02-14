@@ -3,8 +3,8 @@ package gogh_test
 import (
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v2"
-	"github.com/kyoh86/gogh/v2/internal/github"
+	testtarget "github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/internal/github"
 )
 
 func TestTokenManager(t *testing.T) {
