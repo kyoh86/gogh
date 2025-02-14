@@ -1,4 +1,4 @@
-module github.com/kyoh86/gogh/v2
+module github.com/kyoh86/gogh/v3
 
 go 1.23.4
 
