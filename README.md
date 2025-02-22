@@ -69,15 +69,6 @@ $ brew update
 $ brew install kyoh86/tap/gogh
 ```
 
-### `Makepkg`
-
-```console
-$ mkdir -p gogh_build && \
-  cd gogh_build && \
-  curl -L --silent https://github.com/kyoh86/gogh/releases/latest/download/gogh_PKGBUILD.tar.gz | tar -xvz
-$ makepkg -i
-```
-
 ## Setup
 
 `gogh` manages repositories in multiple servers that is pairs of an owner and a host name.
