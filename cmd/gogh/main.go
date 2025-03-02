@@ -42,7 +42,7 @@ func (h *StdoutLogHandler) HandleLog(e *log.Entry) error {
 func main() {
 	setup()
 	errLog := level.New(cli.New(os.Stderr), log.ErrorLevel)
-	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stderr)}
+	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stdout)}
 	level := log.InfoLevel
 	if os.Getenv("GOGH_DEBUG") == "1" {
 		level = log.DebugLevel
