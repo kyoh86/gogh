@@ -7,7 +7,7 @@ require (
 	github.com/apex/log v1.9.0
 	github.com/charmbracelet/huh v0.6.0
 	github.com/cli/browser v1.3.0
-	github.com/go-git/go-git/v5 v5.13.2
+	github.com/go-git/go-git/v5 v5.14.0
 	github.com/goccy/go-yaml v1.15.23
 	github.com/golangci/golangci-lint v1.64.5
 	github.com/google/go-cmp v0.7.0
@@ -376,7 +376,7 @@ require (
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/raeperd/recvcheck v0.2.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rogpeppe/go-internal v1.14.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryancurrah/gomodguard v1.3.5 // indirect
 	github.com/ryanrolds/sqlclosecheck v0.5.1 // indirect
