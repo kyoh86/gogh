@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/internal/tokenstore"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
@@ -41,7 +43,7 @@ var cloneCommand = &cobra.Command{
 			entries := tokens.Entries()
 			var options []huh.Option[string]
 			for _, entry := range entries {
-				adaptor, err := github.NewAdaptor(ctx, entry.Host, entry.Token)
+				adaptor, err := github.NewAdaptor(ctx, entry.Host, &entry.Token)
 				if err != nil {
 					return err
 				}
@@ -112,7 +114,19 @@ func cloneOneFunc(
 			return err
 		}
 
-		token := tokens.Get(spec.Host(), spec.Owner())
+		var token *github.Token
+		{
+			got, err := tokens.GetOrDefault(spec.Host(), spec.Owner())
+			switch {
+			case err == nil:
+				token = &got
+			case errors.Is(err, tokenstore.ErrNoHost), errors.Is(err, tokenstore.ErrNoOwner):
+				token = nil
+			default:
+				return err
+			}
+		}
+
 		// check forked
 		adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
 		if err != nil {

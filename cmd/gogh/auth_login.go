@@ -73,7 +73,7 @@ var loginCommand = &cobra.Command{
 		}
 
 		// Get user info
-		adaptor, err := github.NewAdaptor(context.Background(), loginFlags.Host, *tokenResp)
+		adaptor, err := github.NewAdaptor(context.Background(), loginFlags.Host, tokenResp)
 		if err != nil {
 			return fmt.Errorf("failed to create GitHub adaptor: %w", err)
 		}

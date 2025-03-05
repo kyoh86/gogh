@@ -31,7 +31,7 @@ var deleteCommand = &cobra.Command{
 		if len(specs) == 0 {
 			var options []huh.Option[string]
 			for _, entry := range tokens.Entries() {
-				adaptor, err := github.NewAdaptor(ctx, entry.Host, entry.Token)
+				adaptor, err := github.NewAdaptor(ctx, entry.Host, &entry.Token)
 				if err != nil {
 					return err
 				}
@@ -103,8 +103,11 @@ var deleteCommand = &cobra.Command{
 					return nil
 				}
 			}
-			token := tokens.Get(spec.Host(), spec.Owner())
-			adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
+			token, err := tokens.Get(spec.Host(), spec.Owner())
+			if err != nil {
+				return fmt.Errorf("failed to get token for %s/%s: %w", spec.Host(), spec.Owner(), err)
+			}
+			adaptor, err := github.NewAdaptor(ctx, spec.Host(), &token)
 			if err != nil {
 				return err
 			}

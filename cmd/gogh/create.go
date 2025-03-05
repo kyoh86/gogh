@@ -79,9 +79,12 @@ var (
 			l := log.FromContext(ctx).WithFields(log.Fields{
 				"spec": spec,
 			})
-			token := tokens.Get(spec.Host(), spec.Owner())
+			token, err := tokens.Get(spec.Host(), spec.Owner())
+			if err != nil {
+				return fmt.Errorf("failed to get token for %s/%s: %w", spec.Host(), spec.Owner(), err)
+			}
 
-			adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
+			adaptor, err := github.NewAdaptor(ctx, spec.Host(), &token)
 			if err != nil {
 				return err
 			}

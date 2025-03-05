@@ -28,8 +28,11 @@ var (
 			if err != nil {
 				return err
 			}
-			_, token := tokens.Hosts.Get(spec.Host()).GetDefaultToken()
-			adaptor, err := github.NewAdaptor(ctx, spec.Host(), token)
+			_, token, err := tokens.GetDefaultTokenFor(spec.Host())
+			if err != nil {
+				return err
+			}
+			adaptor, err := github.NewAdaptor(ctx, spec.Host(), &token)
 			if err != nil {
 				return err
 			}

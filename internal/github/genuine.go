@@ -27,16 +27,6 @@ const (
 	DefaultAPIHost = "api.github.com"
 )
 
-type Option func(baseRESTURL *url.URL, uploadRESTURL *url.URL, baseGQLURL *url.URL)
-
-func WithScheme(scheme string) Option {
-	return func(baseRESTURL *url.URL, uploadRESTURL *url.URL, baseGQLURL *url.URL) {
-		baseRESTURL.Scheme = scheme
-		uploadRESTURL.Scheme = scheme
-		baseGQLURL.Scheme = scheme
-	}
-}
-
 const ClientID = "Ov23li6aEWIxek6F8P5L"
 
 func OAuth2Config(host string) *oauth2.Config {
@@ -51,10 +41,13 @@ func OAuth2Config(host string) *oauth2.Config {
 	}
 }
 
-func NewAdaptor(ctx context.Context, host string, token Token, options ...Option) (Adaptor, error) {
-	tokenSource := oauth2.ReuseTokenSource(&token, &tokenSource{ctx: ctx, host: host, token: &token})
+func NewAdaptor(ctx context.Context, host string, token *Token) (Adaptor, error) {
+	var source oauth2.TokenSource
+	if token != nil {
+		source = oauth2.ReuseTokenSource(token, &tokenSource{ctx: ctx, host: host, token: token})
+	}
 	if host == DefaultHost || host == DefaultAPIHost {
-		return newGenuineAdaptor(ctx, DefaultHost, tokenSource), nil
+		return newGenuineAdaptor(ctx, DefaultHost, source), nil
 	}
 	baseRESTURL := &url.URL{
 		Scheme: "https://",
@@ -71,16 +64,13 @@ func NewAdaptor(ctx context.Context, host string, token Token, options ...Option
 		Host:   host,
 		Path:   "/api/graphql",
 	}
-	for _, option := range options {
-		option(baseRESTURL, uploadRESTURL, baseGQLURL)
-	}
 	return newGenuineEnterpriseAdaptor(
 		ctx,
 		host,
 		baseRESTURL.String(),
 		uploadRESTURL.String(),
 		baseGQLURL.String(),
-		tokenSource,
+		source,
 	)
 }
 

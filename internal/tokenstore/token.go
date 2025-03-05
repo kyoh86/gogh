@@ -9,6 +9,11 @@ import (
 type Host = string
 type Owner = string
 
+var (
+	ErrNoHost  = fmt.Errorf("no host")
+	ErrNoOwner = fmt.Errorf("no owner")
+)
+
 type TokenManager struct {
 	Hosts       Map[Host, *TokenHost] `yaml:"hosts,omitempty"`
 	DefaultHost Host                  `yaml:"default_host,omitempty"`
@@ -19,75 +24,69 @@ type TokenHost struct {
 	DefaultOwner Owner                    `yaml:"default_owner"`
 }
 
-type Map[TKey comparable, TVal any] map[TKey]TVal
-
-func (m *Map[TKey, TVal]) Set(key TKey, val TVal) {
-	if *m == nil {
-		*m = map[TKey]TVal{}
-	}
-	(*m)[key] = val
-}
-
-func (m *Map[TKey, TVal]) Delete(key TKey) {
-	if *m == nil {
-		return
-	}
-	delete(*m, key)
-}
-
-func (m *Map[TKey, TVal]) Has(key TKey) bool {
-	if *m == nil {
-		return false
-	}
-	_, ok := (*m)[key]
-	return ok
-}
-
-func (m *Map[TKey, TVal]) Get(key TKey) TVal {
-	var v TVal
-	return m.TryGet(key, v)
-}
-
-func (m *Map[TKey, TVal]) TryGet(key TKey, def TVal) TVal {
-	if *m == nil {
-		*m = map[TKey]TVal{
-			key: def,
-		}
-		return def
-	}
-	if v, ok := (*m)[key]; ok {
-		return v
-	}
-	(*m)[key] = def
-	return def
-}
-
 func (t TokenManager) GetDefaultKey() (Host, Owner) {
 	hostName := t.DefaultHost
 	if hostName == "" {
 		hostName = github.DefaultHost
 	}
-	host := t.Hosts.Get(hostName)
-	owner := ""
-	if host != nil {
-		owner = host.DefaultOwner
+	host, ok := t.Hosts.TryGet(hostName)
+	if ok {
+		return hostName, host.DefaultOwner
 	}
-	return hostName, owner
+	return hostName, ""
 }
 
-func (t *TokenHost) GetDefaultToken() (Owner, github.Token) {
+func (t *TokenManager) GetDefaultTokenFor(hostName string) (Owner, github.Token, error) {
 	if t == nil {
-		return "", github.Token{}
+		return "", github.Token{}, ErrNoHost
 	}
-	return t.DefaultOwner, t.Owners.Get(t.DefaultOwner)
+	host, ok := t.Hosts.TryGet(hostName)
+	if !ok {
+		return "", github.Token{}, ErrNoHost
+	}
+	return host.GetDefaultToken()
 }
 
-func (t TokenManager) Get(host, owner string) github.Token {
-	return t.Hosts.TryGet(host, &TokenHost{}).Owners.Get(owner)
+func (t *TokenHost) GetDefaultToken() (Owner, github.Token, error) {
+	if t == nil {
+		return "", github.Token{}, ErrNoHost
+	}
+	token, ok := t.Owners.TryGet(t.DefaultOwner)
+	if !ok {
+		return "", github.Token{}, ErrNoOwner
+	}
+	return t.DefaultOwner, token, nil
+}
+
+func (t TokenManager) Get(hostName, ownerName string) (github.Token, error) {
+	tokenHost, ok := t.Hosts.TryGet(hostName)
+	if !ok {
+		return github.Token{}, ErrNoHost
+	}
+	token, ok := tokenHost.Owners.TryGet(ownerName)
+	if !ok {
+		return github.Token{}, ErrNoOwner
+	}
+	return token, nil
+}
+
+func (t TokenManager) GetOrDefault(hostName, ownerName string) (github.Token, error) {
+	tokenHost, ok := t.Hosts.TryGet(hostName)
+	if !ok {
+		return github.Token{}, ErrNoHost
+	}
+	token, ok := tokenHost.Owners.TryGet(ownerName)
+	if !ok {
+		token, ok = tokenHost.Owners.TryGet(tokenHost.DefaultOwner)
+		if !ok {
+			return github.Token{}, ErrNoOwner
+		}
+	}
+	return token, nil
 }
 
 func (t *TokenManager) Set(hostName, ownerName string, token github.Token) {
-	host := t.Hosts.TryGet(hostName, &TokenHost{})
+	host := t.Hosts.GetOrSet(hostName, &TokenHost{})
 	if host.DefaultOwner == "" {
 		host.DefaultOwner = ownerName
 	}
@@ -107,41 +106,41 @@ func (t *TokenManager) SetDefaultHost(hostName string) error {
 }
 
 func (t *TokenManager) SetDefaultOwner(hostName, ownerName string) error {
-	if !t.Hosts.Has(hostName) {
-		return fmt.Errorf("host %s is not registered", hostName)
+	host, ok := t.Hosts.TryGet(hostName)
+	if !ok {
+		return ErrNoHost
 	}
-	host := t.Hosts.Get(hostName)
-	if !host.Owners.Has(ownerName) {
-		return fmt.Errorf("owner %s is not registered in host %s", ownerName, hostName)
+	if _, ok := host.Owners.TryGet(ownerName); !ok {
+		return ErrNoOwner
 	}
 	host.DefaultOwner = ownerName
 	t.Hosts.Set(hostName, host)
 	return nil
 }
 
-func (t *TokenManager) Delete(host, owner string) {
-	hosts := t.Hosts.Get(host)
-	if hosts == nil {
+func (t *TokenManager) Delete(hostName, ownerName string) {
+	host, ok := t.Hosts.TryGet(hostName)
+	if !ok {
 		return
 	}
-	hosts.Owners.Delete(owner)
-	if hosts.DefaultOwner == owner {
-		hosts.DefaultOwner = ""
+	host.Owners.Delete(ownerName)
+	if host.DefaultOwner == ownerName {
+		host.DefaultOwner = ""
 	}
-	if len(hosts.Owners) == 0 {
-		t.Hosts.Delete(host)
-		if t.DefaultHost == host {
+	if len(host.Owners) == 0 {
+		t.Hosts.Delete(hostName)
+		if t.DefaultHost == hostName {
 			t.DefaultHost = ""
 		}
 	}
 }
 
-func (t TokenManager) Has(host, owner string) bool {
-	hosts := t.Hosts.Get(host)
-	if hosts == nil {
+func (t TokenManager) Has(hostName, ownerName string) bool {
+	host, ok := t.Hosts.TryGet(hostName)
+	if !ok {
 		return false
 	}
-	return hosts.Owners.Has(owner)
+	return host.Owners.Has(ownerName)
 }
 
 type TokenEntry struct {
