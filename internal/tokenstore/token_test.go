@@ -1,19 +1,18 @@
-package gogh_test
+package tokenstore_test
 
 import (
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/internal/github"
+	testtarget "github.com/kyoh86/gogh/v3/internal/tokenstore"
 )
 
 func TestTokenManager(t *testing.T) {
-	var emptyToken github.Token
 	wantToken := github.Token{RefreshToken: "refresh-token", AccessToken: "access-token"}
-	t.Run("Empty token manager always returns empty", func(t *testing.T) {
+	t.Run("Empty token manager always returns error", func(t *testing.T) {
 		var tm testtarget.TokenManager
-		if got := tm.Get("host", "owner"); got != emptyToken {
-			t.Errorf("TokenManager.Get() = %v, want %v", got, "")
+		if _, err := tm.Get("host", "owner"); err != testtarget.ErrNoHost {
+			t.Errorf("TokenManager.Get() returns an error %v, want %v", err, testtarget.ErrNoHost)
 		}
 		if gotHost, gotToken := tm.GetDefaultKey(); gotHost != github.DefaultHost || gotToken != "" {
 			t.Errorf("TokenManager.GetDefaultKey() = %v, %v, want %v, %v", gotHost, gotToken, "", "")
@@ -23,13 +22,17 @@ func TestTokenManager(t *testing.T) {
 	t.Run("Set and get token", func(t *testing.T) {
 		var tm testtarget.TokenManager
 		tm.Set("host", "owner", wantToken)
-		if got := tm.Get("host", "owner"); got != wantToken {
+		got, err := tm.Get("host", "owner")
+		if err != nil {
+			t.Errorf("TokenManager.Get() returns an error %v, want to succeed", err)
+		}
+		if got != wantToken {
 			t.Errorf("TokenManager.Get() = %v, want %v", got, wantToken)
 		}
 		t.Run("Delete token", func(t *testing.T) {
 			tm.Delete("host", "owner")
-			if got := tm.Get("host", "owner"); got != emptyToken {
-				t.Errorf("TokenManager.Get() = %v, want %v", got, "")
+			if _, err := tm.Get("host", "owner"); err != testtarget.ErrNoHost {
+				t.Errorf("TokenManager.Get() returns an error %v, want %v", err, testtarget.ErrNoHost)
 			}
 			t.Run("Deleted default host / owner should be empty", func(t *testing.T) {
 				if gotHost, gotToken := tm.GetDefaultKey(); gotHost != github.DefaultHost || gotToken != "" {
@@ -56,7 +59,8 @@ func TestTokenManager(t *testing.T) {
 			if gotHost, gotToken := tm.GetDefaultKey(); gotHost != "host1" || gotToken != "owner1-1" {
 				t.Errorf("TokenManager.GetDefaultKey() = %v, %v, want %v, %v", gotHost, gotToken, "host1", "owner1-1")
 			}
-			if got := tm.Hosts.Get("host2").DefaultOwner; got != "owner2-1" {
+			host, _ := tm.Hosts.TryGet("host2")
+			if got := host.DefaultOwner; got != "owner2-1" {
 				t.Errorf("TokenManager.Hosts.Get() = %v, want %v", got, "owner2-1")
 			}
 		})
