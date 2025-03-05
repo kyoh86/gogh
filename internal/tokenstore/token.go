@@ -1,4 +1,4 @@
-package gogh
+package tokenstore
 
 import (
 	"fmt"
