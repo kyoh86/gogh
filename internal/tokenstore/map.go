@@ -46,5 +46,3 @@ func (m *Map[TKey, TVal]) GetOrSet(key TKey, setValue TVal) TVal {
 	(*m)[key] = setValue
 	return setValue
 }
-
-
