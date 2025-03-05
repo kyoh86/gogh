@@ -228,3 +228,11 @@ func (a *genuineAdaptor) RepositoryCreateFromTemplate(
 		templateRepoReq,
 	)
 }
+
+func (a *genuineAdaptor) OrganizationList(
+	ctx context.Context,
+) ([]*Organization, *Response, error) {
+	return a.restClient.Organizations.List(ctx, "", &github.ListOptions{
+		PerPage: 100,
+	})
+}

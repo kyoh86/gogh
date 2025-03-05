@@ -70,21 +70,6 @@ func (t TokenManager) Get(hostName, ownerName string) (github.Token, error) {
 	return token, nil
 }
 
-func (t TokenManager) GetOrDefault(hostName, ownerName string) (github.Token, error) {
-	tokenHost, ok := t.Hosts.TryGet(hostName)
-	if !ok {
-		return github.Token{}, ErrNoHost
-	}
-	token, ok := tokenHost.Owners.TryGet(ownerName)
-	if !ok {
-		token, ok = tokenHost.Owners.TryGet(tokenHost.DefaultOwner)
-		if !ok {
-			return github.Token{}, ErrNoOwner
-		}
-	}
-	return token, nil
-}
-
 func (t *TokenManager) Set(hostName, ownerName string, token github.Token) {
 	host := t.Hosts.GetOrSet(hostName, &TokenHost{})
 	if host.DefaultOwner == "" {

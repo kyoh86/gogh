@@ -10,7 +10,7 @@ import (
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -79,16 +79,10 @@ var (
 			l := log.FromContext(ctx).WithFields(log.Fields{
 				"spec": spec,
 			})
-			token, err := tokens.Get(spec.Host(), spec.Owner())
+			adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, tokens, spec)
 			if err != nil {
 				return fmt.Errorf("failed to get token for %s/%s: %w", spec.Host(), spec.Owner(), err)
 			}
-
-			adaptor, err := github.NewAdaptor(ctx, spec.Host(), &token)
-			if err != nil {
-				return err
-			}
-			remote := gogh.NewRemoteController(adaptor)
 
 			// check repo has already existed
 			if _, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil); err == nil {

@@ -24,6 +24,7 @@ type (
 	OwnerFragment               = githubv4.OwnerFragment
 	ParentRepositoryFragment    = githubv4.ParentRepositoryFragment
 	RepositoryFragment          = githubv4.RepositoryFragment
+	Organization                = github.Organization
 )
 
 const (
@@ -88,4 +89,5 @@ type Adaptor interface {
 	) (*Repository, *Response, error)
 	RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error)
 	RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error)
+	OrganizationList(ctx context.Context) ([]*Organization, *Response, error)
 }
