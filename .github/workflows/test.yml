@@ -52,7 +52,7 @@ jobs:
         with:
           go-version: 1.24
       - name: Search diagnostics
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
   test-covers:
     name: Take test coverages
     runs-on: ubuntu-latest
