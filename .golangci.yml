@@ -1,19 +1,39 @@
+version: "2"
 linters:
   enable:
     - bodyclose
     - dogsled
     - gocritic
     - godox
-    - gofmt
-    - goimports
     - misspell
     - nakedret
     - prealloc
-    - stylecheck
+    - staticcheck
     - unconvert
     - unparam
     - whitespace
-linters-settings:
-  gocritic:
-    disabled-checks:
-      - elseif
+  settings:
+    gocritic:
+      disabled-checks:
+        - elseif
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
