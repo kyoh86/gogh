@@ -136,7 +136,12 @@ func cloneOneFunc(
 			return nil
 		}
 		if repo.Parent != nil && repo.Parent.String() != spec.String() {
-			if err := local.SetRemoteSpecs(ctx, spec, map[string][]gogh.Spec{
+			l.Debug("set remote specs")
+			localSpec := spec
+			if alias != nil {
+				localSpec = *alias
+			}
+			if err := local.SetRemoteSpecs(ctx, localSpec, map[string][]gogh.Spec{
 				git.DefaultRemoteName: {spec},
 				"upstream":            {*repo.Parent},
 			}); err != nil {
