@@ -193,6 +193,10 @@ func (l *LocalController) Clone(
 		path = alias.FullFilePath()
 		p = alias
 	}
+
+	log.FromContext(ctx).
+		WithFields(log.Fields{"path": p, "url": url}).
+		Debug("clone a repository")
 	if _, err := git.PlainCloneContext(ctx, path, false, &git.CloneOptions{
 		URL:  url,
 		Auth: auth,

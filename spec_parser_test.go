@@ -308,30 +308,38 @@ func TestSpecParser(t *testing.T) {
 				title  string
 				source string
 
-				wantHost string
-				wantUser string
-				wantName string
+				wantHost      string
+				wantRepoUser  string
+				wantRepoName  string
+				wantAliasUser string
+				wantAliasName string
 			}{{
-				title:    "with-alias-name",
-				source:   host1 + "/" + owner1 + "/" + name + "=alias",
-				wantHost: host1,
-				wantUser: owner1,
-				wantName: "alias",
+				title:         "with-alias-name",
+				source:        host1 + "/" + owner1 + "/" + name + "=alias",
+				wantHost:      host1,
+				wantRepoUser:  owner1,
+				wantRepoName:  name,
+				wantAliasUser: owner1,
+				wantAliasName: "alias",
 			}, {
-				title:    "with-not-default-repo-with-alias-name",
-				source:   host2 + "/" + owner2 + "/" + name + "=alias",
-				wantHost: host2,
-				wantUser: owner2,
-				wantName: "alias",
+				title:         "with-not-default-repo-with-alias-name",
+				source:        host2 + "/" + owner2 + "/" + name + "=alias",
+				wantHost:      host2,
+				wantRepoUser:  owner2,
+				wantRepoName:  name,
+				wantAliasUser: owner2,
+				wantAliasName: "alias",
 			}, {
-				title:    "with-alias-owner",
-				source:   host1 + "/" + owner1 + "/" + name + "=" + owner2 + "/alias",
-				wantHost: host1,
-				wantUser: owner2,
-				wantName: "alias",
+				title:         "with-alias-owner",
+				source:        host1 + "/" + owner1 + "/" + name + "=" + owner2 + "/alias",
+				wantHost:      host1,
+				wantRepoUser:  owner1,
+				wantRepoName:  name,
+				wantAliasUser: owner2,
+				wantAliasName: "alias",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					_, alias, err := parser.ParseWithAlias(testcase.source)
+					repo, alias, err := parser.ParseWithAlias(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
@@ -341,14 +349,17 @@ func TestSpecParser(t *testing.T) {
 					if testcase.wantHost != alias.Host() {
 						t.Errorf("want host %q but %q gotten", testcase.wantHost, alias.Host())
 					}
-					if testcase.wantUser != alias.Owner() {
-						t.Errorf("want owner %q but %q gotten", testcase.wantUser, alias.Owner())
+					if testcase.wantRepoUser != repo.Owner() {
+						t.Errorf("want repo owner %q but %q gotten", testcase.wantRepoUser, alias.Owner())
 					}
-					if testcase.wantName != alias.Name() {
-						t.Errorf("want name %q but %q gotten", testcase.wantName, alias.Name())
+					if testcase.wantRepoName != repo.Name() {
+						t.Errorf("want repo name %q but %q gotten", testcase.wantRepoName, alias.Name())
 					}
-					if testcase.wantHost != alias.Host() {
-						t.Errorf("want host %q but %q gotten", testcase.wantHost, alias.Host())
+					if testcase.wantAliasUser != alias.Owner() {
+						t.Errorf("want alias owner %q but %q gotten", testcase.wantAliasUser, alias.Owner())
+					}
+					if testcase.wantAliasName != alias.Name() {
+						t.Errorf("want alias name %q but %q gotten", testcase.wantAliasName, alias.Name())
 					}
 				})
 			}
