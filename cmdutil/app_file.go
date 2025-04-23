@@ -10,7 +10,7 @@ import (
 
 const AppName = "gogh"
 
-func loadYAML(path string, obj interface{}) error {
+func loadYAML(path string, obj any) error {
 	file, err := os.Open(path)
 	switch {
 	case err == nil:
@@ -25,7 +25,7 @@ func loadYAML(path string, obj interface{}) error {
 	return dec.Decode(obj)
 }
 
-func saveYAML(path string, obj interface{}) error {
+func saveYAML(path string, obj any) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (h AppFile) appFilePath() (string, error) {
 	return filepath.Join(dir, AppName, h.Basename), nil
 }
 
-func (h AppFile) Load(output interface{}) (string, error) {
+func (h AppFile) Load(output any) (string, error) {
 	path, err := h.appFilePath()
 	if err != nil {
 		return "", err
@@ -66,7 +66,7 @@ func (h AppFile) Load(output interface{}) (string, error) {
 	return path, nil
 }
 
-func (h AppFile) Save(input interface{}) error {
+func (h AppFile) Save(input any) error {
 	path, err := h.appFilePath()
 	if err != nil {
 		return err

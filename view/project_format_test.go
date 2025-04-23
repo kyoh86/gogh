@@ -98,11 +98,11 @@ func TestProjectFormat(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to format: %s", err)
 		}
-		var got map[string]interface{}
+		var got map[string]any
 		if err := json.Unmarshal([]byte(formatted), &got); err != nil {
 			t.Fatalf("failed to unmarshal JSON formatted: %s", err)
 		}
-		want := map[string]interface{}{
+		want := map[string]any{
 			"fullFilePath": wantPath,
 			"relFilePath":  filepath.Clean("github.com/kyoh86/gogh"),
 			"url":          "https://github.com/kyoh86/gogh",

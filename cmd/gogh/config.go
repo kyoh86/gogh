@@ -91,7 +91,7 @@ var configCommand = &cobra.Command{
 			defaultFlags = regexp.MustCompile("(?m)^").ReplaceAllString(w.String(), "  ")
 		}
 		var w strings.Builder
-		if err := t.Execute(&w, map[string]interface{}{
+		if err := t.Execute(&w, map[string]any{
 			"configFilePath":      configFilePath,
 			"tokensFilePath":      tokensFilePath,
 			"defaultFlagFilePath": defaultFlagFilePath,

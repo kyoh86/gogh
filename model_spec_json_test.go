@@ -16,7 +16,7 @@ func TestSpecJSON(t *testing.T) {
 
 	for _, testcase := range []struct {
 		title string
-		input interface{}
+		input any
 		want  string
 	}{
 		{

@@ -49,7 +49,7 @@ var ProjectFormatJSON = ProjectFormatFunc(func(p gogh.Project) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	buf, _ := json.Marshal(map[string]interface{}{
+	buf, _ := json.Marshal(map[string]any{
 		"fullFilePath": p.FullFilePath(),
 		"relFilePath":  p.RelFilePath(),
 		"url":          utxt,
