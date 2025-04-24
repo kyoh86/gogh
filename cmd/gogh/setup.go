@@ -47,17 +47,17 @@ var (
 )
 
 func loadConfig() (string, error) {
-	path, err := configFileHandler.Load(&config)
+	path, err := configFileHandler.Load(&conf)
 	if err != nil {
 		return "", err
 	}
-	if len(config.Roots) == 0 {
+	if len(conf.Roots) == 0 {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return "", fmt.Errorf("search user home dir: %w", err)
 		}
 		raw := filepath.Join(homeDir, "Projects")
-		config.Roots = []expandedPath{{
+		conf.Roots = []expandedPath{{
 			raw:      raw,
 			expanded: raw,
 		}}
@@ -66,7 +66,7 @@ func loadConfig() (string, error) {
 }
 
 func saveConfig() error {
-	return configFileHandler.Save(config)
+	return configFileHandler.Save(conf)
 }
 
 func loadTokens() (string, error) {

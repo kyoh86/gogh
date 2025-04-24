@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/kyoh86/gogh/v3/internal/tokenstore"
+	"github.com/kyoh86/gogh/v3/config"
 	"github.com/spf13/cobra"
 )
 
-var tokens = tokenstore.TokenManager{}
+var tokens = config.TokenManager{}
 
 var authCommand = &cobra.Command{
 	Use:   "auth",

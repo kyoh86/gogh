@@ -6,11 +6,11 @@ import (
 	"fmt"
 
 	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
-	"github.com/kyoh86/gogh/v3/internal/tokenstore"
 )
 
-func RemoteControllerFor(ctx context.Context, tokens tokenstore.TokenManager, spec gogh.Spec) (github.Adaptor, *gogh.RemoteController, error) {
+func RemoteControllerFor(ctx context.Context, tokens config.TokenManager, spec gogh.Spec) (github.Adaptor, *gogh.RemoteController, error) {
 	token, err := tokens.Get(spec.Host(), spec.Owner())
 	switch {
 	case err == nil:
@@ -19,9 +19,9 @@ func RemoteControllerFor(ctx context.Context, tokens tokenstore.TokenManager, sp
 			return nil, nil, fmt.Errorf("failed to build adaptor for %q: %w", spec.Owner(), err)
 		}
 		return adaptor, gogh.NewRemoteController(adaptor), nil
-	case errors.Is(err, tokenstore.ErrNoHost):
+	case errors.Is(err, config.ErrNoHost):
 		return nil, nil, err
-	case errors.Is(err, tokenstore.ErrNoOwner):
+	case errors.Is(err, config.ErrNoOwner):
 		// Check each owners is member of the spec.Owner() organization
 		owners := tokens.Hosts[spec.Host()].Owners
 		for owner, token := range owners {
@@ -43,7 +43,7 @@ func RemoteControllerFor(ctx context.Context, tokens tokenstore.TokenManager, sp
 	tokenHost, _ := tokens.Hosts.TryGet(spec.Host())
 	token, ok := tokenHost.Owners.TryGet(tokenHost.DefaultOwner)
 	if !ok {
-		return nil, nil, tokenstore.ErrNoOwner
+		return nil, nil, config.ErrNoOwner
 	}
 	adaptor, err := github.NewAdaptor(ctx, spec.Host(), &token)
 	if err != nil {

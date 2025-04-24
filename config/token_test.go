@@ -1,10 +1,10 @@
-package tokenstore_test
+package config_test
 
 import (
 	"testing"
 
+	testtarget "github.com/kyoh86/gogh/v3/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
-	testtarget "github.com/kyoh86/gogh/v3/internal/tokenstore"
 )
 
 func TestTokenManager(t *testing.T) {

@@ -1,4 +1,4 @@
-package tokenstore
+package config
 
 import (
 	"fmt"

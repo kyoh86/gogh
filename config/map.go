@@ -1,4 +1,4 @@
-package tokenstore
+package config
 
 type Map[TKey comparable, TVal any] map[TKey]TVal
 

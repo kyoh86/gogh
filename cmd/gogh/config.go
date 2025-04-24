@@ -12,36 +12,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var config struct {
+var conf struct {
 	Roots []expandedPath `yaml:"roots"`
 }
 
 func defaultRoot() string {
-	return config.Roots[0].expanded
+	return conf.Roots[0].expanded
 }
 
 func roots() []string {
-	list := make([]string, 0, len(config.Roots))
-	for _, r := range config.Roots {
+	list := make([]string, 0, len(conf.Roots))
+	for _, r := range conf.Roots {
 		list = append(list, r.expanded)
 	}
 	return list
 }
 
 func setDefaultRoot(r string) error {
-	rootList := make([]expandedPath, 0, len(config.Roots))
+	rootList := make([]expandedPath, 0, len(conf.Roots))
 	newDefault, err := parsePath(r)
 	if err != nil {
 		return err
 	}
 	rootList = append(rootList, newDefault)
-	for _, root := range config.Roots {
+	for _, root := range conf.Roots {
 		if root.raw == r {
 			continue
 		}
 		rootList = append(rootList, root)
 	}
-	config.Roots = rootList
+	conf.Roots = rootList
 	return nil
 }
 
@@ -51,20 +51,20 @@ func addRoots(rootList []string) error {
 		if err != nil {
 			return err
 		}
-		config.Roots = append(config.Roots, newRoot)
+		conf.Roots = append(conf.Roots, newRoot)
 	}
 	return nil
 }
 
 func removeRoot(r string) {
-	rootList := make([]expandedPath, 0, len(config.Roots))
-	for _, root := range config.Roots {
+	rootList := make([]expandedPath, 0, len(conf.Roots))
+	for _, root := range conf.Roots {
 		if root.raw == r || root.expanded == r {
 			continue
 		}
 		rootList = append(rootList, root)
 	}
-	config.Roots = rootList
+	conf.Roots = rootList
 }
 
 //go:embed config_template.txt
