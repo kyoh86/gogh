@@ -30,20 +30,19 @@ var DescriptionCell = CellBuildFunc(func(r gogh.Repository) (content string, sty
 })
 
 var EmojiAttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
-	// UNDONE: this breaks terminal
-	contents := []string{""}
+	var parts []string
+
 	if r.Private {
-		contents[0] = "\U0001F512\uFE0F "
-	} else {
-		contents[0] = ""
+		parts = append(parts, "🔒")
 	}
 	if r.Fork {
-		contents = append(contents, "\U0001F500\uFE0F ")
+		parts = append(parts, "🔀")
 	}
 	if r.Archived {
-		contents = append(contents, "\U0001F5C3\uFE0F ")
+		parts = append(parts, "🗃️")
 	}
-	return strings.Join(contents, ""), aec.EmptyBuilder.ANSI
+
+	return strings.Join(parts, " "), aec.EmptyBuilder.ANSI
 })
 
 var AttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {

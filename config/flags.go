@@ -14,18 +14,18 @@ type BundleRestoreFlags struct {
 }
 
 type ReposFlags struct {
-	Format      string   `yaml:"format,omitempty"`
-	Color       string   `yaml:"color,omitempty"`
-	Sort        string   `yaml:"sort,omitempty"`
-	Order       string   `yaml:"order,omitempty"`
-	Relation    []string `yaml:"relation,omitempty"`
-	Limit       int      `yaml:"limit,omitempty"`
-	Private     bool     `yaml:"private,omitempty"`
-	Public      bool     `yaml:"public,omitempty"`
-	Fork        bool     `yaml:"fork,omitempty"`
-	NotFork     bool     `yaml:"notFork,omitempty"`
-	Archived    bool     `yaml:"archived,omitempty"`
-	NotArchived bool     `yaml:"notArchived,omitempty"`
+	Limit       int              `json:"limit,omitempty" yaml:"limit,omitempty"`
+	Public      bool             `json:"public,omitempty" yaml:"public,omitempty"`
+	Private     bool             `json:"private,omitempty" yaml:"private,omitempty"`
+	Fork        bool             `json:"fork,omitempty" yaml:"fork,omitempty"`
+	NotFork     bool             `json:"notFork,omitempty" yaml:"notFork,omitempty"`
+	Archived    bool             `json:"archived,omitempty" yaml:"archived,omitempty"`
+	NotArchived bool             `json:"notArchived,omitempty" yaml:"notArchived,omitempty"`
+	Format      flags.RepoFormat `json:"format,omitempty" yaml:"format,omitempty"`
+	Color       string           `json:"color,omitempty" yaml:"color,omitempty"`
+	Relation    []string         `json:"relation,omitempty" yaml:"relation,omitempty"`
+	Sort        string           `json:"sort,omitempty" yaml:"sort,omitempty"`
+	Order       string           `json:"order,omitempty" yaml:"order,omitempty"`
 }
 
 type CreateFlags struct {

@@ -12,11 +12,10 @@ import (
 	"github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
+	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/kyoh86/gogh/v3/view"
-	"github.com/kyoh86/gogh/v3/view/repotab"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/term"
 )
 
 func quoteEnums(values []string) string {
@@ -30,7 +29,6 @@ func quoteEnums(values []string) string {
 func NewReposCommand(tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
 	var (
 		f                  config.ReposFlags
-		repoFormatAccept   []string
 		repoSortAccept     []string
 		repoOrderAccept    []string
 		repoRelationAccept []string
@@ -56,7 +54,7 @@ func NewReposCommand(tokens *config.TokenManager, defaults *config.Flags) *cobra
 				listOption.Private = &f.Private // &true
 			}
 			if f.Public {
-				listOption.Private = &f.Private // &false
+				listOption.Private = &f.Public // &false
 			}
 
 			if f.Fork && f.NotFork {
@@ -90,26 +88,13 @@ func NewReposCommand(tokens *config.TokenManager, defaults *config.Flags) *cobra
 				return fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(repoRelationAccept)))
 			}
 			var format view.RepositoryPrinter
-			switch f.Format {
-			case "spec":
-				format = view.NewRepositorySpecPrinter(os.Stdout)
-			case "url":
-				format = view.NewRepositoryURLPrinter(os.Stdout)
-			case "json":
-				format = view.NewRepositoryJSONPrinter(os.Stdout)
-			case "table":
-				var options []repotab.Option
-				if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
-					options = append(options, repotab.Width(width))
-				}
-				if term.IsTerminal(int(os.Stdout.Fd())) || f.Color == "always" {
-					options = append(options, repotab.Styled())
-				}
-				format = repotab.NewPrinter(os.Stdout, options...)
-			default:
-				return fmt.Errorf("invalid format %q; %s", f.Format, repoFormatAccept)
+			var err error
+			format, err = f.Format.Formatter(os.Stdout)
+			if err != nil {
+				return err
 			}
 			defer format.Close()
+
 			if f.Sort != "" {
 				listOption.Sort = gogh.RepositoryOrderField(f.Sort)
 			}
@@ -156,7 +141,6 @@ func NewReposCommand(tokens *config.TokenManager, defaults *config.Flags) *cobra
 		},
 	}
 
-	repoFormatAccept = []string{"spec", "url", "json", "table"}
 	for _, v := range gogh.AllRepositoryOrderField {
 		repoSortAccept = append(repoSortAccept, string(v))
 	}
@@ -185,10 +169,8 @@ func NewReposCommand(tokens *config.TokenManager, defaults *config.Flags) *cobra
 		BoolVarP(&f.NotArchived, "no-archived", "", defaults.Repos.NotArchived, "Omit archived repositories")
 
 	cmd.Flags().
-		StringVarP(&f.Format, "format", "", defaultString(defaults.Repos.Format, "table"), fmt.Sprintf("The formatting style for each repository; it can accept %s", quoteEnums(repoFormatAccept)))
-	if err := cmd.RegisterFlagCompletionFunc("format", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return repoFormatAccept, cobra.ShellCompDirectiveDefault
-	}); err != nil {
+		VarP(&f.Format, "format", "", flags.RepoFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteRepoFormat); err != nil {
 		panic(err)
 	}
 	cmd.Flags().
