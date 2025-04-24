@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"github.com/kyoh86/gogh/v3/config"

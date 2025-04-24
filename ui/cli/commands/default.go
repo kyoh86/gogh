@@ -1,4 +1,4 @@
-package main
+package commands
 
 func defaultInt(value, defaultValue int) int {
 	if value == 0 {
