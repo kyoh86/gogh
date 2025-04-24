@@ -1,10 +1,11 @@
-package main
+package flags
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/kyoh86/gogh/v3/view"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
@@ -52,4 +53,13 @@ func formatter(v string) (view.ProjectFormat, error) {
 		return view.ProjectFormatFields(v[len("fields:"):]), nil
 	}
 	return nil, fmt.Errorf("invalid format: %q", v)
+}
+
+const ProjectFormatShortUsage = `
+Print each project in a given format, where [format] can be one of "rel-path", "rel-file-path",
+"full-file-path", "json", "url", "fields" or "fields:[separator]".
+`
+
+func CompleteProjectFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return []string{"rel-path", "rel-file-path", "full-file-path", "json", "url", "fields", "fields:"}, cobra.ShellCompDirectiveDefault
 }

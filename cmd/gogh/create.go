@@ -11,33 +11,13 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/cmdutil"
+	"github.com/kyoh86/gogh/v3/config"
 	"github.com/spf13/cobra"
 )
 
-type createFlagsStruct struct {
-	Template            string `yaml:"template,omitempty"`
-	Description         string `yaml:"-"`
-	Homepage            string `yaml:"-"`
-	LicenseTemplate     string `yaml:"licenseTemplate,omitempty"`
-	GitignoreTemplate   string `yaml:"gitignoreTemplate,omitempty"`
-	CloneRetryLimit     int    `yaml:"cloneRetryLimit,omitempty"`
-	DisableWiki         bool   `yaml:"disableWiki,omitempty"`
-	DisableDownloads    bool   `yaml:"disableDownloads,omitempty"`
-	IsTemplate          bool   `yaml:"-"`
-	AutoInit            bool   `yaml:"autoInit,omitempty"`
-	DisableProjects     bool   `yaml:"disableProjects,omitempty"`
-	DisableIssues       bool   `yaml:"disableIssues,omitempty"`
-	PreventSquashMerge  bool   `yaml:"preventSquashMerge,omitempty"`
-	PreventMergeCommit  bool   `yaml:"preventMergeCommit,omitempty"`
-	PreventRebaseMerge  bool   `yaml:"preventRebaseMerge,omitempty"`
-	DeleteBranchOnMerge bool   `yaml:"deleteBranchOnMerge,omitempty"`
-	Private             bool   `yaml:"private,omitempty"`
-	Dryrun              bool   `yaml:"-"`
-}
-
-var (
-	createFlags   createFlagsStruct
-	createCommand = &cobra.Command{
+func NewCreateCommand(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+	var f config.CreateFlags
+	cmd := &cobra.Command{
 		Use:     "create [flags] [[OWNER/]NAME]",
 		Aliases: []string{"new"},
 		Short:   "Create a new project with a remote repository",
@@ -67,7 +47,7 @@ var (
 				return err
 			}
 
-			local := gogh.NewLocalController(defaultRoot())
+			local := gogh.NewLocalController(conf.DefaultRoot())
 			exist, err := local.Exist(ctx, spec, nil)
 			if err != nil {
 				return err
@@ -79,7 +59,7 @@ var (
 			l := log.FromContext(ctx).WithFields(log.Fields{
 				"spec": spec,
 			})
-			adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, tokens, spec)
+			adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, *tokens, spec)
 			if err != nil {
 				return fmt.Errorf("failed to get token for %s/%s: %w", spec.Host(), spec.Owner(), err)
 			}
@@ -92,23 +72,23 @@ var (
 				if err != nil {
 					return err
 				}
-				if createFlags.Template == "" {
+				if f.Template == "" {
 					ropt := &gogh.RemoteCreateOption{
-						Description:         createFlags.Description,
-						Homepage:            createFlags.Homepage,
-						LicenseTemplate:     createFlags.LicenseTemplate,
-						GitignoreTemplate:   createFlags.GitignoreTemplate,
-						Private:             createFlags.Private,
-						IsTemplate:          createFlags.IsTemplate,
-						DisableDownloads:    createFlags.DisableDownloads,
-						DisableWiki:         createFlags.DisableWiki,
-						AutoInit:            createFlags.AutoInit,
-						DisableProjects:     createFlags.DisableProjects,
-						DisableIssues:       createFlags.DisableIssues,
-						PreventSquashMerge:  createFlags.PreventSquashMerge,
-						PreventMergeCommit:  createFlags.PreventMergeCommit,
-						PreventRebaseMerge:  createFlags.PreventRebaseMerge,
-						DeleteBranchOnMerge: createFlags.DeleteBranchOnMerge,
+						Description:         f.Description,
+						Homepage:            f.Homepage,
+						LicenseTemplate:     f.LicenseTemplate,
+						GitignoreTemplate:   f.GitignoreTemplate,
+						Private:             f.Private,
+						IsTemplate:          f.IsTemplate,
+						DisableDownloads:    f.DisableDownloads,
+						DisableWiki:         f.DisableWiki,
+						AutoInit:            f.AutoInit,
+						DisableProjects:     f.DisableProjects,
+						DisableIssues:       f.DisableIssues,
+						PreventSquashMerge:  f.PreventSquashMerge,
+						PreventMergeCommit:  f.PreventMergeCommit,
+						PreventRebaseMerge:  f.PreventRebaseMerge,
+						DeleteBranchOnMerge: f.DeleteBranchOnMerge,
 					}
 					if me != spec.Owner() {
 						ropt.Organization = spec.Owner()
@@ -118,7 +98,7 @@ var (
 						return err
 					}
 				} else {
-					from, err := gogh.ParseSiblingSpec(spec, createFlags.Template)
+					from, err := gogh.ParseSiblingSpec(spec, f.Template)
 					if err != nil {
 						return err
 					}
@@ -126,7 +106,7 @@ var (
 					if me != spec.Owner() {
 						ropt.Owner = spec.Owner()
 					}
-					if createFlags.Private {
+					if f.Private {
 						ropt.Private = true
 					}
 					if _, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt); err != nil {
@@ -139,7 +119,7 @@ var (
 				l.WithField("error", err).Error("failed to get access token")
 				return nil
 			}
-			for i := 0; i < createFlags.CloneRetryLimit; i++ {
+			for range f.CloneRetryLimit {
 				_, err := local.Clone(ctx, spec, accessToken, nil)
 				switch {
 				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
@@ -170,46 +150,43 @@ var (
 			return nil
 		},
 	}
-)
+	defaults.Create.CloneRetryLimit = 5
 
-func init() {
-	defaultFlag.Create.CloneRetryLimit = 5
-
-	createCommand.Flags().
-		BoolVarP(&createFlags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	createCommand.Flags().
-		StringVarP(&createFlags.Template, "template", "", defaultFlag.Create.Template, "Create new repository from the template")
-	createCommand.Flags().
-		StringVarP(&createFlags.Description, "description", "", "", "A short description of the repository")
-	createCommand.Flags().
-		StringVarP(&createFlags.Homepage, "homepage", "", "", "A URL with more information about the repository")
-	createCommand.Flags().
-		StringVarP(&createFlags.LicenseTemplate, "license-template", "", defaultFlag.Create.LicenseTemplate, `Choose an open source license template that best suits your needs, and then use the license keyword as the license_template string when "auto-init" flag is set. For example, "mit" or "mpl-2.0"`)
-	createCommand.Flags().
-		StringVarP(&createFlags.GitignoreTemplate, "gitignore-template", "", defaultFlag.Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
-	createCommand.Flags().
-		BoolVarP(&createFlags.Private, "private", "", defaultFlag.Create.Private, "Whether the repository is private")
-	createCommand.Flags().
-		BoolVarP(&createFlags.IsTemplate, "is-template", "", false, "Whether the repository is available as a template")
-	createCommand.Flags().
-		BoolVarP(&createFlags.DisableDownloads, "disable-downloads", "", defaultFlag.Create.DisableDownloads, `Disable "Downloads" page`)
-	createCommand.Flags().
-		BoolVarP(&createFlags.DisableWiki, "disable-wiki", "", defaultFlag.Create.DisableWiki, `Disable Wiki for the repository`)
-	createCommand.Flags().
-		BoolVarP(&createFlags.AutoInit, "auto-init", "", defaultFlag.Create.AutoInit, "Create an initial commit with empty README")
-	createCommand.Flags().
-		BoolVarP(&createFlags.DisableProjects, "disable-projects", "", defaultFlag.Create.DisableProjects, `Disable projects for the repository`)
-	createCommand.Flags().
-		BoolVarP(&createFlags.DisableIssues, "disable-issues", "", defaultFlag.Create.DisableIssues, `Disable issues for the repository`)
-	createCommand.Flags().
-		BoolVarP(&createFlags.PreventSquashMerge, "prevent-squash-merge", "", defaultFlag.Create.PreventSquashMerge, "Prevent squash-merging pull requests")
-	createCommand.Flags().
-		BoolVarP(&createFlags.PreventMergeCommit, "prevent-merge-commit", "", defaultFlag.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
-	createCommand.Flags().
-		BoolVarP(&createFlags.PreventRebaseMerge, "prevent-rebase-merge", "", defaultFlag.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
-	createCommand.Flags().
-		BoolVarP(&createFlags.DeleteBranchOnMerge, "delete-branch-on-merge", "", defaultFlag.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
-	createCommand.Flags().
-		IntVarP(&createFlags.CloneRetryLimit, "clone-retry-limit", "", defaultFlag.Create.CloneRetryLimit, "")
-	facadeCommand.AddCommand(createCommand)
+	cmd.Flags().
+		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cmd.Flags().
+		StringVarP(&f.Template, "template", "", defaults.Create.Template, "Create new repository from the template")
+	cmd.Flags().
+		StringVarP(&f.Description, "description", "", "", "A short description of the repository")
+	cmd.Flags().
+		StringVarP(&f.Homepage, "homepage", "", "", "A URL with more information about the repository")
+	cmd.Flags().
+		StringVarP(&f.LicenseTemplate, "license-template", "", defaults.Create.LicenseTemplate, `Choose an open source license template that best suits your needs, and then use the license keyword as the license_template string when "auto-init" flag is set. For example, "mit" or "mpl-2.0"`)
+	cmd.Flags().
+		StringVarP(&f.GitignoreTemplate, "gitignore-template", "", defaults.Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
+	cmd.Flags().
+		BoolVarP(&f.Private, "private", "", defaults.Create.Private, "Whether the repository is private")
+	cmd.Flags().
+		BoolVarP(&f.IsTemplate, "is-template", "", false, "Whether the repository is available as a template")
+	cmd.Flags().
+		BoolVarP(&f.DisableDownloads, "disable-downloads", "", defaults.Create.DisableDownloads, `Disable "Downloads" page`)
+	cmd.Flags().
+		BoolVarP(&f.DisableWiki, "disable-wiki", "", defaults.Create.DisableWiki, `Disable Wiki for the repository`)
+	cmd.Flags().
+		BoolVarP(&f.AutoInit, "auto-init", "", defaults.Create.AutoInit, "Create an initial commit with empty README")
+	cmd.Flags().
+		BoolVarP(&f.DisableProjects, "disable-projects", "", defaults.Create.DisableProjects, `Disable projects for the repository`)
+	cmd.Flags().
+		BoolVarP(&f.DisableIssues, "disable-issues", "", defaults.Create.DisableIssues, `Disable issues for the repository`)
+	cmd.Flags().
+		BoolVarP(&f.PreventSquashMerge, "prevent-squash-merge", "", defaults.Create.PreventSquashMerge, "Prevent squash-merging pull requests")
+	cmd.Flags().
+		BoolVarP(&f.PreventMergeCommit, "prevent-merge-commit", "", defaults.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
+	cmd.Flags().
+		BoolVarP(&f.PreventRebaseMerge, "prevent-rebase-merge", "", defaults.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
+	cmd.Flags().
+		BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", defaults.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
+	cmd.Flags().
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", defaults.Create.CloneRetryLimit, "")
+	return cmd
 }

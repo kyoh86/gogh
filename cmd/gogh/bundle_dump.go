@@ -9,25 +9,22 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/config"
 	"github.com/spf13/cobra"
 )
 
-type bundleDumpFlagsStruct struct {
-	File expandedPath `yaml:"file,omitempty"`
-}
-
-var (
-	bundleDumpFlags   bundleDumpFlagsStruct
-	bundleDumpCommand = &cobra.Command{
+func NewBundleDumpCommand(conf *config.Config, defaults *config.Flags) *cobra.Command {
+	var f config.BundleDumpFlags
+	cmd := &cobra.Command{
 		Use:     "dump",
 		Aliases: []string{"export"},
 		Short:   "Export current local projects",
 		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
-			if bundleDumpFlags.File.expanded != "" {
+			if f.File.Expand() != "" {
 				f, err := os.OpenFile(
-					bundleDumpFlags.File.expanded,
+					f.File.Expand(),
 					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
 					0644,
 				)
@@ -38,7 +35,7 @@ var (
 				out = f
 			}
 			ctx := cmd.Context()
-			list := roots()
+			list := conf.GetRoots()
 			if len(list) == 0 {
 				return nil
 			}
@@ -69,10 +66,8 @@ var (
 			return nil
 		},
 	}
-)
 
-func init() {
-	bundleDumpFlags.File = defaultFlag.BundleDump.File
-	bundleDumpCommand.Flags().VarP(&bundleDumpFlags.File, "file", "", "A file to output; if not specified, output to stdout")
-	bundleCommand.AddCommand(bundleDumpCommand)
+	f.File = defaults.BundleDump.File
+	cmd.Flags().VarP(&f.File, "file", "", "A file to output; if not specified, output to stdout")
+	return cmd
 }

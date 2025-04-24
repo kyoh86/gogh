@@ -6,18 +6,14 @@ import (
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
 )
 
-type forkFlagsStruct struct {
-	Own bool `yaml:"own,omitempty"`
-}
-
-var (
-	forkFlags forkFlagsStruct
-
-	forkCommand = &cobra.Command{
+func NewForkCommand(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+	var f config.ForkFlags
+	cmd := &cobra.Command{
 		Use:   "fork [flags] OWNER/NAME",
 		Short: "Fork a repository",
 		Args:  cobra.ExactArgs(1),
@@ -42,12 +38,12 @@ var (
 				return err
 			}
 
-			root := defaultRoot()
+			root := conf.DefaultRoot()
 			local := gogh.NewLocalController(root)
 
 			localSpec := spec
 			var opt *gogh.LocalCloneOption
-			if forkFlags.Own {
+			if f.Own {
 				opt = &gogh.LocalCloneOption{Alias: &forked.Spec}
 				localSpec = forked.Spec
 			}
@@ -66,10 +62,8 @@ var (
 			})
 		},
 	}
-)
-
-func init() {
-	forkCommand.Flags().
-		BoolVarP(&forkFlags.Own, "own", "", false, "Clones the forked repo to local as my-own repo")
-	facadeCommand.AddCommand(forkCommand)
+	f.Own = defaults.Fork.Own
+	cmd.Flags().
+		BoolVarP(&f.Own, "own", "", false, "Clones the forked repo to local as my-own repo")
+	return cmd
 }

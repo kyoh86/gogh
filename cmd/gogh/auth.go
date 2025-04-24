@@ -5,17 +5,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var tokens = config.TokenManager{}
-
-var authCommand = &cobra.Command{
-	Use:   "auth",
-	Short: "Manage tokens",
-	PersistentPostRunE: func(*cobra.Command, []string) error {
-		return saveTokens()
-	},
-}
-
-func init() {
-	configCommand.AddCommand(authCommand)
-	facadeCommand.AddCommand(authCommand)
+func NewAuthCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "auth",
+		Short: "Manage tokens",
+		PersistentPostRunE: func(*cobra.Command, []string) error {
+			return config.SaveTokens()
+		},
+	}
 }

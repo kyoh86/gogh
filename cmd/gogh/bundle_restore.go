@@ -4,24 +4,20 @@ import (
 	"bufio"
 	"os"
 
+	"github.com/kyoh86/gogh/v3/config"
 	"github.com/spf13/cobra"
 )
 
-type bundleRestoreFlagsStruct struct {
-	File   expandedPath `yaml:"file,omitempty"`
-	Dryrun bool         `yaml:"-"`
-}
-
-var (
-	bundleRestoreFlags   bundleRestoreFlagsStruct
-	bundleRestoreCommand = &cobra.Command{
+func NewBundleRestoreCommand(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+	var f config.BundleRestoreFlags
+	cmd := &cobra.Command{
 		Use:   "restore",
 		Short: "Get dumped projects",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			in := os.Stdin
-			if bundleRestoreFlags.File.expanded != "" {
-				f, err := os.Open(bundleRestoreFlags.File.expanded)
+			if f.File.Expand() != "" {
+				f, err := os.Open(f.File.Expand())
 				if err != nil {
 					return err
 				}
@@ -35,16 +31,13 @@ var (
 			}
 
 			ctx := cmd.Context()
-			return cloneAll(ctx, specs, bundleRestoreFlags.Dryrun)
+			return cloneAll(ctx, conf, tokens, specs, f.Dryrun)
 		},
 	}
-)
-
-func init() {
-	bundleRestoreFlags.File = defaultFlag.BundleRestore.File
-	bundleRestoreCommand.Flags().
-		BoolVarP(&bundleRestoreFlags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	bundleRestoreCommand.Flags().
-		VarP(&bundleRestoreFlags.File, "file", "", "Read the file as input; if not specified, read from stdin")
-	bundleCommand.AddCommand(bundleRestoreCommand)
+	cmd.Flags().
+		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	f.File = defaults.BundleRestore.File
+	cmd.Flags().
+		VarP(&f.File, "file", "", "Read the file as input; if not specified, read from stdin")
+	return cmd
 }

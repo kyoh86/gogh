@@ -4,102 +4,108 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
+	"github.com/kyoh86/gogh/v3/config"
 	"github.com/spf13/cobra"
 )
 
-var rootsCommand = &cobra.Command{
-	Use:     "roots",
-	Short:   "Manage roots",
-	Aliases: []string{"root"},
-	PersistentPostRunE: func(*cobra.Command, []string) error {
-		return saveConfig()
-	},
-	Run: rootsListCommand.Run,
+func NewRootsCommand(conf *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:     "roots",
+		Short:   "Manage roots",
+		Aliases: []string{"root"},
+		PersistentPostRunE: func(*cobra.Command, []string) error {
+			return config.SaveConfig()
+		},
+		Run: RootsListRun(conf),
+	}
 }
 
-var rootsListCommand = &cobra.Command{
-	Use:   "list",
-	Short: "List all of the roots",
-	Args:  cobra.ExactArgs(0),
-	Run: func(*cobra.Command, []string) {
-		for _, root := range roots() {
+func NewRootsListCommand(conf *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "list",
+		Short: "List all of the roots",
+		Args:  cobra.ExactArgs(0),
+		Run:   RootsListRun(conf),
+	}
+}
+
+func RootsListRun(conf *config.Config) func(*cobra.Command, []string) {
+	return func(*cobra.Command, []string) {
+		for _, root := range conf.GetRoots() {
 			fmt.Println(root)
 		}
-	},
+	}
 }
 
-var rootsAddCommand = &cobra.Command{
-	Use:   "add",
-	Short: "Add directories into the roots",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(_ *cobra.Command, rootList []string) error {
-		return addRoots(rootList)
-	},
+func NewRootsAddCommand(conf *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "add",
+		Short: "Add directories into the roots",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(_ *cobra.Command, rootList []string) error {
+			return conf.AddRoots(rootList)
+		},
+	}
 }
 
-var rootsRemoveCommand = &cobra.Command{
-	Use:   "remove",
-	Short: "Remove a directory from the roots",
-	Args:  cobra.RangeArgs(0, 1),
-	RunE: func(_ *cobra.Command, rootList []string) error {
-		var selected string
-		if len(rootList) == 0 {
-			options := make([]huh.Option[string], 0, len(roots()))
-			for _, root := range roots() {
-				options = append(options, huh.Option[string]{Key: root, Value: root})
-			}
+func NewRootsRemoveCommand(conf *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "remove",
+		Short: "Remove a directory from the roots",
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(_ *cobra.Command, rootList []string) error {
+			var selected string
+			if len(rootList) == 0 {
+				options := make([]huh.Option[string], 0, len(conf.GetRoots()))
+				for _, root := range conf.GetRoots() {
+					options = append(options, huh.Option[string]{Key: root, Value: root})
+				}
 
-			form := huh.NewForm(huh.NewGroup(
-				huh.NewSelect[string]().
-					Title("Roots to remove").
-					Options(options...).
-					Value(&selected),
-			))
-			if err := form.Run(); err != nil {
-				return err
+				form := huh.NewForm(huh.NewGroup(
+					huh.NewSelect[string]().
+						Title("Roots to remove").
+						Options(options...).
+						Value(&selected),
+				))
+				if err := form.Run(); err != nil {
+					return err
+				}
+			} else {
+				selected = rootList[0]
 			}
-		} else {
-			selected = rootList[0]
-		}
-		removeRoot(selected)
-		return nil
-	},
+			conf.RemoveRoot(selected)
+			return nil
+		},
+	}
 }
 
-var rootsSetDefaultCommand = &cobra.Command{
-	Use:   "set-default",
-	Short: "Set a directory as the default in the roots",
-	Args:  cobra.RangeArgs(0, 1),
-	RunE: func(_ *cobra.Command, rootList []string) error {
-		var selected string
-		if len(rootList) == 0 {
-			options := make([]huh.Option[string], 0, len(roots()))
-			for _, root := range roots() {
-				options = append(options, huh.Option[string]{Key: root, Value: root})
+func NewRootsSetDefaultCommand(conf *config.Config) *cobra.Command {
+	return &cobra.Command{
+		Use:   "set-default",
+		Short: "Set a directory as the default in the roots",
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(_ *cobra.Command, rootList []string) error {
+			var selected string
+			if len(rootList) == 0 {
+				options := make([]huh.Option[string], 0, len(conf.GetRoots()))
+				for _, root := range conf.GetRoots() {
+					options = append(options, huh.Option[string]{Key: root, Value: root})
+				}
+
+				form := huh.NewForm(huh.NewGroup(
+					huh.NewSelect[string]().
+						Title("A directory to set as default root").
+						Options(options...).
+						Value(&selected),
+				))
+				if err := form.Run(); err != nil {
+					return err
+				}
+			} else {
+				selected = rootList[0]
 			}
 
-			form := huh.NewForm(huh.NewGroup(
-				huh.NewSelect[string]().
-					Title("A directory to set as default root").
-					Options(options...).
-					Value(&selected),
-			))
-			if err := form.Run(); err != nil {
-				return err
-			}
-		} else {
-			selected = rootList[0]
-		}
-
-		return setDefaultRoot(selected)
-	},
-}
-
-func init() {
-	rootsCommand.AddCommand(rootsSetDefaultCommand)
-	rootsCommand.AddCommand(rootsRemoveCommand)
-	rootsCommand.AddCommand(rootsAddCommand)
-	rootsCommand.AddCommand(rootsListCommand)
-	configCommand.AddCommand(rootsCommand)
-	facadeCommand.AddCommand(rootsCommand)
+			return conf.SetDefaultRoot(selected)
+		},
+	}
 }
