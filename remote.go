@@ -8,8 +8,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/internal/github"
-	"github.com/kyoh86/gogh/v3/internal/githubv4"
+	"github.com/kyoh86/gogh/v3/infra/github"
+	"github.com/kyoh86/gogh/v3/infra/githubv4"
 )
 
 const DefaultHost = "github.com"

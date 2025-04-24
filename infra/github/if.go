@@ -4,7 +4,7 @@ import (
 	"context"
 
 	github "github.com/google/go-github/v69/github"
-	"github.com/kyoh86/gogh/v3/internal/githubv4"
+	"github.com/kyoh86/gogh/v3/infra/githubv4"
 )
 
 type (

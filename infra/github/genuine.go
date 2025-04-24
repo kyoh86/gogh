@@ -7,7 +7,7 @@ import (
 
 	"github.com/Khan/genqlient/graphql"
 	github "github.com/google/go-github/v69/github"
-	"github.com/kyoh86/gogh/v3/internal/githubv4"
+	"github.com/kyoh86/gogh/v3/infra/githubv4"
 	"golang.org/x/oauth2"
 )
 

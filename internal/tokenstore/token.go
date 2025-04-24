@@ -3,7 +3,7 @@ package tokenstore
 import (
 	"fmt"
 
-	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/infra/github"
 )
 
 type Host = string

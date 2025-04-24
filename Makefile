@@ -17,15 +17,15 @@ gen: gen-clear
 .PHONY: gen
 
 clear-sdl:
-	rm -f ./internal/githubv4/schema.graphql
+	rm -f ./infra/githubv4/schema.graphql
 .PHONY: clear-sdl
 
 get-sdl:
-	curl -Lo ./internal/githubv4/schema.graphql https://docs.github.com/public/fpt/schema.docs.graphql
+	curl -Lo ./infra/githubv4/schema.graphql https://docs.github.com/public/fpt/schema.docs.graphql
 .PHONY: get-sdl
 
 gen-gql: clear-sdl get-sdl
-	go generate -tags gengraphql -x ./internal/githubv4
+	go generate -tags gengraphql -x ./infra/githubv4
 .PHONY: gen-gql
 
 lint: gen

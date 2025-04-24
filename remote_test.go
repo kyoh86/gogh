@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/internal/github"
-	"github.com/kyoh86/gogh/v3/internal/github_mock"
-	"github.com/kyoh86/gogh/v3/internal/githubv4"
+	"github.com/kyoh86/gogh/v3/infra/github"
+	"github.com/kyoh86/gogh/v3/infra/github_mock"
+	"github.com/kyoh86/gogh/v3/infra/githubv4"
 	"go.uber.org/mock/gomock"
 )
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/view"
 	"github.com/kyoh86/gogh/v3/view/repotab"
 	"github.com/spf13/cobra"

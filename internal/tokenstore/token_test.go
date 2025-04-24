@@ -3,7 +3,7 @@ package tokenstore_test
 import (
 	"testing"
 
-	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/infra/github"
 	testtarget "github.com/kyoh86/gogh/v3/internal/tokenstore"
 )
 

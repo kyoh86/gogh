@@ -1,4 +1,4 @@
-# CONTRIBUTING (internal/githubv4)
+# CONTRIBUTING (infra/githubv4)
 
 If you want to change internal github v4 client library in this package,
 you *SHOULD* take the following steps.

@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
 )
 

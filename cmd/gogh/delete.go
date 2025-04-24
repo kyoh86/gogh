@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/cmdutil"
-	"github.com/kyoh86/gogh/v3/internal/github"
+	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
 )
 
