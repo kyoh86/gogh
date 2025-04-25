@@ -7,7 +7,7 @@ Gogh is a tool to manage GitHub repositories efficiently, inspired by [`ghq`](ht
 [![Coverage Status](https://img.shields.io/codecov/c/github/kyoh86/gogh.svg)](https://codecov.io/gh/kyoh86/gogh)
 [![GitHub release](https://github.com/kyoh86/gogh/actions/workflows/release.yml/badge.svg)](https://github.com/kyoh86/gogh/releases)
 
-![](./image/gogh.jpg)
+![](./doc/image/gogh.jpg)
 
 ## Description
 
@@ -76,7 +76,7 @@ To login in new server or logout, you should use `auth login`.
 
 ## Available commands
 
-See [usage/gogh.md](./usage/gogh.md) for detailed command usage.
+See [doc/usage/gogh.md](./usage/gogh.md) for detailed command usage.
 
 ### Show projects
 
@@ -105,7 +105,7 @@ See [usage/gogh.md](./usage/gogh.md) for detailed command usage.
 | `gogh help`   | Help about any command |
 
 Use `gogh [command] --help` for more information about a command.
-Or see the manual in [usage/gogh.md](./usage/gogh.md).
+Or see the manual in [doc/usage/gogh.md](./usage/gogh.md).
 
 ## Environment variables
 

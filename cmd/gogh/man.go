@@ -59,11 +59,11 @@ var manCommand = &cobra.Command{
 		if err := doc.GenManTree(facadeCommand, header, "."); err != nil {
 			return err
 		}
-		if err := os.MkdirAll("./usage", 0755); err != nil {
+		if err := os.MkdirAll("./doc/usage", 0755); err != nil {
 			return err
 		}
 		facadeCommand.DisableAutoGenTag = true
-		if err := doc.GenMarkdownTree(facadeCommand, "./usage"); err != nil {
+		if err := doc.GenMarkdownTree(facadeCommand, "./doc/usage"); err != nil {
 			return err
 		}
 		return nil
