@@ -9,12 +9,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	testtarget "github.com/kyoh86/gogh/v3/view"
 )
 
 func TestLocalRepoFormat(t *testing.T) {
 	tempDir := t.TempDir()
-	ref, err := gogh.NewRepoRef("github.com", "kyoh86", "gogh")
+	ref, err := reporef.NewRepoRef("github.com", "kyoh86", "gogh")
 	if err != nil {
 		t.Fatalf("failed to init Ref: %s", err)
 	}

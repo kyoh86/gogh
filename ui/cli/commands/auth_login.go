@@ -8,7 +8,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
@@ -42,7 +42,7 @@ func NewAuthLoginCommand(tokens *config.TokenStore) *cobra.Command {
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewInput().
 						Title("Host name").
-						Validate(gogh.ValidateHost).
+						Validate(reporef.ValidateHost).
 						Value(&f.Host),
 				)).Run(); err != nil {
 					return err

@@ -1,14 +1,15 @@
-package gogh_test
+package reporef_test
 
 import (
 	"reflect"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3"
+	testtarget "github.com/kyoh86/gogh/v3/domain/reporef"
 )
 
 func TestRepoRefParser(t *testing.T) {
 	const (
+		host0  = "github.com"
 		owner1 = "kyoh86"
 		owner2 = "anonymous"
 		host1  = "example.com" // host a not default
@@ -36,7 +37,7 @@ func TestRepoRefParser(t *testing.T) {
 	})
 
 	t.Run("DefaultHost", func(t *testing.T) {
-		parser := testtarget.NewRepoRefParser(testtarget.DefaultHost, owner1)
+		parser := testtarget.NewRepoRefParser(host0, owner1)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -48,19 +49,19 @@ func TestRepoRefParser(t *testing.T) {
 			}{{
 				title:      "valid-name",
 				source:     name,
-				expectHost: testtarget.DefaultHost,
+				expectHost: host0,
 				expectUser: owner1,
 				expectName: name,
 			}, {
 				title:      "default-owner,valid-name",
 				source:     owner1 + "/" + name,
-				expectHost: testtarget.DefaultHost,
+				expectHost: host0,
 				expectUser: owner1,
 				expectName: name,
 			}, {
 				title:      "default-host,default-owner,valid-name",
-				source:     testtarget.DefaultHost + "/" + owner1 + "/" + name,
-				expectHost: testtarget.DefaultHost,
+				source:     host0 + "/" + owner1 + "/" + name,
+				expectHost: host0,
 				expectUser: owner1,
 				expectName: name,
 			}, {

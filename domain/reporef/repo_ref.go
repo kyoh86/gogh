@@ -1,4 +1,4 @@
-package gogh
+package reporef
 
 import (
 	"net/url"

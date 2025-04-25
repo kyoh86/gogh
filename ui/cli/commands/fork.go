@@ -6,6 +6,7 @@ import (
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
@@ -19,7 +20,7 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
-			parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
+			parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
 			ref, err := parser.Parse(refs[0])
 			if err != nil {
 				return err
@@ -56,7 +57,7 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 			if _, err := local.Clone(ctx, ref, accessToken, opt); err != nil {
 				return fmt.Errorf("cloning the remote repository %q: %w", ref, err)
 			}
-			return local.SetRemoteRefs(ctx, localRef, map[string][]gogh.RepoRef{
+			return local.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
 				git.DefaultRemoteName: {forked.Ref},
 				"upstream":            {ref},
 			})

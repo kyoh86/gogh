@@ -5,25 +5,27 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 )
 
 // LocalRepo is the location of a repository in the local.
 // It is a valid location, that never means "exist".
 type LocalRepo struct {
 	root string
-	ref  RepoRef
+	ref  reporef.RepoRef
 }
 
 func (l LocalRepo) Root() string {
 	return l.root
 }
 
-func (l LocalRepo) Host() string  { return l.ref.host }
-func (l LocalRepo) Owner() string { return l.ref.owner }
-func (l LocalRepo) Name() string  { return l.ref.name }
+func (l LocalRepo) Host() string  { return l.ref.Host() }
+func (l LocalRepo) Owner() string { return l.ref.Owner() }
+func (l LocalRepo) Name() string  { return l.ref.Name() }
 
 func (l LocalRepo) FullLevels() []string {
-	return []string{l.root, l.ref.host, l.ref.owner, l.ref.name}
+	return []string{l.root, l.ref.Host(), l.ref.Owner(), l.ref.Name()}
 }
 
 func (l LocalRepo) RelLevels() []string {
@@ -57,6 +59,6 @@ func (l LocalRepo) CheckEntity() error {
 
 // UNDONE: CheckEntityInFileSystem() support fs.FS
 
-func NewLocalRepo(root string, ref RepoRef) LocalRepo {
+func NewLocalRepo(root string, ref reporef.RepoRef) LocalRepo {
 	return LocalRepo{root: root, ref: ref}
 }

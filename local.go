@@ -14,6 +14,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/saracen/walker"
 )
 
@@ -37,7 +38,7 @@ type LocalExistOption struct {
 
 func (l *LocalController) Exist(
 	ctx context.Context,
-	ref RepoRef,
+	ref reporef.RepoRef,
 	opt *LocalExistOption,
 ) (bool, error) {
 	repo := NewLocalRepo(l.root, ref)
@@ -57,7 +58,7 @@ type LocalCreateOption struct { // UNDONE: support isBare
 
 func (l *LocalController) Create(
 	ctx context.Context,
-	ref RepoRef,
+	ref reporef.RepoRef,
 	opt *LocalCreateOption,
 ) (LocalRepo, error) {
 	p := NewLocalRepo(l.root, ref)
@@ -89,8 +90,8 @@ func CreateLocalRepo(
 
 func (l *LocalController) SetRemoteRefs(
 	ctx context.Context,
-	newRef RepoRef,
-	remotes map[string][]RepoRef,
+	newRef reporef.RepoRef,
+	remotes map[string][]reporef.RepoRef,
 ) error {
 	urls := map[string][]string{}
 	for name, refs := range remotes {
@@ -103,7 +104,7 @@ func (l *LocalController) SetRemoteRefs(
 
 func (l *LocalController) SetRemoteURLs(
 	ctx context.Context,
-	newRef RepoRef,
+	newRef reporef.RepoRef,
 	remotes map[string][]string,
 ) error {
 	return SetRemoteURLsOnLocalRepository(ctx, NewLocalRepo(l.root, newRef), remotes)
@@ -134,7 +135,7 @@ func SetRemoteURLsOnLocalRepository(
 
 func (l *LocalController) GetRemoteURLs(
 	ctx context.Context,
-	ref RepoRef,
+	ref reporef.RepoRef,
 	name string,
 ) ([]string, error) {
 	return GetRemoteURLsFromLocalRepository(ctx, NewLocalRepo(l.root, ref), name)
@@ -165,14 +166,14 @@ func GetDefaultRemoteURLFromLocalRepo(_ context.Context, locRepo LocalRepo) (str
 }
 
 type LocalCloneOption struct {
-	Alias *RepoRef
+	Alias *reporef.RepoRef
 	// UNDONE: support isBare
 	// UNDONE: support *git.CloneOptions
 }
 
 func (l *LocalController) Clone(
 	ctx context.Context,
-	ref RepoRef,
+	ref reporef.RepoRef,
 	token string,
 	opt *LocalCloneOption,
 ) (LocalRepo, error) {
@@ -188,8 +189,11 @@ func (l *LocalController) Clone(
 	path := p.FullFilePath()
 	url := ref.URL()
 	if opt != nil && opt.Alias != nil {
-		alias := NewLocalRepo(l.root, *opt.Alias)
-		alias.ref.host = p.ref.host
+		aliasRef, err := reporef.NewRepoRef(p.ref.Host(), opt.Alias.Owner(), opt.Alias.Name())
+		if err != nil {
+			return LocalRepo{}, err
+		}
+		alias := NewLocalRepo(l.root, aliasRef)
 		path = alias.FullFilePath()
 		p = alias
 	}
@@ -247,7 +251,7 @@ func (l *LocalController) Walk(
 		}
 
 		// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
-		ref, err := NewRepoRef(parts[0], parts[1], parts[2])
+		ref, err := reporef.NewRepoRef(parts[0], parts[1], parts[2])
 		if err != nil {
 			log.FromContext(ctx).
 				WithFields(log.Fields{"error": err, "rel": rel}).
@@ -285,7 +289,7 @@ func (l *LocalController) List(ctx context.Context, opt *LocalListOption) ([]Loc
 
 type LocalDeleteOption struct{}
 
-func (l *LocalController) Delete(ctx context.Context, ref RepoRef, opt *LocalDeleteOption) error {
+func (l *LocalController) Delete(ctx context.Context, ref reporef.RepoRef, opt *LocalDeleteOption) error {
 	return DeleteLocalRepository(ctx, NewLocalRepo(l.root, ref), opt)
 }
 

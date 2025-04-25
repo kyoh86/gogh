@@ -6,13 +6,17 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	exgithub "github.com/google/go-github/v69/github"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
 )
 
 func TestParseRepoRef(t *testing.T) {
 	t.Run("valid http URL", func(t *testing.T) {
-		want := RepoRef{host: "github.com", owner: "kyoh86", name: "gogh"}
+		want, err := reporef.NewRepoRef("github.com", "kyoh86", "gogh")
+		if err != nil {
+			t.Fatalf("unexpected error: %q", err)
+		}
 		got, err := parseRepoRef(&github.Repository{
 			CloneURL: Ptr("https://github.com/kyoh86/gogh"),
 		})
@@ -37,6 +41,14 @@ func TestParseRepoRef(t *testing.T) {
 func TestIngestRepository(t *testing.T) {
 	t.Run("valid repository", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
+		wantRef, err := reporef.NewRepoRef("github.com", "kyoh86", "gogh")
+		if err != nil {
+			t.Fatalf("unexpected error: %q", err)
+		}
+		wantParent, err := reporef.NewRepoRef("github.com", "kyoh86-tryouts", "test")
+		if err != nil {
+			t.Fatalf("unexpected error: %q", err)
+		}
 		want := RemoteRepo{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
@@ -47,8 +59,8 @@ func TestIngestRepository(t *testing.T) {
 			Private:     false,
 			IsTemplate:  true,
 			Fork:        false,
-			Ref:         RepoRef{host: "github.com", owner: "kyoh86", name: "gogh"},
-			Parent:      &RepoRef{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
+			Ref:         wantRef,
+			Parent:      &wantParent,
 		}
 		got, err := ingestRepository(&github.Repository{
 			Description: Ptr("valid description"),
@@ -118,6 +130,14 @@ func TestIngestRepository(t *testing.T) {
 func TestIngestRepositoryFragment(t *testing.T) {
 	tim, _ := time.Parse("2006-01-02", "2021-01-01")
 	t.Run("valid repository", func(t *testing.T) {
+		wantRef, err := reporef.NewRepoRef("github.com", "kyoh86", "gogh")
+		if err != nil {
+			t.Fatalf("unexpected error: %q", err)
+		}
+		wantParent, err := reporef.NewRepoRef("github.com", "kyoh86-tryouts", "test")
+		if err != nil {
+			t.Fatalf("unexpected error: %q", err)
+		}
 		want := RemoteRepo{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
@@ -128,8 +148,8 @@ func TestIngestRepositoryFragment(t *testing.T) {
 			Private:     false,
 			IsTemplate:  true,
 			Fork:        false,
-			Ref:         RepoRef{host: "github.com", owner: "kyoh86", name: "gogh"},
-			Parent:      &RepoRef{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
+			Ref:         wantRef,
+			Parent:      &wantParent,
 		}
 		got, err := ingestRepositoryFragment("github.com", &github.RepositoryFragment{
 			Owner:           &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: "kyoh86"}},

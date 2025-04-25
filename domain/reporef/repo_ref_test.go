@@ -1,9 +1,9 @@
-package gogh_test
+package reporef_test
 
 import (
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3"
+	testtarget "github.com/kyoh86/gogh/v3/domain/reporef"
 )
 
 func TestRepoRef(t *testing.T) {

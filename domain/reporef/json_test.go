@@ -1,11 +1,11 @@
-package gogh_test
+package reporef_test
 
 import (
 	"encoding/json"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	testtarget "github.com/kyoh86/gogh/v3"
+	testtarget "github.com/kyoh86/gogh/v3/domain/reporef"
 )
 
 func TestRepoRefJSON(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/cmdutil"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
@@ -79,7 +80,7 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 }
 
 func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.TokenStore, refs []string, dryrun bool) error {
-	parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
+	parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
 	if dryrun {
 		for _, r := range refs {
 			ref, alias, err := parser.ParseWithAlias(r)
@@ -112,7 +113,7 @@ func cloneOneFunc(
 	ctx context.Context,
 	tokens *config.TokenStore,
 	local *gogh.LocalController,
-	parser gogh.RepoRefParser,
+	parser reporef.RepoRefParser,
 	s string,
 ) func() error {
 	return func() error {
@@ -149,7 +150,7 @@ func cloneOneFunc(
 			if alias != nil {
 				localRef = *alias
 			}
-			if err := local.SetRemoteRefs(ctx, localRef, map[string][]gogh.RepoRef{
+			if err := local.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
 				git.DefaultRemoteName: {ref},
 				"upstream":            {*repo.Parent},
 			}); err != nil {

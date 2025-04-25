@@ -6,11 +6,12 @@ import (
 	"fmt"
 
 	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 )
 
-func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref gogh.RepoRef) (github.Adaptor, *gogh.RemoteController, error) {
+func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref reporef.RepoRef) (github.Adaptor, *gogh.RemoteController, error) {
 	token, err := tokens.Get(ref.Host(), ref.Owner())
 	switch {
 	case err == nil:

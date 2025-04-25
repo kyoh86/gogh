@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/cmdutil"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
@@ -62,7 +63,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 				selected = refs[0]
 			}
 
-			parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
+			parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
 			ref, err := parser.Parse(selected)
 			if err != nil {
 				return err

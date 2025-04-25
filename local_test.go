@@ -10,11 +10,12 @@ import (
 	git "github.com/go-git/go-git/v5"
 	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 )
 
-func mustRef(t *testing.T, host, owner, name string) testtarget.RepoRef {
+func mustRef(t *testing.T, host, owner, name string) reporef.RepoRef {
 	t.Helper()
-	ref, err := testtarget.NewRepoRef(host, owner, name)
+	ref, err := reporef.NewRepoRef(host, owner, name)
 	if err != nil {
 		t.Fatalf("invalid ref: %s", err)
 	}
@@ -140,7 +141,7 @@ func TestLocalController(t *testing.T) {
 			newRef := mustRef(t, "github.com", "kyoh86", "gogh-upstream")
 			url := "https://github.com/kyoh86/gogh-upstream"
 
-			if err := local.SetRemoteRefs(ctx, ref, map[string][]testtarget.RepoRef{name: {newRef}}); err != nil {
+			if err := local.SetRemoteRefs(ctx, ref, map[string][]reporef.RepoRef{name: {newRef}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
@@ -157,7 +158,7 @@ func TestLocalController(t *testing.T) {
 			newRef := mustRef(t, "github.com", "kyoh86", "gogh-overwrite")
 			url := "https://github.com/kyoh86/gogh-overwrite"
 
-			if err := local.SetRemoteRefs(ctx, ref, map[string][]testtarget.RepoRef{name: {newRef}}); err != nil {
+			if err := local.SetRemoteRefs(ctx, ref, map[string][]reporef.RepoRef{name: {newRef}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
@@ -284,7 +285,7 @@ func TestLocalController(t *testing.T) {
 		}
 		for _, testcase := range []struct {
 			title string
-			ref   testtarget.RepoRef
+			ref   reporef.RepoRef
 		}{
 			{
 				title: "not exist",

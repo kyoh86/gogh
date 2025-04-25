@@ -11,6 +11,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/kyoh86/gogh/v3"
 	"github.com/kyoh86/gogh/v3/cmdutil"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +25,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			var name string
-			parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
+			parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
 			if len(refs) == 0 {
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewInput().
@@ -98,7 +99,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 						return err
 					}
 				} else {
-					from, err := gogh.ParseSiblingRepoRef(ref, f.Template)
+					from, err := reporef.ParseSiblingRepoRef(ref, f.Template)
 					if err != nil {
 						return err
 					}

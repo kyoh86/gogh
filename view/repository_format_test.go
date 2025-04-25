@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	testtarget "github.com/kyoh86/gogh/v3/view"
 )
 
@@ -15,7 +16,7 @@ func TestRemoteRepoPrinters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ref, err := gogh.NewRepoRef("github.com", "kyoh86", "gogh")
+	ref, err := reporef.NewRepoRef("github.com", "kyoh86", "gogh")
 	if err != nil {
 		t.Fatal(err)
 	}

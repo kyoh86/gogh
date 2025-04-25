@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
 )
@@ -24,19 +25,19 @@ func NewRemoteController(adaptor github.Adaptor) *RemoteController {
 	}
 }
 
-func parseRepoRef(repo *github.Repository) (RepoRef, error) {
+func parseRepoRef(repo *github.Repository) (reporef.RepoRef, error) {
 	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
 	u, err := url.Parse(rawURL)
 	if err != nil {
-		return RepoRef{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
+		return reporef.RepoRef{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
 	}
 	owner, name := path.Split(u.Path)
 
-	return NewRepoRef(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
+	return reporef.NewRepoRef(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
 func ingestRepository(repo *github.Repository) (RemoteRepo, error) {
-	var parentRepoRef *RepoRef
+	var parentRepoRef *reporef.RepoRef
 	if parent := repo.GetParent(); parent != nil {
 		repoRef, err := parseRepoRef(parent)
 		if err != nil {
@@ -226,7 +227,7 @@ func ingestRepositoryFragment(
 	ret.Archived = repo.IsArchived
 	ret.Private = repo.IsPrivate
 	ret.Fork = repo.IsFork
-	ref, err := NewRepoRef(host, repo.Owner.GetLogin(), repo.Name)
+	ref, err := reporef.NewRepoRef(host, repo.Owner.GetLogin(), repo.Name)
 	if err != nil {
 		return RemoteRepo{}, err
 	}
@@ -237,7 +238,7 @@ func ingestRepositoryFragment(
 	ret.UpdatedAt = repo.UpdatedAt
 
 	if repo.Parent.Owner != nil && repo.Parent.Name != "" {
-		parent, err := NewRepoRef(host, repo.Parent.Owner.GetLogin(), repo.Parent.Name)
+		parent, err := reporef.NewRepoRef(host, repo.Parent.Owner.GetLogin(), repo.Parent.Name)
 		if err != nil {
 			return RemoteRepo{}, err
 		}
