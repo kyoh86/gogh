@@ -10,7 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
-	testtarget "github.com/kyoh86/gogh/v3/view"
+	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
 )
 
 func TestLocalRepoFormat(t *testing.T) {

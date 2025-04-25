@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	testtarget "github.com/kyoh86/gogh/v3/view"
+	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
 )
 
 func TestFuzzyAgoAbbr(t *testing.T) {

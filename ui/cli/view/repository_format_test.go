@@ -8,7 +8,7 @@ import (
 
 	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
-	testtarget "github.com/kyoh86/gogh/v3/view"
+	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
 )
 
 func TestRemoteRepoPrinters(t *testing.T) {

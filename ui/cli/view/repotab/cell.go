@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v3/domain/remote"
-	"github.com/kyoh86/gogh/v3/view"
+	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/morikuni/aec"
 )
 

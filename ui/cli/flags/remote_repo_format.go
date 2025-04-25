@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/kyoh86/gogh/v3/view"
-	"github.com/kyoh86/gogh/v3/view/repotab"
+	"github.com/kyoh86/gogh/v3/ui/cli/view"
+	"github.com/kyoh86/gogh/v3/ui/cli/view/repotab"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"golang.org/x/term"
