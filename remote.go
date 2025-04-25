@@ -24,32 +24,32 @@ func NewRemoteController(adaptor github.Adaptor) *RemoteController {
 	}
 }
 
-func parseSpec(repo *github.Repository) (Spec, error) {
+func parseRepoRef(repo *github.Repository) (RepoRef, error) {
 	rawURL := strings.TrimSuffix(repo.GetCloneURL(), ".git")
 	u, err := url.Parse(rawURL)
 	if err != nil {
-		return Spec{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
+		return RepoRef{}, fmt.Errorf("parse clone-url %q: %w", rawURL, err)
 	}
 	owner, name := path.Split(u.Path)
 
-	return NewSpec(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
+	return NewRepoRef(u.Host, strings.TrimLeft(strings.TrimRight(owner, "/"), "/"), name)
 }
 
-func ingestRepository(repo *github.Repository) (Repository, error) {
-	var parentSpec *Spec
+func ingestRepository(repo *github.Repository) (RemoteRepo, error) {
+	var parentRepoRef *RepoRef
 	if parent := repo.GetParent(); parent != nil {
-		spec, err := parseSpec(parent)
+		repoRef, err := parseRepoRef(parent)
 		if err != nil {
-			return Repository{}, fmt.Errorf("parse parent repository as local spec: %w", err)
+			return RemoteRepo{}, fmt.Errorf("parse parent repository as local repo ref: %w", err)
 		}
-		parentSpec = &spec
+		parentRepoRef = &repoRef
 	}
-	spec, err := parseSpec(repo)
+	repoRef, err := parseRepoRef(repo)
 	if err != nil {
-		return Repository{}, fmt.Errorf("parse repository as local spec: %w", err)
+		return RemoteRepo{}, fmt.Errorf("parse repository as local repo ref: %w", err)
 	}
-	return Repository{
-		Spec:        spec,
+	return RemoteRepo{
+		Ref:         repoRef,
 		URL:         strings.TrimSuffix(repo.GetCloneURL(), ".git"),
 		Description: repo.GetDescription(),
 		Homepage:    repo.GetHomepage(),
@@ -59,35 +59,35 @@ func ingestRepository(repo *github.Repository) (Repository, error) {
 		Private:     repo.GetPrivate(),
 		IsTemplate:  repo.GetIsTemplate(),
 		Fork:        repo.GetFork(),
-		Parent:      parentSpec,
+		Parent:      parentRepoRef,
 	}, nil
 }
 
 const (
-	RepositoryListMaxLimitPerPage = 100
+	RemoteRepoListMaxLimitPerPage = 100
 )
 
-type RepositoryRelation string
+type RemoteRepoRelation string
 
 const (
-	RepositoryRelationOwner              = RepositoryRelation("owner")
-	RepositoryRelationOrganizationMember = RepositoryRelation("organizationMember")
-	RepositoryRelationCollaborator       = RepositoryRelation("collaborator")
+	RemoteRepoRelationOwner              = RemoteRepoRelation("owner")
+	RemoteRepoRelationOrganizationMember = RemoteRepoRelation("organizationMember")
+	RemoteRepoRelationCollaborator       = RemoteRepoRelation("collaborator")
 )
 
-var AllRepositoryRelation = []RepositoryRelation{
-	RepositoryRelationOwner,
-	RepositoryRelationOrganizationMember,
-	RepositoryRelationCollaborator,
+var AllRemoteRepoRelation = []RemoteRepoRelation{
+	RemoteRepoRelationOwner,
+	RemoteRepoRelationOrganizationMember,
+	RemoteRepoRelationCollaborator,
 }
 
-func (r RepositoryRelation) String() string {
+func (r RemoteRepoRelation) String() string {
 	return string(r)
 }
 
-type RepositoryOrderField = githubv4.RepositoryOrderField
+type RemoteRepoOrderField = githubv4.RepositoryOrderField
 
-var AllRepositoryOrderField = []githubv4.RepositoryOrderField{
+var AllRemoteRepoOrderField = []githubv4.RepositoryOrderField{
 	githubv4.RepositoryOrderFieldCreatedAt,
 	githubv4.RepositoryOrderFieldName,
 	githubv4.RepositoryOrderFieldPushedAt,
@@ -107,8 +107,8 @@ type RemoteListOption struct {
 	IsFork     *bool
 	IsArchived *bool
 	Order      OrderDirection
-	Sort       RepositoryOrderField
-	Relation   []RepositoryRelation
+	Sort       RemoteRepoOrderField
+	Relation   []RemoteRepoRelation
 	Limit      int
 }
 
@@ -120,7 +120,7 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 				Field:     github.RepositoryOrderFieldUpdatedAt,
 				Direction: githubv4.OrderDirectionDesc,
 			},
-			Limit:             RepositoryListMaxLimitPerPage,
+			Limit:             RemoteRepoListMaxLimitPerPage,
 			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}
 	}
@@ -149,7 +149,7 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 		}
 	}
 	if o.Limit == 0 {
-		opt.Limit = RepositoryListMaxLimitPerPage
+		opt.Limit = RemoteRepoListMaxLimitPerPage
 	} else {
 		opt.Limit = o.Limit
 	}
@@ -161,11 +161,11 @@ func (o *RemoteListOption) GetOptions() *github.RepositoryListOptions {
 		collabo := github.RepositoryAffiliationCollaborator
 		for _, r := range o.Relation {
 			switch r {
-			case RepositoryRelationOwner:
+			case RemoteRepoRelationOwner:
 				opt.OwnerAffiliations = append(opt.OwnerAffiliations, owner)
-			case RepositoryRelationOrganizationMember:
+			case RemoteRepoRelationOrganizationMember:
 				opt.OwnerAffiliations = append(opt.OwnerAffiliations, member)
-			case RepositoryRelationCollaborator:
+			case RemoteRepoRelationCollaborator:
 				opt.OwnerAffiliations = append(opt.OwnerAffiliations, collabo)
 			}
 		}
@@ -196,15 +196,15 @@ func (c *RemoteController) Me(
 func (c *RemoteController) List(
 	ctx context.Context,
 	option *RemoteListOption,
-) (allSpecs []Repository, _ error) {
+) (allRepos []RemoteRepo, _ error) {
 	sch, ech := c.ListAsync(ctx, option)
 	for {
 		select {
-		case spec, more := <-sch:
+		case ref, more := <-sch:
 			if !more {
 				return
 			}
-			allSpecs = append(allSpecs, spec)
+			allRepos = append(allRepos, ref)
 		case err := <-ech:
 			if err != nil {
 				return nil, err
@@ -220,26 +220,26 @@ func (c *RemoteController) List(
 func ingestRepositoryFragment(
 	host string,
 	repo *github.RepositoryFragment,
-) (ret Repository, _ error) {
+) (ret RemoteRepo, _ error) {
 	ret.URL = repo.Url
 	ret.IsTemplate = repo.IsTemplate
 	ret.Archived = repo.IsArchived
 	ret.Private = repo.IsPrivate
 	ret.Fork = repo.IsFork
-	spec, err := NewSpec(host, repo.Owner.GetLogin(), repo.Name)
+	ref, err := NewRepoRef(host, repo.Owner.GetLogin(), repo.Name)
 	if err != nil {
-		return Repository{}, err
+		return RemoteRepo{}, err
 	}
-	ret.Spec = spec
+	ret.Ref = ref
 	ret.Description = repo.Description
 	ret.Homepage = repo.HomepageUrl
 	ret.Language = repo.PrimaryLanguage.Name
 	ret.UpdatedAt = repo.UpdatedAt
 
 	if repo.Parent.Owner != nil && repo.Parent.Name != "" {
-		parent, err := NewSpec(host, repo.Parent.Owner.GetLogin(), repo.Parent.Name)
+		parent, err := NewRepoRef(host, repo.Parent.Owner.GetLogin(), repo.Parent.Name)
 		if err != nil {
-			return Repository{}, err
+			return RemoteRepo{}, err
 		}
 		ret.Parent = &parent
 	}
@@ -248,21 +248,21 @@ func ingestRepositoryFragment(
 
 var errOverLimit = errors.New("over limit")
 
-func (c *RemoteController) repoListSpecList(
+func (c *RemoteController) repoList(
 	repos []*github.RepositoryFragment,
 	count *int,
 	limit int,
-	ch chan<- Repository,
+	ch chan<- RemoteRepo,
 ) error {
 	for _, repo := range repos {
 		if limit > 0 && limit <= *count {
 			return errOverLimit
 		}
-		spec, err := ingestRepositoryFragment(c.adaptor.GetHost(), repo)
+		ref, err := ingestRepositoryFragment(c.adaptor.GetHost(), repo)
 		if err != nil {
 			return err
 		}
-		ch <- spec
+		ch <- ref
 		*count++
 	}
 	return nil
@@ -271,9 +271,9 @@ func (c *RemoteController) repoListSpecList(
 func (c *RemoteController) ListAsync(
 	ctx context.Context,
 	option *RemoteListOption,
-) (<-chan Repository, <-chan error) {
+) (<-chan RemoteRepo, <-chan error) {
 	opt := option.GetOptions()
-	sch := make(chan Repository, 1)
+	sch := make(chan RemoteRepo, 1)
 	ech := make(chan error, 1)
 	go func() {
 		defer close(sch)
@@ -284,10 +284,10 @@ func (c *RemoteController) ListAsync(
 		switch {
 		case opt.Limit == 0:
 			limit = 0
-			opt.Limit = RepositoryListMaxLimitPerPage
-		case opt.Limit > RepositoryListMaxLimitPerPage:
+			opt.Limit = RemoteRepoListMaxLimitPerPage
+		case opt.Limit > RemoteRepoListMaxLimitPerPage:
 			limit = opt.Limit
-			opt.Limit = RepositoryListMaxLimitPerPage
+			opt.Limit = RemoteRepoListMaxLimitPerPage
 		default:
 			limit = opt.Limit
 		}
@@ -297,7 +297,7 @@ func (c *RemoteController) ListAsync(
 				ech <- err
 				return
 			}
-			if err := c.repoListSpecList(repos, &count, limit, sch); err != nil {
+			if err := c.repoList(repos, &count, limit, sch); err != nil {
 				if errors.Is(err, errOverLimit) {
 					return
 				}
@@ -369,14 +369,14 @@ func (c *RemoteController) Create(
 	ctx context.Context,
 	name string,
 	option *RemoteCreateOption,
-) (Repository, error) {
+) (RemoteRepo, error) {
 	repo, _, err := c.adaptor.RepositoryCreate(
 		ctx,
 		option.GetOrganization(),
 		option.buildRepository(name),
 	)
 	if err != nil {
-		return Repository{}, fmt.Errorf("create a repository: %w", err)
+		return RemoteRepo{}, fmt.Errorf("create a repository: %w", err)
 	}
 	return ingestRepository(repo)
 }
@@ -405,7 +405,7 @@ func (c *RemoteController) CreateFromTemplate(
 	ctx context.Context,
 	templateOwner, templateName, name string,
 	option *RemoteCreateFromTemplateOption,
-) (Repository, error) {
+) (RemoteRepo, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFromTemplate(
 		ctx,
 		templateOwner,
@@ -413,7 +413,7 @@ func (c *RemoteController) CreateFromTemplate(
 		option.buildTemplateRepoRequest(name),
 	)
 	if err != nil {
-		return Repository{}, fmt.Errorf("create a repository from template: %w", err)
+		return RemoteRepo{}, fmt.Errorf("create a repository from template: %w", err)
 	}
 	return ingestRepository(repo)
 }
@@ -437,12 +437,12 @@ func (c *RemoteController) Fork(
 	owner string,
 	name string,
 	option *RemoteForkOption,
-) (Repository, error) {
+) (RemoteRepo, error) {
 	repo, _, err := c.adaptor.RepositoryCreateFork(ctx, owner, name, option.GetOptions())
 	if err != nil {
 		var acc *github.AcceptedError
 		if !errors.As(err, &acc) {
-			return Repository{}, fmt.Errorf("fork a repository: %w", err)
+			return RemoteRepo{}, fmt.Errorf("fork a repository: %w", err)
 		}
 	}
 	return ingestRepository(repo)
@@ -455,10 +455,10 @@ func (c *RemoteController) Get(
 	owner string,
 	name string,
 	_ *RemoteGetOption,
-) (Repository, error) {
+) (RemoteRepo, error) {
 	repo, _, err := c.adaptor.RepositoryGet(ctx, owner, name)
 	if err != nil {
-		return Repository{}, fmt.Errorf("get a repository: %w", err)
+		return RemoteRepo{}, fmt.Errorf("get a repository: %w", err)
 	}
 	return ingestRepository(repo)
 }

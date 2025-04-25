@@ -26,12 +26,12 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 	cmd := &cobra.Command{
 		Use:     "delete [flags] [[OWNER/]NAME]",
 		Aliases: []string{"remove"},
-		Short:   "Delete a project with a remote repository",
+		Short:   "Delete local and remote repository",
 		Args:    cobra.RangeArgs(0, 1),
-		RunE: func(cmd *cobra.Command, specs []string) error {
+		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
 			var selected string
-			if len(specs) == 0 {
+			if len(refs) == 0 {
 				var options []huh.Option[string]
 				for _, entry := range tokens.Entries() {
 					adaptor, err := github.NewAdaptor(ctx, entry.Host, &entry.Token)
@@ -45,8 +45,8 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 					}
 					for _, s := range founds {
 						options = append(options, huh.Option[string]{
-							Key:   s.Spec.String(),
-							Value: s.Spec.String(),
+							Key:   s.Ref.String(),
+							Value: s.Ref.String(),
 						})
 					}
 				}
@@ -59,11 +59,11 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 					return err
 				}
 			} else {
-				selected = specs[0]
+				selected = refs[0]
 			}
 
-			parser := gogh.NewSpecParser(tokens.GetDefaultKey())
-			spec, err := parser.Parse(selected)
+			parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
+			ref, err := parser.Parse(selected)
 			if err != nil {
 				return err
 			}
@@ -74,7 +74,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 					var confirmed bool
 					if err := huh.NewForm(huh.NewGroup(
 						huh.NewConfirm().
-							Title(fmt.Sprintf("Are you sure you want to delete local-project %s?", spec.String())).
+							Title(fmt.Sprintf("Are you sure you want to delete local repository %s?", ref.String())).
 							Value(&confirmed),
 					)).Run(); err != nil {
 						return err
@@ -84,8 +84,8 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 					}
 				}
 				if f.dryrun {
-					fmt.Printf("deleting local %s\n", spec.String())
-				} else if err := local.Delete(ctx, spec, nil); err != nil {
+					fmt.Printf("deleting local %s\n", ref.String())
+				} else if err := local.Delete(ctx, ref, nil); err != nil {
 					if !os.IsNotExist(err) {
 						return fmt.Errorf("delete local: %w", err)
 					}
@@ -97,7 +97,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 					var confirmed bool
 					if err := huh.NewForm(huh.NewGroup(
 						huh.NewConfirm().
-							Title(fmt.Sprintf("Are you sure you want to delete remote-repository %s?", spec.String())).
+							Title(fmt.Sprintf("Are you sure you want to delete remote-repository %s?", ref.String())).
 							Value(&confirmed),
 					)).Run(); err != nil {
 						return err
@@ -106,16 +106,16 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 						return nil
 					}
 				}
-				adaptor, _, err := cmdutil.RemoteControllerFor(ctx, *tokens, spec)
+				adaptor, _, err := cmdutil.RemoteControllerFor(ctx, *tokens, ref)
 				if err != nil {
-					return fmt.Errorf("failed to get token for %s/%s: %w", spec.Host(), spec.Owner(), err)
+					return fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 				}
 				if f.dryrun {
-					fmt.Printf("deleting remote %s\n", spec.String())
-				} else if err := gogh.NewRemoteController(adaptor).Delete(ctx, spec.Owner(), spec.Name(), nil); err != nil {
+					fmt.Printf("deleting remote %s\n", ref.String())
+				} else if err := gogh.NewRemoteController(adaptor).Delete(ctx, ref.Owner(), ref.Name(), nil); err != nil {
 					var gherr *github.ErrorResponse
 					if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
-						log.FromContext(ctx).Errorf("Failed to delete a repository: there is no permission to delete %q", spec.URL())
+						log.FromContext(ctx).Errorf("Failed to delete a remote repository: there is no permission to delete %q", ref.URL())
 						log.FromContext(ctx).Error(`Add scope "delete_repo" for the token`)
 					} else {
 						return err
@@ -125,9 +125,9 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 			return nil
 		},
 	}
-	cmd.Flags().BoolVarP(&f.local, "local", "", true, "Delete local project.")
+	cmd.Flags().BoolVarP(&f.local, "local", "", true, "Delete local repository.")
 	cmd.Flags().
-		BoolVarP(&f.remote, "remote", "", false, "Delete remote project.")
+		BoolVarP(&f.remote, "remote", "", false, "Delete remote repository.")
 	cmd.Flags().
 		BoolVarP(&f.force, "force", "", false, "Do NOT confirm to delete.")
 	cmd.Flags().

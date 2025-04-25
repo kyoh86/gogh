@@ -80,7 +80,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 			},
 		},
@@ -92,7 +92,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 			},
 		},
@@ -104,7 +104,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				Privacy:           private,
 			},
@@ -117,7 +117,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				Privacy:           public,
 			},
@@ -136,17 +136,17 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		},
 		{
 			title: "relations",
-			base: &testtarget.RemoteListOption{Relation: []testtarget.RepositoryRelation{
-				testtarget.RepositoryRelationOwner,
-				testtarget.RepositoryRelationOrganizationMember,
-				testtarget.RepositoryRelationCollaborator,
+			base: &testtarget.RemoteListOption{Relation: []testtarget.RemoteRepoRelation{
+				testtarget.RemoteRepoRelationOwner,
+				testtarget.RemoteRepoRelationOrganizationMember,
+				testtarget.RemoteRepoRelationCollaborator,
 			}},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner, member, collabo},
 			},
 		},
@@ -160,7 +160,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				IsFork:            testtarget.Ptr(true),
 			},
@@ -171,7 +171,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				Sort: github.RepositoryOrderFieldName,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldName,
@@ -185,7 +185,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				Sort: github.RepositoryOrderFieldStargazers,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldStargazers,
@@ -200,7 +200,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 				Order: github.OrderDirectionAsc,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             testtarget.RepositoryListMaxLimitPerPage,
+				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldStargazers,
@@ -227,7 +227,7 @@ func TestRemoteController_List(t *testing.T) {
 			Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 			Direction: githubv4.OrderDirectionDesc,
 		},
-		Limit:             testtarget.RepositoryListMaxLimitPerPage,
+		Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 		OwnerAffiliations: []github.RepositoryAffiliation{owner},
 	}
 	host := testtarget.DefaultHost
@@ -314,12 +314,12 @@ func TestRemoteController_List(t *testing.T) {
 				Name:      "org-repo-2",
 			}}, github.PageInfoFragment{}, nil)
 
-		specs, err := remote.List(ctx, nil)
+		repos, err := remote.List(ctx, nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if len(specs) != 4 {
-			t.Fatalf("expect some specs, but %d is gotten", len(specs))
+		if len(repos) != 4 {
+			t.Fatalf("expect some repos, but %d is gotten", len(repos))
 		}
 		for i, expect := range []struct {
 			host string
@@ -342,7 +342,7 @@ func TestRemoteController_List(t *testing.T) {
 			user: org,
 			name: "org-repo-2",
 		}} {
-			actual := specs[i]
+			actual := repos[i]
 			if expect.host != actual.Host() {
 				t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 			}
@@ -376,7 +376,7 @@ func TestRemoteController_List(t *testing.T) {
 				Direction: githubv4.OrderDirectionDesc,
 			},
 			After:             "next-page",
-			Limit:             testtarget.RepositoryListMaxLimitPerPage,
+			Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
 			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}}).Return([]*github.RepositoryFragment{{
 			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
@@ -385,12 +385,12 @@ func TestRemoteController_List(t *testing.T) {
 			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
 			Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-2",
 		}}, github.PageInfoFragment{}, nil)
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: 0})
+		repos, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: 0})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if len(specs) != 4 {
-			t.Fatalf("expect some specs, but %d is gotten", len(specs))
+		if len(repos) != 4 {
+			t.Fatalf("expect some refs, but %d is gotten", len(repos))
 		}
 		for i, expect := range []struct {
 			host string
@@ -413,7 +413,7 @@ func TestRemoteController_List(t *testing.T) {
 			user: org,
 			name: "org-repo-2",
 		}} {
-			actual := specs[i]
+			actual := repos[i]
 			if expect.host != actual.Host() {
 				t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 			}
@@ -432,7 +432,7 @@ func TestRemoteController_List(t *testing.T) {
 		remote := testtarget.NewRemoteController(mock)
 
 		const (
-			perPage = testtarget.RepositoryListMaxLimitPerPage
+			perPage = testtarget.RemoteRepoListMaxLimitPerPage
 			limit   = perPage + 2
 		)
 		var responses []*github.RepositoryFragment
@@ -460,15 +460,15 @@ func TestRemoteController_List(t *testing.T) {
 			Limit:             perPage,
 			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}}).Return(responses[perPage:], github.PageInfoFragment{}, nil)
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: limit})
+		repos, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: limit})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if int64(len(specs)) != limit {
-			t.Fatalf("expect some specs, but %d is gotten", len(specs))
+		if int64(len(repos)) != limit {
+			t.Fatalf("expect some repos, but %d is gotten", len(repos))
 		}
 		for i := int64(0); i < limit; i++ {
-			got := specs[i]
+			got := repos[i]
 			want := fmt.Sprintf("user-repo-%03d", i+1)
 			if want != got.Name() {
 				t.Errorf("expect name %q but %q gotten", want, got.Name())
@@ -496,12 +496,12 @@ func TestRemoteController_List(t *testing.T) {
 				Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-2",
 			}}, github.PageInfoFragment{}, nil)
 
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{})
+		repos, err := remote.List(ctx, &testtarget.RemoteListOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if len(specs) != 4 {
-			t.Fatalf("expect some specs, but %d is gotten", len(specs))
+		if len(repos) != 4 {
+			t.Fatalf("expect some repos, but %d is gotten", len(repos))
 		}
 		for i, expect := range []struct {
 			host string
@@ -524,7 +524,7 @@ func TestRemoteController_List(t *testing.T) {
 			user: org,
 			name: "org-repo-2",
 		}} {
-			actual := specs[i]
+			actual := repos[i]
 			if expect.host != actual.Host() {
 				t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 			}
@@ -550,12 +550,12 @@ func TestRemoteController_List(t *testing.T) {
 				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
 				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-2",
 			}}, github.PageInfoFragment{}, nil)
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{})
+		repos, err := remote.List(ctx, &testtarget.RemoteListOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if len(specs) != 2 {
-			t.Fatalf("expect some specs, but %d is gotten", len(specs))
+		if len(repos) != 2 {
+			t.Fatalf("expect some repos, but %d is gotten", len(repos))
 		}
 		for i, expect := range []struct {
 			host string
@@ -570,7 +570,7 @@ func TestRemoteController_List(t *testing.T) {
 			user: user,
 			name: "user-repo-2",
 		}} {
-			actual := specs[i]
+			actual := repos[i]
 			if expect.host != actual.Host() {
 				t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 			}
@@ -604,14 +604,14 @@ func TestRemoteController_List(t *testing.T) {
 			Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-2",
 		}}, github.PageInfoFragment{}, nil)
 
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{
+		repos, err := remote.List(ctx, &testtarget.RemoteListOption{
 			Private: testtarget.Ptr(false),
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if len(specs) != 2 {
-			t.Fatalf("expect 2 specs, but %d is gotten", len(specs))
+		if len(repos) != 2 {
+			t.Fatalf("expect 2 repos, but %d is gotten", len(repos))
 		}
 		for i, expect := range []struct {
 			host string
@@ -626,7 +626,7 @@ func TestRemoteController_List(t *testing.T) {
 			user: user,
 			name: "user-repo-2",
 		}} {
-			actual := specs[i]
+			actual := repos[i]
 			if expect.host != actual.Host() {
 				t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 			}
@@ -662,14 +662,14 @@ func TestRemoteController_List(t *testing.T) {
 			Name:      "user-repo-2",
 		}}, github.PageInfoFragment{}, nil)
 
-		specs, err := remote.List(ctx, &testtarget.RemoteListOption{
+		repos, err := remote.List(ctx, &testtarget.RemoteListOption{
 			Private: testtarget.Ptr(false),
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if len(specs) != 2 {
-			t.Fatalf("expect some specs, but %d is gotten", len(specs))
+		if len(repos) != 2 {
+			t.Fatalf("expect some repos, but %d is gotten", len(repos))
 		}
 		for i, expect := range []struct {
 			host string
@@ -684,7 +684,7 @@ func TestRemoteController_List(t *testing.T) {
 			user: user,
 			name: "user-repo-2",
 		}} {
-			actual := specs[i]
+			actual := repos[i]
 			if expect.host != actual.Host() {
 				t.Errorf("expect host %q but %q gotten", expect.host, actual.Host())
 			}
@@ -727,22 +727,22 @@ func TestRemoteController_Create(t *testing.T) {
 		}}).Return(&github.Repository{
 			CloneURL: testtarget.Ptr("https://github.com/" + user + "/gogh.git"),
 		}, nil, nil)
-		spec, err := remote.Create(ctx, "gogh", nil)
+		repo, err := remote.Create(ctx, "gogh", nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "gogh" {
+		if repo.Name() != "gogh" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"gogh",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -757,22 +757,22 @@ func TestRemoteController_Create(t *testing.T) {
 			CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
-		spec, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{})
+		repo, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "user-repo-1" {
+		if repo.Name() != "user-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"user-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -791,7 +791,7 @@ func TestRemoteController_Create(t *testing.T) {
 			CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
-		spec, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{
+		repo, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{
 			Homepage:      "https://kyoh86.dev",
 			TeamID:        3,
 			DisableIssues: true,
@@ -800,18 +800,18 @@ func TestRemoteController_Create(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "user-repo-1" {
+		if repo.Name() != "user-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"user-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -826,20 +826,20 @@ func TestRemoteController_Create(t *testing.T) {
 			CloneURL: testtarget.Ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
-		spec, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
+		repo, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
 			Organization: org,
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != org {
-			t.Errorf("expect that a spec be created with user %q, but actual %q", org, spec.Owner())
+		if repo.Owner() != org {
+			t.Errorf("expect that a repo be created with user %q, but actual %q", org, repo.Owner())
 		}
-		if spec.Name() != "org-repo-1" {
+		if repo.Name() != "org-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"org-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -855,21 +855,21 @@ func TestRemoteController_Create(t *testing.T) {
 			CloneURL: testtarget.Ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
-		spec, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
+		repo, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
 			Organization: org,
 			Homepage:     "https://kyoh86.dev",
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != org {
-			t.Errorf("expect that a spec be created with user %q, but actual %q", org, spec.Owner())
+		if repo.Owner() != org {
+			t.Errorf("expect that a ref be created with user %q, but actual %q", org, repo.Owner())
 		}
-		if spec.Name() != "org-repo-1" {
+		if repo.Name() != "org-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"org-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -910,22 +910,22 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 			Return(&github.Repository{
 				CloneURL: testtarget.Ptr("https://github.com/" + user + "/gogh.git"),
 			}, nil, nil)
-		spec, err := remote.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil)
+		repo, err := remote.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "gogh" {
+		if repo.Name() != "gogh" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"gogh",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -942,7 +942,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 				CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
-		spec, err := remote.CreateFromTemplate(
+		repo, err := remote.CreateFromTemplate(
 			ctx,
 			"temp-owner",
 			"temp-name",
@@ -952,18 +952,18 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "user-repo-1" {
+		if repo.Name() != "user-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"user-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -981,7 +981,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 				CloneURL: testtarget.Ptr("https://github.com/custom-user/user-repo-1.git"),
 			}, nil, nil)
 
-		spec, err := remote.CreateFromTemplate(
+		repo, err := remote.CreateFromTemplate(
 			ctx,
 			"temp-owner",
 			"temp-name",
@@ -993,18 +993,18 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != "custom-user" {
+		if repo.Owner() != "custom-user" {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				"custom-user",
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "user-repo-1" {
+		if repo.Name() != "user-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"user-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -1037,22 +1037,22 @@ func TestRemoteController_Fork(t *testing.T) {
 		mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", nil).Return(&github.Repository{
 			CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
-		spec, err := remote.Fork(ctx, user, "user-repo-1", nil)
+		repo, err := remote.Fork(ctx, user, "user-repo-1", nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "user-repo-1" {
+		if repo.Name() != "user-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"user-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -1067,22 +1067,22 @@ func TestRemoteController_Fork(t *testing.T) {
 				CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
-		spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{})
+		repo, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "user-repo-1" {
+		if repo.Name() != "user-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"user-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})
@@ -1099,24 +1099,24 @@ func TestRemoteController_Fork(t *testing.T) {
 				CloneURL: testtarget.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
-		spec, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{
+		repo, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{
 			Organization: org,
 		})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
-		if spec.Owner() != user {
+		if repo.Owner() != user {
 			t.Errorf(
-				"expect that a spec be created with user %q, but actual %q",
+				"expect that a repo be created with user %q, but actual %q",
 				user,
-				spec.Owner(),
+				repo.Owner(),
 			)
 		}
-		if spec.Name() != "user-repo-1" {
+		if repo.Name() != "user-repo-1" {
 			t.Errorf(
-				"expect that a spec be created with name %q, but actual %q",
+				"expect that a repo be created with name %q, but actual %q",
 				"user-repo-1",
-				spec.Name(),
+				repo.Name(),
 			)
 		}
 	})

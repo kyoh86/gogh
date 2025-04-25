@@ -12,7 +12,7 @@ func NewBundleRestoreCommand(conf *config.ConfigStore, tokens *config.TokenStore
 	var f config.BundleRestoreFlags
 	cmd := &cobra.Command{
 		Use:   "restore",
-		Short: "Get dumped projects",
+		Short: "Get dumped local repositoiries",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			in := os.Stdin
@@ -24,14 +24,14 @@ func NewBundleRestoreCommand(conf *config.ConfigStore, tokens *config.TokenStore
 				defer f.Close()
 				in = f
 			}
-			var specs []string
+			var refs []string
 			scan := bufio.NewScanner(in)
 			for scan.Scan() {
-				specs = append(specs, scan.Text())
+				refs = append(refs, scan.Text())
 			}
 
 			ctx := cmd.Context()
-			return cloneAll(ctx, conf, tokens, specs, f.Dryrun)
+			return cloneAll(ctx, conf, tokens, refs, f.Dryrun)
 		},
 	}
 	cmd.Flags().

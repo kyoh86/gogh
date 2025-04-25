@@ -11,7 +11,7 @@ import (
 )
 
 const formatLongUsage = `
-Print each project in a given format, where [format] can be one of "rel-path", "rel-file-path",
+Print each local repository in a given format, where [format] can be one of "rel-path", "rel-file-path",
 "full-file-path", "url", "fields" and "fields:[separator]".
 
 - rel-path:
@@ -20,12 +20,12 @@ Print each project in a given format, where [format] can be one of "rel-path", "
 
 - rel-file-path:
 
-	A relative file path of the project from gogh roots.  For example in windows:
+	A relative file path of the local repository from gogh roots.  For example in windows:
 	"github.com\kyoh86\gogh"; in other case: "github.com/kyoh86/gogh".
 
 - full-file-path
 
-	A full file path of the project.  For example in Windows:
+	A full file path of the local repository.  For example in Windows:
 	"C:\Users\kyoh86\Projects\github.com\kyoh86\gogh"; in other case:
 	"/root/Projects/github.com/kyoh86/gogh".
 
@@ -35,7 +35,7 @@ Print each project in a given format, where [format] can be one of "rel-path", "
 
 - fields
 
-	Tab separated all formats and properties of the project.
+	Tab separated all formats and properties of the local repository.
 	i.e. [full-file-path]\t[rel-file-path]\t[url]\t[rel-path]\t[host]\t[owner]\t[name]
 
 - fields:[separator]

@@ -17,7 +17,7 @@ func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.
 	var f config.CwdFlags
 	cmd := &cobra.Command{
 		Use:   "cwd",
-		Short: "Print the project in current working directory",
+		Short: "Print the local reposiotry in current working directory",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			formatter, err := f.Format.Formatter()
@@ -35,20 +35,20 @@ func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.
 			list := conf.GetRoots()
 			for _, root := range list {
 				local := gogh.NewLocalController(root)
-				projects, err := local.List(ctx, &gogh.LocalListOption{})
+				repos, err := local.List(ctx, &gogh.LocalListOption{})
 				if err != nil {
 					return err
 				}
-				log.FromContext(ctx).Debugf("found %d projects in %q", len(projects), root)
-				for _, project := range projects {
-					reg := strings.ToLower(filepath.ToSlash(project.FullFilePath()))
+				log.FromContext(ctx).Debugf("found %d local repositories in %q", len(repos), root)
+				for _, repo := range repos {
+					reg := strings.ToLower(filepath.ToSlash(repo.FullFilePath()))
 					if cwd == reg || strings.HasPrefix(cwd, reg+"/") {
-						str, err := formatter.Format(project)
+						str, err := formatter.Format(repo)
 						if err != nil {
 							log.FromContext(ctx).WithFields(log.Fields{
 								"error":  err,
 								"format": f.Format.String(),
-								"path":   project.FullFilePath(),
+								"path":   repo.FullFilePath(),
 							}).Info("failed to format")
 						}
 						fmt.Println(str)
@@ -56,14 +56,14 @@ func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.
 					}
 				}
 			}
-			log.FromContext(ctx).WithField("cwd", cwd).Info("it is not in any project")
+			log.FromContext(ctx).WithField("cwd", cwd).Info("it is not in any local repository")
 			return nil
 		},
 	}
 
 	f.Format = defaults.Cwd.Format
-	cmd.Flags().VarP(&f.Format, "format", "f", flags.ProjectFormatShortUsage)
-	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteProjectFormat); err != nil {
+	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
 		panic(err)
 	}
 	return cmd

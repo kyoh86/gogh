@@ -18,7 +18,7 @@ func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) 
 	cmd := &cobra.Command{
 		Use:     "dump",
 		Aliases: []string{"export"},
-		Short:   "Export current local projects",
+		Short:   "Export current local repository list",
 		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
@@ -40,8 +40,8 @@ func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) 
 				return nil
 			}
 			local := gogh.NewLocalController(list[0])
-			if err := local.Walk(ctx, nil, func(project gogh.Project) error {
-				utxt, err := gogh.GetDefaultRemoteURLFromLocalProject(ctx, project)
+			if err := local.Walk(ctx, nil, func(repo gogh.LocalRepo) error {
+				utxt, err := gogh.GetDefaultRemoteURLFromLocalRepo(ctx, repo)
 				if err != nil {
 					if errors.Is(err, git.ErrRemoteNotFound) {
 						return nil
@@ -53,7 +53,7 @@ func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) 
 					return err
 				}
 				remoteName := strings.Join([]string{uobj.Host, strings.TrimPrefix(strings.TrimSuffix(uobj.Path, ".git"), "/")}, "/")
-				localName := project.RelPath()
+				localName := repo.RelPath()
 				if remoteName == localName {
 					fmt.Fprintln(out, localName)
 					return nil

@@ -7,7 +7,7 @@ import (
 	testtarget "github.com/kyoh86/gogh/v3"
 )
 
-func TestSpecParser(t *testing.T) {
+func TestRepoRefParser(t *testing.T) {
 	const (
 		owner1 = "kyoh86"
 		owner2 = "anonymous"
@@ -16,7 +16,7 @@ func TestSpecParser(t *testing.T) {
 		name   = "gogh"
 	)
 	t.Run("Empty", func(t *testing.T) {
-		var parser testtarget.SpecParser
+		var parser testtarget.RepoRefParser
 		for _, testcase := range []struct {
 			title  string
 			source string
@@ -36,7 +36,7 @@ func TestSpecParser(t *testing.T) {
 	})
 
 	t.Run("DefaultHost", func(t *testing.T) {
-		parser := testtarget.NewSpecParser(testtarget.DefaultHost, owner1)
+		parser := testtarget.NewRepoRefParser(testtarget.DefaultHost, owner1)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -71,18 +71,18 @@ func TestSpecParser(t *testing.T) {
 				expectName: name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					spec, err := parser.Parse(testcase.source)
+					ref, err := parser.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expectHost != spec.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
+					if testcase.expectHost != ref.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, ref.Host())
 					}
-					if testcase.expectUser != spec.Owner() {
-						t.Errorf("expect owner %q but %q gotten", testcase.expectUser, spec.Owner())
+					if testcase.expectUser != ref.Owner() {
+						t.Errorf("expect owner %q but %q gotten", testcase.expectUser, ref.Owner())
 					}
-					if testcase.expectName != spec.Name() {
-						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
+					if testcase.expectName != ref.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expectName, ref.Name())
 					}
 				})
 			}
@@ -197,12 +197,12 @@ func TestSpecParser(t *testing.T) {
 				},
 			} {
 				t.Run(testcase.title, func(t *testing.T) {
-					spec, _, err := parser.ParseWithAlias(testcase.input)
+					ref, _, err := parser.ParseWithAlias(testcase.input)
 					if err == nil {
 						t.Fatalf(
 							"expect failure to parse %q but parsed to %+v",
 							testcase.input,
-							spec,
+							ref,
 						)
 					}
 					if reflect.TypeOf(testcase.expect) != reflect.TypeOf(err) {
@@ -227,7 +227,7 @@ func TestSpecParser(t *testing.T) {
 	})
 
 	t.Run("WithHost", func(t *testing.T) {
-		parser := testtarget.NewSpecParser(host1, owner1)
+		parser := testtarget.NewRepoRefParser(host1, owner1)
 		t.Run("ValidInput", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string
@@ -262,18 +262,18 @@ func TestSpecParser(t *testing.T) {
 				expectName: name,
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					spec, err := parser.Parse(testcase.source)
+					ref, err := parser.Parse(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if testcase.expectHost != spec.Host() {
-						t.Errorf("expect host %q but %q gotten", testcase.expectHost, spec.Host())
+					if testcase.expectHost != ref.Host() {
+						t.Errorf("expect host %q but %q gotten", testcase.expectHost, ref.Host())
 					}
-					if testcase.expectUser != spec.Owner() {
-						t.Errorf("expect owner %q but %q gotten", testcase.expectUser, spec.Owner())
+					if testcase.expectUser != ref.Owner() {
+						t.Errorf("expect owner %q but %q gotten", testcase.expectUser, ref.Owner())
 					}
-					if testcase.expectName != spec.Name() {
-						t.Errorf("expect name %q but %q gotten", testcase.expectName, spec.Name())
+					if testcase.expectName != ref.Name() {
+						t.Errorf("expect name %q but %q gotten", testcase.expectName, ref.Name())
 					}
 				})
 			}
@@ -281,7 +281,7 @@ func TestSpecParser(t *testing.T) {
 	})
 
 	t.Run("ParseWithAlias", func(t *testing.T) {
-		parser := testtarget.NewSpecParser("default-host", "default-owner")
+		parser := testtarget.NewRepoRefParser("default-host", "default-owner")
 		t.Run("WithoutAlias", func(t *testing.T) {
 			for _, testcase := range []struct {
 				title  string

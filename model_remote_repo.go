@@ -2,10 +2,10 @@ package gogh
 
 import "time"
 
-type Repository struct {
+type RemoteRepo struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
-	Parent      *Spec     `json:"parent,omitempty"`
-	Spec        Spec      `json:"spec"`
+	Parent      *RepoRef  `json:"parent,omitempty"`
+	Ref         RepoRef   `json:"ref"`
 	URL         string    `json:"url"`
 	Description string    `json:"description,omitempty"`
 	Homepage    string    `json:"homepage,omitempty"`
@@ -16,6 +16,6 @@ type Repository struct {
 	Fork        bool      `json:"fork,omitempty"`
 }
 
-func (r Repository) Host() string  { return r.Spec.Host() }
-func (r Repository) Owner() string { return r.Spec.Owner() }
-func (r Repository) Name() string  { return r.Spec.Name() }
+func (r RemoteRepo) Host() string  { return r.Ref.Host() }
+func (r RemoteRepo) Owner() string { return r.Ref.Owner() }
+func (r RemoteRepo) Name() string  { return r.Ref.Name() }

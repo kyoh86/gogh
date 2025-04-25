@@ -14,18 +14,18 @@ type BundleRestoreFlags struct {
 }
 
 type ReposFlags struct {
-	Limit       int              `json:"limit,omitempty" yaml:"limit,omitempty"`
-	Public      bool             `json:"public,omitempty" yaml:"public,omitempty"`
-	Private     bool             `json:"private,omitempty" yaml:"private,omitempty"`
-	Fork        bool             `json:"fork,omitempty" yaml:"fork,omitempty"`
-	NotFork     bool             `json:"notFork,omitempty" yaml:"notFork,omitempty"`
-	Archived    bool             `json:"archived,omitempty" yaml:"archived,omitempty"`
-	NotArchived bool             `json:"notArchived,omitempty" yaml:"notArchived,omitempty"`
-	Format      flags.RepoFormat `json:"format,omitempty" yaml:"format,omitempty"`
-	Color       string           `json:"color,omitempty" yaml:"color,omitempty"`
-	Relation    []string         `json:"relation,omitempty" yaml:"relation,omitempty"`
-	Sort        string           `json:"sort,omitempty" yaml:"sort,omitempty"`
-	Order       string           `json:"order,omitempty" yaml:"order,omitempty"`
+	Limit       int                    `json:"limit,omitempty" yaml:"limit,omitempty"`
+	Public      bool                   `json:"public,omitempty" yaml:"public,omitempty"`
+	Private     bool                   `json:"private,omitempty" yaml:"private,omitempty"`
+	Fork        bool                   `json:"fork,omitempty" yaml:"fork,omitempty"`
+	NotFork     bool                   `json:"notFork,omitempty" yaml:"notFork,omitempty"`
+	Archived    bool                   `json:"archived,omitempty" yaml:"archived,omitempty"`
+	NotArchived bool                   `json:"notArchived,omitempty" yaml:"notArchived,omitempty"`
+	Format      flags.RemoteRepoFormat `json:"format,omitempty" yaml:"format,omitempty"`
+	Color       string                 `json:"color,omitempty" yaml:"color,omitempty"`
+	Relation    []string               `json:"relation,omitempty" yaml:"relation,omitempty"`
+	Sort        string                 `json:"sort,omitempty" yaml:"sort,omitempty"`
+	Order       string                 `json:"order,omitempty" yaml:"order,omitempty"`
 }
 
 type CreateFlags struct {
@@ -50,12 +50,12 @@ type CreateFlags struct {
 }
 
 type CwdFlags struct {
-	Format flags.ProjectFormat `yaml:"format,omitempty"`
+	Format flags.LocalRepoFormat `yaml:"format,omitempty"`
 }
 type ListFlags struct {
-	Query   string              `yaml:"-"`
-	Format  flags.ProjectFormat `yaml:"format,omitempty"`
-	Primary bool                `yaml:"primary,omitempty"`
+	Query   string                `yaml:"-"`
+	Format  flags.LocalRepoFormat `yaml:"format,omitempty"`
+	Primary bool                  `yaml:"primary,omitempty"`
 }
 
 type ForkFlags struct {

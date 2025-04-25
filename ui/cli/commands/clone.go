@@ -22,8 +22,8 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 	c := &cobra.Command{
 		Use:     "clone [flags] [[OWNER/]NAME[=ALIAS]]...",
 		Aliases: []string{"get"},
-		Short:   "Clone repositories to local",
-		Example: `  It accepts a shortly notation for a repository
+		Short:   "Clone remote repositories to local",
+		Example: `  It accepts a shortly notation for a remote repository
   (for example, "github.com/kyoh86/example") like below.
     - "NAME": e.g. "example"; 
     - "OWNER/NAME": e.g. "kyoh86/example"
@@ -38,9 +38,9 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
     - "$(gogh root)/github.com/kyoh86/sample"
     - "$(gogh root)/github.com/kyoh86-tryouts/tryout"`,
 
-		RunE: func(cmd *cobra.Command, specs []string) error {
+		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
-			if len(specs) == 0 {
+			if len(refs) == 0 {
 				entries := tokens.Entries()
 				var options []huh.Option[string]
 				for _, entry := range entries {
@@ -55,21 +55,21 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 					}
 					for _, s := range founds {
 						options = append(options, huh.Option[string]{
-							Key:   s.Spec.String(),
-							Value: s.Spec.String(),
+							Key:   s.Ref.String(),
+							Value: s.Ref.String(),
 						})
 					}
 				}
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewMultiSelect[string]().
-						Title("A repository to clone").
+						Title("A remote repository to clone").
 						Options(options...).
-						Value(&specs),
+						Value(&refs),
 				)).Run(); err != nil {
 					return err
 				}
 			}
-			return cloneAll(ctx, conf, tokens, specs, f.dryrun)
+			return cloneAll(ctx, conf, tokens, refs, f.dryrun)
 		},
 	}
 
@@ -78,31 +78,31 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 	return c
 }
 
-func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.TokenStore, specs []string, dryrun bool) error {
-	parser := gogh.NewSpecParser(tokens.GetDefaultKey())
+func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.TokenStore, refs []string, dryrun bool) error {
+	parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
 	if dryrun {
-		for _, s := range specs {
-			spec, alias, err := parser.ParseWithAlias(s)
+		for _, r := range refs {
+			ref, alias, err := parser.ParseWithAlias(r)
 			if err != nil {
 				return err
 			}
 
 			if alias == nil {
-				log.FromContext(ctx).Infof("git clone %q", spec.URL())
+				log.FromContext(ctx).Infof("git clone %q", ref.URL())
 			} else {
-				log.FromContext(ctx).Infof("git clone %q into %q", spec.URL(), alias.String())
+				log.FromContext(ctx).Infof("git clone %q into %q", ref.URL(), alias.String())
 			}
 		}
 		return nil
 	}
 
 	local := gogh.NewLocalController(conf.DefaultRoot())
-	if len(specs) == 1 {
-		return cloneOneFunc(ctx, tokens, local, parser, specs[0])()
+	if len(refs) == 1 {
+		return cloneOneFunc(ctx, tokens, local, parser, refs[0])()
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
-	for _, s := range specs {
+	for _, s := range refs {
 		eg.Go(cloneOneFunc(ctx, tokens, local, parser, s))
 	}
 	return eg.Wait()
@@ -112,26 +112,26 @@ func cloneOneFunc(
 	ctx context.Context,
 	tokens *config.TokenStore,
 	local *gogh.LocalController,
-	parser gogh.SpecParser,
+	parser gogh.RepoRefParser,
 	s string,
 ) func() error {
 	return func() error {
-		spec, alias, err := parser.ParseWithAlias(s)
+		ref, alias, err := parser.ParseWithAlias(s)
 		if err != nil {
 			return err
 		}
 
-		adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, *tokens, spec)
+		adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, *tokens, ref)
 		if err != nil {
 			return err
 		}
-		repo, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil)
+		repo, err := remote.Get(ctx, ref.Owner(), ref.Name(), nil)
 		if err != nil {
 			return err
 		}
 
 		l := log.FromContext(ctx).WithFields(log.Fields{
-			"spec": spec,
+			"ref": ref,
 		})
 		l.Info("cloning")
 		accessToken, err := adaptor.GetAccessToken()
@@ -139,18 +139,18 @@ func cloneOneFunc(
 			l.WithField("error", err).Error("failed to get access token")
 			return nil
 		}
-		if _, err = local.Clone(ctx, spec, accessToken, &gogh.LocalCloneOption{Alias: alias}); err != nil {
-			l.WithField("error", err).Error("failed to get repository")
+		if _, err = local.Clone(ctx, ref, accessToken, &gogh.LocalCloneOption{Alias: alias}); err != nil {
+			l.WithField("error", err).Error("failed to clone a repository")
 			return nil
 		}
-		if repo.Parent != nil && repo.Parent.String() != spec.String() {
-			l.Debug("set remote specs")
-			localSpec := spec
+		if repo.Parent != nil && repo.Parent.String() != ref.String() {
+			l.Debug("set remote refs")
+			localRef := ref
 			if alias != nil {
-				localSpec = *alias
+				localRef = *alias
 			}
-			if err := local.SetRemoteSpecs(ctx, localSpec, map[string][]gogh.Spec{
-				git.DefaultRemoteName: {spec},
+			if err := local.SetRemoteRefs(ctx, localRef, map[string][]gogh.RepoRef{
+				git.DefaultRemoteName: {ref},
 				"upstream":            {*repo.Parent},
 			}); err != nil {
 				return err

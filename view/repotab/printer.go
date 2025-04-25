@@ -83,7 +83,7 @@ type cell struct {
 
 var DefaultColumns = []Column{{
 	Priority:    0,
-	CellBuilder: SpecCell,
+	CellBuilder: RepoRefCell,
 }, {
 	Truncatable: true,
 	MinWidth:    20,
@@ -114,7 +114,7 @@ func NewPrinter(w io.Writer, option ...Option) *Printer {
 	return p
 }
 
-func (p *Printer) Print(r gogh.Repository) error {
+func (p *Printer) Print(r gogh.RemoteRepo) error {
 	cells := make([]cell, len(p.columns))
 	for i, column := range p.columns {
 		content, style := column.CellBuilder.Build(r)

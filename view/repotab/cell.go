@@ -10,26 +10,26 @@ import (
 )
 
 type CellBuilder interface {
-	Build(gogh.Repository) (content string, style aec.ANSI)
+	Build(gogh.RemoteRepo) (content string, style aec.ANSI)
 }
 
-type CellBuildFunc func(r gogh.Repository) (content string, style aec.ANSI)
+type CellBuildFunc func(r gogh.RemoteRepo) (content string, style aec.ANSI)
 
-func (f CellBuildFunc) Build(r gogh.Repository) (content string, style aec.ANSI) {
+func (f CellBuildFunc) Build(r gogh.RemoteRepo) (content string, style aec.ANSI) {
 	return f(r)
 }
 
-var SpecCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
-	content = r.Spec.String()
+var RepoRefCell = CellBuildFunc(func(r gogh.RemoteRepo) (content string, style aec.ANSI) {
+	content = r.Ref.String()
 	return content, aec.Bold
 })
 
-var DescriptionCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
+var DescriptionCell = CellBuildFunc(func(r gogh.RemoteRepo) (content string, style aec.ANSI) {
 	content = r.Description
 	return content, aec.DefaultF.With(aec.DefaultB)
 })
 
-var EmojiAttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
+var EmojiAttributesCell = CellBuildFunc(func(r gogh.RemoteRepo) (content string, style aec.ANSI) {
 	var parts []string
 
 	if r.Private {
@@ -45,7 +45,7 @@ var EmojiAttributesCell = CellBuildFunc(func(r gogh.Repository) (content string,
 	return strings.Join(parts, " "), aec.EmptyBuilder.ANSI
 })
 
-var AttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
+var AttributesCell = CellBuildFunc(func(r gogh.RemoteRepo) (content string, style aec.ANSI) {
 	contents := []string{""}
 	if r.Private {
 		style = aec.YellowF
@@ -63,6 +63,6 @@ var AttributesCell = CellBuildFunc(func(r gogh.Repository) (content string, styl
 	return strings.Join(contents, ","), style
 })
 
-var UpdatedAtCell = CellBuildFunc(func(r gogh.Repository) (content string, style aec.ANSI) {
+var UpdatedAtCell = CellBuildFunc(func(r gogh.RemoteRepo) (content string, style aec.ANSI) {
 	return view.FuzzyAgoAbbr(time.Now(), r.UpdatedAt), aec.LightBlackF
 })

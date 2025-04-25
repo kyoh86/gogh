@@ -20,15 +20,15 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 	cmd := &cobra.Command{
 		Use:     "create [flags] [[OWNER/]NAME]",
 		Aliases: []string{"new"},
-		Short:   "Create a new project with a remote repository",
+		Short:   "Create a new local and remote repository",
 		Args:    cobra.RangeArgs(0, 1),
-		RunE: func(cmd *cobra.Command, specs []string) error {
+		RunE: func(cmd *cobra.Command, refs []string) error {
 			var name string
-			parser := gogh.NewSpecParser(tokens.GetDefaultKey())
-			if len(specs) == 0 {
+			parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
+			if len(refs) == 0 {
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewInput().
-						Title("A spec of repository name to create").
+						Title("A ref of repository name to create").
 						Validate(func(s string) error {
 							_, err := parser.Parse(s)
 							return err
@@ -38,35 +38,35 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 					return err
 				}
 			} else {
-				name = specs[0]
+				name = refs[0]
 			}
 
 			ctx := cmd.Context()
-			spec, err := parser.Parse(name)
+			ref, err := parser.Parse(name)
 			if err != nil {
 				return err
 			}
 
 			local := gogh.NewLocalController(conf.DefaultRoot())
-			exist, err := local.Exist(ctx, spec, nil)
+			exist, err := local.Exist(ctx, ref, nil)
 			if err != nil {
 				return err
 			}
 			if exist {
-				return errors.New("local project already exists")
+				return errors.New("local repository already exists")
 			}
 
 			l := log.FromContext(ctx).WithFields(log.Fields{
-				"spec": spec,
+				"ref": ref,
 			})
-			adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, *tokens, spec)
+			adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, *tokens, ref)
 			if err != nil {
-				return fmt.Errorf("failed to get token for %s/%s: %w", spec.Host(), spec.Owner(), err)
+				return fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 			}
 
 			// check repo has already existed
-			if _, err := remote.Get(ctx, spec.Owner(), spec.Name(), nil); err == nil {
-				l.Info("repository already exists")
+			if _, err := remote.Get(ctx, ref.Owner(), ref.Name(), nil); err == nil {
+				l.Info("remote repository already exists")
 			} else {
 				me, err := remote.Me(ctx)
 				if err != nil {
@@ -90,26 +90,26 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 						PreventRebaseMerge:  f.PreventRebaseMerge,
 						DeleteBranchOnMerge: f.DeleteBranchOnMerge,
 					}
-					if me != spec.Owner() {
-						ropt.Organization = spec.Owner()
+					if me != ref.Owner() {
+						ropt.Organization = ref.Owner()
 					}
 
-					if _, err := remote.Create(ctx, spec.Name(), ropt); err != nil {
+					if _, err := remote.Create(ctx, ref.Name(), ropt); err != nil {
 						return err
 					}
 				} else {
-					from, err := gogh.ParseSiblingSpec(spec, f.Template)
+					from, err := gogh.ParseSiblingRepoRef(ref, f.Template)
 					if err != nil {
 						return err
 					}
 					ropt := &gogh.RemoteCreateFromTemplateOption{}
-					if me != spec.Owner() {
-						ropt.Owner = spec.Owner()
+					if me != ref.Owner() {
+						ropt.Owner = ref.Owner()
 					}
 					if f.Private {
 						ropt.Private = true
 					}
-					if _, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), spec.Name(), ropt); err != nil {
+					if _, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), ref.Name(), ropt); err != nil {
 						return err
 					}
 				}
@@ -120,12 +120,12 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 				return nil
 			}
 			for range f.CloneRetryLimit {
-				_, err := local.Clone(ctx, spec, accessToken, nil)
+				_, err := local.Clone(ctx, ref, accessToken, nil)
 				switch {
 				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
 					l.Info("waiting the remote repository is ready")
 				case errors.Is(err, transport.ErrEmptyRemoteRepository):
-					if _, err := local.Create(ctx, spec, nil); err != nil {
+					if _, err := local.Create(ctx, ref, nil); err != nil {
 						l.WithField("error", err).
 							WithField("error-type", fmt.Sprintf("%t", err)).
 							Error("failed to create empty repository")

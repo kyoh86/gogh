@@ -28,10 +28,10 @@ func quoteEnums(values []string) string {
 
 func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	var (
-		f                  config.ReposFlags
-		repoSortAccept     []string
-		repoOrderAccept    []string
-		repoRelationAccept []string
+		f                        config.ReposFlags
+		remoteRepoSortAccept     []string
+		remoteRepoOrderAccept    []string
+		remoteRepoRelationAccept []string
 	)
 	cmd := &cobra.Command{
 		Use:   "repos",
@@ -78,16 +78,16 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 			}
 		LOOP_CONVERT_RELATION:
 			for _, r := range f.Relation {
-				rdef := gogh.RepositoryRelation(r)
-				for _, def := range gogh.AllRepositoryRelation {
+				rdef := gogh.RemoteRepoRelation(r)
+				for _, def := range gogh.AllRemoteRepoRelation {
 					if def == rdef {
 						listOption.Relation = append(listOption.Relation, rdef)
 						continue LOOP_CONVERT_RELATION
 					}
 				}
-				return fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(repoRelationAccept)))
+				return fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(remoteRepoRelationAccept)))
 			}
-			var format view.RepositoryPrinter
+			var format view.RemoteRepoPrinter
 			var err error
 			format, err = f.Format.Formatter(os.Stdout)
 			if err != nil {
@@ -96,7 +96,7 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 			defer format.Close()
 
 			if f.Sort != "" {
-				listOption.Sort = gogh.RepositoryOrderField(f.Sort)
+				listOption.Sort = gogh.RemoteRepoOrderField(f.Sort)
 			}
 			if f.Order != "" {
 				listOption.Order = gogh.OrderDirection(f.Order)
@@ -141,14 +141,14 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		},
 	}
 
-	for _, v := range gogh.AllRepositoryOrderField {
-		repoSortAccept = append(repoSortAccept, string(v))
+	for _, v := range gogh.AllRemoteRepoOrderField {
+		remoteRepoSortAccept = append(remoteRepoSortAccept, string(v))
 	}
 	for _, v := range gogh.AllOrderDirection {
-		repoOrderAccept = append(repoOrderAccept, string(v))
+		remoteRepoOrderAccept = append(remoteRepoOrderAccept, string(v))
 	}
-	for _, v := range gogh.AllRepositoryRelation {
-		repoRelationAccept = append(repoRelationAccept, v.String())
+	for _, v := range gogh.AllRemoteRepoRelation {
+		remoteRepoRelationAccept = append(remoteRepoRelationAccept, v.String())
 	}
 	cmd.Flags().
 		IntVarP(&f.Limit, "limit", "", defaultInt(defaults.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
@@ -169,8 +169,8 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		BoolVarP(&f.NotArchived, "no-archived", "", defaults.Repos.NotArchived, "Omit archived repositories")
 
 	cmd.Flags().
-		VarP(&f.Format, "format", "", flags.RepoFormatShortUsage)
-	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteRepoFormat); err != nil {
+		VarP(&f.Format, "format", "", flags.RemoteRepoFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteRemoteRepoFormat); err != nil {
 		panic(err)
 	}
 	cmd.Flags().
@@ -181,24 +181,24 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		panic(err)
 	}
 	cmd.Flags().
-		StringSliceVarP(&f.Relation, "relation", "", defaultStringSlice(defaults.Repos.Relation, []string{"owner", "organizationMember"}), fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(repoRelationAccept)))
+		StringSliceVarP(&f.Relation, "relation", "", defaultStringSlice(defaults.Repos.Relation, []string{"owner", "organizationMember"}), fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(remoteRepoRelationAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return repoRelationAccept, cobra.ShellCompDirectiveDefault
+		return remoteRepoRelationAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		panic(err)
 	}
 
 	cmd.Flags().
-		StringVarP(&f.Sort, "sort", "", defaults.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(repoSortAccept)))
+		StringVarP(&f.Sort, "sort", "", defaults.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(remoteRepoSortAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("sort", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return repoSortAccept, cobra.ShellCompDirectiveDefault
+		return remoteRepoSortAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		panic(err)
 	}
 	cmd.Flags().
-		StringVarP(&f.Order, "order", "", defaults.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(repoOrderAccept)))
+		StringVarP(&f.Order, "order", "", defaults.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(remoteRepoOrderAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("order", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return repoOrderAccept, cobra.ShellCompDirectiveDefault
+		return remoteRepoOrderAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		panic(err)
 	}

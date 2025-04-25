@@ -15,7 +15,7 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra
 	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
-		Short:   "List local projects",
+		Short:   "List local repositories",
 		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			formatter, err := f.Format.Formatter()
@@ -30,18 +30,18 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra
 			}
 			for _, root := range list {
 				local := gogh.NewLocalController(root)
-				projects, err := local.List(ctx, &gogh.LocalListOption{Query: f.Query})
+				repos, err := local.List(ctx, &gogh.LocalListOption{Query: f.Query})
 				if err != nil {
 					return err
 				}
-				log.FromContext(ctx).Debugf("found %d projects in %q", len(projects), root)
-				for _, project := range projects {
-					str, err := formatter.Format(project)
+				log.FromContext(ctx).Debugf("found %d repositories in %q", len(repos), root)
+				for _, repo := range repos {
+					str, err := formatter.Format(repo)
 					if err != nil {
 						log.FromContext(ctx).WithFields(log.Fields{
 							"error":  err,
 							"format": f.Format.String(),
-							"path":   project.FullFilePath(),
+							"path":   repo.FullFilePath(),
 						}).Info("failed to format")
 					}
 					fmt.Println(str)
@@ -51,10 +51,10 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra
 		},
 	}
 	f.Format = defaults.List.Format
-	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting projects")
-	cmd.Flags().BoolVarP(&f.Primary, "primary", "", defaults.List.Primary, "List up projects in just a primary root")
-	cmd.Flags().VarP(&f.Format, "format", "f", flags.ProjectFormatShortUsage)
-	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteProjectFormat); err != nil {
+	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
+	cmd.Flags().BoolVarP(&f.Primary, "primary", "", defaults.List.Primary, "List up repositories in just a primary root")
+	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
 		panic(err)
 	}
 	return cmd

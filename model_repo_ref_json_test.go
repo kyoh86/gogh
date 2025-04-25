@@ -8,8 +8,8 @@ import (
 	testtarget "github.com/kyoh86/gogh/v3"
 )
 
-func TestSpecJSON(t *testing.T) {
-	spec, err := testtarget.NewSpec("github.com", "kyoh86", "gogh")
+func TestRepoRefJSON(t *testing.T) {
+	ref, err := testtarget.NewRepoRef("github.com", "kyoh86", "gogh")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,27 +21,27 @@ func TestSpecJSON(t *testing.T) {
 	}{
 		{
 			title: "bared",
-			input: spec,
+			input: ref,
 			want:  `{"host":"github.com","owner":"kyoh86","name":"gogh"}`,
 		},
 		{
 			title: "pointer",
-			input: &spec,
+			input: &ref,
 			want:  `{"host":"github.com","owner":"kyoh86","name":"gogh"}`,
 		},
 		{
 			title: "wrap",
 			input: struct {
-				Spec testtarget.Spec
-			}{Spec: spec},
-			want: `{"Spec":{"host":"github.com","owner":"kyoh86","name":"gogh"}}`,
+				RepoRef testtarget.RepoRef
+			}{RepoRef: ref},
+			want: `{"RepoRef":{"host":"github.com","owner":"kyoh86","name":"gogh"}}`,
 		},
 		{
 			title: "wrap pointer",
 			input: struct {
-				Spec *testtarget.Spec
-			}{Spec: &spec},
-			want: `{"Spec":{"host":"github.com","owner":"kyoh86","name":"gogh"}}`,
+				RepoRef *testtarget.RepoRef
+			}{RepoRef: &ref},
+			want: `{"RepoRef":{"host":"github.com","owner":"kyoh86","name":"gogh"}}`,
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
@@ -57,21 +57,21 @@ func TestSpecJSON(t *testing.T) {
 	}
 
 	t.Run("Marshal & Unmarshal", func(t *testing.T) {
-		buf, err := json.Marshal(spec)
+		buf, err := json.Marshal(ref)
 		if err != nil {
 			t.Fatal(err)
 		}
-		var got testtarget.Spec
+		var got testtarget.RepoRef
 		if err := json.Unmarshal(buf, &got); err != nil {
 			t.Fatal(err)
 		}
-		if diff := cmp.Diff(spec, got, cmp.AllowUnexported(spec)); diff != "" {
+		if diff := cmp.Diff(ref, got, cmp.AllowUnexported(ref)); diff != "" {
 			t.Errorf("result mismatch;\n-want, +got\n%s", diff)
 		}
 	})
 
 	t.Run("Unmarshal invalid input", func(t *testing.T) {
-		var got testtarget.Spec
+		var got testtarget.RepoRef
 		if err := json.Unmarshal([]byte(`{"host":42}`), &got); err == nil {
 			t.Error("expected error, but got nil")
 		}

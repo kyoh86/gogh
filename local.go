@@ -37,11 +37,11 @@ type LocalExistOption struct {
 
 func (l *LocalController) Exist(
 	ctx context.Context,
-	spec Spec,
+	ref RepoRef,
 	opt *LocalExistOption,
 ) (bool, error) {
-	project := NewProject(l.root, spec)
-	_, err := git.PlainOpen(project.FullFilePath())
+	repo := NewLocalRepo(l.root, ref)
+	_, err := git.PlainOpen(repo.FullFilePath())
 	switch {
 	case err == nil:
 		return true, nil
@@ -57,23 +57,23 @@ type LocalCreateOption struct { // UNDONE: support isBare
 
 func (l *LocalController) Create(
 	ctx context.Context,
-	spec Spec,
+	ref RepoRef,
 	opt *LocalCreateOption,
-) (Project, error) {
-	p := NewProject(l.root, spec)
-	if err := CreateLocalProject(ctx, p, spec.URL(), opt); err != nil {
-		return Project{}, err
+) (LocalRepo, error) {
+	p := NewLocalRepo(l.root, ref)
+	if err := CreateLocalRepo(ctx, p, ref.URL(), opt); err != nil {
+		return LocalRepo{}, err
 	}
 	return p, nil
 }
 
-func CreateLocalProject(
+func CreateLocalRepo(
 	_ context.Context,
-	project Project,
+	localRepo LocalRepo,
 	remoteURL string,
 	_ *LocalCreateOption,
 ) error {
-	repo, err := git.PlainInit(project.FullFilePath(), false)
+	repo, err := git.PlainInit(localRepo.FullFilePath(), false)
 	if err != nil {
 		return err
 	}
@@ -87,34 +87,34 @@ func CreateLocalProject(
 	return nil
 }
 
-func (l *LocalController) SetRemoteSpecs(
+func (l *LocalController) SetRemoteRefs(
 	ctx context.Context,
-	spec Spec,
-	remotes map[string][]Spec,
+	newRef RepoRef,
+	remotes map[string][]RepoRef,
 ) error {
 	urls := map[string][]string{}
-	for name, specs := range remotes {
-		for _, spec := range specs {
-			urls[name] = append(urls[name], spec.URL())
+	for name, refs := range remotes {
+		for _, ref := range refs {
+			urls[name] = append(urls[name], ref.URL())
 		}
 	}
-	return l.SetRemoteURLs(ctx, spec, urls)
+	return l.SetRemoteURLs(ctx, newRef, urls)
 }
 
 func (l *LocalController) SetRemoteURLs(
 	ctx context.Context,
-	spec Spec,
+	newRef RepoRef,
 	remotes map[string][]string,
 ) error {
-	return SetRemoteURLsOnLocalProject(ctx, NewProject(l.root, spec), remotes)
+	return SetRemoteURLsOnLocalRepository(ctx, NewLocalRepo(l.root, newRef), remotes)
 }
 
-func SetRemoteURLsOnLocalProject(
+func SetRemoteURLsOnLocalRepository(
 	_ context.Context,
-	project Project,
+	locRepo LocalRepo,
 	remotes map[string][]string,
 ) error {
-	repo, err := git.PlainOpen(project.FullFilePath())
+	repo, err := git.PlainOpen(locRepo.FullFilePath())
 	if err != nil {
 		return err
 	}
@@ -134,18 +134,18 @@ func SetRemoteURLsOnLocalProject(
 
 func (l *LocalController) GetRemoteURLs(
 	ctx context.Context,
-	spec Spec,
+	ref RepoRef,
 	name string,
 ) ([]string, error) {
-	return GetRemoteURLsFromLocalProject(ctx, NewProject(l.root, spec), name)
+	return GetRemoteURLsFromLocalRepository(ctx, NewLocalRepo(l.root, ref), name)
 }
 
-func GetRemoteURLsFromLocalProject(
+func GetRemoteURLsFromLocalRepository(
 	_ context.Context,
-	project Project,
+	locRepo LocalRepo,
 	name string,
 ) ([]string, error) {
-	repo, err := git.PlainOpen(project.FullFilePath())
+	repo, err := git.PlainOpen(locRepo.FullFilePath())
 	if err != nil {
 		return nil, fmt.Errorf("open local repository: %w", err)
 	}
@@ -156,8 +156,8 @@ func GetRemoteURLsFromLocalProject(
 	return remote.Config().URLs, nil
 }
 
-func GetDefaultRemoteURLFromLocalProject(_ context.Context, project Project) (string, error) {
-	urls, err := GetRemoteURLsFromLocalProject(context.Background(), project, git.DefaultRemoteName)
+func GetDefaultRemoteURLFromLocalRepo(_ context.Context, locRepo LocalRepo) (string, error) {
+	urls, err := GetRemoteURLsFromLocalRepository(context.Background(), locRepo, git.DefaultRemoteName)
 	if err != nil {
 		return "", err
 	}
@@ -165,31 +165,31 @@ func GetDefaultRemoteURLFromLocalProject(_ context.Context, project Project) (st
 }
 
 type LocalCloneOption struct {
-	Alias *Spec
+	Alias *RepoRef
 	// UNDONE: support isBare
 	// UNDONE: support *git.CloneOptions
 }
 
 func (l *LocalController) Clone(
 	ctx context.Context,
-	spec Spec,
+	ref RepoRef,
 	token string,
 	opt *LocalCloneOption,
-) (Project, error) {
+) (LocalRepo, error) {
 	var auth transport.AuthMethod
 	if token != "" {
 		auth = &http.BasicAuth{
-			Username: spec.Owner(),
+			Username: ref.Owner(),
 			Password: token,
 		}
 	}
 
-	p := NewProject(l.root, spec)
+	p := NewLocalRepo(l.root, ref)
 	path := p.FullFilePath()
-	url := spec.URL()
+	url := ref.URL()
 	if opt != nil && opt.Alias != nil {
-		alias := NewProject(l.root, *opt.Alias)
-		alias.spec.host = p.spec.host
+		alias := NewLocalRepo(l.root, *opt.Alias)
+		alias.ref.host = p.ref.host
 		path = alias.FullFilePath()
 		p = alias
 	}
@@ -201,13 +201,13 @@ func (l *LocalController) Clone(
 		URL:  url,
 		Auth: auth,
 	}); err != nil {
-		return Project{}, err
+		return LocalRepo{}, err
 	}
 
 	return p, nil
 }
 
-type LocalWalkFunc func(Project) error
+type LocalWalkFunc func(LocalRepo) error
 
 type LocalWalkOption struct {
 	Query string
@@ -247,14 +247,14 @@ func (l *LocalController) Walk(
 		}
 
 		// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
-		spec, err := NewSpec(parts[0], parts[1], parts[2])
+		ref, err := NewRepoRef(parts[0], parts[1], parts[2])
 		if err != nil {
 			log.FromContext(ctx).
 				WithFields(log.Fields{"error": err, "rel": rel}).
 				Debug("skip invalid entity")
 			return nil
 		}
-		p := NewProject(l.root, spec)
+		p := NewLocalRepo(l.root, ref)
 		if opt != nil && !strings.Contains(p.RelPath(), opt.Query) {
 			return nil
 		}
@@ -268,13 +268,13 @@ type LocalListOption struct {
 	Query string
 }
 
-func (l *LocalController) List(ctx context.Context, opt *LocalListOption) ([]Project, error) {
-	var list []Project
+func (l *LocalController) List(ctx context.Context, opt *LocalListOption) ([]LocalRepo, error) {
+	var list []LocalRepo
 	var woption *LocalWalkOption
 	if opt != nil {
 		woption = &LocalWalkOption{Query: opt.Query}
 	}
-	if err := l.Walk(ctx, woption, func(p Project) error {
+	if err := l.Walk(ctx, woption, func(p LocalRepo) error {
 		list = append(list, p)
 		return nil
 	}); err != nil {
@@ -285,13 +285,13 @@ func (l *LocalController) List(ctx context.Context, opt *LocalListOption) ([]Pro
 
 type LocalDeleteOption struct{}
 
-func (l *LocalController) Delete(ctx context.Context, spec Spec, opt *LocalDeleteOption) error {
-	return DeleteLocalProject(ctx, NewProject(l.root, spec), opt)
+func (l *LocalController) Delete(ctx context.Context, ref RepoRef, opt *LocalDeleteOption) error {
+	return DeleteLocalRepository(ctx, NewLocalRepo(l.root, ref), opt)
 }
 
-func DeleteLocalProject(_ context.Context, project Project, _ *LocalDeleteOption) error {
-	if err := project.CheckEntity(); err != nil {
+func DeleteLocalRepository(_ context.Context, repo LocalRepo, _ *LocalDeleteOption) error {
+	if err := repo.CheckEntity(); err != nil {
 		return err
 	}
-	return os.RemoveAll(project.FullFilePath())
+	return os.RemoveAll(repo.FullFilePath())
 }

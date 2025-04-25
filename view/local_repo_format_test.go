@@ -12,18 +12,18 @@ import (
 	testtarget "github.com/kyoh86/gogh/v3/view"
 )
 
-func TestProjectFormat(t *testing.T) {
+func TestLocalRepoFormat(t *testing.T) {
 	tempDir := t.TempDir()
-	spec, err := gogh.NewSpec("github.com", "kyoh86", "gogh")
+	ref, err := gogh.NewRepoRef("github.com", "kyoh86", "gogh")
 	if err != nil {
-		t.Fatalf("failed to init Spec: %s", err)
+		t.Fatalf("failed to init Ref: %s", err)
 	}
-	project := gogh.NewProject(tempDir, spec)
+	locRepo := gogh.NewLocalRepo(tempDir, ref)
 	if err != nil {
-		t.Fatalf("failed to get project from Spec: %s", err)
+		t.Fatalf("failed to get a local repository from Ref: %s", err)
 	}
-	if err := gogh.CreateLocalProject(context.Background(), project, spec.URL(), nil); err != nil {
-		t.Fatalf("failed to prepare local project from Spec: %s", err)
+	if err := gogh.CreateLocalRepo(context.Background(), locRepo, ref.URL(), nil); err != nil {
+		t.Fatalf("failed to prepare local repository from Ref: %s", err)
 	}
 
 	wantPath := filepath.Join(tempDir, "github.com/kyoh86/gogh")
@@ -32,32 +32,32 @@ func TestProjectFormat(t *testing.T) {
 	// Because windows uses '\' for path separator.
 	for _, testcase := range []struct {
 		title  string
-		format testtarget.ProjectFormat
+		format testtarget.LocalRepoFormat
 		expect string
 	}{
 		{
 			title:  "FullFilePath",
-			format: testtarget.ProjectFormatFullFilePath,
+			format: testtarget.LocalRepoFormatFullFilePath,
 			expect: wantPath,
 		},
 		{
 			title:  "RelPath",
-			format: testtarget.ProjectFormatRelPath,
+			format: testtarget.LocalRepoFormatRelPath,
 			expect: "github.com/kyoh86/gogh",
 		},
 		{
 			title:  "RelFilePath",
-			format: testtarget.ProjectFormatRelFilePath,
+			format: testtarget.LocalRepoFormatRelFilePath,
 			expect: filepath.Clean("github.com/kyoh86/gogh"),
 		},
 		{
 			title:  "URL",
-			format: testtarget.ProjectFormatURL,
+			format: testtarget.LocalRepoFormatURL,
 			expect: "https://github.com/kyoh86/gogh",
 		},
 		{
 			title:  "FieldsWithSpace",
-			format: testtarget.ProjectFormatFields(" "),
+			format: testtarget.LocalRepoFormatFields(" "),
 			expect: strings.Join([]string{
 				wantPath,
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -70,7 +70,7 @@ func TestProjectFormat(t *testing.T) {
 		},
 		{
 			title:  "FieldsWithSpecial",
-			format: testtarget.ProjectFormatFields("<<>>"),
+			format: testtarget.LocalRepoFormatFields("<<>>"),
 			expect: strings.Join([]string{
 				wantPath,
 				filepath.Clean("github.com/kyoh86/gogh"),
@@ -83,7 +83,7 @@ func TestProjectFormat(t *testing.T) {
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
-			actual, err := testcase.format.Format(project)
+			actual, err := testcase.format.Format(locRepo)
 			if err != nil {
 				t.Fatalf("failed to format: %s", err)
 			}
@@ -94,7 +94,7 @@ func TestProjectFormat(t *testing.T) {
 	}
 
 	t.Run("JSON", func(t *testing.T) {
-		formatted, err := testtarget.ProjectFormatJSON(project)
+		formatted, err := testtarget.LocalRepoFormatJSON(locRepo)
 		if err != nil {
 			t.Fatalf("failed to format: %s", err)
 		}

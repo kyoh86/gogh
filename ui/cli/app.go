@@ -9,7 +9,7 @@ import (
 func NewApp(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	facadeCommand := &cobra.Command{
 		Use:   config.AppName,
-		Short: "GO GitHub project manager",
+		Short: "GO GitHub local repository manager",
 	}
 
 	bundleCommand := commands.NewBundleCommand()

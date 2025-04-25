@@ -10,10 +10,10 @@ import (
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
 )
 
-func TestParseSpec(t *testing.T) {
+func TestParseRepoRef(t *testing.T) {
 	t.Run("valid http URL", func(t *testing.T) {
-		want := Spec{host: "github.com", owner: "kyoh86", name: "gogh"}
-		got, err := parseSpec(&github.Repository{
+		want := RepoRef{host: "github.com", owner: "kyoh86", name: "gogh"}
+		got, err := parseRepoRef(&github.Repository{
 			CloneURL: Ptr("https://github.com/kyoh86/gogh"),
 		})
 		if err != nil {
@@ -25,7 +25,7 @@ func TestParseSpec(t *testing.T) {
 	})
 
 	t.Run("unsupported (ssh) URL", func(t *testing.T) {
-		_, err := parseSpec(&github.Repository{
+		_, err := parseRepoRef(&github.Repository{
 			CloneURL: Ptr("git@github.com:kyoh86/gogh.git"),
 		})
 		if err == nil {
@@ -37,7 +37,7 @@ func TestParseSpec(t *testing.T) {
 func TestIngestRepository(t *testing.T) {
 	t.Run("valid repository", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
-		want := Repository{
+		want := RemoteRepo{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
 			Homepage:    "valid homepage",
@@ -47,8 +47,8 @@ func TestIngestRepository(t *testing.T) {
 			Private:     false,
 			IsTemplate:  true,
 			Fork:        false,
-			Spec:        Spec{host: "github.com", owner: "kyoh86", name: "gogh"},
-			Parent:      &Spec{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
+			Ref:         RepoRef{host: "github.com", owner: "kyoh86", name: "gogh"},
+			Parent:      &RepoRef{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
 		}
 		got, err := ingestRepository(&github.Repository{
 			Description: Ptr("valid description"),
@@ -67,7 +67,7 @@ func TestIngestRepository(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
 		}
-		if diff := cmp.Diff(want, got, cmp.AllowUnexported(want), cmp.AllowUnexported(want.Spec)); diff != "" {
+		if diff := cmp.Diff(want, got, cmp.AllowUnexported(want), cmp.AllowUnexported(want.Ref)); diff != "" {
 			t.Errorf("result mistmatch\n-want, +got:\n%s", diff)
 		}
 	})
@@ -118,7 +118,7 @@ func TestIngestRepository(t *testing.T) {
 func TestIngestRepositoryFragment(t *testing.T) {
 	tim, _ := time.Parse("2006-01-02", "2021-01-01")
 	t.Run("valid repository", func(t *testing.T) {
-		want := Repository{
+		want := RemoteRepo{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
 			Homepage:    "https://example.com",
@@ -128,8 +128,8 @@ func TestIngestRepositoryFragment(t *testing.T) {
 			Private:     false,
 			IsTemplate:  true,
 			Fork:        false,
-			Spec:        Spec{host: "github.com", owner: "kyoh86", name: "gogh"},
-			Parent:      &Spec{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
+			Ref:         RepoRef{host: "github.com", owner: "kyoh86", name: "gogh"},
+			Parent:      &RepoRef{host: "github.com", owner: "kyoh86-tryouts", name: "test"},
 		}
 		got, err := ingestRepositoryFragment("github.com", &github.RepositoryFragment{
 			Owner:           &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: "kyoh86"}},
@@ -153,7 +153,7 @@ func TestIngestRepositoryFragment(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
 		}
-		if diff := cmp.Diff(want, got, cmp.AllowUnexported(want), cmp.AllowUnexported(want.Spec)); diff != "" {
+		if diff := cmp.Diff(want, got, cmp.AllowUnexported(want), cmp.AllowUnexported(want.Ref)); diff != "" {
 			t.Errorf("result mistmatch\n-want, +got:\n%s", diff)
 		}
 	})

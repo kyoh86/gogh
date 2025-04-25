@@ -6,7 +6,7 @@ import (
 	testtarget "github.com/kyoh86/gogh/v3"
 )
 
-func TestSpec(t *testing.T) {
+func TestRepoRef(t *testing.T) {
 	const (
 		validHost  = "example.com"
 		validOwner = "kyoh86"
@@ -112,23 +112,23 @@ func TestSpec(t *testing.T) {
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
-			spec, err := testtarget.NewSpec(testcase.host, testcase.owner, testcase.name)
+			ref, err := testtarget.NewRepoRef(testcase.host, testcase.owner, testcase.name)
 			if testcase.expect == nil {
 				if err != nil {
-					t.Fatalf("failed to create new spec: %s", err)
+					t.Fatalf("failed to create new ref: %s", err)
 				}
-				if testcase.host != spec.Host() {
-					t.Errorf("expect host %q but %q gotten", testcase.host, spec.Host())
+				if testcase.host != ref.Host() {
+					t.Errorf("expect host %q but %q gotten", testcase.host, ref.Host())
 				}
-				if testcase.owner != spec.Owner() {
-					t.Errorf("expect owner %q but %q gotten", testcase.owner, spec.Owner())
+				if testcase.owner != ref.Owner() {
+					t.Errorf("expect owner %q but %q gotten", testcase.owner, ref.Owner())
 				}
-				if testcase.name != spec.Name() {
-					t.Errorf("expect name %q but %q gotten", testcase.name, spec.Name())
+				if testcase.name != ref.Name() {
+					t.Errorf("expect name %q but %q gotten", testcase.name, ref.Name())
 				}
 			} else {
 				if err == nil {
-					t.Fatal("expect failure to create new spec, but not")
+					t.Fatal("expect failure to create new ref, but not")
 				}
 				if testcase.expect.Error() != err.Error() {
 					t.Fatalf("expect error %s, but actual %s is gottten", testcase.expect, err)

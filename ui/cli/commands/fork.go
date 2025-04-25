@@ -17,23 +17,23 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 		Use:   "fork [flags] OWNER/NAME",
 		Short: "Fork a repository",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, specs []string) error {
+		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
-			parser := gogh.NewSpecParser(tokens.GetDefaultKey())
-			spec, err := parser.Parse(specs[0])
+			parser := gogh.NewRepoRefParser(tokens.GetDefaultKey())
+			ref, err := parser.Parse(refs[0])
 			if err != nil {
 				return err
 			}
-			_, token, err := tokens.GetDefaultTokenFor(spec.Host())
+			_, token, err := tokens.GetDefaultTokenFor(ref.Host())
 			if err != nil {
 				return err
 			}
-			adaptor, err := github.NewAdaptor(ctx, spec.Host(), &token)
+			adaptor, err := github.NewAdaptor(ctx, ref.Host(), &token)
 			if err != nil {
 				return err
 			}
 			remote := gogh.NewRemoteController(adaptor)
-			forked, err := remote.Fork(ctx, spec.Owner(), spec.Name(), nil)
+			forked, err := remote.Fork(ctx, ref.Owner(), ref.Name(), nil)
 			if err != nil {
 				return err
 			}
@@ -41,29 +41,29 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 			root := conf.DefaultRoot()
 			local := gogh.NewLocalController(root)
 
-			localSpec := spec
+			localRef := ref
 			var opt *gogh.LocalCloneOption
 			if f.Own {
-				opt = &gogh.LocalCloneOption{Alias: &forked.Spec}
-				localSpec = forked.Spec
+				opt = &gogh.LocalCloneOption{Alias: &forked.Ref}
+				localRef = forked.Ref
 			}
-			log.FromContext(ctx).Infof("git clone %q", spec.URL())
+			log.FromContext(ctx).Infof("git clone %q", ref.URL())
 			accessToken, err := adaptor.GetAccessToken()
 			if err != nil {
 				log.FromContext(ctx).WithField("error", err).Error("failed to get access token")
 				return nil
 			}
-			if _, err := local.Clone(ctx, spec, accessToken, opt); err != nil {
-				return fmt.Errorf("cloning the repository %q: %w", spec, err)
+			if _, err := local.Clone(ctx, ref, accessToken, opt); err != nil {
+				return fmt.Errorf("cloning the remote repository %q: %w", ref, err)
 			}
-			return local.SetRemoteSpecs(ctx, localSpec, map[string][]gogh.Spec{
-				git.DefaultRemoteName: {forked.Spec},
-				"upstream":            {spec},
+			return local.SetRemoteRefs(ctx, localRef, map[string][]gogh.RepoRef{
+				git.DefaultRemoteName: {forked.Ref},
+				"upstream":            {ref},
 			})
 		},
 	}
 	f.Own = defaults.Fork.Own
 	cmd.Flags().
-		BoolVarP(&f.Own, "own", "", false, "Clones the forked repo to local as my-own repo")
+		BoolVarP(&f.Own, "own", "", false, "Clones the forked remote repo to local as my-own repo")
 	return cmd
 }

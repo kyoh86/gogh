@@ -6,27 +6,27 @@ import (
 	"regexp"
 )
 
-// Spec describes which project is in a root.
-type Spec struct {
+// RepoRef describes which repository is in a root.
+type RepoRef struct {
 	host  string
 	owner string
 	name  string
 }
 
-func (s Spec) Host() string  { return s.host }
-func (s Spec) Owner() string { return s.owner }
-func (s Spec) Name() string  { return s.name }
+func (r RepoRef) Host() string  { return r.host }
+func (r RepoRef) Owner() string { return r.owner }
+func (r RepoRef) Name() string  { return r.name }
 
-func (s Spec) RelLevels() []string {
-	return []string{s.host, s.owner, s.name}
+func (r RepoRef) RelLevels() []string {
+	return []string{r.host, r.owner, r.name}
 }
 
-func (s Spec) URL() string {
-	return "https://" + path.Join(s.RelLevels()...)
+func (r RepoRef) URL() string {
+	return "https://" + path.Join(r.RelLevels()...)
 }
 
-func (s Spec) String() string {
-	return path.Join(s.RelLevels()...)
+func (r RepoRef) String() string {
+	return path.Join(r.RelLevels()...)
 }
 
 var (
@@ -98,17 +98,17 @@ func ValidateOwner(owner string) error {
 	return nil
 }
 
-func NewSpec(host, owner, name string) (Spec, error) {
+func NewRepoRef(host, owner, name string) (RepoRef, error) {
 	if err := ValidateName(name); err != nil {
-		return Spec{}, err
+		return RepoRef{}, err
 	}
 	if err := ValidateOwner(owner); err != nil {
-		return Spec{}, err
+		return RepoRef{}, err
 	}
 	if err := ValidateHost(host); err != nil {
-		return Spec{}, err
+		return RepoRef{}, err
 	}
-	return Spec{
+	return RepoRef{
 		host:  host,
 		owner: owner,
 		name:  name,
