@@ -16,24 +16,21 @@ var (
 	date    = "snapshot"
 )
 
+func loadConfigOrExit[T any](name string, loader func() (T, error)) T {
+	v, err := loader()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to load %s: %s\n", name, err)
+		os.Exit(1)
+	}
+	return v
+}
+
 func main() {
 	ctx := logger.NewLogger()
 
-	conf, err := config.LoadConfig()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to load config: %s\n", err)
-		os.Exit(1)
-	}
-	tokens, err := config.LoadTokens()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to load tokens: %s\n", err)
-		os.Exit(1)
-	}
-	defaults, err := config.LoadFlags()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to load flags: %s\n", err)
-		os.Exit(1)
-	}
+	conf := loadConfigOrExit("config", config.LoadConfig)
+	tokens := loadConfigOrExit("tokens", config.LoadTokens)
+	defaults := loadConfigOrExit("flags", config.LoadFlags)
 
 	cmd := cli.NewApp(conf, tokens, defaults)
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)

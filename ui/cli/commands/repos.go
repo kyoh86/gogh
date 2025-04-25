@@ -151,7 +151,7 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		remoteRepoRelationAccept = append(remoteRepoRelationAccept, v.String())
 	}
 	cmd.Flags().
-		IntVarP(&f.Limit, "limit", "", defaultInt(defaults.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
+		IntVarP(&f.Limit, "limit", "", DefaultValue(defaults.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
 
 	cmd.Flags().
 		BoolVarP(&f.Public, "public", "", defaults.Repos.Public, "Show only public repositories")
@@ -174,14 +174,14 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		panic(err)
 	}
 	cmd.Flags().
-		StringVarP(&f.Color, "color", "", defaultString(defaults.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
+		StringVarP(&f.Color, "color", "", DefaultValue(defaults.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
 	if err := cmd.RegisterFlagCompletionFunc("color", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"auto", "always", "never"}, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		panic(err)
 	}
 	cmd.Flags().
-		StringSliceVarP(&f.Relation, "relation", "", defaultStringSlice(defaults.Repos.Relation, []string{"owner", "organizationMember"}), fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(remoteRepoRelationAccept)))
+		StringSliceVarP(&f.Relation, "relation", "", DefaultSlice(defaults.Repos.Relation, []string{"owner", "organizationMember"}), fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(remoteRepoRelationAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return remoteRepoRelationAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {

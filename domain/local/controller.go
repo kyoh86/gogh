@@ -231,41 +231,43 @@ func (l *Controller) Walk(
 		return err
 	}
 	return walker.WalkWithContext(ctx, l.root, func(pathname string, _ os.FileInfo) (retErr error) {
-		rel, _ := filepath.Rel(l.root, pathname)
-		parts := strings.Split(rel, string(filepath.Separator))
-
-		if len(parts) < 3 {
-			return nil
-		}
-		defer func() {
-			if retErr == nil {
-				retErr = filepath.SkipDir
-			}
-		}()
-
-		if _, err := git.PlainOpen(pathname); err != nil {
-			log.FromContext(ctx).
-				WithFields(log.Fields{"error": err, "rel": rel}).
-				Debug("skip a dir that is not a git directory")
-			return nil
-		}
-
-		// NOTE: Case of len(parts) > 3 never happens because it returns filepath.SkipDir
-		ref, err := reporef.NewRepoRef(parts[0], parts[1], parts[2])
-		if err != nil {
-			log.FromContext(ctx).
-				WithFields(log.Fields{"error": err, "rel": rel}).
-				Debug("skip invalid entity")
-			return nil
-		}
-		p := NewRepo(l.root, ref)
-		if opt != nil && !strings.Contains(p.RelPath(), opt.Query) {
-			return nil
-		}
-		mu.Lock()
-		defer mu.Unlock()
-		return walkFn(p)
+		return l.walkDirectory(ctx, pathname, opt, walkFn)
 	})
+}
+
+func (l *Controller) walkDirectory(ctx context.Context, pathname string, opt *WalkOption, walkFn WalkFunc) error {
+	rel, _ := filepath.Rel(l.root, pathname)
+	parts := strings.Split(rel, string(filepath.Separator))
+
+	if len(parts) < 3 {
+		return nil
+	}
+
+	// Check if it's a git repository
+	if _, err := git.PlainOpen(pathname); err != nil {
+		log.FromContext(ctx).
+			WithFields(log.Fields{"error": err, "rel": rel}).
+			Debug("skip a dir that is not a git directory")
+		return nil
+	}
+
+	// Try to create a repo reference
+	ref, err := reporef.NewRepoRef(parts[0], parts[1], parts[2])
+	if err != nil {
+		log.FromContext(ctx).
+			WithFields(log.Fields{"error": err, "rel": rel}).
+			Debug("skip invalid entity")
+		return nil
+	}
+
+	p := NewRepo(l.root, ref)
+	if opt != nil && !strings.Contains(p.RelPath(), opt.Query) {
+		return nil
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+	return walkFn(p)
 }
 
 type ListOption struct {

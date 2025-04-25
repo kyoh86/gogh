@@ -41,14 +41,10 @@ func NewConfigCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 				return fmt.Errorf("failed to get flags file path: %w", err)
 			}
 
-			var defaultFlags string
-			{
-				var w strings.Builder
-				if err := yaml.NewEncoder(&w).Encode(defaults); err != nil {
-					logger.Error("[Bug] Failed to build default flag map")
-					return nil
-				}
-				defaultFlags = regexp.MustCompile("(?m)^").ReplaceAllString(w.String(), "  ")
+			defaultFlags, err := encodeYAML(defaults)
+			if err != nil {
+				logger.Error("[Bug] Failed to build default flag map")
+				return nil
 			}
 			var w strings.Builder
 			if err := t.Execute(&w, map[string]any{
@@ -66,4 +62,12 @@ func NewConfigCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 			return nil
 		},
 	}
+}
+
+func encodeYAML(v interface{}) (string, error) {
+	var w strings.Builder
+	if err := yaml.NewEncoder(&w).Encode(v); err != nil {
+		return "", err
+	}
+	return regexp.MustCompile("(?m)^").ReplaceAllString(w.String(), "  "), nil
 }

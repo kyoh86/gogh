@@ -5,7 +5,13 @@ import (
 
 	github "github.com/google/go-github/v69/github"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
+	"golang.org/x/oauth2"
 )
+
+type AcceptedError = github.AcceptedError
+type ErrorResponse = github.ErrorResponse
+
+type Token = oauth2.Token
 
 type (
 	Repository                  = github.Repository

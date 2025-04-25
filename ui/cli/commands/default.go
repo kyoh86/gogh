@@ -1,20 +1,14 @@
 package commands
 
-func defaultInt(value, defaultValue int) int {
-	if value == 0 {
+func DefaultValue[T comparable](value T, defaultValue T) T {
+	var zero T
+	if value == zero {
 		return defaultValue
 	}
 	return value
 }
 
-func defaultString(value, defaultValue string) string {
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
-func defaultStringSlice(value, defaultValue []string) []string {
+func DefaultSlice[T any](value, defaultValue []T) []T {
 	if value == nil {
 		return defaultValue
 	}
