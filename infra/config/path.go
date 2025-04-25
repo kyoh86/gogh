@@ -23,7 +23,7 @@ func (p Path) String() string {
 	return p.raw
 }
 
-func(p Path) Expand() string {
+func (p Path) Expand() string {
 	return p.expanded
 }
 

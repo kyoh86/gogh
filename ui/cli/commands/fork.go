@@ -6,7 +6,7 @@ import (
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
 	"github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/config"
+	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
 )

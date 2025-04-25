@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3/config"
+	testtarget "github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 )
 

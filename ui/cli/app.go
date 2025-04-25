@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/kyoh86/gogh/v3/config"
+	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 	"github.com/spf13/cobra"
 )

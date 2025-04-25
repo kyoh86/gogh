@@ -6,7 +6,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/config"
+	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
