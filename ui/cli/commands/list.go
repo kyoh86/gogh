@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
@@ -29,8 +29,8 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra
 				list = list[0:1]
 			}
 			for _, root := range list {
-				local := gogh.NewLocalController(root)
-				repos, err := local.List(ctx, &gogh.LocalListOption{Query: f.Query})
+				ctrl := local.NewLocalController(root)
+				repos, err := ctrl.List(ctx, &local.LocalListOption{Query: f.Query})
 				if err != nil {
 					return err
 				}

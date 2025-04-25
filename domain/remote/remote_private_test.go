@@ -1,4 +1,4 @@
-package gogh
+package remote
 
 import (
 	"testing"
@@ -9,6 +9,7 @@ import (
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
+	"github.com/kyoh86/gogh/v3/util"
 )
 
 func TestParseRepoRef(t *testing.T) {
@@ -18,7 +19,7 @@ func TestParseRepoRef(t *testing.T) {
 			t.Fatalf("unexpected error: %q", err)
 		}
 		got, err := parseRepoRef(&github.Repository{
-			CloneURL: Ptr("https://github.com/kyoh86/gogh"),
+			CloneURL: util.Ptr("https://github.com/kyoh86/gogh"),
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
@@ -30,7 +31,7 @@ func TestParseRepoRef(t *testing.T) {
 
 	t.Run("unsupported (ssh) URL", func(t *testing.T) {
 		_, err := parseRepoRef(&github.Repository{
-			CloneURL: Ptr("git@github.com:kyoh86/gogh.git"),
+			CloneURL: util.Ptr("git@github.com:kyoh86/gogh.git"),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")
@@ -63,18 +64,18 @@ func TestIngestRepository(t *testing.T) {
 			Parent:      &wantParent,
 		}
 		got, err := ingestRepository(&github.Repository{
-			Description: Ptr("valid description"),
-			Homepage:    Ptr("valid homepage"),
+			Description: util.Ptr("valid description"),
+			Homepage:    util.Ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    Ptr("https://github.com/kyoh86/gogh"),
-			Language:    Ptr("valid language"),
-			Fork:        Ptr(false),
+			CloneURL:    util.Ptr("https://github.com/kyoh86/gogh"),
+			Language:    util.Ptr("valid language"),
+			Fork:        util.Ptr(false),
 			Parent: &github.Repository{
-				CloneURL: Ptr("https://github.com/kyoh86-tryouts/test"),
+				CloneURL: util.Ptr("https://github.com/kyoh86-tryouts/test"),
 			},
-			Archived:   Ptr(true),
-			Private:    Ptr(false),
-			IsTemplate: Ptr(true),
+			Archived:   util.Ptr(true),
+			Private:    util.Ptr(false),
+			IsTemplate: util.Ptr(true),
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
@@ -87,18 +88,18 @@ func TestIngestRepository(t *testing.T) {
 	t.Run("unsupported (ssh) URL", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
 		_, err := ingestRepository(&github.Repository{
-			Description: Ptr("valid description"),
-			Homepage:    Ptr("valid homepage"),
+			Description: util.Ptr("valid description"),
+			Homepage:    util.Ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    Ptr("git@github.com:kyoh86/gogh.git"),
-			Language:    Ptr("valid language"),
-			Fork:        Ptr(false),
+			CloneURL:    util.Ptr("git@github.com:kyoh86/gogh.git"),
+			Language:    util.Ptr("valid language"),
+			Fork:        util.Ptr(false),
 			Parent: &github.Repository{
-				CloneURL: Ptr("https://github.com/kyoh86-tryouts/test"),
+				CloneURL: util.Ptr("https://github.com/kyoh86-tryouts/test"),
 			},
-			Archived:   Ptr(true),
-			Private:    Ptr(false),
-			IsTemplate: Ptr(true),
+			Archived:   util.Ptr(true),
+			Private:    util.Ptr(false),
+			IsTemplate: util.Ptr(true),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")
@@ -108,18 +109,18 @@ func TestIngestRepository(t *testing.T) {
 	t.Run("unsupported (ssh) parent URL", func(t *testing.T) {
 		tim, _ := time.Parse("2006-01-02", "2021-01-01")
 		_, err := ingestRepository(&github.Repository{
-			Description: Ptr("valid description"),
-			Homepage:    Ptr("valid homepage"),
+			Description: util.Ptr("valid description"),
+			Homepage:    util.Ptr("valid homepage"),
 			UpdatedAt:   &exgithub.Timestamp{Time: tim},
-			CloneURL:    Ptr("https://github.com/kyoh86/gogh"),
-			Language:    Ptr("valid language"),
-			Fork:        Ptr(false),
+			CloneURL:    util.Ptr("https://github.com/kyoh86/gogh"),
+			Language:    util.Ptr("valid language"),
+			Fork:        util.Ptr(false),
 			Parent: &github.Repository{
-				CloneURL: Ptr("git@github.com:kyoh86-tryouts/test"),
+				CloneURL: util.Ptr("git@github.com:kyoh86-tryouts/test"),
 			},
-			Archived:   Ptr(true),
-			Private:    Ptr(false),
-			IsTemplate: Ptr(true),
+			Archived:   util.Ptr(true),
+			Private:    util.Ptr(false),
+			IsTemplate: util.Ptr(true),
 		})
 		if err == nil {
 			t.Fatal("expected error, but not")

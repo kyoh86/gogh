@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	testtarget "github.com/kyoh86/gogh/v3/view"
 )
@@ -19,11 +19,11 @@ func TestLocalRepoFormat(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init Ref: %s", err)
 	}
-	locRepo := gogh.NewLocalRepo(tempDir, ref)
+	locRepo := local.NewLocalRepo(tempDir, ref)
 	if err != nil {
 		t.Fatalf("failed to get a local repository from Ref: %s", err)
 	}
-	if err := gogh.CreateLocalRepo(context.Background(), locRepo, ref.URL(), nil); err != nil {
+	if err := local.CreateLocalRepo(context.Background(), locRepo, ref.URL(), nil); err != nil {
 		t.Fatalf("failed to prepare local repository from Ref: %s", err)
 	}
 

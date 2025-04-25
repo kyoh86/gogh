@@ -1,4 +1,4 @@
-package gogh_test
+package local_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/google/go-cmp/cmp"
-	testtarget "github.com/kyoh86/gogh/v3"
+	testtarget "github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 )
 

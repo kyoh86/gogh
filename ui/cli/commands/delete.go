@@ -8,8 +8,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/cmdutil"
+	"github.com/kyoh86/gogh/v3/domain/local"
+	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
@@ -39,8 +39,8 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 					if err != nil {
 						return err
 					}
-					remote := gogh.NewRemoteController(adaptor)
-					founds, err := remote.List(ctx, nil)
+					ctrl := remote.NewRemoteController(adaptor)
+					founds, err := ctrl.List(ctx, nil)
 					if err != nil {
 						return err
 					}
@@ -70,7 +70,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 			}
 
 			if f.local {
-				local := gogh.NewLocalController(conf.DefaultRoot())
+				ctrl := local.NewLocalController(conf.DefaultRoot())
 				if !f.force {
 					var confirmed bool
 					if err := huh.NewForm(huh.NewGroup(
@@ -86,7 +86,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 				}
 				if f.dryrun {
 					fmt.Printf("deleting local %s\n", ref.String())
-				} else if err := local.Delete(ctx, ref, nil); err != nil {
+				} else if err := ctrl.Delete(ctx, ref, nil); err != nil {
 					if !os.IsNotExist(err) {
 						return fmt.Errorf("delete local: %w", err)
 					}
@@ -107,13 +107,13 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 						return nil
 					}
 				}
-				adaptor, _, err := cmdutil.RemoteControllerFor(ctx, *tokens, ref)
+				adaptor, _, err := RemoteControllerFor(ctx, *tokens, ref)
 				if err != nil {
 					return fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 				}
 				if f.dryrun {
 					fmt.Printf("deleting remote %s\n", ref.String())
-				} else if err := gogh.NewRemoteController(adaptor).Delete(ctx, ref.Owner(), ref.Name(), nil); err != nil {
+				} else if err := remote.NewRemoteController(adaptor).Delete(ctx, ref.Owner(), ref.Name(), nil); err != nil {
 					var gherr *github.ErrorResponse
 					if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
 						log.FromContext(ctx).Errorf("Failed to delete a remote repository: there is no permission to delete %q", ref.URL())

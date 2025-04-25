@@ -1,4 +1,4 @@
-package gogh
+package remote
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
+	"github.com/kyoh86/gogh/v3/util"
 )
 
 const DefaultHost = "github.com"
@@ -339,23 +340,23 @@ func (o *RemoteCreateOption) buildRepository(name string) *github.Repository {
 		return &github.Repository{Name: &name}
 	}
 	return &github.Repository{
-		Name:                NilablePtr(name),
-		Description:         NilablePtr(o.Description),
-		Homepage:            NilablePtr(o.Homepage),
-		Private:             NilablePtr(o.Private),
-		HasIssues:           FalsePtr(o.DisableIssues),
-		HasProjects:         FalsePtr(o.DisableProjects),
-		HasWiki:             FalsePtr(o.DisableWiki),
-		HasDownloads:        FalsePtr(o.DisableDownloads),
-		IsTemplate:          NilablePtr(o.IsTemplate),
-		TeamID:              NilablePtr(o.TeamID),
-		AutoInit:            NilablePtr(o.AutoInit),
-		GitignoreTemplate:   NilablePtr(o.GitignoreTemplate),
-		LicenseTemplate:     NilablePtr(o.LicenseTemplate),
-		AllowSquashMerge:    FalsePtr(o.PreventSquashMerge),
-		AllowMergeCommit:    FalsePtr(o.PreventMergeCommit),
-		AllowRebaseMerge:    FalsePtr(o.PreventRebaseMerge),
-		DeleteBranchOnMerge: NilablePtr(o.DeleteBranchOnMerge),
+		Name:                util.NilablePtr(name),
+		Description:         util.NilablePtr(o.Description),
+		Homepage:            util.NilablePtr(o.Homepage),
+		Private:             util.NilablePtr(o.Private),
+		HasIssues:           util.FalsePtr(o.DisableIssues),
+		HasProjects:         util.FalsePtr(o.DisableProjects),
+		HasWiki:             util.FalsePtr(o.DisableWiki),
+		HasDownloads:        util.FalsePtr(o.DisableDownloads),
+		IsTemplate:          util.NilablePtr(o.IsTemplate),
+		TeamID:              util.NilablePtr(o.TeamID),
+		AutoInit:            util.NilablePtr(o.AutoInit),
+		GitignoreTemplate:   util.NilablePtr(o.GitignoreTemplate),
+		LicenseTemplate:     util.NilablePtr(o.LicenseTemplate),
+		AllowSquashMerge:    util.FalsePtr(o.PreventSquashMerge),
+		AllowMergeCommit:    util.FalsePtr(o.PreventMergeCommit),
+		AllowRebaseMerge:    util.FalsePtr(o.PreventRebaseMerge),
+		DeleteBranchOnMerge: util.NilablePtr(o.DeleteBranchOnMerge),
 	}
 }
 
@@ -395,10 +396,10 @@ func (o *RemoteCreateFromTemplateOption) buildTemplateRepoRequest(
 		return &github.TemplateRepoRequest{Name: &name}
 	}
 	return &github.TemplateRepoRequest{
-		Name:        NilablePtr(name),
-		Owner:       NilablePtr(o.Owner),
-		Description: NilablePtr(o.Description),
-		Private:     FalsePtr(o.Private),
+		Name:        util.NilablePtr(name),
+		Owner:       util.NilablePtr(o.Owner),
+		Description: util.NilablePtr(o.Description),
+		Private:     util.FalsePtr(o.Private),
 	}
 }
 

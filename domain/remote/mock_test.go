@@ -1,4 +1,4 @@
-package gogh_test
+package remote_test
 
 import (
 	"encoding/json"

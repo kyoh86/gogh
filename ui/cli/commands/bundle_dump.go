@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	git "github.com/go-git/go-git/v5"
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
@@ -39,9 +39,9 @@ func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) 
 			if len(list) == 0 {
 				return nil
 			}
-			local := gogh.NewLocalController(list[0])
-			if err := local.Walk(ctx, nil, func(repo gogh.LocalRepo) error {
-				utxt, err := gogh.GetDefaultRemoteURLFromLocalRepo(ctx, repo)
+			ctrl := local.NewLocalController(list[0])
+			if err := ctrl.Walk(ctx, nil, func(repo local.LocalRepo) error {
+				utxt, err := local.GetDefaultRemoteURLFromLocalRepo(ctx, repo)
 				if err != nil {
 					if errors.Is(err, git.ErrRemoteNotFound) {
 						return nil

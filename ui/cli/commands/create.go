@@ -9,8 +9,8 @@ import (
 	"github.com/charmbracelet/huh"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
-	"github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/cmdutil"
+	"github.com/kyoh86/gogh/v3/domain/local"
+	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
@@ -48,7 +48,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 				return err
 			}
 
-			local := gogh.NewLocalController(conf.DefaultRoot())
+			local := local.NewLocalController(conf.DefaultRoot())
 			exist, err := local.Exist(ctx, ref, nil)
 			if err != nil {
 				return err
@@ -60,21 +60,21 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 			l := log.FromContext(ctx).WithFields(log.Fields{
 				"ref": ref,
 			})
-			adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, *tokens, ref)
+			adaptor, ctrl, err := RemoteControllerFor(ctx, *tokens, ref)
 			if err != nil {
 				return fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 			}
 
 			// check repo has already existed
-			if _, err := remote.Get(ctx, ref.Owner(), ref.Name(), nil); err == nil {
+			if _, err := ctrl.Get(ctx, ref.Owner(), ref.Name(), nil); err == nil {
 				l.Info("remote repository already exists")
 			} else {
-				me, err := remote.Me(ctx)
+				me, err := ctrl.Me(ctx)
 				if err != nil {
 					return err
 				}
 				if f.Template == "" {
-					ropt := &gogh.RemoteCreateOption{
+					ropt := &remote.RemoteCreateOption{
 						Description:         f.Description,
 						Homepage:            f.Homepage,
 						LicenseTemplate:     f.LicenseTemplate,
@@ -95,7 +95,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 						ropt.Organization = ref.Owner()
 					}
 
-					if _, err := remote.Create(ctx, ref.Name(), ropt); err != nil {
+					if _, err := ctrl.Create(ctx, ref.Name(), ropt); err != nil {
 						return err
 					}
 				} else {
@@ -103,14 +103,14 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 					if err != nil {
 						return err
 					}
-					ropt := &gogh.RemoteCreateFromTemplateOption{}
+					ropt := &remote.RemoteCreateFromTemplateOption{}
 					if me != ref.Owner() {
 						ropt.Owner = ref.Owner()
 					}
 					if f.Private {
 						ropt.Private = true
 					}
-					if _, err = remote.CreateFromTemplate(ctx, from.Owner(), from.Name(), ref.Name(), ropt); err != nil {
+					if _, err = ctrl.CreateFromTemplate(ctx, from.Owner(), from.Name(), ref.Name(), ropt); err != nil {
 						return err
 					}
 				}

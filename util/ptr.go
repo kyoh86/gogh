@@ -1,4 +1,4 @@
-package gogh
+package util
 
 // FalsePtr converts bool (default: false) to *bool (default: nil as true)
 func FalsePtr(b bool) *bool {

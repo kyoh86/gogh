@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
@@ -38,7 +38,7 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		Short: "List remote repositories",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			var listOption gogh.RemoteListOption
+			var listOption remote.RemoteListOption
 			switch f.Limit {
 			case 0:
 				listOption.Limit = 30
@@ -78,8 +78,8 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 			}
 		LOOP_CONVERT_RELATION:
 			for _, r := range f.Relation {
-				rdef := gogh.RemoteRepoRelation(r)
-				for _, def := range gogh.AllRemoteRepoRelation {
+				rdef := remote.RemoteRepoRelation(r)
+				for _, def := range remote.AllRemoteRepoRelation {
 					if def == rdef {
 						listOption.Relation = append(listOption.Relation, rdef)
 						continue LOOP_CONVERT_RELATION
@@ -96,10 +96,10 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 			defer format.Close()
 
 			if f.Sort != "" {
-				listOption.Sort = gogh.RemoteRepoOrderField(f.Sort)
+				listOption.Sort = remote.RemoteRepoOrderField(f.Sort)
 			}
 			if f.Order != "" {
-				listOption.Order = gogh.OrderDirection(f.Order)
+				listOption.Order = remote.OrderDirection(f.Order)
 			}
 			ctx, cancel := context.WithCancel(cmd.Context())
 			defer cancel()
@@ -116,8 +116,8 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 					if err != nil {
 						return err
 					}
-					remote := gogh.NewRemoteController(adaptor)
-					rch, ech := remote.ListAsync(ctx, &listOption)
+					ctrl := remote.NewRemoteController(adaptor)
+					rch, ech := ctrl.ListAsync(ctx, &listOption)
 					for {
 						select {
 						case repo, more := <-rch:
@@ -141,13 +141,13 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		},
 	}
 
-	for _, v := range gogh.AllRemoteRepoOrderField {
+	for _, v := range remote.AllRemoteRepoOrderField {
 		remoteRepoSortAccept = append(remoteRepoSortAccept, string(v))
 	}
-	for _, v := range gogh.AllOrderDirection {
+	for _, v := range remote.AllOrderDirection {
 		remoteRepoOrderAccept = append(remoteRepoOrderAccept, string(v))
 	}
-	for _, v := range gogh.AllRemoteRepoRelation {
+	for _, v := range remote.AllRemoteRepoRelation {
 		remoteRepoRelationAccept = append(remoteRepoRelationAccept, v.String())
 	}
 	cmd.Flags().

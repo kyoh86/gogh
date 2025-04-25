@@ -6,8 +6,8 @@ import (
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v5"
-	"github.com/kyoh86/gogh/v3"
-	"github.com/kyoh86/gogh/v3/cmdutil"
+	"github.com/kyoh86/gogh/v3/domain/local"
+	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
@@ -49,8 +49,8 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 					if err != nil {
 						return err
 					}
-					remote := gogh.NewRemoteController(adaptor)
-					founds, err := remote.List(ctx, nil)
+					ctrl := remote.NewRemoteController(adaptor)
+					founds, err := ctrl.List(ctx, nil)
 					if err != nil {
 						return err
 					}
@@ -97,14 +97,14 @@ func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.Toke
 		return nil
 	}
 
-	local := gogh.NewLocalController(conf.DefaultRoot())
+	ctrl := local.NewLocalController(conf.DefaultRoot())
 	if len(refs) == 1 {
-		return cloneOneFunc(ctx, tokens, local, parser, refs[0])()
+		return cloneOneFunc(ctx, tokens, ctrl, parser, refs[0])()
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, s := range refs {
-		eg.Go(cloneOneFunc(ctx, tokens, local, parser, s))
+		eg.Go(cloneOneFunc(ctx, tokens, ctrl, parser, s))
 	}
 	return eg.Wait()
 }
@@ -112,7 +112,7 @@ func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.Toke
 func cloneOneFunc(
 	ctx context.Context,
 	tokens *config.TokenStore,
-	local *gogh.LocalController,
+	ctrl *local.LocalController,
 	parser reporef.RepoRefParser,
 	s string,
 ) func() error {
@@ -122,7 +122,7 @@ func cloneOneFunc(
 			return err
 		}
 
-		adaptor, remote, err := cmdutil.RemoteControllerFor(ctx, *tokens, ref)
+		adaptor, remote, err := RemoteControllerFor(ctx, *tokens, ref)
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,7 @@ func cloneOneFunc(
 			l.WithField("error", err).Error("failed to get access token")
 			return nil
 		}
-		if _, err = local.Clone(ctx, ref, accessToken, &gogh.LocalCloneOption{Alias: alias}); err != nil {
+		if _, err = ctrl.Clone(ctx, ref, accessToken, &local.LocalCloneOption{Alias: alias}); err != nil {
 			l.WithField("error", err).Error("failed to clone a repository")
 			return nil
 		}
@@ -150,7 +150,7 @@ func cloneOneFunc(
 			if alias != nil {
 				localRef = *alias
 			}
-			if err := local.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
+			if err := ctrl.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
 				git.DefaultRemoteName: {ref},
 				"upstream":            {*repo.Parent},
 			}); err != nil {

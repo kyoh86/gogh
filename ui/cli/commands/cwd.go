@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
@@ -34,8 +34,8 @@ func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.
 
 			list := conf.GetRoots()
 			for _, root := range list {
-				local := gogh.NewLocalController(root)
-				repos, err := local.List(ctx, &gogh.LocalListOption{})
+				ctrl := local.NewLocalController(root)
+				repos, err := ctrl.List(ctx, &local.LocalListOption{})
 				if err != nil {
 					return err
 				}

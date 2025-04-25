@@ -1,17 +1,17 @@
-package cmdutil
+package commands
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 )
 
-func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref reporef.RepoRef) (github.Adaptor, *gogh.RemoteController, error) {
+func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref reporef.RepoRef) (github.Adaptor, *remote.RemoteController, error) {
 	token, err := tokens.Get(ref.Host(), ref.Owner())
 	switch {
 	case err == nil:
@@ -19,7 +19,7 @@ func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref repo
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to build adaptor for %q: %w", ref.Owner(), err)
 		}
-		return adaptor, gogh.NewRemoteController(adaptor), nil
+		return adaptor, remote.NewRemoteController(adaptor), nil
 	case errors.Is(err, config.ErrNoHost):
 		return nil, nil, err
 	case errors.Is(err, config.ErrNoOwner):
@@ -30,7 +30,7 @@ func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref repo
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to build adaptor for %q: %w", owner, err)
 			}
-			ctrl := gogh.NewRemoteController(adaptor)
+			ctrl := remote.NewRemoteController(adaptor)
 			ok, err := ctrl.MemberOf(ctx, ref.Owner(), nil)
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to check the member of %q: %w", owner, err)
@@ -50,5 +50,5 @@ func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref repo
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build adaptor for %q: %w", ref.Owner(), err)
 	}
-	return adaptor, gogh.NewRemoteController(adaptor), nil
+	return adaptor, remote.NewRemoteController(adaptor), nil
 }

@@ -5,7 +5,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
-	"github.com/kyoh86/gogh/v3"
+	"github.com/kyoh86/gogh/v3/domain/local"
+	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
@@ -33,19 +34,19 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 			if err != nil {
 				return err
 			}
-			remote := gogh.NewRemoteController(adaptor)
+			remote := remote.NewRemoteController(adaptor)
 			forked, err := remote.Fork(ctx, ref.Owner(), ref.Name(), nil)
 			if err != nil {
 				return err
 			}
 
 			root := conf.DefaultRoot()
-			local := gogh.NewLocalController(root)
+			ctrl := local.NewLocalController(root)
 
 			localRef := ref
-			var opt *gogh.LocalCloneOption
+			var opt *local.LocalCloneOption
 			if f.Own {
-				opt = &gogh.LocalCloneOption{Alias: &forked.Ref}
+				opt = &local.LocalCloneOption{Alias: &forked.Ref}
 				localRef = forked.Ref
 			}
 			log.FromContext(ctx).Infof("git clone %q", ref.URL())
@@ -54,10 +55,10 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 				log.FromContext(ctx).WithField("error", err).Error("failed to get access token")
 				return nil
 			}
-			if _, err := local.Clone(ctx, ref, accessToken, opt); err != nil {
+			if _, err := ctrl.Clone(ctx, ref, accessToken, opt); err != nil {
 				return fmt.Errorf("cloning the remote repository %q: %w", ref, err)
 			}
-			return local.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
+			return ctrl.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
 				git.DefaultRemoteName: {forked.Ref},
 				"upstream":            {ref},
 			})
