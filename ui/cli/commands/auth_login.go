@@ -26,7 +26,7 @@ type ErrorResponse struct {
 	ErrorURI         string
 }
 
-func NewAuthLoginCommand(tokens *config.TokenManager) *cobra.Command {
+func NewAuthLoginCommand(tokens *config.TokenStore) *cobra.Command {
 	var f struct {
 		Host string
 	}

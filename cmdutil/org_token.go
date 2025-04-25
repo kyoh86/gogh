@@ -10,7 +10,7 @@ import (
 	"github.com/kyoh86/gogh/v3/infra/github"
 )
 
-func RemoteControllerFor(ctx context.Context, tokens config.TokenManager, spec gogh.Spec) (github.Adaptor, *gogh.RemoteController, error) {
+func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, spec gogh.Spec) (github.Adaptor, *gogh.RemoteController, error) {
 	token, err := tokens.Get(spec.Host(), spec.Owner())
 	switch {
 	case err == nil:

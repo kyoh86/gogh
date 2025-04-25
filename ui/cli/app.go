@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewApp(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+func NewApp(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	facadeCommand := &cobra.Command{
 		Use:   config.AppName,
 		Short: "GO GitHub project manager",

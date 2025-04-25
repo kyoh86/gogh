@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"sync"
 
 	"github.com/kyoh86/gogh/v3/infra/github"
 )
@@ -14,17 +16,17 @@ var (
 	ErrNoOwner = fmt.Errorf("no owner")
 )
 
-type TokenManager struct {
-	Hosts       Map[Host, *TokenHost] `yaml:"hosts,omitempty"`
-	DefaultHost Host                  `yaml:"default_host,omitempty"`
+type TokenStore struct {
+	Hosts       Map[Host, *TokenHostEntry] `yaml:"hosts,omitempty"`
+	DefaultHost Host                       `yaml:"default_host,omitempty"`
 }
 
-type TokenHost struct {
+type TokenHostEntry struct {
 	Owners       Map[Owner, github.Token] `yaml:"owners"`
 	DefaultOwner Owner                    `yaml:"default_owner"`
 }
 
-func (t TokenManager) GetDefaultKey() (Host, Owner) {
+func (t TokenStore) GetDefaultKey() (Host, Owner) {
 	hostName := t.DefaultHost
 	if hostName == "" {
 		hostName = github.DefaultHost
@@ -36,7 +38,7 @@ func (t TokenManager) GetDefaultKey() (Host, Owner) {
 	return hostName, ""
 }
 
-func (t *TokenManager) GetDefaultTokenFor(hostName string) (Owner, github.Token, error) {
+func (t *TokenStore) GetDefaultTokenFor(hostName string) (Owner, github.Token, error) {
 	if t == nil {
 		return "", github.Token{}, ErrNoHost
 	}
@@ -47,7 +49,7 @@ func (t *TokenManager) GetDefaultTokenFor(hostName string) (Owner, github.Token,
 	return host.GetDefaultToken()
 }
 
-func (t *TokenHost) GetDefaultToken() (Owner, github.Token, error) {
+func (t *TokenHostEntry) GetDefaultToken() (Owner, github.Token, error) {
 	if t == nil {
 		return "", github.Token{}, ErrNoHost
 	}
@@ -58,7 +60,7 @@ func (t *TokenHost) GetDefaultToken() (Owner, github.Token, error) {
 	return t.DefaultOwner, token, nil
 }
 
-func (t TokenManager) Get(hostName, ownerName string) (github.Token, error) {
+func (t TokenStore) Get(hostName, ownerName string) (github.Token, error) {
 	tokenHost, ok := t.Hosts.TryGet(hostName)
 	if !ok {
 		return github.Token{}, ErrNoHost
@@ -70,8 +72,8 @@ func (t TokenManager) Get(hostName, ownerName string) (github.Token, error) {
 	return token, nil
 }
 
-func (t *TokenManager) Set(hostName, ownerName string, token github.Token) {
-	host := t.Hosts.GetOrSet(hostName, &TokenHost{})
+func (t *TokenStore) Set(hostName, ownerName string, token github.Token) {
+	host := t.Hosts.GetOrSet(hostName, &TokenHostEntry{})
 	if host.DefaultOwner == "" {
 		host.DefaultOwner = ownerName
 	}
@@ -82,7 +84,7 @@ func (t *TokenManager) Set(hostName, ownerName string, token github.Token) {
 	}
 }
 
-func (t *TokenManager) SetDefaultHost(hostName string) error {
+func (t *TokenStore) SetDefaultHost(hostName string) error {
 	if !t.Hosts.Has(hostName) {
 		return fmt.Errorf("host %s is not registered", hostName)
 	}
@@ -90,7 +92,7 @@ func (t *TokenManager) SetDefaultHost(hostName string) error {
 	return nil
 }
 
-func (t *TokenManager) SetDefaultOwner(hostName, ownerName string) error {
+func (t *TokenStore) SetDefaultOwner(hostName, ownerName string) error {
 	host, ok := t.Hosts.TryGet(hostName)
 	if !ok {
 		return ErrNoHost
@@ -103,7 +105,7 @@ func (t *TokenManager) SetDefaultOwner(hostName, ownerName string) error {
 	return nil
 }
 
-func (t *TokenManager) Delete(hostName, ownerName string) {
+func (t *TokenStore) Delete(hostName, ownerName string) {
 	host, ok := t.Hosts.TryGet(hostName)
 	if !ok {
 		return
@@ -120,7 +122,7 @@ func (t *TokenManager) Delete(hostName, ownerName string) {
 	}
 }
 
-func (t TokenManager) Has(hostName, ownerName string) bool {
+func (t TokenStore) Has(hostName, ownerName string) bool {
 	host, ok := t.Hosts.TryGet(hostName)
 	if !ok {
 		return false
@@ -138,7 +140,7 @@ func (e TokenEntry) String() string {
 	return fmt.Sprintf("%s/%s", e.Host, e.Owner)
 }
 
-func (t TokenManager) Entries() []TokenEntry {
+func (t TokenStore) Entries() []TokenEntry {
 	var entries []TokenEntry
 	for hostName, hostEntry := range t.Hosts {
 		for owner, token := range hostEntry.Owners {
@@ -150,4 +152,41 @@ func (t TokenManager) Entries() []TokenEntry {
 		}
 	}
 	return entries
+}
+
+var (
+	globalTokens = TokenStore{}
+	tokensOnce   sync.Once
+)
+
+func TokensPath() (string, error) {
+	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.yaml")
+	if err != nil {
+		return "", fmt.Errorf("search config path: %w", err)
+	}
+	return path, nil
+}
+
+func LoadTokens() (_ *TokenStore, retErr error) {
+	tokensOnce.Do(func() {
+		path, err := TokensPath()
+		if err != nil {
+			retErr = err
+			return
+		}
+
+		if err := loadYAML(path, &globalTokens); err != nil {
+			retErr = err
+			return
+		}
+	})
+	return &globalTokens, retErr
+}
+
+func SaveTokens() error {
+	path, err := TokensPath()
+	if err != nil {
+		return err
+	}
+	return saveYAML(path, globalTokens)
 }

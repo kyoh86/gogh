@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCwdCommand(conf *config.Config, defaults *config.Flags) *cobra.Command {
+func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.Command {
 	var f config.CwdFlags
 	cmd := &cobra.Command{
 		Use:   "cwd",

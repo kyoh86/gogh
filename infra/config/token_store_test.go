@@ -10,7 +10,7 @@ import (
 func TestTokenManager(t *testing.T) {
 	wantToken := github.Token{RefreshToken: "refresh-token", AccessToken: "access-token"}
 	t.Run("Empty token manager always returns error", func(t *testing.T) {
-		var tm testtarget.TokenManager
+		var tm testtarget.TokenStore
 		if _, err := tm.Get("host", "owner"); err != testtarget.ErrNoHost {
 			t.Errorf("TokenManager.Get() returns an error %v, want %v", err, testtarget.ErrNoHost)
 		}
@@ -20,7 +20,7 @@ func TestTokenManager(t *testing.T) {
 	})
 
 	t.Run("Set and get token", func(t *testing.T) {
-		var tm testtarget.TokenManager
+		var tm testtarget.TokenStore
 		tm.Set("host", "owner", wantToken)
 		got, err := tm.Get("host", "owner")
 		if err != nil {
@@ -43,7 +43,7 @@ func TestTokenManager(t *testing.T) {
 	})
 
 	t.Run("Set host and owner first time, they should be default", func(t *testing.T) {
-		var tm testtarget.TokenManager
+		var tm testtarget.TokenStore
 		tm.Set("host1", "owner1-1", wantToken)
 		if gotHost, gotToken := tm.GetDefaultKey(); gotHost != "host1" || gotToken != "owner1-1" {
 			t.Errorf("TokenManager.GetDefaultKey() = %v, %v, want %v, %v", gotHost, gotToken, "host1", "owner1-1")
@@ -67,7 +67,7 @@ func TestTokenManager(t *testing.T) {
 	})
 
 	t.Run("Set default host and owner", func(t *testing.T) {
-		var tm testtarget.TokenManager
+		var tm testtarget.TokenStore
 		tm.Set("host1", "owner1-1", wantToken)
 		tm.Set("host1", "owner1-2", wantToken)
 		tm.Set("host2", "owner2-1", wantToken)

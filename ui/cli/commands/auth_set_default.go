@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthSetDefaultCommand(tokens *config.TokenManager) *cobra.Command {
+func NewAuthSetDefaultCommand(tokens *config.TokenStore) *cobra.Command {
 	var f struct {
 		Host  string
 		Owner string

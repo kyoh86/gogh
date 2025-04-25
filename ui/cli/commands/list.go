@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewListCommand(conf *config.Config, defaults *config.Flags) *cobra.Command {
+func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.Command {
 	var f config.ListFlags
 	cmd := &cobra.Command{
 		Use:     "list",

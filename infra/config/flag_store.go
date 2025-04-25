@@ -66,7 +66,7 @@ type BundleDumpFlags struct {
 	File Path `yaml:"file,omitempty"`
 }
 
-type Flags struct {
+type FlagStore struct {
 	BundleRestore BundleRestoreFlags `yaml:"bundleRestore,omitempty"`
 	BundleDump    BundleDumpFlags    `yaml:"bundleDump,omitempty"`
 	List          ListFlags          `yaml:"list,omitempty"`
@@ -77,19 +77,19 @@ type Flags struct {
 }
 
 var (
-	globalFlags Flags
+	globalFlags FlagStore
 	flagsOnce   sync.Once
 )
 
 func FlagsPath() (string, error) {
-	path, err := appFilePath("GOGH_FLAG_PATH", os.UserConfigDir, "flag.yaml")
+	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flag.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)
 	}
 	return path, nil
 }
 
-func LoadFlags() (_ *Flags, retErr error) {
+func LoadFlags() (_ *FlagStore, retErr error) {
 	flagsOnce.Do(func() {
 		path, err := FlagsPath()
 		if err != nil {

@@ -16,7 +16,7 @@ import (
 //go:embed config_template.txt
 var configTemplate string
 
-func NewConfigCommand(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+func NewConfigCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	return &cobra.Command{
 		Use:     "config",
 		Short:   "Show configurations",

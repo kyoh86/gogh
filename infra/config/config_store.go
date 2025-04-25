@@ -7,24 +7,24 @@ import (
 	"sync"
 )
 
-type Config struct {
+type ConfigStore struct {
 	Roots []Path `yaml:"roots"`
 }
 
 var (
-	globalConfig Config
+	globalConfig ConfigStore
 	configOnce   sync.Once
 )
 
 func ConfigPath() (string, error) {
-	path, err := appFilePath("GOGH_CONFIG_PATH", os.UserConfigDir, "config.yaml")
+	path, err := appContextPath("GOGH_CONFIG_PATH", os.UserConfigDir, "config.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
 	}
 	return path, nil
 }
 
-func LoadConfig() (_ *Config, retErr error) {
+func LoadConfig() (_ *ConfigStore, retErr error) {
 	configOnce.Do(func() {
 		path, err := ConfigPath()
 		if err != nil {
@@ -60,11 +60,11 @@ func SaveConfig() error {
 	return saveYAML(path, globalConfig)
 }
 
-func (c *Config) DefaultRoot() string {
+func (c *ConfigStore) DefaultRoot() string {
 	return c.Roots[0].expanded
 }
 
-func (c *Config) GetRoots() []string {
+func (c *ConfigStore) GetRoots() []string {
 	list := make([]string, 0, len(c.Roots))
 	for _, r := range c.Roots {
 		list = append(list, r.expanded)
@@ -72,7 +72,7 @@ func (c *Config) GetRoots() []string {
 	return list
 }
 
-func (c *Config) SetDefaultRoot(r string) error {
+func (c *ConfigStore) SetDefaultRoot(r string) error {
 	rootList := make([]Path, 0, len(c.Roots))
 	newDefault, err := parsePath(r)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *Config) SetDefaultRoot(r string) error {
 	return nil
 }
 
-func (c *Config) AddRoots(rootList []string) error {
+func (c *ConfigStore) AddRoots(rootList []string) error {
 	for _, r := range rootList {
 		newRoot, err := parsePath(r)
 		if err != nil {
@@ -100,7 +100,7 @@ func (c *Config) AddRoots(rootList []string) error {
 	return nil
 }
 
-func (c *Config) RemoveRoot(r string) {
+func (c *ConfigStore) RemoveRoot(r string) {
 	rootList := make([]Path, 0, len(c.Roots))
 	for _, root := range c.Roots {
 		if root.raw == r || root.expanded == r {

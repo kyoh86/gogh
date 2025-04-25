@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthListCommand(tokens *config.TokenManager) *cobra.Command {
+func NewAuthListCommand(tokens *config.TokenStore) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "Listup authenticated host and owners",

@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCreateCommand(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	var f config.CreateFlags
 	cmd := &cobra.Command{
 		Use:     "create [flags] [[OWNER/]NAME]",

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthLogoutCommand(tokens *config.TokenManager) *cobra.Command {
+func NewAuthLogoutCommand(tokens *config.TokenStore) *cobra.Command {
 	return &cobra.Command{
 		Use:     "logout",
 		Aliases: []string{"signout", "remove"},

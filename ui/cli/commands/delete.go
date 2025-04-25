@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(conf *config.Config, tokens *config.TokenManager) *cobra.Command {
+func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra.Command {
 	var f struct {
 		local  bool
 		remote bool

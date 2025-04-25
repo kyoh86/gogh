@@ -26,7 +26,7 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
-func NewReposCommand(tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	var (
 		f                  config.ReposFlags
 		repoSortAccept     []string

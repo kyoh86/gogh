@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(conf *config.Config, defaults *config.Flags) *cobra.Command {
+func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.Command {
 	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",

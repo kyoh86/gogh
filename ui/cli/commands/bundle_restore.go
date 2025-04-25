@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewBundleRestoreCommand(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+func NewBundleRestoreCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	var f config.BundleRestoreFlags
 	cmd := &cobra.Command{
 		Use:   "restore",

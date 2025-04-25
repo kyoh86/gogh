@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewRootsCommand(conf *config.Config) *cobra.Command {
+func NewRootsCommand(conf *config.ConfigStore) *cobra.Command {
 	return &cobra.Command{
 		Use:     "roots",
 		Short:   "Manage roots",
@@ -20,7 +20,7 @@ func NewRootsCommand(conf *config.Config) *cobra.Command {
 	}
 }
 
-func NewRootsListCommand(conf *config.Config) *cobra.Command {
+func NewRootsListCommand(conf *config.ConfigStore) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all of the roots",
@@ -29,7 +29,7 @@ func NewRootsListCommand(conf *config.Config) *cobra.Command {
 	}
 }
 
-func RootsListRun(conf *config.Config) func(*cobra.Command, []string) {
+func RootsListRun(conf *config.ConfigStore) func(*cobra.Command, []string) {
 	return func(*cobra.Command, []string) {
 		for _, root := range conf.GetRoots() {
 			fmt.Println(root)
@@ -37,7 +37,7 @@ func RootsListRun(conf *config.Config) func(*cobra.Command, []string) {
 	}
 }
 
-func NewRootsAddCommand(conf *config.Config) *cobra.Command {
+func NewRootsAddCommand(conf *config.ConfigStore) *cobra.Command {
 	return &cobra.Command{
 		Use:   "add",
 		Short: "Add directories into the roots",
@@ -48,7 +48,7 @@ func NewRootsAddCommand(conf *config.Config) *cobra.Command {
 	}
 }
 
-func NewRootsRemoveCommand(conf *config.Config) *cobra.Command {
+func NewRootsRemoveCommand(conf *config.ConfigStore) *cobra.Command {
 	return &cobra.Command{
 		Use:   "remove",
 		Short: "Remove a directory from the roots",
@@ -79,7 +79,7 @@ func NewRootsRemoveCommand(conf *config.Config) *cobra.Command {
 	}
 }
 
-func NewRootsSetDefaultCommand(conf *config.Config) *cobra.Command {
+func NewRootsSetDefaultCommand(conf *config.ConfigStore) *cobra.Command {
 	return &cobra.Command{
 		Use:   "set-default",
 		Short: "Set a directory as the default in the roots",

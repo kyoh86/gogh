@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewForkCommand(conf *config.Config, tokens *config.TokenManager, defaults *config.Flags) *cobra.Command {
+func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
 	var f config.ForkFlags
 	cmd := &cobra.Command{
 		Use:   "fork [flags] OWNER/NAME",

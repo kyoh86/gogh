@@ -14,7 +14,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCloneCommand(conf *config.Config, tokens *config.TokenManager) *cobra.Command {
+func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra.Command {
 	var f struct {
 		dryrun bool
 	}
@@ -78,7 +78,7 @@ func NewCloneCommand(conf *config.Config, tokens *config.TokenManager) *cobra.Co
 	return c
 }
 
-func cloneAll(ctx context.Context, conf *config.Config, tokens *config.TokenManager, specs []string, dryrun bool) error {
+func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.TokenStore, specs []string, dryrun bool) error {
 	parser := gogh.NewSpecParser(tokens.GetDefaultKey())
 	if dryrun {
 		for _, s := range specs {
@@ -110,7 +110,7 @@ func cloneAll(ctx context.Context, conf *config.Config, tokens *config.TokenMana
 
 func cloneOneFunc(
 	ctx context.Context,
-	tokens *config.TokenManager,
+	tokens *config.TokenStore,
 	local *gogh.LocalController,
 	parser gogh.SpecParser,
 	s string,
