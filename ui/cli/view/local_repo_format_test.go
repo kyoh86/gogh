@@ -19,11 +19,11 @@ func TestLocalRepoFormat(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init Ref: %s", err)
 	}
-	locRepo := local.NewLocalRepo(tempDir, ref)
+	locRepo := local.NewRepo(tempDir, ref)
 	if err != nil {
 		t.Fatalf("failed to get a local repository from Ref: %s", err)
 	}
-	if err := local.CreateLocalRepo(context.Background(), locRepo, ref.URL(), nil); err != nil {
+	if err := local.CreateRepo(context.Background(), locRepo, ref.URL(), nil); err != nil {
 		t.Fatalf("failed to prepare local repository from Ref: %s", err)
 	}
 

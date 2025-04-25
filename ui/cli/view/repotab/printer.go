@@ -114,7 +114,7 @@ func NewPrinter(w io.Writer, option ...Option) *Printer {
 	return p
 }
 
-func (p *Printer) Print(r remote.RemoteRepo) error {
+func (p *Printer) Print(r remote.Repo) error {
 	cells := make([]cell, len(p.columns))
 	for i, column := range p.columns {
 		content, style := column.CellBuilder.Build(r)

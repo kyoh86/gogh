@@ -6,6 +6,11 @@ import (
 )
 
 func FuzzyAgoAbbr(now time.Time, at time.Time) string {
+	// Handle future dates
+	if at.After(now) {
+		return "0m"
+	}
+
 	ago := now.Sub(at)
 	if ago < time.Hour {
 		return fmt.Sprintf("%d%s", int(ago.Minutes()), "m")

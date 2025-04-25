@@ -49,7 +49,7 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 					if err != nil {
 						return err
 					}
-					ctrl := remote.NewRemoteController(adaptor)
+					ctrl := remote.NewController(adaptor)
 					founds, err := ctrl.List(ctx, nil)
 					if err != nil {
 						return err
@@ -97,7 +97,7 @@ func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.Toke
 		return nil
 	}
 
-	ctrl := local.NewLocalController(conf.DefaultRoot())
+	ctrl := local.NewController(conf.DefaultRoot())
 	if len(refs) == 1 {
 		return cloneOneFunc(ctx, tokens, ctrl, parser, refs[0])()
 	}
@@ -112,7 +112,7 @@ func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.Toke
 func cloneOneFunc(
 	ctx context.Context,
 	tokens *config.TokenStore,
-	ctrl *local.LocalController,
+	ctrl *local.Controller,
 	parser reporef.RepoRefParser,
 	s string,
 ) func() error {
@@ -140,7 +140,7 @@ func cloneOneFunc(
 			l.WithField("error", err).Error("failed to get access token")
 			return nil
 		}
-		if _, err = ctrl.Clone(ctx, ref, accessToken, &local.LocalCloneOption{Alias: alias}); err != nil {
+		if _, err = ctrl.Clone(ctx, ref, accessToken, &local.CloneOption{Alias: alias}); err != nil {
 			l.WithField("error", err).Error("failed to clone a repository")
 			return nil
 		}

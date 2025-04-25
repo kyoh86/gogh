@@ -34,19 +34,19 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 			if err != nil {
 				return err
 			}
-			remote := remote.NewRemoteController(adaptor)
+			remote := remote.NewController(adaptor)
 			forked, err := remote.Fork(ctx, ref.Owner(), ref.Name(), nil)
 			if err != nil {
 				return err
 			}
 
 			root := conf.DefaultRoot()
-			ctrl := local.NewLocalController(root)
+			ctrl := local.NewController(root)
 
 			localRef := ref
-			var opt *local.LocalCloneOption
+			var opt *local.CloneOption
 			if f.Own {
-				opt = &local.LocalCloneOption{Alias: &forked.Ref}
+				opt = &local.CloneOption{Alias: &forked.Ref}
 				localRef = forked.Ref
 			}
 			log.FromContext(ctx).Infof("git clone %q", ref.URL())

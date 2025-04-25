@@ -6,7 +6,7 @@ import (
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 )
 
-type RemoteRepo struct {
+type Repo struct {
 	UpdatedAt   time.Time        `json:"updatedAt"`
 	Parent      *reporef.RepoRef `json:"parent,omitempty"`
 	Ref         reporef.RepoRef  `json:"ref"`
@@ -20,6 +20,6 @@ type RemoteRepo struct {
 	Fork        bool             `json:"fork,omitempty"`
 }
 
-func (r RemoteRepo) Host() string  { return r.Ref.Host() }
-func (r RemoteRepo) Owner() string { return r.Ref.Owner() }
-func (r RemoteRepo) Name() string  { return r.Ref.Name() }
+func (r Repo) Host() string  { return r.Ref.Host() }
+func (r Repo) Owner() string { return r.Ref.Owner() }
+func (r Repo) Name() string  { return r.Ref.Name() }

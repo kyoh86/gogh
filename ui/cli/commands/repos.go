@@ -38,7 +38,7 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		Short: "List remote repositories",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			var listOption remote.RemoteListOption
+			var listOption remote.ListOption
 			switch f.Limit {
 			case 0:
 				listOption.Limit = 30
@@ -78,8 +78,8 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 			}
 		LOOP_CONVERT_RELATION:
 			for _, r := range f.Relation {
-				rdef := remote.RemoteRepoRelation(r)
-				for _, def := range remote.AllRemoteRepoRelation {
+				rdef := remote.RepoRelation(r)
+				for _, def := range remote.AllRepoRelation {
 					if def == rdef {
 						listOption.Relation = append(listOption.Relation, rdef)
 						continue LOOP_CONVERT_RELATION
@@ -96,7 +96,7 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 			defer format.Close()
 
 			if f.Sort != "" {
-				listOption.Sort = remote.RemoteRepoOrderField(f.Sort)
+				listOption.Sort = remote.RepoOrderField(f.Sort)
 			}
 			if f.Order != "" {
 				listOption.Order = remote.OrderDirection(f.Order)
@@ -116,7 +116,7 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 					if err != nil {
 						return err
 					}
-					ctrl := remote.NewRemoteController(adaptor)
+					ctrl := remote.NewController(adaptor)
 					rch, ech := ctrl.ListAsync(ctx, &listOption)
 					for {
 						select {
@@ -141,13 +141,13 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		},
 	}
 
-	for _, v := range remote.AllRemoteRepoOrderField {
+	for _, v := range remote.AllRepoOrderField {
 		remoteRepoSortAccept = append(remoteRepoSortAccept, string(v))
 	}
 	for _, v := range remote.AllOrderDirection {
 		remoteRepoOrderAccept = append(remoteRepoOrderAccept, string(v))
 	}
-	for _, v := range remote.AllRemoteRepoRelation {
+	for _, v := range remote.AllRepoRelation {
 		remoteRepoRelationAccept = append(remoteRepoRelationAccept, v.String())
 	}
 	cmd.Flags().

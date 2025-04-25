@@ -34,8 +34,8 @@ func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.
 
 			list := conf.GetRoots()
 			for _, root := range list {
-				ctrl := local.NewLocalController(root)
-				repos, err := ctrl.List(ctx, &local.LocalListOption{})
+				ctrl := local.NewController(root)
+				repos, err := ctrl.List(ctx, &local.ListOption{})
 				if err != nil {
 					return err
 				}

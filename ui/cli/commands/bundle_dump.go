@@ -39,9 +39,9 @@ func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) 
 			if len(list) == 0 {
 				return nil
 			}
-			ctrl := local.NewLocalController(list[0])
-			if err := ctrl.Walk(ctx, nil, func(repo local.LocalRepo) error {
-				utxt, err := local.GetDefaultRemoteURLFromLocalRepo(ctx, repo)
+			ctrl := local.NewController(list[0])
+			if err := ctrl.Walk(ctx, nil, func(repo local.Repo) error {
+				utxt, err := local.GetDefaultRemoteURL(ctx, repo)
 				if err != nil {
 					if errors.Is(err, git.ErrRemoteNotFound) {
 						return nil

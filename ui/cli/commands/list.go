@@ -29,8 +29,8 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra
 				list = list[0:1]
 			}
 			for _, root := range list {
-				ctrl := local.NewLocalController(root)
-				repos, err := ctrl.List(ctx, &local.LocalListOption{Query: f.Query})
+				ctrl := local.NewController(root)
+				repos, err := ctrl.List(ctx, &local.ListOption{Query: f.Query})
 				if err != nil {
 					return err
 				}

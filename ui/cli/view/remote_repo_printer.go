@@ -9,13 +9,13 @@ import (
 )
 
 type RemoteRepoPrinter interface {
-	Print(p remote.RemoteRepo) error
+	Print(p remote.Repo) error
 	Close() error
 }
 
-type RemoteRepoFuncPrinter func(remote.RemoteRepo) error
+type RemoteRepoFuncPrinter func(remote.Repo) error
 
-func (f RemoteRepoFuncPrinter) Print(r remote.RemoteRepo) error {
+func (f RemoteRepoFuncPrinter) Print(r remote.Repo) error {
 	return f(r)
 }
 
@@ -24,21 +24,21 @@ func (f RemoteRepoFuncPrinter) Close() error {
 }
 
 func NewRemoteRepoRefPrinter(w io.Writer) RemoteRepoPrinter {
-	return RemoteRepoFuncPrinter(func(r remote.RemoteRepo) error {
+	return RemoteRepoFuncPrinter(func(r remote.Repo) error {
 		fmt.Fprintln(w, r.Ref.String())
 		return nil
 	})
 }
 
 func NewRemoteRepoURLPrinter(w io.Writer) RemoteRepoPrinter {
-	return RemoteRepoFuncPrinter(func(r remote.RemoteRepo) error {
+	return RemoteRepoFuncPrinter(func(r remote.Repo) error {
 		fmt.Fprintln(w, r.URL)
 		return nil
 	})
 }
 
 func NewRemoteRepoJSONPrinter(w io.Writer) RemoteRepoPrinter {
-	return RemoteRepoFuncPrinter(func(r remote.RemoteRepo) error {
+	return RemoteRepoFuncPrinter(func(r remote.Repo) error {
 		buf, _ := json.Marshal(r)
 		fmt.Fprintln(w, string(buf))
 		return nil

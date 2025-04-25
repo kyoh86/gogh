@@ -48,7 +48,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 				return err
 			}
 
-			local := local.NewLocalController(conf.DefaultRoot())
+			local := local.NewController(conf.DefaultRoot())
 			exist, err := local.Exist(ctx, ref, nil)
 			if err != nil {
 				return err
@@ -74,7 +74,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 					return err
 				}
 				if f.Template == "" {
-					ropt := &remote.RemoteCreateOption{
+					ropt := &remote.CreateOption{
 						Description:         f.Description,
 						Homepage:            f.Homepage,
 						LicenseTemplate:     f.LicenseTemplate,
@@ -103,7 +103,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 					if err != nil {
 						return err
 					}
-					ropt := &remote.RemoteCreateFromTemplateOption{}
+					ropt := &remote.CreateFromTemplateOption{}
 					if me != ref.Owner() {
 						ropt.Owner = ref.Owner()
 					}

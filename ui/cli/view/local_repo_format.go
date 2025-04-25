@@ -11,29 +11,29 @@ import (
 )
 
 type LocalRepoFormat interface {
-	Format(p local.LocalRepo) (string, error)
+	Format(p local.Repo) (string, error)
 }
 
-type LocalRepoFormatFunc func(local.LocalRepo) (string, error)
+type LocalRepoFormatFunc func(local.Repo) (string, error)
 
-func (f LocalRepoFormatFunc) Format(p local.LocalRepo) (string, error) {
+func (f LocalRepoFormatFunc) Format(p local.Repo) (string, error) {
 	return f(p)
 }
 
-var LocalRepoFormatFullFilePath = LocalRepoFormatFunc(func(p local.LocalRepo) (string, error) {
+var LocalRepoFormatFullFilePath = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
 	return p.FullFilePath(), nil
 })
 
-var LocalRepoFormatRelPath = LocalRepoFormatFunc(func(p local.LocalRepo) (string, error) {
+var LocalRepoFormatRelPath = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
 	return p.RelPath(), nil
 })
 
-var LocalRepoFormatRelFilePath = LocalRepoFormatFunc(func(p local.LocalRepo) (string, error) {
+var LocalRepoFormatRelFilePath = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
 	return p.RelFilePath(), nil
 })
 
-var LocalRepoFormatURL = LocalRepoFormatFunc(func(p local.LocalRepo) (string, error) {
-	utxt, err := local.GetDefaultRemoteURLFromLocalRepo(context.Background(), p)
+var LocalRepoFormatURL = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
+	utxt, err := local.GetDefaultRemoteURL(context.Background(), p)
 	if err != nil {
 		if errors.Is(err, git.ErrRemoteNotFound) {
 			utxt = "https://" + p.RelPath()
@@ -44,7 +44,7 @@ var LocalRepoFormatURL = LocalRepoFormatFunc(func(p local.LocalRepo) (string, er
 	return utxt, nil
 })
 
-var LocalRepoFormatJSON = LocalRepoFormatFunc(func(p local.LocalRepo) (string, error) {
+var LocalRepoFormatJSON = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
 	utxt, err := LocalRepoFormatURL(p)
 	if err != nil {
 		return "", err
@@ -62,8 +62,8 @@ var LocalRepoFormatJSON = LocalRepoFormatFunc(func(p local.LocalRepo) (string, e
 })
 
 func LocalRepoFormatFields(s string) LocalRepoFormat {
-	return LocalRepoFormatFunc(func(p local.LocalRepo) (string, error) {
-		utxt, err := local.GetDefaultRemoteURLFromLocalRepo(context.Background(), p)
+	return LocalRepoFormatFunc(func(p local.Repo) (string, error) {
+		utxt, err := local.GetDefaultRemoteURL(context.Background(), p)
 		if err != nil {
 			return "", err
 		}

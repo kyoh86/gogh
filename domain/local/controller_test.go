@@ -22,16 +22,16 @@ func mustRef(t *testing.T, host, owner, name string) reporef.RepoRef {
 	return ref
 }
 
-func TestLocalController(t *testing.T) {
+func TestController(t *testing.T) {
 	ctx := context.Background()
 
 	root := t.TempDir()
-	local := testtarget.NewLocalController(root)
+	ctrl := testtarget.NewController(root)
 
 	t.Run("Create", func(t *testing.T) {
 		ref := mustRef(t, "github.com", "kyoh86", "gogh")
 		t.Run("Exist", func(t *testing.T) {
-			e, err := local.Exist(ctx, ref, nil)
+			e, err := ctrl.Exist(ctx, ref, nil)
 			if err != nil {
 				t.Fatalf("failed to create a local repository: %s", err)
 			}
@@ -41,7 +41,7 @@ func TestLocalController(t *testing.T) {
 		})
 
 		t.Run("First", func(t *testing.T) {
-			repo, err := local.Create(ctx, ref, nil)
+			repo, err := ctrl.Create(ctx, ref, nil)
 			if err != nil {
 				t.Fatalf("failed to create a local repository: %s", err)
 			}
@@ -81,7 +81,7 @@ func TestLocalController(t *testing.T) {
 			}
 
 			// check git remote
-			got, err := local.GetRemoteURLs(ctx, ref, git.DefaultRemoteName)
+			got, err := ctrl.GetRemoteURLs(ctx, ref, git.DefaultRemoteName)
 			if err != nil {
 				t.Fatalf("failed to get remote urls from created local repository: %s", err)
 			}
@@ -92,7 +92,7 @@ func TestLocalController(t *testing.T) {
 		})
 
 		t.Run("NotExist", func(t *testing.T) {
-			e, err := local.Exist(ctx, ref, nil)
+			e, err := ctrl.Exist(ctx, ref, nil)
 			if err != nil {
 				t.Fatalf("failed to create a local repository: %s", err)
 			}
@@ -102,14 +102,14 @@ func TestLocalController(t *testing.T) {
 		})
 
 		t.Run("Duplicated", func(t *testing.T) {
-			if _, err := local.Create(ctx, ref, nil); err != git.ErrRepositoryAlreadyExists {
+			if _, err := ctrl.Create(ctx, ref, nil); err != git.ErrRepositoryAlreadyExists {
 				t.Fatalf(
 					"error mismatch: -want +got\n -%v\n +%v",
 					git.ErrRepositoryAlreadyExists,
 					err,
 				)
 			}
-			if _, err := local.Clone(ctx, ref, "", nil); err != git.ErrRepositoryAlreadyExists {
+			if _, err := ctrl.Clone(ctx, ref, "", nil); err != git.ErrRepositoryAlreadyExists {
 				t.Fatalf(
 					"error mismatch: -want +got\n -%v\n +%v",
 					git.ErrRepositoryAlreadyExists,
@@ -122,7 +122,7 @@ func TestLocalController(t *testing.T) {
 	t.Run("PassWalkFnError", func(t *testing.T) {
 		expect := errors.New("error for test")
 		called := false
-		actual := local.Walk(ctx, nil, func(p testtarget.LocalRepo) error {
+		actual := ctrl.Walk(ctx, nil, func(p testtarget.Repo) error {
 			called = true
 			return expect
 		})
@@ -141,11 +141,11 @@ func TestLocalController(t *testing.T) {
 			newRef := mustRef(t, "github.com", "kyoh86", "gogh-upstream")
 			url := "https://github.com/kyoh86/gogh-upstream"
 
-			if err := local.SetRemoteRefs(ctx, ref, map[string][]reporef.RepoRef{name: {newRef}}); err != nil {
+			if err := ctrl.SetRemoteRefs(ctx, ref, map[string][]reporef.RepoRef{name: {newRef}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
-			got, err := local.GetRemoteURLs(ctx, ref, name)
+			got, err := ctrl.GetRemoteURLs(ctx, ref, name)
 			if err != nil {
 				t.Fatalf("failed to get remote urls from a local repository which is set remote: %s", err)
 			}
@@ -158,11 +158,11 @@ func TestLocalController(t *testing.T) {
 			newRef := mustRef(t, "github.com", "kyoh86", "gogh-overwrite")
 			url := "https://github.com/kyoh86/gogh-overwrite"
 
-			if err := local.SetRemoteRefs(ctx, ref, map[string][]reporef.RepoRef{name: {newRef}}); err != nil {
+			if err := ctrl.SetRemoteRefs(ctx, ref, map[string][]reporef.RepoRef{name: {newRef}}); err != nil {
 				t.Fatalf("failed to set remotes: %s", err)
 			}
 			// check git remote
-			got, err := local.GetRemoteURLs(ctx, ref, name)
+			got, err := ctrl.GetRemoteURLs(ctx, ref, name)
 			if err != nil {
 				t.Fatalf("failed to get remote urls from a local repository which is set remote: %s", err)
 			}
@@ -172,13 +172,13 @@ func TestLocalController(t *testing.T) {
 			}
 		})
 		t.Run("NotFound", func(t *testing.T) {
-			if err := local.SetRemoteURLs(ctx, mustRef(t, "github.com", "kyoh86", "unknown"), nil); err == nil {
+			if err := ctrl.SetRemoteURLs(ctx, mustRef(t, "github.com", "kyoh86", "unknown"), nil); err == nil {
 				t.Error("expect that SetRemoteURLs is failed, but not")
 			}
-			if _, err := local.GetRemoteURLs(ctx, mustRef(t, "github.com", "kyoh86", "unknown"), git.DefaultRemoteName); err == nil {
+			if _, err := ctrl.GetRemoteURLs(ctx, mustRef(t, "github.com", "kyoh86", "unknown"), git.DefaultRemoteName); err == nil {
 				t.Error("expect that GetRemoteURLs is failed, but not")
 			}
-			if _, err := local.GetRemoteURLs(ctx, ref, "unknown"); err == nil {
+			if _, err := ctrl.GetRemoteURLs(ctx, ref, "unknown"); err == nil {
 				t.Error("expect that GetRemoteURLs is failed, but not")
 			}
 		})
@@ -205,7 +205,7 @@ func TestLocalController(t *testing.T) {
 		// match cases
 		for _, testcase := range []struct {
 			title  string
-			option *testtarget.LocalListOption
+			option *testtarget.ListOption
 		}{
 			{
 				title:  "nil",
@@ -213,27 +213,27 @@ func TestLocalController(t *testing.T) {
 			},
 			{
 				title:  "empty",
-				option: &testtarget.LocalListOption{Query: ""},
+				option: &testtarget.ListOption{Query: ""},
 			},
 			{
 				title:  "matched for name",
-				option: &testtarget.LocalListOption{Query: "gogh"},
+				option: &testtarget.ListOption{Query: "gogh"},
 			},
 			{
 				title:  "matched for owner",
-				option: &testtarget.LocalListOption{Query: "kyoh86"},
+				option: &testtarget.ListOption{Query: "kyoh86"},
 			},
 			{
 				title:  "matched for owner/name",
-				option: &testtarget.LocalListOption{Query: "kyoh86/gogh"},
+				option: &testtarget.ListOption{Query: "kyoh86/gogh"},
 			},
 			{
 				title:  "matched for owner/name",
-				option: &testtarget.LocalListOption{Query: "kyoh86/gogh"},
+				option: &testtarget.ListOption{Query: "kyoh86/gogh"},
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {
-				actual, err := local.List(ctx, testcase.option)
+				actual, err := ctrl.List(ctx, testcase.option)
 				if err != nil {
 					t.Fatalf("failed to get local repositories: %s", err)
 				}
@@ -253,7 +253,7 @@ func TestLocalController(t *testing.T) {
 
 		// unmatch case
 		t.Run("Unmatch", func(t *testing.T) {
-			actual, err := local.List(ctx, &testtarget.LocalListOption{Query: "dummy"})
+			actual, err := ctrl.List(ctx, &testtarget.ListOption{Query: "dummy"})
 			if err != nil {
 				t.Fatalf("failed to get local repository list: %s", err)
 			}
@@ -265,7 +265,7 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("Valid", func(t *testing.T) {
-			if err := local.Delete(ctx, mustRef(t, "github.com", "kyoh86", "gogh"), nil); err != nil {
+			if err := ctrl.Delete(ctx, mustRef(t, "github.com", "kyoh86", "gogh"), nil); err != nil {
 				t.Fatalf("failed to remove local repository: %s", err)
 			}
 			stat, err := os.Stat(filepath.Join(root, "github.com", "kyoh86", "gogh"))
@@ -297,7 +297,7 @@ func TestLocalController(t *testing.T) {
 			},
 		} {
 			t.Run(testcase.title, func(t *testing.T) {
-				actual := local.Delete(ctx, testcase.ref, nil)
+				actual := ctrl.Delete(ctx, testcase.ref, nil)
 				if actual == nil {
 					t.Errorf("expect error when the ref %s, but not", testcase.title)
 				}
@@ -307,7 +307,7 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("Clone", func(t *testing.T) {
 		ref := mustRef(t, "github.com", "kyoh86-tryouts", "bare")
-		localRepo, err := local.Clone(ctx, ref, "", nil)
+		localRepo, err := ctrl.Clone(ctx, ref, "", nil)
 		if err != nil {
 			t.Fatalf("failed to clone a local repository: %s", err)
 		}
@@ -369,7 +369,7 @@ func TestLocalController(t *testing.T) {
 	t.Run("Alias", func(t *testing.T) {
 		ref := mustRef(t, "github.com", "kyoh86-tryouts", "bare")
 		alias := mustRef(t, "example.com", "kyoh86", "alias")
-		localRepo, err := local.Clone(ctx, ref, "", &testtarget.LocalCloneOption{
+		localRepo, err := ctrl.Clone(ctx, ref, "", &testtarget.CloneOption{
 			Alias: &alias,
 		})
 		if err != nil {
@@ -428,7 +428,7 @@ func TestLocalController(t *testing.T) {
 
 	t.Run("CloneFailureWithInvalidToken", func(t *testing.T) {
 		ref := mustRef(t, "github.com", "kyoh86", "gogh")
-		if _, err := local.Clone(ctx, ref, "invalid-token", nil); err == nil {
+		if _, err := ctrl.Clone(ctx, ref, "invalid-token", nil); err == nil {
 			t.Fatalf("expect failure to clone a local repository: %s", err)
 		}
 	})
@@ -441,10 +441,10 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 	root := filepath.Join(tmp, "root")
 
 	ref := mustRef(t, "example.com", "kyoh86", "gogh")
-	local := testtarget.NewLocalController(root)
+	ctrl := testtarget.NewController(root)
 
 	t.Run("NotExit", func(t *testing.T) {
-		if _, err := local.List(ctx, nil); err != nil {
+		if _, err := ctrl.List(ctx, nil); err != nil {
 			t.Fatalf("failed to list not found root: %s", err)
 		}
 	})
@@ -455,13 +455,13 @@ func TestLocalControllerWithUnaccessableRoot(t *testing.T) {
 			t.Fatalf("failed to prepare dummy file: %s", err)
 		}
 
-		if _, err := local.Create(ctx, ref, nil); err == nil {
+		if _, err := ctrl.Create(ctx, ref, nil); err == nil {
 			t.Errorf("expect failure to create")
 		}
-		if _, err := local.Clone(ctx, ref, "", nil); err == nil {
+		if _, err := ctrl.Clone(ctx, ref, "", nil); err == nil {
 			t.Errorf("expect failure to clone")
 		}
-		if err := local.Delete(ctx, ref, nil); err == nil {
+		if err := ctrl.Delete(ctx, ref, nil); err == nil {
 			t.Errorf("expect failure to remove")
 		}
 	})

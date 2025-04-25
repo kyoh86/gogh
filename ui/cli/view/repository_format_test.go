@@ -20,7 +20,7 @@ func TestRemoteRepoPrinters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	repo := remote.RemoteRepo{
+	repo := remote.Repo{
 		UpdatedAt: uat,
 		Ref:       ref,
 		URL:       "https://github.com/kyoh86/gogh",

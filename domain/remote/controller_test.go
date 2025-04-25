@@ -9,10 +9,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	testtarget "github.com/kyoh86/gogh/v3/domain/remote"
-	"github.com/kyoh86/gogh/v3/util"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/github_mock"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
+	"github.com/kyoh86/gogh/v3/util"
 	"go.uber.org/mock/gomock"
 )
 
@@ -23,7 +23,7 @@ func MockAdaptor(t *testing.T) (*github_mock.MockAdaptor, func()) {
 	return mock, ctrl.Finish
 }
 
-func TestRemoteController_Get(t *testing.T) {
+func TestController_Get(t *testing.T) {
 	ctx := context.Background()
 
 	host := testtarget.DefaultHost
@@ -31,22 +31,22 @@ func TestRemoteController_Get(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		internalError := errors.New("test error")
 		mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(nil, nil, internalError)
-		if _, err := remote.Get(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
+		if _, err := ctrl.Get(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
 		}
 	})
 	t.Run("Success", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryGet(ctx, user, "gogh").Return(&github.Repository{
 			CloneURL: util.Ptr("https://" + testtarget.DefaultHost + "/" + user + "/gogh"),
 		}, nil, nil)
 
-		actual, err := remote.Get(ctx, user, "gogh", nil)
+		actual, err := ctrl.Get(ctx, user, "gogh", nil)
 		if err != nil {
 			t.Fatalf("failed to get: %s", err)
 		}
@@ -62,7 +62,7 @@ func TestRemoteController_Get(t *testing.T) {
 	})
 }
 
-func TestRemoteListOption_GetOptions(t *testing.T) {
+func TestListOption_GetOptions(t *testing.T) {
 	private := github.RepositoryPrivacyPrivate
 	public := github.RepositoryPrivacyPublic
 	owner := github.RepositoryAffiliationOwner
@@ -70,7 +70,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 	collabo := github.RepositoryAffiliationCollaborator
 	for _, testcase := range []struct {
 		title string
-		base  *testtarget.RemoteListOption
+		base  *testtarget.ListOption
 		want  *github.RepositoryListOptions
 	}{
 		{
@@ -81,51 +81,51 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 			},
 		},
 		{
 			title: "empty",
-			base:  &testtarget.RemoteListOption{},
+			base:  &testtarget.ListOption{},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 			},
 		},
 		{
 			title: "private",
-			base:  &testtarget.RemoteListOption{Private: util.Ptr(true)},
+			base:  &testtarget.ListOption{Private: util.Ptr(true)},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				Privacy:           private,
 			},
 		},
 		{
 			title: "public",
-			base:  &testtarget.RemoteListOption{Private: util.Ptr(false)},
+			base:  &testtarget.ListOption{Private: util.Ptr(false)},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				Privacy:           public,
 			},
 		},
 		{
 			title: "limit",
-			base:  &testtarget.RemoteListOption{Limit: 1},
+			base:  &testtarget.ListOption{Limit: 1},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
@@ -137,23 +137,23 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		},
 		{
 			title: "relations",
-			base: &testtarget.RemoteListOption{Relation: []testtarget.RemoteRepoRelation{
-				testtarget.RemoteRepoRelationOwner,
-				testtarget.RemoteRepoRelationOrganizationMember,
-				testtarget.RemoteRepoRelationCollaborator,
+			base: &testtarget.ListOption{Relation: []testtarget.RepoRelation{
+				testtarget.RepoRelationOwner,
+				testtarget.RepoRelationOrganizationMember,
+				testtarget.RepoRelationCollaborator,
 			}},
 			want: &github.RepositoryListOptions{
 				OrderBy: github.RepositoryOrder{
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner, member, collabo},
 			},
 		},
 		{
 			title: "fork",
-			base: &testtarget.RemoteListOption{
+			base: &testtarget.ListOption{
 				IsFork: util.Ptr(true),
 			},
 			want: &github.RepositoryListOptions{
@@ -161,18 +161,18 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 					Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 					Direction: githubv4.OrderDirectionDesc,
 				},
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				IsFork:            util.Ptr(true),
 			},
 		},
 		{
 			title: "sort by name",
-			base: &testtarget.RemoteListOption{
+			base: &testtarget.ListOption{
 				Sort: github.RepositoryOrderFieldName,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldName,
@@ -182,11 +182,11 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		},
 		{
 			title: "sort by stargazers",
-			base: &testtarget.RemoteListOption{
+			base: &testtarget.ListOption{
 				Sort: github.RepositoryOrderFieldStargazers,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldStargazers,
@@ -196,12 +196,12 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 		},
 		{
 			title: "sort by stargazers ascending",
-			base: &testtarget.RemoteListOption{
+			base: &testtarget.ListOption{
 				Sort:  github.RepositoryOrderFieldStargazers,
 				Order: github.OrderDirectionAsc,
 			},
 			want: &github.RepositoryListOptions{
-				Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+				Limit:             testtarget.RepoListMaxLimitPerPage,
 				OwnerAffiliations: []github.RepositoryAffiliation{owner},
 				OrderBy: github.RepositoryOrder{
 					Field:     github.RepositoryOrderFieldStargazers,
@@ -219,7 +219,7 @@ func TestRemoteListOption_GetOptions(t *testing.T) {
 	}
 }
 
-func TestRemoteController_List(t *testing.T) {
+func TestController_List(t *testing.T) {
 	ctx := context.Background()
 
 	owner := github.RepositoryAffiliationOwner
@@ -228,7 +228,7 @@ func TestRemoteController_List(t *testing.T) {
 			Field:     githubv4.RepositoryOrderFieldUpdatedAt,
 			Direction: githubv4.OrderDirectionDesc,
 		},
-		Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+		Limit:             testtarget.RepoListMaxLimitPerPage,
 		OwnerAffiliations: []github.RepositoryAffiliation{owner},
 	}
 	host := testtarget.DefaultHost
@@ -237,13 +237,13 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		internalError := errors.New("test error")
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return(nil, github.PageInfoFragment{}, internalError)
 
-		if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
+		if _, err := ctrl.List(ctx, nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
 		}
 	})
@@ -257,7 +257,7 @@ func TestRemoteController_List(t *testing.T) {
 
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			DoAndReturn(func(_ context.Context, _ *github.RepositoryListOptions) ([]*github.RepositoryFragment, github.PageInfoFragment, error) {
@@ -271,7 +271,7 @@ func TestRemoteController_List(t *testing.T) {
 				}}, github.PageInfoFragment{}, nil
 			})
 
-		if _, err := remote.List(ctx, nil); !errors.Is(err, internalError) {
+		if _, err := ctrl.List(ctx, nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
 		}
 	})
@@ -279,14 +279,14 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("InvalidRepo", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
 				Owner: &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: "."}},
 			}}, github.PageInfoFragment{}, nil)
 
-		if _, err := remote.List(ctx, nil); err == nil {
+		if _, err := ctrl.List(ctx, nil); err == nil {
 			t.Fatal("expect failure to listup but not")
 		}
 	})
@@ -294,7 +294,7 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("NilOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
@@ -315,7 +315,7 @@ func TestRemoteController_List(t *testing.T) {
 				Name:      "org-repo-2",
 			}}, github.PageInfoFragment{}, nil)
 
-		repos, err := remote.List(ctx, nil)
+		repos, err := ctrl.List(ctx, nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -359,7 +359,7 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("Paging", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
@@ -377,7 +377,7 @@ func TestRemoteController_List(t *testing.T) {
 				Direction: githubv4.OrderDirectionDesc,
 			},
 			After:             "next-page",
-			Limit:             testtarget.RemoteRepoListMaxLimitPerPage,
+			Limit:             testtarget.RepoListMaxLimitPerPage,
 			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}}).Return([]*github.RepositoryFragment{{
 			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
@@ -386,7 +386,7 @@ func TestRemoteController_List(t *testing.T) {
 			UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
 			Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-2",
 		}}, github.PageInfoFragment{}, nil)
-		repos, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: 0})
+		repos, err := ctrl.List(ctx, &testtarget.ListOption{Limit: 0})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -430,10 +430,10 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("Paging Over Max Per Page", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 
 		const (
-			perPage = testtarget.RemoteRepoListMaxLimitPerPage
+			perPage = testtarget.RepoListMaxLimitPerPage
 			limit   = perPage + 2
 		)
 		var responses []*github.RepositoryFragment
@@ -461,7 +461,7 @@ func TestRemoteController_List(t *testing.T) {
 			Limit:             perPage,
 			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}}).Return(responses[perPage:], github.PageInfoFragment{}, nil)
-		repos, err := remote.List(ctx, &testtarget.RemoteListOption{Limit: limit})
+		repos, err := ctrl.List(ctx, &testtarget.ListOption{Limit: limit})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -480,7 +480,7 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("EmptyOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
@@ -497,7 +497,7 @@ func TestRemoteController_List(t *testing.T) {
 				Owner:     &githubv4.RepositoryFragmentOwnerOrganization{OwnerFragmentOrganization: githubv4.OwnerFragmentOrganization{Login: org}}, Name: "org-repo-2",
 			}}, github.PageInfoFragment{}, nil)
 
-		repos, err := remote.List(ctx, &testtarget.RemoteListOption{})
+		repos, err := ctrl.List(ctx, &testtarget.ListOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -541,7 +541,7 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("ByUser", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryList(ctx, jsonMatcher{emptyOption}).
 			Return([]*github.RepositoryFragment{{
@@ -551,7 +551,7 @@ func TestRemoteController_List(t *testing.T) {
 				UpdatedAt: time.Date(2021, time.May, 1, 1, 0, 0, 0, time.UTC),
 				Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-2",
 			}}, github.PageInfoFragment{}, nil)
-		repos, err := remote.List(ctx, &testtarget.RemoteListOption{})
+		repos, err := ctrl.List(ctx, &testtarget.ListOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -587,7 +587,7 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("WithOptions", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		public := github.RepositoryPrivacyPublic
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{&github.RepositoryListOptions{
 			OrderBy: github.RepositoryOrder{
@@ -605,7 +605,7 @@ func TestRemoteController_List(t *testing.T) {
 			Owner:     &githubv4.RepositoryFragmentOwnerUser{OwnerFragmentUser: githubv4.OwnerFragmentUser{Login: user}}, Name: "user-repo-2",
 		}}, github.PageInfoFragment{}, nil)
 
-		repos, err := remote.List(ctx, &testtarget.RemoteListOption{
+		repos, err := ctrl.List(ctx, &testtarget.ListOption{
 			Private: util.Ptr(false),
 		})
 		if err != nil {
@@ -643,7 +643,7 @@ func TestRemoteController_List(t *testing.T) {
 	t.Run("ByUserWithOptions", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		public := github.RepositoryPrivacyPublic
 		mock.EXPECT().RepositoryList(ctx, jsonMatcher{github.RepositoryListOptions{
 			OrderBy: github.RepositoryOrder{
@@ -663,7 +663,7 @@ func TestRemoteController_List(t *testing.T) {
 			Name:      "user-repo-2",
 		}}, github.PageInfoFragment{}, nil)
 
-		repos, err := remote.List(ctx, &testtarget.RemoteListOption{
+		repos, err := ctrl.List(ctx, &testtarget.ListOption{
 			Private: util.Ptr(false),
 		})
 		if err != nil {
@@ -699,7 +699,7 @@ func TestRemoteController_List(t *testing.T) {
 	})
 }
 
-func TestRemoteController_Create(t *testing.T) {
+func TestController_Create(t *testing.T) {
 	ctx := context.Background()
 
 	user := "kyoh86"
@@ -707,14 +707,14 @@ func TestRemoteController_Create(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		internalError := errors.New("test error")
 
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
 			Name: util.Ptr("gogh"),
 		}}).Return(nil, nil, internalError)
 
-		if _, err := remote.Create(ctx, "gogh", nil); !errors.Is(err, internalError) {
+		if _, err := ctrl.Create(ctx, "gogh", nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
 		}
 	})
@@ -722,13 +722,13 @@ func TestRemoteController_Create(t *testing.T) {
 	t.Run("NilOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
 			Name: util.Ptr("gogh"),
 		}}).Return(&github.Repository{
 			CloneURL: util.Ptr("https://github.com/" + user + "/gogh.git"),
 		}, nil, nil)
-		repo, err := remote.Create(ctx, "gogh", nil)
+		repo, err := ctrl.Create(ctx, "gogh", nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -751,14 +751,14 @@ func TestRemoteController_Create(t *testing.T) {
 	t.Run("EmptyOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
 			Name: util.Ptr("user-repo-1"),
 		}}).Return(&github.Repository{
 			CloneURL: util.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
-		repo, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{})
+		repo, err := ctrl.Create(ctx, "user-repo-1", &testtarget.CreateOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -781,7 +781,7 @@ func TestRemoteController_Create(t *testing.T) {
 	t.Run("WithOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, "", jsonMatcher{&github.Repository{
 			Name:       util.Ptr("user-repo-1"),
 			Homepage:   util.Ptr("https://kyoh86.dev"),
@@ -792,7 +792,7 @@ func TestRemoteController_Create(t *testing.T) {
 			CloneURL: util.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
 
-		repo, err := remote.Create(ctx, "user-repo-1", &testtarget.RemoteCreateOption{
+		repo, err := ctrl.Create(ctx, "user-repo-1", &testtarget.CreateOption{
 			Homepage:      "https://kyoh86.dev",
 			TeamID:        3,
 			DisableIssues: true,
@@ -820,14 +820,14 @@ func TestRemoteController_Create(t *testing.T) {
 	t.Run("WithOrganization", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, org, &github.Repository{
 			Name: util.Ptr("org-repo-1"),
 		}).Return(&github.Repository{
 			CloneURL: util.Ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
-		repo, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
+		repo, err := ctrl.Create(ctx, "org-repo-1", &testtarget.CreateOption{
 			Organization: org,
 		})
 		if err != nil {
@@ -848,7 +848,7 @@ func TestRemoteController_Create(t *testing.T) {
 	t.Run("WithOrganizationAndOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryCreate(ctx, org, &github.Repository{
 			Name:     util.Ptr("org-repo-1"),
 			Homepage: util.Ptr("https://kyoh86.dev"),
@@ -856,7 +856,7 @@ func TestRemoteController_Create(t *testing.T) {
 			CloneURL: util.Ptr("https://github.com/" + org + "/org-repo-1.git"),
 		}, nil, nil)
 
-		repo, err := remote.Create(ctx, "org-repo-1", &testtarget.RemoteCreateOption{
+		repo, err := ctrl.Create(ctx, "org-repo-1", &testtarget.CreateOption{
 			Organization: org,
 			Homepage:     "https://kyoh86.dev",
 		})
@@ -876,14 +876,14 @@ func TestRemoteController_Create(t *testing.T) {
 	})
 }
 
-func TestRemoteController_CreateFromTemplate(t *testing.T) {
+func TestController_CreateFromTemplate(t *testing.T) {
 	ctx := context.Background()
 
 	user := "kyoh86"
 	t.Run("Error", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		internalError := errors.New("test error")
 
 		mock.EXPECT().
@@ -892,7 +892,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 			}}).
 			Return(nil, nil, internalError)
 
-		if _, err := remote.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil); !errors.Is(
+		if _, err := ctrl.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil); !errors.Is(
 			err,
 			internalError,
 		) {
@@ -903,7 +903,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 	t.Run("NilOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
 				Name: util.Ptr("gogh"),
@@ -911,7 +911,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 			Return(&github.Repository{
 				CloneURL: util.Ptr("https://github.com/" + user + "/gogh.git"),
 			}, nil, nil)
-		repo, err := remote.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil)
+		repo, err := ctrl.CreateFromTemplate(ctx, "temp-owner", "temp-name", "gogh", nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -934,7 +934,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 	t.Run("EmptyOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
 				Name: util.Ptr("user-repo-1"),
@@ -943,12 +943,12 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 				CloneURL: util.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
-		repo, err := remote.CreateFromTemplate(
+		repo, err := ctrl.CreateFromTemplate(
 			ctx,
 			"temp-owner",
 			"temp-name",
 			"user-repo-1",
-			&testtarget.RemoteCreateFromTemplateOption{},
+			&testtarget.CreateFromTemplateOption{},
 		)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
@@ -972,7 +972,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 	t.Run("WithOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryCreateFromTemplate(ctx, "temp-owner", "temp-name", jsonMatcher{&github.TemplateRepoRequest{
 				Name:  util.Ptr("user-repo-1"),
@@ -982,12 +982,12 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 				CloneURL: util.Ptr("https://github.com/custom-user/user-repo-1.git"),
 			}, nil, nil)
 
-		repo, err := remote.CreateFromTemplate(
+		repo, err := ctrl.CreateFromTemplate(
 			ctx,
 			"temp-owner",
 			"temp-name",
 			"user-repo-1",
-			&testtarget.RemoteCreateFromTemplateOption{
+			&testtarget.CreateFromTemplateOption{
 				Owner: "custom-user",
 			},
 		)
@@ -1011,7 +1011,7 @@ func TestRemoteController_CreateFromTemplate(t *testing.T) {
 	})
 }
 
-func TestRemoteController_Fork(t *testing.T) {
+func TestController_Fork(t *testing.T) {
 	ctx := context.Background()
 
 	user := "kyoh86"
@@ -1019,14 +1019,14 @@ func TestRemoteController_Fork(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		internalError := errors.New("test error")
 
 		mock.EXPECT().
 			RepositoryCreateFork(ctx, user, "user-repo-1", nil).
 			Return(nil, nil, internalError)
 
-		if _, err := remote.Fork(ctx, user, "user-repo-1", nil); !errors.Is(err, internalError) {
+		if _, err := ctrl.Fork(ctx, user, "user-repo-1", nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
 		}
 	})
@@ -1034,11 +1034,11 @@ func TestRemoteController_Fork(t *testing.T) {
 	t.Run("NilOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryCreateFork(ctx, user, "user-repo-1", nil).Return(&github.Repository{
 			CloneURL: util.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 		}, nil, nil)
-		repo, err := remote.Fork(ctx, user, "user-repo-1", nil)
+		repo, err := ctrl.Fork(ctx, user, "user-repo-1", nil)
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -1061,14 +1061,14 @@ func TestRemoteController_Fork(t *testing.T) {
 	t.Run("EmptyOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryCreateFork(ctx, user, "user-repo-1", jsonMatcher{&github.RepositoryCreateForkOptions{}}).
 			Return(&github.Repository{
 				CloneURL: util.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
-		repo, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{})
+		repo, err := ctrl.Fork(ctx, user, "user-repo-1", &testtarget.ForkOption{})
 		if err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
@@ -1091,7 +1091,7 @@ func TestRemoteController_Fork(t *testing.T) {
 	t.Run("WithOption", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().
 			RepositoryCreateFork(ctx, user, "user-repo-1", jsonMatcher{&github.RepositoryCreateForkOptions{
 				Organization: org,
@@ -1100,7 +1100,7 @@ func TestRemoteController_Fork(t *testing.T) {
 				CloneURL: util.Ptr("https://github.com/" + user + "/user-repo-1.git"),
 			}, nil, nil)
 
-		repo, err := remote.Fork(ctx, user, "user-repo-1", &testtarget.RemoteForkOption{
+		repo, err := ctrl.Fork(ctx, user, "user-repo-1", &testtarget.ForkOption{
 			Organization: org,
 		})
 		if err != nil {
@@ -1123,18 +1123,18 @@ func TestRemoteController_Fork(t *testing.T) {
 	})
 }
 
-func TestRemoteController_Delete(t *testing.T) {
+func TestController_Delete(t *testing.T) {
 	ctx := context.Background()
 
 	user := "kyoh86"
 	t.Run("Error", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		internalError := errors.New("test error")
 		mock.EXPECT().RepositoryDelete(ctx, user, "gogh").Return(nil, internalError)
 
-		if err := remote.Delete(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
+		if err := ctrl.Delete(ctx, user, "gogh", nil); !errors.Is(err, internalError) {
 			t.Errorf("expect passing internal error %q but actual %q", internalError, err)
 		}
 	})
@@ -1142,10 +1142,10 @@ func TestRemoteController_Delete(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mock, teardown := MockAdaptor(t)
 		defer teardown()
-		remote := testtarget.NewRemoteController(mock)
+		ctrl := testtarget.NewController(mock)
 		mock.EXPECT().RepositoryDelete(ctx, user, "gogh").Return(nil, nil)
 
-		if err := remote.Delete(ctx, user, "gogh", nil); err != nil {
+		if err := ctrl.Delete(ctx, user, "gogh", nil); err != nil {
 			t.Fatalf("failed to listup: %s", err)
 		}
 	})

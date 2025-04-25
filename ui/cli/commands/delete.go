@@ -39,7 +39,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 					if err != nil {
 						return err
 					}
-					ctrl := remote.NewRemoteController(adaptor)
+					ctrl := remote.NewController(adaptor)
 					founds, err := ctrl.List(ctx, nil)
 					if err != nil {
 						return err
@@ -70,7 +70,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 			}
 
 			if f.local {
-				ctrl := local.NewLocalController(conf.DefaultRoot())
+				ctrl := local.NewController(conf.DefaultRoot())
 				if !f.force {
 					var confirmed bool
 					if err := huh.NewForm(huh.NewGroup(
@@ -113,7 +113,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 				}
 				if f.dryrun {
 					fmt.Printf("deleting remote %s\n", ref.String())
-				} else if err := remote.NewRemoteController(adaptor).Delete(ctx, ref.Owner(), ref.Name(), nil); err != nil {
+				} else if err := remote.NewController(adaptor).Delete(ctx, ref.Owner(), ref.Name(), nil); err != nil {
 					var gherr *github.ErrorResponse
 					if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
 						log.FromContext(ctx).Errorf("Failed to delete a remote repository: there is no permission to delete %q", ref.URL())

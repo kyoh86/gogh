@@ -9,43 +9,43 @@ import (
 	"github.com/kyoh86/gogh/v3/domain/reporef"
 )
 
-// LocalRepo is the location of a repository in the local.
+// Repo is the location of a repository in the local.
 // It is a valid location, that never means "exist".
-type LocalRepo struct {
+type Repo struct {
 	root string
 	ref  reporef.RepoRef
 }
 
-func (l LocalRepo) Root() string {
+func (l Repo) Root() string {
 	return l.root
 }
 
-func (l LocalRepo) Host() string  { return l.ref.Host() }
-func (l LocalRepo) Owner() string { return l.ref.Owner() }
-func (l LocalRepo) Name() string  { return l.ref.Name() }
+func (l Repo) Host() string  { return l.ref.Host() }
+func (l Repo) Owner() string { return l.ref.Owner() }
+func (l Repo) Name() string  { return l.ref.Name() }
 
-func (l LocalRepo) FullLevels() []string {
+func (l Repo) FullLevels() []string {
 	return []string{l.root, l.ref.Host(), l.ref.Owner(), l.ref.Name()}
 }
 
-func (l LocalRepo) RelLevels() []string {
+func (l Repo) RelLevels() []string {
 	return l.ref.RelLevels()
 }
 
-func (l LocalRepo) FullFilePath() string {
+func (l Repo) FullFilePath() string {
 	return filepath.Join(l.FullLevels()...)
 }
 
-func (l LocalRepo) RelFilePath() string {
+func (l Repo) RelFilePath() string {
 	return filepath.Join(l.RelLevels()...)
 }
 
-func (l LocalRepo) RelPath() string {
+func (l Repo) RelPath() string {
 	return path.Join(l.RelLevels()...)
 }
 
 // CheckEntity checks if the local repository is exist in the local file-system.
-func (l LocalRepo) CheckEntity() error {
+func (l Repo) CheckEntity() error {
 	path := l.FullFilePath()
 	stat, err := os.Stat(path)
 	if err != nil {
@@ -59,6 +59,6 @@ func (l LocalRepo) CheckEntity() error {
 
 // UNDONE: CheckEntityInFileSystem() support fs.FS
 
-func NewLocalRepo(root string, ref reporef.RepoRef) LocalRepo {
-	return LocalRepo{root: root, ref: ref}
+func NewRepo(root string, ref reporef.RepoRef) Repo {
+	return Repo{root: root, ref: ref}
 }

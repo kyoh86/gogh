@@ -11,7 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v3/infra/github"
 )
 
-func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref reporef.RepoRef) (github.Adaptor, *remote.RemoteController, error) {
+func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref reporef.RepoRef) (github.Adaptor, *remote.Controller, error) {
 	token, err := tokens.Get(ref.Host(), ref.Owner())
 	switch {
 	case err == nil:
@@ -19,7 +19,7 @@ func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref repo
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to build adaptor for %q: %w", ref.Owner(), err)
 		}
-		return adaptor, remote.NewRemoteController(adaptor), nil
+		return adaptor, remote.NewController(adaptor), nil
 	case errors.Is(err, config.ErrNoHost):
 		return nil, nil, err
 	case errors.Is(err, config.ErrNoOwner):
@@ -30,7 +30,7 @@ func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref repo
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to build adaptor for %q: %w", owner, err)
 			}
-			ctrl := remote.NewRemoteController(adaptor)
+			ctrl := remote.NewController(adaptor)
 			ok, err := ctrl.MemberOf(ctx, ref.Owner(), nil)
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to check the member of %q: %w", owner, err)
@@ -50,5 +50,5 @@ func RemoteControllerFor(ctx context.Context, tokens config.TokenStore, ref repo
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to build adaptor for %q: %w", ref.Owner(), err)
 	}
-	return adaptor, remote.NewRemoteController(adaptor), nil
+	return adaptor, remote.NewController(adaptor), nil
 }

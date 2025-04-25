@@ -50,7 +50,7 @@ func TestIngestRepository(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
 		}
-		want := RemoteRepo{
+		want := Repo{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
 			Homepage:    "valid homepage",
@@ -139,7 +139,7 @@ func TestIngestRepositoryFragment(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %q", err)
 		}
-		want := RemoteRepo{
+		want := Repo{
 			URL:         "https://github.com/kyoh86/gogh",
 			Description: "valid description",
 			Homepage:    "https://example.com",
