@@ -1,13 +1,20 @@
 # Architecture of the Project
 
-## 1. Three Main Concerns (Layers)
+## 1. Four Main Concerns (Layers)
 
 ### Core Functionality Layer (core)
 
-- **Role**: The essential operations and concepts that the program performs.
+- **Role**: Defines the essential operations and concepts that the program performs.
 - **Example in this project**: Processing repository references, defining repository operations.
 - **Content**: Data structures, interfaces, basic operations.
 - **Features**: Pure functionality that does not depend on external systems or UI.
+
+### Application Layer (app)
+
+- **Role**: Realizes use cases and coordinates core functionality.
+- **Example in this project**: Repository cloning process, list retrieval logic.
+- **Content**: Service objects, use case handlers.
+- **Features**: Combines core functionality to perform actual processing.
 
 ### External System Integration Layer (infra)
 
@@ -21,27 +28,33 @@
 - **Role**: The method of interaction with the user.
 - **Example in this project**: CLI commands, output formats.
 - **Content**: Command implementations, display logic, input handling.
-- **Features**: Translates user requests to core functionality or external integrations.
+- **Features**: Translates user requests to the application layer.
 
 ## 2. Practical Dependency Rules
 
 1. **Core Functionality Layer Dependency Rule**
-   - Does **NOT** import from UI or external system integration.
-   - **Reason**: Core operations should not depend on how they are triggered or how data is obtained.
+   - Core functionality layer does not **import** any other layers.
+   - (Other layers can import core functionality.)
+   - **Reason**: Core operations should not depend on application-specific processing or external integrations.
 
-2. **External System Integration Layer Dependency Rule**
-   - Can **import** from core functionality layer.
-   - Does **NOT** import from UI.
-   - **Reason**: GitHub integration needs to know core concepts but does not need to know CLI details.
+2. **Application Layer Dependency Rule**
+    - Application layer can **import** core functionality.
+    - Does not import UI or external system layers.
+    - **Reason**: Use cases use core functionality but should not depend on specific implementations or UI.
 
-3. **UI Layer Dependency Rule**
-    - Can **import** from both core functionality and external system integration layers.
-    - **Reason**: Commands need both functionality and data.
+3. **External System Integration Layer Dependency Rule**
+    - External system integration layer can **import** core functionality.
+    - Does not import UI or application layers.
+    - **Reason**: External integrations implement the interfaces defined in the core layer but do not need to know the details of UI or use cases.
+
+4. **UI Layer Dependency Rule**
+    - Can **import** the application layer.
+    - **Reason**: UI calls and executes use cases.
 
 ## 3. Interface-Based Integration
 
 1. **Interface Ownership**
-   - The user defines the interface.
+   - The user layer defines the interface.
    - **Example**: The interface for remote repositories is defined in the core layer.
 
 2. **Example of Interface Definition in Core Layer**
@@ -54,7 +67,23 @@
    }
    ```
 
-3. **Example of Implementation in External Integration Layer**
+3. **Example of usecase in Application Layer**
+   ```go
+   // app/clone/service.go
+   type CloneService struct {
+       repoService core.RepositoryService
+   }
+   
+   func (s *CloneService) CloneRepository(name string) error {
+       repo, err := s.repoService.Get(name)
+       if err != nil {
+           return err
+       }
+       // Clone processing implementation
+   }
+   ```
+
+4. **Example of Implementation in External Integration Layer**
    ```go
    // infra/github/client.go
    type githubClient struct {...}
@@ -73,6 +102,10 @@ gogh/
 │   ├── repository/    # Definitions related to repositories
 │   └── auth/          # Definitions related to authentication
 │
+├── app/               # Application layer - use case implementations
+│   ├── clone/         # Clone use case
+│   └── list/          # List use case
+│
 ├── infra/             # External system integration - technical implementations
 │   ├── github/        # GitHub API client
 │   └── storage/          # Data storage implementation
@@ -80,3 +113,12 @@ gogh/
 ├── ui/                # User interface - interaction with the user
 │   └── cli/           # CLI command implementations
 ```
+
+## 5. Case Study
+
+Example of Clone Operation
+
+1. **UI Layer**: The `clone` command receives the repository name from the user.
+2. **Application Layer**: The `CloneService` uses the `RepositoryService` to get the repository details.
+3. **External System Integration Layer**: The `githubClient` implements the `RepositoryService` interface to fetch repository details from GitHub.
+4. **Core Layer**: The core layer defines the `RepositoryService` interface and the `Repository` struct.
