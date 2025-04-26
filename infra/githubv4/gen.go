@@ -2,4 +2,4 @@
 
 package githubv4
 
-//go:generate go run github.com/Khan/genqlient
+//go:generate go tool genqlient

@@ -29,7 +29,7 @@ gen-gql: clear-sdl get-sdl
 .PHONY: gen-gql
 
 lint: gen
-	golangci-lint run
+	go tool golangci-lint run
 .PHONY: lint
 
 test: gen
