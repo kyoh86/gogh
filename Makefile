@@ -30,6 +30,7 @@ gen-gql: clear-sdl get-sdl
 
 lint: gen
 	go tool golangci-lint run
+	go tool arch-go
 .PHONY: lint
 
 test: gen
