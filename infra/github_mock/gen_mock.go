@@ -101,6 +101,21 @@ func (mr *MockAdaptorMockRecorder) GetMe(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockAdaptor)(nil).GetMe), ctx)
 }
 
+// MemberOf mocks base method.
+func (m *MockAdaptor) MemberOf(ctx context.Context, org string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MemberOf", ctx, org)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MemberOf indicates an expected call of MemberOf.
+func (mr *MockAdaptorMockRecorder) MemberOf(ctx, org any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MemberOf", reflect.TypeOf((*MockAdaptor)(nil).MemberOf), ctx, org)
+}
+
 // OrganizationList mocks base method.
 func (m *MockAdaptor) OrganizationList(ctx context.Context) ([]*github.Organization, *github.Response, error) {
 	m.ctrl.T.Helper()

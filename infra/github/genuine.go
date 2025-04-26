@@ -236,3 +236,19 @@ func (a *genuineAdaptor) OrganizationList(
 		PerPage: 100,
 	})
 }
+
+func (a *genuineAdaptor) MemberOf(
+	ctx context.Context,
+	org string,
+) (bool, error) {
+	orgs, _, err := a.OrganizationList(ctx)
+	if err != nil {
+		return false, err
+	}
+	for _, o := range orgs {
+		if *o.Login == org {
+			return true, nil
+		}
+	}
+	return false, nil
+}

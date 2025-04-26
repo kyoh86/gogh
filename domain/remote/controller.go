@@ -478,22 +478,3 @@ func (c *Controller) Delete(
 	}
 	return nil
 }
-
-type MemberOfOption struct{}
-
-func (c *Controller) MemberOf(
-	ctx context.Context,
-	orgName string,
-	_ *MemberOfOption,
-) (bool, error) {
-	orgs, _, err := c.adaptor.OrganizationList(ctx)
-	if err != nil {
-		return false, err
-	}
-	for _, org := range orgs {
-		if *org.Login == orgName {
-			return true, nil
-		}
-	}
-	return false, nil
-}

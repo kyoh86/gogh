@@ -190,3 +190,41 @@ func SaveTokens() error {
 	}
 	return saveYAML(path, globalTokens)
 }
+
+// GetTokenForOwner attempts to find appropriate tokens for the specified host/owner.
+// Returns:
+// - exactMatch: The token specifically for the requested owner (if exists)
+// - candidates: Other tokens for the host that might have access to the organization
+// - error: If no tokens are available or host doesn't exist
+func (t TokenStore) GetTokenForOwner(hostName, ownerName string) (exactMatch *TokenEntry, candidates []TokenEntry, err error) {
+	host, ok := t.Hosts.TryGet(hostName)
+	if !ok {
+		return nil, nil, ErrNoHost
+	}
+
+	// Check if we have a specific token for this owner
+	if token, ok := host.Owners.TryGet(ownerName); ok {
+		return &TokenEntry{
+			Host:  hostName,
+			Owner: ownerName,
+			Token: token,
+		}, nil, nil
+	}
+
+	// Gather other tokens as candidates
+	for owner, token := range host.Owners {
+		if owner != ownerName {
+			candidates = append(candidates, TokenEntry{
+				Host:  hostName,
+				Owner: owner,
+				Token: token,
+			})
+		}
+	}
+
+	if len(candidates) == 0 {
+		return nil, nil, ErrNoOwner
+	}
+
+	return nil, candidates, nil
+}

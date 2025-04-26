@@ -96,4 +96,5 @@ type Adaptor interface {
 	RepositoryDelete(ctx context.Context, owner string, repo string) (*Response, error)
 	RepositoryGet(ctx context.Context, owner string, repo string) (*Repository, *Response, error)
 	OrganizationList(ctx context.Context) ([]*Organization, *Response, error)
+	MemberOf(ctx context.Context, org string) (bool, error)
 }
