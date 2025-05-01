@@ -5,6 +5,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
+	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
@@ -13,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
+func NewForkCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
 	var f config.ForkFlags
 	cmd := &cobra.Command{
 		Use:   "fork [flags] OWNER/NAME",
@@ -21,7 +23,7 @@ func NewForkCommand(conf *config.ConfigStore, tokens *config.TokenStore, default
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
-			parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
+			parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
 			ref, err := parser.Parse(refs[0])
 			if err != nil {
 				return err

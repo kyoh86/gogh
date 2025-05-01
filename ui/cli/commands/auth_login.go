@@ -8,8 +8,8 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
+	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
-	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +26,7 @@ type ErrorResponse struct {
 	ErrorURI         string
 }
 
-func NewAuthLoginCommand(tokens *config.TokenStore) *cobra.Command {
+func NewAuthLoginCommand(tokens auth.TokenService) *cobra.Command {
 	var f struct {
 		Host string
 	}
@@ -38,7 +38,7 @@ func NewAuthLoginCommand(tokens *config.TokenStore) *cobra.Command {
 		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if f.Host == "" {
-				f.Host = github.DefaultHost
+				f.Host = github.GlobalHost
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewInput().
 						Title("Host name").
@@ -84,7 +84,9 @@ func NewAuthLoginCommand(tokens *config.TokenStore) *cobra.Command {
 				return fmt.Errorf("failed to get authenticated user info: %w", err)
 			}
 
-			tokens.Set(f.Host, user.GetLogin(), *tokenResp)
+			if err := tokens.Set(f.Host, user.GetLogin(), *tokenResp); err != nil {
+				return fmt.Errorf("failed to save token: %w", err)
+			}
 
 			fmt.Println("Login successful!")
 			return nil

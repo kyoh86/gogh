@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"os"
 
+	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
-func NewBundleRestoreCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
+func NewBundleRestoreCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
 	var f config.BundleRestoreFlags
 	cmd := &cobra.Command{
 		Use:   "restore",
@@ -31,7 +33,7 @@ func NewBundleRestoreCommand(conf *config.ConfigStore, tokens *config.TokenStore
 			}
 
 			ctx := cmd.Context()
-			return cloneAll(ctx, conf, tokens, refs, f.Dryrun)
+			return cloneAll(ctx, conf, defaultNames, tokens, refs, f.Dryrun)
 		},
 	}
 	cmd.Flags().

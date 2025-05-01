@@ -36,10 +36,10 @@ func (p RepoRefParser) ParseWithAlias(s string) (RepoRef, *RepoRef, error) {
 		}
 		alias, err := ParseSiblingRepoRef(ref, parts[1])
 		if err != nil {
-			return RepoRef{}, nil, err
+			return RepoRef{}, nil, fmt.Errorf("invalid alias: %w", err)
 		}
 		if alias.String() == ref.String() {
-			return ref, nil, err
+			return ref, nil, nil
 		}
 		return ref, &alias, nil
 	default:

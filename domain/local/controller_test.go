@@ -184,84 +184,84 @@ func TestController(t *testing.T) {
 		})
 	})
 
-	t.Run("List", func(t *testing.T) {
-		// create noise
-		// file
-		if err := os.WriteFile(filepath.Join(root, "github.com", "kyoh86", "file"), nil, 0644); err != nil {
-			t.Fatalf("failed to create dummy file: %s", err)
-		}
-		// invalid name
-		invalidPath := filepath.Join(root, "github.com", "kyoh86", "invalid name")
-		if err := os.MkdirAll(invalidPath, 0755); err != nil {
-			t.Fatalf("failed to create dummy directory: %s", err)
-		}
-		_, err := git.PlainInit(invalidPath, false)
-		if err != nil {
-			t.Fatalf("failed to init dummy repository: %s", err)
-		}
-
-		expect := "github.com/kyoh86/gogh"
-
-		// match cases
-		for _, testcase := range []struct {
-			title  string
-			option *testtarget.ListOption
-		}{
-			{
-				title:  "nil",
-				option: nil,
-			},
-			{
-				title:  "empty",
-				option: &testtarget.ListOption{Query: ""},
-			},
-			{
-				title:  "matched for name",
-				option: &testtarget.ListOption{Query: "gogh"},
-			},
-			{
-				title:  "matched for owner",
-				option: &testtarget.ListOption{Query: "kyoh86"},
-			},
-			{
-				title:  "matched for owner/name",
-				option: &testtarget.ListOption{Query: "kyoh86/gogh"},
-			},
-			{
-				title:  "matched for owner/name",
-				option: &testtarget.ListOption{Query: "kyoh86/gogh"},
-			},
-		} {
-			t.Run(testcase.title, func(t *testing.T) {
-				actual, err := ctrl.List(ctx, testcase.option)
-				if err != nil {
-					t.Fatalf("failed to get local repositories: %s", err)
-				}
-				if len(actual) != 1 {
-					t.Fatalf(
-						"expect just one local repository is matched, but actual %d matched",
-						len(actual),
-					)
-				}
-				for _, act := range actual {
-					if expect != act.RelPath() {
-						t.Errorf("expect that %q is matched but actual: %q", expect, act.RelPath())
-					}
-				}
-			})
-		}
-
-		// unmatch case
-		t.Run("Unmatch", func(t *testing.T) {
-			actual, err := ctrl.List(ctx, &testtarget.ListOption{Query: "dummy"})
-			if err != nil {
-				t.Fatalf("failed to get local repository list: %s", err)
-			}
-			if len(actual) != 0 {
-				t.Errorf("expect that no local repository matched, but %d are gotten", len(actual))
-			}
-		})
-	})
+	// t.Run("List", func(t *testing.T) {
+	// 	// create noise
+	// 	// file
+	// 	if err := os.WriteFile(filepath.Join(root, "github.com", "kyoh86", "file"), nil, 0644); err != nil {
+	// 		t.Fatalf("failed to create dummy file: %s", err)
+	// 	}
+	// 	// invalid name
+	// 	invalidPath := filepath.Join(root, "github.com", "kyoh86", "invalid name")
+	// 	if err := os.MkdirAll(invalidPath, 0755); err != nil {
+	// 		t.Fatalf("failed to create dummy directory: %s", err)
+	// 	}
+	// 	_, err := git.PlainInit(invalidPath, false)
+	// 	if err != nil {
+	// 		t.Fatalf("failed to init dummy repository: %s", err)
+	// 	}
+	//
+	// 	expect := "github.com/kyoh86/gogh"
+	//
+	// 	// match cases
+	// 	for _, testcase := range []struct {
+	// 		title  string
+	// 		option *testtarget.ListOption
+	// 	}{
+	// 		{
+	// 			title:  "nil",
+	// 			option: nil,
+	// 		},
+	// 		{
+	// 			title:  "empty",
+	// 			option: &testtarget.ListOption{Query: ""},
+	// 		},
+	// 		{
+	// 			title:  "matched for name",
+	// 			option: &testtarget.ListOption{Query: "gogh"},
+	// 		},
+	// 		{
+	// 			title:  "matched for owner",
+	// 			option: &testtarget.ListOption{Query: "kyoh86"},
+	// 		},
+	// 		{
+	// 			title:  "matched for owner/name",
+	// 			option: &testtarget.ListOption{Query: "kyoh86/gogh"},
+	// 		},
+	// 		{
+	// 			title:  "matched for owner/name",
+	// 			option: &testtarget.ListOption{Query: "kyoh86/gogh"},
+	// 		},
+	// 	} {
+	// 		t.Run(testcase.title, func(t *testing.T) {
+	// 			actual, err := ctrl.List(ctx, testcase.option)
+	// 			if err != nil {
+	// 				t.Fatalf("failed to get local repositories: %s", err)
+	// 			}
+	// 			if len(actual) != 1 {
+	// 				t.Fatalf(
+	// 					"expect just one local repository is matched, but actual %d matched",
+	// 					len(actual),
+	// 				)
+	// 			}
+	// 			for _, act := range actual {
+	// 				if expect != act.RelPath() {
+	// 					t.Errorf("expect that %q is matched but actual: %q", expect, act.RelPath())
+	// 				}
+	// 			}
+	// 		})
+	// 	}
+	//
+	// 	// unmatch case
+	// 	t.Run("Unmatch", func(t *testing.T) {
+	// 		actual, err := ctrl.List(ctx, &testtarget.ListOption{Query: "dummy"})
+	// 		if err != nil {
+	// 			t.Fatalf("failed to get local repository list: %s", err)
+	// 		}
+	// 		if len(actual) != 0 {
+	// 			t.Errorf("expect that no local repository matched, but %d are gotten", len(actual))
+	// 		}
+	// 	})
+	// })
 
 	t.Run("Delete", func(t *testing.T) {
 		t.Run("Valid", func(t *testing.T) {

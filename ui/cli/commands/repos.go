@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/github"
@@ -26,13 +27,22 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
-func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
+func NewReposCommand(tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
 	var (
-		f                        config.ReposFlags
-		remoteRepoSortAccept     []string
-		remoteRepoOrderAccept    []string
-		remoteRepoRelationAccept []string
+		f config.ReposFlags
 	)
+	remoteRepoSortAccept := make([]string, 0, len(remote.AllRepoOrderField))
+	remoteRepoOrderAccept := make([]string, 0, len(remote.AllOrderDirection))
+	remoteRepoRelationAccept := make([]string, 0, len(remote.AllRepoRelation))
+	for _, v := range remote.AllRepoOrderField {
+		remoteRepoSortAccept = append(remoteRepoSortAccept, string(v))
+	}
+	for _, v := range remote.AllOrderDirection {
+		remoteRepoOrderAccept = append(remoteRepoOrderAccept, string(v))
+	}
+	for _, v := range remote.AllRepoRelation {
+		remoteRepoRelationAccept = append(remoteRepoRelationAccept, v.String())
+	}
 	cmd := &cobra.Command{
 		Use:   "repos",
 		Short: "List remote repositories",
@@ -141,15 +151,6 @@ func NewReposCommand(tokens *config.TokenStore, defaults *config.FlagStore) *cob
 		},
 	}
 
-	for _, v := range remote.AllRepoOrderField {
-		remoteRepoSortAccept = append(remoteRepoSortAccept, string(v))
-	}
-	for _, v := range remote.AllOrderDirection {
-		remoteRepoOrderAccept = append(remoteRepoOrderAccept, string(v))
-	}
-	for _, v := range remote.AllRepoRelation {
-		remoteRepoRelationAccept = append(remoteRepoRelationAccept, v.String())
-	}
 	cmd.Flags().
 		IntVarP(&f.Limit, "limit", "", DefaultValue(defaults.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
 

@@ -8,6 +8,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
+	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
@@ -16,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra.Command {
+func NewDeleteCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService) *cobra.Command {
 	var f struct {
 		local  bool
 		remote bool
@@ -63,7 +65,7 @@ func NewDeleteCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobr
 				selected = refs[0]
 			}
 
-			parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
+			parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
 			ref, err := parser.Parse(selected)
 			if err != nil {
 				return err

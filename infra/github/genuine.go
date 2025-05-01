@@ -22,13 +22,6 @@ func (a *genuineAdaptor) GetHost() string {
 	return a.host
 }
 
-const (
-	DefaultHost    = "github.com"
-	DefaultAPIHost = "api.github.com"
-)
-
-const ClientID = "Ov23li6aEWIxek6F8P5L"
-
 func OAuth2Config(host string) *oauth2.Config {
 	return &oauth2.Config{
 		ClientID: ClientID,
@@ -46,8 +39,8 @@ func NewAdaptor(ctx context.Context, host string, token *Token) (Adaptor, error)
 	if token != nil {
 		source = oauth2.ReuseTokenSource(token, &tokenSource{ctx: ctx, host: host, token: token})
 	}
-	if host == DefaultHost || host == DefaultAPIHost {
-		return newGenuineAdaptor(ctx, DefaultHost, source), nil
+	if host == GlobalHost || host == GlobalAPIHost {
+		return newGenuineAdaptor(ctx, GlobalHost, source), nil
 	}
 	baseRESTURL := &url.URL{
 		Scheme: "https://",
@@ -108,7 +101,7 @@ func newGenuineAdaptor(ctx context.Context, host string, tokenSource oauth2.Toke
 		host:        host,
 		tokenSource: tokenSource,
 		restClient:  github.NewClient(httpClient),
-		gqlClient:   graphql.NewClient("https://"+DefaultAPIHost+"/graphql", httpClient),
+		gqlClient:   graphql.NewClient("https://"+GlobalAPIHost+"/graphql", httpClient),
 	}
 }
 

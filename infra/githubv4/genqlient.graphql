@@ -16,11 +16,13 @@ fragment ParentRepositoryFragment on Repository {
   owner {
     ...OwnerFragment
   }
+  sshUrl
 }
 
 fragment RepositoryFragment on Repository {
   url
   homepageUrl
+  sshUrl
   primaryLanguage {
     ...LanguageFragment
   }

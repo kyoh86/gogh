@@ -9,6 +9,8 @@ import (
 	"github.com/charmbracelet/huh"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
@@ -16,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
+func NewCreateCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
 	var f config.CreateFlags
 	cmd := &cobra.Command{
 		Use:     "create [flags] [[OWNER/]NAME]",
@@ -25,7 +27,7 @@ func NewCreateCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			var name string
-			parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
+			parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
 			if len(refs) == 0 {
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewInput().

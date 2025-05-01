@@ -25,7 +25,7 @@ github.com/nvim-telescope/telescope.nvim
 
 `gogh` provides a way to organize remote repository clones, like `go get` does.  When you clone a
 remote repository by `gogh get`, `gogh` makes a directory under a specific root directory (by default
-`~/go/src`) using the remote repository URL's host and path.  And creating new one by `gogh new`,
+`~/go/src`) using the remote repository URL's host and path.  And creating new one by `gogh create`,
 `gogh` make both of a local project and a remote repository.
 
 ```console
@@ -36,7 +36,7 @@ $ gogh get https://github.com/kyoh86/gogh
 You can also do:
 
 - List projects (local repositories) (`gogh list`).
-- Create a new project (`gogh new`).
+- Create a new project (`gogh create`).
 - Fork a repository (`gogh fork`).
 - Clone a repository (`gogh clone`).
 - Delete a project (`gogh delete`).
@@ -76,7 +76,7 @@ To login in new server or logout, you should use `auth login`.
 
 ## Available commands
 
-See [doc/usage/gogh.md](./usage/gogh.md) for detailed command usage.
+See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 
 ### Show projects
 
@@ -105,7 +105,7 @@ See [doc/usage/gogh.md](./usage/gogh.md) for detailed command usage.
 | `gogh help`   | Help about any command |
 
 Use `gogh [command] --help` for more information about a command.
-Or see the manual in [doc/usage/gogh.md](./usage/gogh.md).
+Or see the manual in [doc/usage/gogh.md](./doc/usage/gogh.md).
 
 ## Environment variables
 

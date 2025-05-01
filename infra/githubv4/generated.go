@@ -106,6 +106,11 @@ func (v *ListReposViewerUserRepositoriesRepositoryConnectionEdgesRepositoryEdgeN
 	return v.RepositoryFragment.HomepageUrl
 }
 
+// GetSshUrl returns ListReposViewerUserRepositoriesRepositoryConnectionEdgesRepositoryEdgeNodeRepository.SshUrl, and is useful for accessing the field via an interface.
+func (v *ListReposViewerUserRepositoriesRepositoryConnectionEdgesRepositoryEdgeNodeRepository) GetSshUrl() string {
+	return v.RepositoryFragment.SshUrl
+}
+
 // GetPrimaryLanguage returns ListReposViewerUserRepositoriesRepositoryConnectionEdgesRepositoryEdgeNodeRepository.PrimaryLanguage, and is useful for accessing the field via an interface.
 func (v *ListReposViewerUserRepositoriesRepositoryConnectionEdgesRepositoryEdgeNodeRepository) GetPrimaryLanguage() RepositoryFragmentPrimaryLanguage {
 	return v.RepositoryFragment.PrimaryLanguage
@@ -191,6 +196,8 @@ type __premarshalListReposViewerUserRepositoriesRepositoryConnectionEdgesReposit
 
 	HomepageUrl string `json:"homepageUrl"`
 
+	SshUrl string `json:"sshUrl"`
+
 	PrimaryLanguage RepositoryFragmentPrimaryLanguage `json:"primaryLanguage"`
 
 	Name string `json:"name"`
@@ -227,6 +234,7 @@ func (v *ListReposViewerUserRepositoriesRepositoryConnectionEdgesRepositoryEdgeN
 
 	retval.Url = v.RepositoryFragment.Url
 	retval.HomepageUrl = v.RepositoryFragment.HomepageUrl
+	retval.SshUrl = v.RepositoryFragment.SshUrl
 	retval.PrimaryLanguage = v.RepositoryFragment.PrimaryLanguage
 	retval.Name = v.RepositoryFragment.Name
 	{
@@ -326,6 +334,11 @@ const (
 	// Specifies a descending order for a given `orderBy` argument.
 	OrderDirectionDesc OrderDirection = "DESC"
 )
+
+var AllOrderDirection = []OrderDirection{
+	OrderDirectionAsc,
+	OrderDirectionDesc,
+}
 
 // OwnerFragment includes the GraphQL fields of RepositoryOwner requested by the fragment OwnerFragment.
 // The GraphQL type's documentation follows.
@@ -454,6 +467,8 @@ type ParentRepositoryFragment struct {
 	Name string `json:"name"`
 	// The User owner of the repository.
 	Owner ParentRepositoryFragmentOwnerRepositoryOwner `json:"-"`
+	// The SSH URL to clone this repository
+	SshUrl string `json:"sshUrl"`
 }
 
 // GetName returns ParentRepositoryFragment.Name, and is useful for accessing the field via an interface.
@@ -463,6 +478,9 @@ func (v *ParentRepositoryFragment) GetName() string { return v.Name }
 func (v *ParentRepositoryFragment) GetOwner() ParentRepositoryFragmentOwnerRepositoryOwner {
 	return v.Owner
 }
+
+// GetSshUrl returns ParentRepositoryFragment.SshUrl, and is useful for accessing the field via an interface.
+func (v *ParentRepositoryFragment) GetSshUrl() string { return v.SshUrl }
 
 func (v *ParentRepositoryFragment) UnmarshalJSON(b []byte) error {
 
@@ -501,6 +519,8 @@ type __premarshalParentRepositoryFragment struct {
 	Name string `json:"name"`
 
 	Owner json.RawMessage `json:"owner"`
+
+	SshUrl string `json:"sshUrl"`
 }
 
 func (v *ParentRepositoryFragment) MarshalJSON() ([]byte, error) {
@@ -527,6 +547,7 @@ func (v *ParentRepositoryFragment) __premarshalJSON() (*__premarshalParentReposi
 				"unable to marshal ParentRepositoryFragment.Owner: %w", err)
 		}
 	}
+	retval.SshUrl = v.SshUrl
 	return &retval, nil
 }
 
@@ -754,6 +775,12 @@ const (
 	RepositoryAffiliationOwner RepositoryAffiliation = "OWNER"
 )
 
+var AllRepositoryAffiliation = []RepositoryAffiliation{
+	RepositoryAffiliationCollaborator,
+	RepositoryAffiliationOrganizationMember,
+	RepositoryAffiliationOwner,
+}
+
 // RepositoryFragment includes the GraphQL fields of Repository requested by the fragment RepositoryFragment.
 // The GraphQL type's documentation follows.
 //
@@ -763,6 +790,8 @@ type RepositoryFragment struct {
 	Url string `json:"url"`
 	// The repository's URL.
 	HomepageUrl string `json:"homepageUrl"`
+	// The SSH URL to clone this repository
+	SshUrl string `json:"sshUrl"`
 	// The primary language of the repository's code.
 	PrimaryLanguage RepositoryFragmentPrimaryLanguage `json:"primaryLanguage"`
 	// The name of the repository.
@@ -792,6 +821,9 @@ func (v *RepositoryFragment) GetUrl() string { return v.Url }
 
 // GetHomepageUrl returns RepositoryFragment.HomepageUrl, and is useful for accessing the field via an interface.
 func (v *RepositoryFragment) GetHomepageUrl() string { return v.HomepageUrl }
+
+// GetSshUrl returns RepositoryFragment.SshUrl, and is useful for accessing the field via an interface.
+func (v *RepositoryFragment) GetSshUrl() string { return v.SshUrl }
 
 // GetPrimaryLanguage returns RepositoryFragment.PrimaryLanguage, and is useful for accessing the field via an interface.
 func (v *RepositoryFragment) GetPrimaryLanguage() RepositoryFragmentPrimaryLanguage {
@@ -866,6 +898,8 @@ type __premarshalRepositoryFragment struct {
 
 	HomepageUrl string `json:"homepageUrl"`
 
+	SshUrl string `json:"sshUrl"`
+
 	PrimaryLanguage RepositoryFragmentPrimaryLanguage `json:"primaryLanguage"`
 
 	Name string `json:"name"`
@@ -902,6 +936,7 @@ func (v *RepositoryFragment) __premarshalJSON() (*__premarshalRepositoryFragment
 
 	retval.Url = v.Url
 	retval.HomepageUrl = v.HomepageUrl
+	retval.SshUrl = v.SshUrl
 	retval.PrimaryLanguage = v.PrimaryLanguage
 	retval.Name = v.Name
 	{
@@ -1154,6 +1189,11 @@ func (v *RepositoryFragmentParentRepository) GetOwner() ParentRepositoryFragment
 	return v.ParentRepositoryFragment.Owner
 }
 
+// GetSshUrl returns RepositoryFragmentParentRepository.SshUrl, and is useful for accessing the field via an interface.
+func (v *RepositoryFragmentParentRepository) GetSshUrl() string {
+	return v.ParentRepositoryFragment.SshUrl
+}
+
 func (v *RepositoryFragmentParentRepository) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -1183,6 +1223,8 @@ type __premarshalRepositoryFragmentParentRepository struct {
 	Name string `json:"name"`
 
 	Owner json.RawMessage `json:"owner"`
+
+	SshUrl string `json:"sshUrl"`
 }
 
 func (v *RepositoryFragmentParentRepository) MarshalJSON() ([]byte, error) {
@@ -1209,6 +1251,7 @@ func (v *RepositoryFragmentParentRepository) __premarshalJSON() (*__premarshalRe
 				"unable to marshal RepositoryFragmentParentRepository.ParentRepositoryFragment.Owner: %w", err)
 		}
 	}
+	retval.SshUrl = v.ParentRepositoryFragment.SshUrl
 	return &retval, nil
 }
 
@@ -1297,6 +1340,14 @@ const (
 	RepositoryOrderFieldUpdatedAt RepositoryOrderField = "UPDATED_AT"
 )
 
+var AllRepositoryOrderField = []RepositoryOrderField{
+	RepositoryOrderFieldCreatedAt,
+	RepositoryOrderFieldName,
+	RepositoryOrderFieldPushedAt,
+	RepositoryOrderFieldStargazers,
+	RepositoryOrderFieldUpdatedAt,
+}
+
 // The privacy of a repository
 type RepositoryPrivacy string
 
@@ -1306,6 +1357,11 @@ const (
 	// Public
 	RepositoryPrivacyPublic RepositoryPrivacy = "PUBLIC"
 )
+
+var AllRepositoryPrivacy = []RepositoryPrivacy{
+	RepositoryPrivacyPrivate,
+	RepositoryPrivacyPublic,
+}
 
 // __ListReposInput is used internally by genqlient
 type __ListReposInput struct {
@@ -1339,7 +1395,7 @@ func (v *__ListReposInput) GetOrderBy() RepositoryOrder { return v.OrderBy }
 // GetIsArchived returns __ListReposInput.IsArchived, and is useful for accessing the field via an interface.
 func (v *__ListReposInput) GetIsArchived() *bool { return v.IsArchived }
 
-// The query or mutation executed by ListRepos.
+// The query executed by ListRepos.
 const ListRepos_Operation = `
 query ListRepos ($first: Int = 30, $after: String, $isFork: Boolean, $privacy: RepositoryPrivacy, $affiliations: [RepositoryAffiliation], $orderBy: RepositoryOrder = {field:PUSHED_AT,direction:DESC}, $isArchived: Boolean) {
 	viewer {
@@ -1359,6 +1415,7 @@ query ListRepos ($first: Int = 30, $after: String, $isFork: Boolean, $privacy: R
 fragment RepositoryFragment on Repository {
 	url
 	homepageUrl
+	sshUrl
 	primaryLanguage {
 		... LanguageFragment
 	}
@@ -1394,6 +1451,7 @@ fragment ParentRepositoryFragment on Repository {
 		__typename
 		... OwnerFragment
 	}
+	sshUrl
 }
 `
 
@@ -1407,7 +1465,7 @@ func ListRepos(
 	affiliations []RepositoryAffiliation,
 	orderBy RepositoryOrder,
 	isArchived *bool,
-) (*ListReposResponse, error) {
+) (data_ *ListReposResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "ListRepos",
 		Query:  ListRepos_Operation,
@@ -1421,10 +1479,9 @@ func ListRepos(
 			IsArchived:   isArchived,
 		},
 	}
-	var err_ error
 
-	var data_ ListReposResponse
-	resp_ := &graphql.Response{Data: &data_}
+	data_ = &ListReposResponse{}
+	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
 		ctx_,
@@ -1432,5 +1489,5 @@ func ListRepos(
 		resp_,
 	)
 
-	return &data_, err_
+	return data_, err_
 }

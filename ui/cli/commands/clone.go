@@ -6,6 +6,8 @@ import (
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/go-git/go-git/v5"
+	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
@@ -15,7 +17,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra.Command {
+func NewCloneCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService) *cobra.Command {
 	var f struct {
 		dryrun bool
 	}
@@ -70,7 +72,7 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 					return err
 				}
 			}
-			return cloneAll(ctx, conf, tokens, refs, f.dryrun)
+			return cloneAll(ctx, conf, defaultNames, tokens, refs, f.dryrun)
 		},
 	}
 
@@ -79,8 +81,8 @@ func NewCloneCommand(conf *config.ConfigStore, tokens *config.TokenStore) *cobra
 	return c
 }
 
-func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.TokenStore, refs []string, dryrun bool) error {
-	parser := reporef.NewRepoRefParser(tokens.GetDefaultKey())
+func cloneAll(ctx context.Context, conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService, refs []string, dryrun bool) error {
+	parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
 	if dryrun {
 		for _, r := range refs {
 			ref, alias, err := parser.ParseWithAlias(r)
@@ -111,7 +113,7 @@ func cloneAll(ctx context.Context, conf *config.ConfigStore, tokens *config.Toke
 
 func cloneOneFunc(
 	ctx context.Context,
-	tokens *config.TokenStore,
+	tokens auth.TokenService,
 	ctrl *local.Controller,
 	parser reporef.RepoRefParser,
 	s string,
@@ -122,7 +124,7 @@ func cloneOneFunc(
 			return err
 		}
 
-		adaptor, remote, err := RemoteControllerFor(ctx, *tokens, ref)
+		adaptor, remote, err := RemoteControllerFor(ctx, tokens, ref)
 		if err != nil {
 			return err
 		}

@@ -1,0 +1,91 @@
+package auth
+
+import (
+	"errors"
+	"strings"
+
+	"github.com/kyoh86/gogh/v3/core/store"
+	"golang.org/x/oauth2"
+)
+
+// Token represents an authentication token for a repository hosting service
+type Token = oauth2.Token
+
+// TokenService provides access to authentication tokens
+type TokenService interface {
+	// Get retrieves a token for the specified host and owner
+	Get(host, owner string) (Token, error)
+
+	// Set stores a token for the specified host and owner
+	Set(host, owner string, token Token) error
+
+	// Delete removes a token for the specified host and owner
+	Delete(host, owner string) error
+
+	// Has checks if a token exists for the specified host and owner
+	Has(host, owner string) bool
+
+	// Entries returns all stored token entries
+	Entries() []TokenEntry
+}
+
+// TokenEntry represents a stored token with its host and owner
+type TokenEntry struct {
+	Host  string
+	Owner string
+	Token Token
+}
+
+// TokenStore is a service for saving and loading tokens
+type TokenStore store.Store[TokenService]
+
+var ErrTokenNotFound = errors.New("no token found")
+
+type tokenServiceImpl map[string]oauth2.Token
+
+const hostOwnerSeparator = "/"
+
+func (t tokenServiceImpl) Get(hostName, ownerName string) (oauth2.Token, error) {
+	token, ok := t[hostName+hostOwnerSeparator+ownerName]
+	if !ok {
+		return oauth2.Token{}, ErrTokenNotFound
+	}
+	return token, nil
+}
+
+func (t *tokenServiceImpl) Set(hostName, ownerName string, token Token) error {
+	(*t)[hostName+hostOwnerSeparator+ownerName] = token
+	return nil
+}
+
+func (t *tokenServiceImpl) Delete(hostName, ownerName string) error {
+	delete(*t, hostName+hostOwnerSeparator+ownerName)
+	return nil
+}
+
+func (t tokenServiceImpl) Has(hostName, ownerName string) bool {
+	_, ok := t[hostName+hostOwnerSeparator+ownerName]
+	return ok
+}
+
+func (t tokenServiceImpl) Entries() []TokenEntry {
+	var entries []TokenEntry
+	for key, token := range t {
+		words := strings.SplitN(key, hostOwnerSeparator, 2)
+		if len(words) != 2 {
+			continue
+		}
+		hostName := words[0]
+		ownerName := words[1]
+		entries = append(entries, TokenEntry{
+			Host:  hostName,
+			Owner: ownerName,
+			Token: token,
+		})
+	}
+	return entries
+}
+
+func NewTokenService() TokenService {
+	return &tokenServiceImpl{}
+}

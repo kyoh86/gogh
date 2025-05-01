@@ -6,11 +6,11 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/spf13/cobra"
 )
 
-func NewAuthLogoutCommand(tokens *config.TokenStore) *cobra.Command {
+func NewAuthLogoutCommand(tokens auth.TokenService) *cobra.Command {
 	return &cobra.Command{
 		Use:     "logout",
 		Aliases: []string{"signout", "remove"},
@@ -46,7 +46,10 @@ func NewAuthLogoutCommand(tokens *config.TokenStore) *cobra.Command {
 					log.FromContext(cmd.Context()).WithField("target", target).Error("invalid target (must be host/owner)")
 					continue
 				}
-				tokens.Delete(words[0], words[1])
+				if err := tokens.Delete(words[0], words[1]); err != nil {
+					log.FromContext(cmd.Context()).WithField("target", target).Errorf("failed to delete token: %s", err)
+					continue
+				}
 			}
 			return nil
 		},

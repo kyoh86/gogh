@@ -116,22 +116,6 @@ func (mr *MockAdaptorMockRecorder) MemberOf(ctx, org any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MemberOf", reflect.TypeOf((*MockAdaptor)(nil).MemberOf), ctx, org)
 }
 
-// OrganizationList mocks base method.
-func (m *MockAdaptor) OrganizationList(ctx context.Context) ([]*github.Organization, *github.Response, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OrganizationList", ctx)
-	ret0, _ := ret[0].([]*github.Organization)
-	ret1, _ := ret[1].(*github.Response)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// OrganizationList indicates an expected call of OrganizationList.
-func (mr *MockAdaptorMockRecorder) OrganizationList(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrganizationList", reflect.TypeOf((*MockAdaptor)(nil).OrganizationList), ctx)
-}
-
 // RepositoryCreate mocks base method.
 func (m *MockAdaptor) RepositoryCreate(ctx context.Context, org string, repo *github.Repository) (*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()

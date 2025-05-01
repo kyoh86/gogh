@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
+	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +17,7 @@ import (
 //go:embed config_template.txt
 var configTemplate string
 
-func NewConfigCommand(conf *config.ConfigStore, tokens *config.TokenStore, defaults *config.FlagStore) *cobra.Command {
+func NewConfigCommand(conf *config.ConfigStore, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
 	return &cobra.Command{
 		Use:     "config",
 		Short:   "Show configurations",
@@ -32,7 +33,7 @@ func NewConfigCommand(conf *config.ConfigStore, tokens *config.TokenStore, defau
 			if err != nil {
 				return fmt.Errorf("failed to get config file path: %w", err)
 			}
-			tokensFilePath, err := config.TokensPath()
+			tokensFilePath, err := config.TokensPathV0()
 			if err != nil {
 				return fmt.Errorf("failed to get tokens file path: %w", err)
 			}
