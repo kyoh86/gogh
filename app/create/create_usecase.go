@@ -2,17 +2,12 @@ package create
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"net/http"
-	"os"
 
-	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/clone"
 	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/github"
 )
 
 // UseCase represents the create use case
@@ -38,19 +33,12 @@ type CreateOptions struct {
 	Local  bool
 	Remote bool
 	Alias  *repository.Reference
+	hosting.CreateRepositoryOptions
 }
 
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options *CreateOptions) error {
-	if options != nil && options.Local {
-		// ctrl := local.NewController(uc.workspaceService.GetDefaultRoot())
-		// if err := ctrl.Delete(ctx, ref, nil); err != nil {
-		// 	if !os.IsNotExist(err) {
-		// 		return fmt.Errorf("delete local: %w", err)
-		// 	}
-		// }
-	}
-
-	if options != nil && options.Remote {
+func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options CreateOptions) error {
+	if options.Remote {
+		uc.hostingService.CreateRepository(ctx, ref, options.CreateRepositoryOptions)
 		// adaptor, _, err := RemoteControllerFor(ctx, *tokenService, ref)
 		// if err != nil {
 		// 	return fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
@@ -64,6 +52,26 @@ func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, option
 		// 		return err
 		// 	}
 		// }
+		if options.Local {
+			cloneUseCase := clone.NewUseCase(uc.hostingService, uc.workspaceService)
+			return cloneUseCase.Execute(ctx, ref, &clone.CloneOptions{
+				Alias: options.Alias,
+			})
+		}
+	} else if options.Local {
+		layout := uc.workspaceService.GetDefaultLayout()
+		path, err := layout.CreateRepositoryFolder(ref)
+		if err != nil {
+			return err
+		}
+		remoteURL, err := uc.hostingService.GetURLOf(ref)
+		if err != nil {
+			return err
+		}
+		if err := uc.gitService.Init(remoteURL.String(), path, false); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }

@@ -14,19 +14,16 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
-	layout           workspace.Layout
 }
 
 // NewUseCase creates a new clone use case
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	layout workspace.Layout,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
-		layout:           layout,
 	}
 }
 
@@ -44,12 +41,12 @@ func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, option
 	}
 
 	// Determine local path based on layout
-	root := uc.workspaceService.GetDefaultRoot()
 	targetRef := ref
 	if options != nil && options.Alias != nil {
 		targetRef = *options.Alias
 	}
-	localPath := uc.layout.PathFor(root, &targetRef)
+	layout := uc.workspaceService.GetDefaultLayout()
+	localPath := layout.PathFor(targetRef)
 
 	// Get the user and token for authentication
 	user, token, err := uc.hostingService.GetTokenFor(ctx, ref)

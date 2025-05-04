@@ -36,7 +36,7 @@ const (
 
 const ClientID = "Ov23li6aEWIxek6F8P5L"
 
-func getClient(ctx context.Context, host string, token *Token) *Connection {
+func getClient(ctx context.Context, host string, token *auth.Token) *Connection {
 	var source oauth2.TokenSource
 	if token != nil {
 		source = oauth2.ReuseTokenSource(token, &tokenSource{ctx: ctx, host: host, token: token})
@@ -85,6 +85,24 @@ func NewHostingService(tokenService auth.TokenService) *HostingService {
 	}
 }
 
+// GetURLOf implements hosting.HostingService.
+func (s *HostingService) GetURLOf(ref repository.Reference) (*url.URL, error) {
+	return &url.URL{
+		Scheme: "https",
+		Host:   ref.Host(),
+		Path:   strings.Join([]string{ref.Owner(), ref.Name()}, "/"),
+	}, nil
+}
+
+// ParseURL implements hosting.HostingService.
+func (s *HostingService) ParseURL(u *url.URL) (*repository.Reference, error) {
+	words := strings.SplitN(u.Path, "/", 2)
+	if len(words) < 2 {
+		return nil, fmt.Errorf("invalid path: %q", u.Path)
+	}
+	return util.Ptr(repository.NewReference(u.Host, words[0], strings.TrimSuffix(words[1], ".git"))), nil
+}
+
 // GetTokenFor cache requested token for the host and owner
 func (s *HostingService) GetTokenFor(ctx context.Context, reference repository.Reference) (string, auth.Token, error) {
 	key := strings.Join([]string{reference.Host(), reference.Owner()}, "/")
@@ -113,7 +131,7 @@ func (s *HostingService) getTokenForCore(ctx context.Context, host, owner string
 		if entry.Owner == owner {
 			return entry.Owner, entry.Token, nil
 		}
-		adaptor, err := NewAdaptor(ctx, entry.Host, &entry.Token)
+		adaptor, err := NewAdaptor(ctx, entry.Host, util.Ptr((Token)(entry.Token)))
 		if err != nil {
 			continue // Try next token if this one fails
 		}
@@ -246,6 +264,72 @@ func (s *HostingService) ListRepository(ctx context.Context, opt *hosting.ListRe
 			}
 		}
 	}
+}
+
+func (s *HostingService) CreateRepository(
+	ctx context.Context,
+	ref repository.Reference,
+	opt hosting.CreateRepositoryOptions,
+) (*hosting.Repository, error) {
+	user, token, err := s.GetTokenFor(ctx, ref)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+	}
+	conn := getClient(ctx, ref.Host(), &token)
+	org := ""
+	if user != ref.Owner() {
+		org = ref.Owner()
+	}
+	repo, _, err := conn.restClient.Repositories.Create(ctx, org, &github.Repository{
+		Name:                util.NilablePtr(ref.Name()),
+		Description:         util.NilablePtr(opt.Description),
+		Homepage:            util.NilablePtr(opt.Homepage),
+		Private:             util.NilablePtr(opt.Private),
+		HasIssues:           util.FalsePtr(opt.DisableIssues),
+		HasProjects:         util.FalsePtr(opt.DisableProjects),
+		HasWiki:             util.FalsePtr(opt.DisableWiki),
+		HasDownloads:        util.FalsePtr(opt.DisableDownloads),
+		IsTemplate:          util.NilablePtr(opt.IsTemplate),
+		TeamID:              util.NilablePtr(opt.TeamID),
+		AutoInit:            util.NilablePtr(opt.AutoInit),
+		GitignoreTemplate:   util.NilablePtr(opt.GitignoreTemplate),
+		LicenseTemplate:     util.NilablePtr(opt.LicenseTemplate),
+		AllowSquashMerge:    util.FalsePtr(opt.PreventSquashMerge),
+		AllowMergeCommit:    util.FalsePtr(opt.PreventMergeCommit),
+		AllowRebaseMerge:    util.FalsePtr(opt.PreventRebaseMerge),
+		DeleteBranchOnMerge: util.NilablePtr(opt.DeleteBranchOnMerge),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var parent *hosting.ParentRepository
+	if raw := repo.GetParent(); raw != nil {
+		u, err := url.Parse(raw.GetHTMLURL())
+		if err != nil {
+			return nil, err
+		}
+		ref := repository.NewReference(
+			u.Host,
+			raw.GetOwner().GetLogin(),
+			raw.GetName(),
+		)
+		parent = &hosting.ParentRepository{
+			CloneURL: raw.GetHTMLURL(),
+			Ref:      ref,
+		}
+	}
+	return &hosting.Repository{
+		Ref:         ref,
+		URL:         *repo.HTMLURL,
+		Parent:      parent,
+		Description: repo.GetDescription(),
+		Homepage:    repo.GetHomepage(),
+		Language:    repo.GetLanguage(),
+		Archived:    repo.GetArchived(),
+		Private:     repo.GetPrivate(),
+		IsTemplate:  repo.GetIsTemplate(),
+		Fork:        repo.GetFork(),
+	}, nil
 }
 
 // DeleteRepository deletes a repository from a remote source

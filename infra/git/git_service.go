@@ -40,6 +40,20 @@ func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath stri
 	return err
 }
 
+func (s *GitService) Init(remoteURL, localPath string, isBare bool) error {
+	repo, err := git.PlainInit(localPath, isBare)
+	if err != nil {
+		return err
+	}
+	if _, err := repo.CreateRemote(&config.RemoteConfig{
+		Name: git.DefaultRemoteName,
+		URLs: []string{remoteURL},
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
 // SetRemotes sets the remote repositories for a local git repository.
 func (s *GitService) SetRemotes(
 	_ context.Context,

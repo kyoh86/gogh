@@ -41,6 +41,18 @@ func (s *WorkspaceService) GetDefaultRoot() workspace.Root {
 	return s.defaultRoot
 }
 
+// GetLayoutFor returns a Layout for the root
+func (s *WorkspaceService) GetLayoutFor(root workspace.Root) workspace.Layout {
+	return NewLayout(root)
+}
+
+// GetDefaultLayout returns a Layout for the default root
+func (s *WorkspaceService) GetDefaultLayout() workspace.Layout {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return NewLayout(s.defaultRoot)
+}
+
 // SetDefaultRoot sets the specified path as the default workspace root
 func (s *WorkspaceService) SetDefaultRoot(path workspace.Root) error {
 	s.mu.Lock()

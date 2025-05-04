@@ -28,7 +28,6 @@ func NewDeleteCommand(
 	tokenService auth.TokenService,
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	layout workspace.Layout,
 ) *cobra.Command {
 	var f struct {
 		local  bool

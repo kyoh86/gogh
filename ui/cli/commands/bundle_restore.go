@@ -23,10 +23,9 @@ func NewBundleRestoreCommand(
 	defaults *config.FlagStore,
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	layout workspace.Layout,
 ) *cobra.Command {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(hostingService, workspaceService, layout)
+	cloneUseCase := clone.NewUseCase(hostingService, workspaceService)
 	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
 	runFunc := func(ctx context.Context) error {

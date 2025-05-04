@@ -3,6 +3,7 @@ package hosting
 import (
 	"context"
 	"iter"
+	"net/url"
 
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/repository"
@@ -11,6 +12,10 @@ import (
 
 // HostingService provides access to remote repositories
 type HostingService interface {
+	//TODO: Comment
+	GetURLOf(ref repository.Reference) (*url.URL, error)
+	//TODO: Comment
+	ParseURL(u *url.URL) (*repository.Reference, error)
 	// GetTokenFor retrieves an authentication token and user for a specific repository reference
 	GetTokenFor(ctx context.Context, reference repository.Reference) (string, auth.Token, error)
 	// GetRepository retrieves repository information from a remote source
@@ -19,6 +24,12 @@ type HostingService interface {
 	ListRepository(context.Context, *ListRepositoryOptions) iter.Seq2[*Repository, error]
 	// DeleteRepository deletes a repository from a remote source
 	DeleteRepository(context.Context, repository.Reference) error
+	//TODO: Comment
+	CreateRepository(
+		ctx context.Context,
+		ref repository.Reference,
+		opt CreateRepositoryOptions,
+	) (*Repository, error)
 }
 
 // BooleanFilter represents a filter state for boolean repository attributes
@@ -119,3 +130,23 @@ const (
 	// Repositories that are owned by the authenticated user.
 	RepositoryAffiliationOwner
 )
+
+type CreateRepositoryOptions struct {
+	Description         string
+	Homepage            string
+	Organization        string
+	LicenseTemplate     string
+	GitignoreTemplate   string
+	TeamID              int64
+	DisableDownloads    bool
+	IsTemplate          bool
+	Private             bool
+	DisableWiki         bool
+	AutoInit            bool
+	DisableProjects     bool
+	DisableIssues       bool
+	PreventSquashMerge  bool
+	PreventMergeCommit  bool
+	PreventRebaseMerge  bool
+	DeleteBranchOnMerge bool
+}

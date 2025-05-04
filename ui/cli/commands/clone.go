@@ -22,14 +22,13 @@ func NewCloneCommand(
 	tokenService auth.TokenService,
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	layout workspace.Layout,
 ) *cobra.Command {
 	var f struct {
 		dryrun bool
 	}
 
 	reposUseCase := repos.NewUseCase(hostingService)
-	cloneUseCase := clone.NewUseCase(hostingService, workspaceService, layout)
+	cloneUseCase := clone.NewUseCase(hostingService, workspaceService)
 	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
@@ -59,23 +58,23 @@ func NewCloneCommand(
 		return args, nil
 	}
 
-	preprocessFlags := func(ctx context.Context, args []string) ([]*repository.ReferenceWithAlias, error) {
+	preprocessFlags := func(ctx context.Context, args []string) ([]repository.ReferenceWithAlias, error) {
 		args, err := checkFlags(ctx, args)
 		if err != nil {
 			return nil, err
 		}
-		refs := make([]*repository.ReferenceWithAlias, 0, len(args))
+		refs := make([]repository.ReferenceWithAlias, 0, len(args))
 		for _, s := range args {
 			ref, err := parser.ParseWithAlias(s)
 			if err != nil {
 				return nil, err
 			}
-			refs = append(refs, ref)
+			refs = append(refs, *ref)
 		}
 		return refs, nil
 	}
 
-	runFunc := func(ctx context.Context, refs []*repository.ReferenceWithAlias) error {
+	runFunc := func(ctx context.Context, refs []repository.ReferenceWithAlias) error {
 		if f.dryrun {
 			for _, ref := range refs {
 				if ref.Alias == nil {

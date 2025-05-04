@@ -7,7 +7,6 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/infra/config"
-	"github.com/kyoh86/gogh/v3/infra/filesystem"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/logger"
 	"github.com/kyoh86/gogh/v3/ui/cli"

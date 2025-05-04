@@ -18,7 +18,6 @@ func NewApp(
 	defaultNameService repository.DefaultNameService,
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	layout workspace.Layout,
 	tokenService auth.TokenService,
 	defaults *config.FlagStore,
 ) *cobra.Command {
@@ -30,7 +29,7 @@ func NewApp(
 	bundleCommand := commands.NewBundleCommand()
 	bundleCommand.AddCommand(
 		commands.NewBundleDumpCommand(conf, defaults),
-		commands.NewBundleRestoreCommand(conf, defaultNameService, tokenService, defaults, hostingService, workspaceService, layout),
+		commands.NewBundleRestoreCommand(conf, defaultNameService, tokenService, defaults, hostingService, workspaceService),
 	)
 
 	authCommand := commands.NewAuthCommand(tokenService)
@@ -57,10 +56,10 @@ func NewApp(
 	facadeCommand.AddCommand(
 		commands.NewCwdCommand(conf, defaults),
 		commands.NewListCommand(conf, defaults),
-		commands.NewCloneCommand(conf, defaultNameService, tokenService, hostingService, workspaceService, layout),
+		commands.NewCloneCommand(conf, defaultNameService, tokenService, hostingService, workspaceService),
 		commands.NewCreateCommand(conf, defaultNameService, tokenService, defaults),
 		commands.NewReposCommand(tokenService, defaults),
-		commands.NewDeleteCommand(conf, defaultNameService, tokenService, hostingService, workspaceService, layout),
+		commands.NewDeleteCommand(conf, defaultNameService, tokenService, hostingService, workspaceService),
 		commands.NewForkCommand(conf, defaultNameService, tokenService, defaults),
 		configCommand,
 		authCommand,

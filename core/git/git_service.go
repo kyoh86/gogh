@@ -7,6 +7,8 @@ type GitService interface {
 	// Clone performs the actual git clone operation
 	Clone(ctx context.Context, remoteURL string, localPath string, options *CloneOptions) error
 
+	Init(remoteURL string, localPath string, isBare bool) error
+
 	// SetRemote configures remote repositories in a git repo
 	SetRemotes(ctx context.Context, localPath string, name string, remotes []string) error
 	// SetDefaultRemote configures remote repositories in a git repo
