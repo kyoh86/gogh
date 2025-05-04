@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -8,8 +9,11 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
+	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/domain/remote"
 	"github.com/kyoh86/gogh/v3/domain/reporef"
@@ -18,7 +22,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService) *cobra.Command {
+func NewDeleteCommand(
+	conf *config.ConfigStore,
+	defaultNameService repository.DefaultNameService,
+	tokenService auth.TokenService,
+	hostingService hosting.HostingService,
+	workspaceService workspace.WorkspaceService,
+	layout workspace.Layout,
+) *cobra.Command {
 	var f struct {
 		local  bool
 		remote bool
@@ -26,6 +37,36 @@ func NewDeleteCommand(conf *config.ConfigStore, defaultNames repository.DefaultN
 		dryrun bool
 	}
 
+	reposUseCase := repos.NewUseCase(hostingService)
+	// parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
+
+	checkFlags := func(ctx context.Context, args []string) (string, error) {
+		if len(args) != 0 {
+			return args[0], nil
+		}
+		var options []huh.Option[string]
+		for repo, err := range reposUseCase.Execute(ctx, &repos.Options{
+			//TODO; filter?
+		}) {
+			if err != nil {
+				return "", err
+			}
+			options = append(options, huh.Option[string]{
+				Key:   repo.Ref.String(),
+				Value: repo.Ref.String(),
+			})
+		}
+		var selected string
+		if err := huh.NewForm(huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("A repository to delete").
+				Options(options...).
+				Value(&selected),
+		)).Run(); err != nil {
+			return "", err
+		}
+		return selected, nil
+	}
 	cmd := &cobra.Command{
 		Use:     "delete [flags] [[OWNER/]NAME]",
 		Aliases: []string{"remove"},
@@ -33,47 +74,19 @@ func NewDeleteCommand(conf *config.ConfigStore, defaultNames repository.DefaultN
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
-			var selected string
-			if len(refs) == 0 {
-				var options []huh.Option[string]
-				for _, entry := range tokens.Entries() {
-					adaptor, err := github.NewAdaptor(ctx, entry.Host, &entry.Token)
-					if err != nil {
-						return err
-					}
-					ctrl := remote.NewController(adaptor)
-					founds, err := ctrl.List(ctx, nil)
-					if err != nil {
-						return err
-					}
-					for _, s := range founds {
-						options = append(options, huh.Option[string]{
-							Key:   s.Ref.String(),
-							Value: s.Ref.String(),
-						})
-					}
-				}
-				if err := huh.NewForm(huh.NewGroup(
-					huh.NewSelect[string]().
-						Title("A repository to delete").
-						Options(options...).
-						Value(&selected),
-				)).Run(); err != nil {
-					return err
-				}
-			} else {
-				selected = refs[0]
+			selected, err := checkFlags(ctx, refs)
+			if err != nil {
+				return err
 			}
 
-			parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
+			parser := reporef.NewRepoRefParser(defaultNameService.GetDefaultHostAndOwner())
 			ref, err := parser.Parse(selected)
 			if err != nil {
 				return err
 			}
 
-			if f.local {
-				ctrl := local.NewController(conf.DefaultRoot())
-				if !f.force {
+			if !f.force {
+				if f.local {
 					var confirmed bool
 					if err := huh.NewForm(huh.NewGroup(
 						huh.NewConfirm().
@@ -86,17 +99,7 @@ func NewDeleteCommand(conf *config.ConfigStore, defaultNames repository.DefaultN
 						return nil
 					}
 				}
-				if f.dryrun {
-					fmt.Printf("deleting local %s\n", ref.String())
-				} else if err := ctrl.Delete(ctx, ref, nil); err != nil {
-					if !os.IsNotExist(err) {
-						return fmt.Errorf("delete local: %w", err)
-					}
-				}
-			}
-
-			if f.remote {
-				if !f.force {
+				if f.remote {
 					var confirmed bool
 					if err := huh.NewForm(huh.NewGroup(
 						huh.NewConfirm().
@@ -109,21 +112,19 @@ func NewDeleteCommand(conf *config.ConfigStore, defaultNames repository.DefaultN
 						return nil
 					}
 				}
-				adaptor, _, err := RemoteControllerFor(ctx, *tokens, ref)
-				if err != nil {
-					return fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+			}
+			if f.dryrun {
+				if f.local {
+					fmt.Printf("deleting local %s\n", ref.String())
 				}
-				if f.dryrun {
+				if f.remote {
 					fmt.Printf("deleting remote %s\n", ref.String())
-				} else if err := remote.NewController(adaptor).Delete(ctx, ref.Owner(), ref.Name(), nil); err != nil {
-					var gherr *github.ErrorResponse
-					if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
-						log.FromContext(ctx).Errorf("Failed to delete a remote repository: there is no permission to delete %q", ref.URL())
-						log.FromContext(ctx).Error(`Add scope "delete_repo" for the token`)
-					} else {
-						return err
-					}
 				}
+				return nil
+			}
+			shouldReturn, err := newFunction(ctx, f.local, f.remote, f.force, f.dryrun, conf, ref, tokenService)
+			if shouldReturn {
+				return err
 			}
 			return nil
 		},
@@ -136,4 +137,68 @@ func NewDeleteCommand(conf *config.ConfigStore, defaultNames repository.DefaultN
 	cmd.Flags().
 		BoolVarP(&f.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	return cmd
+}
+
+func newFunction(
+	ctx context.Context,
+	_local bool, _remote bool, force bool, dryrun bool,
+	conf *config.ConfigStore,
+	ref reporef.RepoRef,
+	tokenService auth.TokenService,
+) (bool, error) {
+	if _local {
+		ctrl := local.NewController(conf.DefaultRoot())
+		if !force {
+			var confirmed bool
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewConfirm().
+					Title(fmt.Sprintf("Are you sure you want to delete local repository %s?", ref.String())).
+					Value(&confirmed),
+			)).Run(); err != nil {
+				return true, err
+			}
+			if !confirmed {
+				return true, nil
+			}
+		}
+		if dryrun {
+			fmt.Printf("deleting local %s\n", ref.String())
+		} else if err := ctrl.Delete(ctx, ref, nil); err != nil {
+			if !os.IsNotExist(err) {
+				return true, fmt.Errorf("delete local: %w", err)
+			}
+		}
+	}
+
+	if _remote {
+		if !force {
+			var confirmed bool
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewConfirm().
+					Title(fmt.Sprintf("Are you sure you want to delete remote-repository %s?", ref.String())).
+					Value(&confirmed),
+			)).Run(); err != nil {
+				return true, err
+			}
+			if !confirmed {
+				return true, nil
+			}
+		}
+		adaptor, _, err := RemoteControllerFor(ctx, *tokenService, ref)
+		if err != nil {
+			return true, fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+		}
+		if dryrun {
+			fmt.Printf("deleting remote %s\n", ref.String())
+		} else if err := remote.NewController(adaptor).Delete(ctx, ref.Owner(), ref.Name(), nil); err != nil {
+			var gherr *github.ErrorResponse
+			if errors.As(err, &gherr) && gherr.Response.StatusCode == http.StatusForbidden {
+				log.FromContext(ctx).Errorf("Failed to delete a remote repository: there is no permission to delete %q", ref.URL())
+				log.FromContext(ctx).Error(`Add scope "delete_repo" for the token`)
+			} else {
+				return true, err
+			}
+		}
+	}
+	return false, nil
 }

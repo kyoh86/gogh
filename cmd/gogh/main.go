@@ -5,9 +5,10 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/infra/filesystem"
+	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/logger"
 	"github.com/kyoh86/gogh/v3/ui/cli"
 )
@@ -48,6 +49,14 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("failed to get tokens path (v0): %w\n", err)
 	}
+	workspacePath, err := config.WorkspacePath()
+	if err != nil {
+		return fmt.Errorf("failed to get workspace path: %w\n", err)
+	}
+	workspacePathV0, err := config.WorkspacePathV0()
+	if err != nil {
+		return fmt.Errorf("failed to get workspace path (v0): %w\n", err)
+	}
 	defaultNamesPath, err := config.DefaultNamesPath()
 	if err != nil {
 		return fmt.Errorf("failed to get default names path: %w\n", err)
@@ -58,15 +67,28 @@ func run() error {
 		config.NewDefaultNameStoreV0(tokensPathV0),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get default names path: %w\n", err)
+		return fmt.Errorf("failed to load default names: %w\n", err)
 	}
 
 	tokenService, err := store.LoadAlternative(ctx,
 		config.NewTokenStore(tokensPath),
 		config.NewTokenStoreV0(tokensPathV0),
 	)
+	if err != nil {
+		return fmt.Errorf("failed to load tokens: %w\n", err)
+	}
 
-	cmd := cli.NewApp(ctx, conf, defaultNameService, tokenService, defaults)
+	workspaceService, err := store.LoadAlternative(ctx,
+		config.NewWorkspaceStore(workspacePath),
+		config.NewWorkspaceStoreV0(workspacePathV0),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load workspace: %w\n", err)
+	}
+
+	hostingService := github.NewHostingService(tokenService)
+
+	cmd := cli.NewApp(ctx, conf, defaultNameService, hostingService, workspaceService, tokenService, defaults)
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {

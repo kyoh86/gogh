@@ -1,10 +1,12 @@
-package filesystem
+package config
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v3/infra/filesystem"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -29,10 +31,13 @@ func (w *WorkspaceStore) Load(ctx context.Context) (workspace.WorkspaceService, 
 	if err := toml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	return &WorkspaceService{
-		roots:       v.Roots,
-		defaultRoot: v.DefaultRoot,
-	}, nil
+	svc := filesystem.WorkspaceService{}
+	for _, root := range v.Roots {
+		if err := svc.AddRoot(root, root == v.DefaultRoot); err != nil {
+			return nil, err
+		}
+	}
+	return &svc, nil
 }
 
 // Save implements workspace.WorkspaceRepository.
@@ -52,6 +57,14 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 		return err
 	}
 	return nil
+}
+
+func WorkspacePath() (string, error) {
+	path, err := appContextPath("GOGH_WORKSPACE_PATH", os.UserCacheDir, "workspace.v1.yaml")
+	if err != nil {
+		return "", fmt.Errorf("search workspace path: %w", err)
+	}
+	return path, nil
 }
 
 // NewWorkspaceStore creates a new WorkspaceStore instance.

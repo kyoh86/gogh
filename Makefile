@@ -44,5 +44,7 @@ man: gen
 
 install: test
 	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh/...
-
 .PHONY: install
+
+default: lint test
+.DEFAULT_GOAL := default

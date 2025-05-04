@@ -4,13 +4,24 @@ import (
 	"context"
 
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 	"github.com/spf13/cobra"
 )
 
-func NewApp(ctx context.Context, conf *config.ConfigStore, defaultNameService repository.DefaultNameService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
+func NewApp(
+	ctx context.Context,
+	conf *config.ConfigStore,
+	defaultNameService repository.DefaultNameService,
+	hostingService hosting.HostingService,
+	workspaceService workspace.WorkspaceService,
+	layout workspace.Layout,
+	tokenService auth.TokenService,
+	defaults *config.FlagStore,
+) *cobra.Command {
 	facadeCommand := &cobra.Command{
 		Use:   config.AppName,
 		Short: "GO GitHub local repository manager",
@@ -19,14 +30,14 @@ func NewApp(ctx context.Context, conf *config.ConfigStore, defaultNameService re
 	bundleCommand := commands.NewBundleCommand()
 	bundleCommand.AddCommand(
 		commands.NewBundleDumpCommand(conf, defaults),
-		commands.NewBundleRestoreCommand(conf, defaultNameService, tokens, defaults),
+		commands.NewBundleRestoreCommand(conf, defaultNameService, tokenService, defaults, hostingService, workspaceService, layout),
 	)
 
-	authCommand := commands.NewAuthCommand(tokens)
+	authCommand := commands.NewAuthCommand(tokenService)
 	authCommand.AddCommand(
-		commands.NewAuthListCommand(tokens),
-		commands.NewAuthLoginCommand(tokens),
-		commands.NewAuthLogoutCommand(tokens),
+		commands.NewAuthListCommand(tokenService),
+		commands.NewAuthLoginCommand(tokenService),
+		commands.NewAuthLogoutCommand(tokenService),
 	)
 
 	rootsCommand := commands.NewRootsCommand(conf)
@@ -37,7 +48,7 @@ func NewApp(ctx context.Context, conf *config.ConfigStore, defaultNameService re
 		commands.NewRootsListCommand(conf),
 	)
 
-	configCommand := commands.NewConfigCommand(conf, tokens, defaults)
+	configCommand := commands.NewConfigCommand(conf, tokenService, defaults)
 	configCommand.AddCommand(
 		authCommand,
 		rootsCommand,
@@ -46,11 +57,11 @@ func NewApp(ctx context.Context, conf *config.ConfigStore, defaultNameService re
 	facadeCommand.AddCommand(
 		commands.NewCwdCommand(conf, defaults),
 		commands.NewListCommand(conf, defaults),
-		commands.NewCloneCommand(conf, defaultNameService, tokens),
-		commands.NewCreateCommand(conf, defaultNameService, tokens, defaults),
-		commands.NewReposCommand(tokens, defaults),
-		commands.NewDeleteCommand(conf, defaultNameService, tokens),
-		commands.NewForkCommand(conf, defaultNameService, tokens, defaults),
+		commands.NewCloneCommand(conf, defaultNameService, tokenService, hostingService, workspaceService, layout),
+		commands.NewCreateCommand(conf, defaultNameService, tokenService, defaults),
+		commands.NewReposCommand(tokenService, defaults),
+		commands.NewDeleteCommand(conf, defaultNameService, tokenService, hostingService, workspaceService, layout),
+		commands.NewForkCommand(conf, defaultNameService, tokenService, defaults),
 		configCommand,
 		authCommand,
 		bundleCommand,

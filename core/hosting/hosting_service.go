@@ -2,6 +2,7 @@ package hosting
 
 import (
 	"context"
+	"iter"
 
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/repository"
@@ -15,9 +16,9 @@ type HostingService interface {
 	// GetRepository retrieves repository information from a remote source
 	GetRepository(context.Context, repository.Reference) (*Repository, error)
 	// ListRepository retrieves a list of repositories from a remote source
-	ListRepository(context.Context, *ListRepositoryOptions) ([]*Repository, error)
-	// ListRepositoryAsync retrieves asyncronously repositories from a remote source
-	ListRepositoryAsync(context.Context, *ListRepositoryOptions) (<-chan *Repository, <-chan error)
+	ListRepository(context.Context, *ListRepositoryOptions) iter.Seq2[*Repository, error]
+	// DeleteRepository deletes a repository from a remote source
+	DeleteRepository(context.Context, repository.Reference) error
 }
 
 // BooleanFilter represents a filter state for boolean repository attributes

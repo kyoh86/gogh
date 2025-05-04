@@ -5,21 +5,97 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/go-git/go-git/v5"
+	"github.com/kyoh86/gogh/v3/app/clone"
+	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/domain/local"
-	"github.com/kyoh86/gogh/v3/domain/remote"
-	"github.com/kyoh86/gogh/v3/domain/reporef"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
-	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCloneCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService) *cobra.Command {
+func NewCloneCommand(
+	conf *config.ConfigStore,
+	defaultNameService repository.DefaultNameService,
+	tokenService auth.TokenService,
+	hostingService hosting.HostingService,
+	workspaceService workspace.WorkspaceService,
+	layout workspace.Layout,
+) *cobra.Command {
 	var f struct {
 		dryrun bool
+	}
+
+	reposUseCase := repos.NewUseCase(hostingService)
+	cloneUseCase := clone.NewUseCase(hostingService, workspaceService, layout)
+	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
+
+	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
+		if len(args) != 0 {
+			return args, nil
+		}
+		var options []huh.Option[string]
+		for repo, err := range reposUseCase.Execute(ctx, &repos.Options{
+			//TODO; filter?
+		}) {
+			if err != nil {
+				return nil, err
+			}
+			options = append(options, huh.Option[string]{
+				Key:   repo.Ref.String(),
+				Value: repo.Ref.String(),
+			})
+		}
+		if err := huh.NewForm(huh.NewGroup(
+			huh.NewMultiSelect[string]().
+				Title("A remote repository to clone").
+				Options(options...).
+				Value(&args),
+		)).Run(); err != nil {
+			return nil, err
+		}
+		return args, nil
+	}
+
+	preprocessFlags := func(ctx context.Context, args []string) ([]*repository.ReferenceWithAlias, error) {
+		args, err := checkFlags(ctx, args)
+		if err != nil {
+			return nil, err
+		}
+		refs := make([]*repository.ReferenceWithAlias, 0, len(args))
+		for _, s := range args {
+			ref, err := parser.ParseWithAlias(s)
+			if err != nil {
+				return nil, err
+			}
+			refs = append(refs, ref)
+		}
+		return refs, nil
+	}
+
+	runFunc := func(ctx context.Context, refs []*repository.ReferenceWithAlias) error {
+		if f.dryrun {
+			for _, ref := range refs {
+				if ref.Alias == nil {
+					log.FromContext(ctx).Infof("git clone %q", ref.Reference)
+				} else {
+					log.FromContext(ctx).Infof("git clone %q into %q", ref.Reference, ref.Alias)
+				}
+			}
+			return nil
+		}
+
+		eg, ctx := errgroup.WithContext(ctx)
+		for _, ref := range refs {
+			eg.Go(func() error {
+				return cloneUseCase.Execute(ctx, ref.Reference, &clone.CloneOptions{
+					Alias: ref.Alias,
+				})
+			})
+		}
+		return eg.Wait()
 	}
 
 	c := &cobra.Command{
@@ -41,125 +117,17 @@ func NewCloneCommand(conf *config.ConfigStore, defaultNames repository.DefaultNa
     - "$(gogh root)/github.com/kyoh86/sample"
     - "$(gogh root)/github.com/kyoh86-tryouts/tryout"`,
 
-		RunE: func(cmd *cobra.Command, refs []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			if len(refs) == 0 {
-				entries := tokens.Entries()
-				var options []huh.Option[string]
-				for _, entry := range entries {
-					adaptor, err := github.NewAdaptor(ctx, entry.Host, &entry.Token)
-					if err != nil {
-						return err
-					}
-					ctrl := remote.NewController(adaptor)
-					founds, err := ctrl.List(ctx, nil)
-					if err != nil {
-						return err
-					}
-					for _, s := range founds {
-						options = append(options, huh.Option[string]{
-							Key:   s.Ref.String(),
-							Value: s.Ref.String(),
-						})
-					}
-				}
-				if err := huh.NewForm(huh.NewGroup(
-					huh.NewMultiSelect[string]().
-						Title("A remote repository to clone").
-						Options(options...).
-						Value(&refs),
-				)).Run(); err != nil {
-					return err
-				}
+			refs, err := preprocessFlags(ctx, args)
+			if err != nil {
+				return err
 			}
-			return cloneAll(ctx, conf, defaultNames, tokens, refs, f.dryrun)
+			return runFunc(ctx, refs)
 		},
 	}
 
 	c.Flags().
 		BoolVarP(&f.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	return c
-}
-
-func cloneAll(ctx context.Context, conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService, refs []string, dryrun bool) error {
-	parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
-	if dryrun {
-		for _, r := range refs {
-			ref, alias, err := parser.ParseWithAlias(r)
-			if err != nil {
-				return err
-			}
-
-			if alias == nil {
-				log.FromContext(ctx).Infof("git clone %q", ref.URL())
-			} else {
-				log.FromContext(ctx).Infof("git clone %q into %q", ref.URL(), alias.String())
-			}
-		}
-		return nil
-	}
-
-	ctrl := local.NewController(conf.DefaultRoot())
-	if len(refs) == 1 {
-		return cloneOneFunc(ctx, tokens, ctrl, parser, refs[0])()
-	}
-
-	eg, ctx := errgroup.WithContext(ctx)
-	for _, s := range refs {
-		eg.Go(cloneOneFunc(ctx, tokens, ctrl, parser, s))
-	}
-	return eg.Wait()
-}
-
-func cloneOneFunc(
-	ctx context.Context,
-	tokens auth.TokenService,
-	ctrl *local.Controller,
-	parser reporef.RepoRefParser,
-	s string,
-) func() error {
-	return func() error {
-		ref, alias, err := parser.ParseWithAlias(s)
-		if err != nil {
-			return err
-		}
-
-		adaptor, remote, err := RemoteControllerFor(ctx, tokens, ref)
-		if err != nil {
-			return err
-		}
-		repo, err := remote.Get(ctx, ref.Owner(), ref.Name(), nil)
-		if err != nil {
-			return err
-		}
-
-		l := log.FromContext(ctx).WithFields(log.Fields{
-			"ref": ref,
-		})
-		l.Info("cloning")
-		accessToken, err := adaptor.GetAccessToken()
-		if err != nil {
-			l.WithField("error", err).Error("failed to get access token")
-			return nil
-		}
-		if _, err = ctrl.Clone(ctx, ref, accessToken, &local.CloneOption{Alias: alias}); err != nil {
-			l.WithField("error", err).Error("failed to clone a repository")
-			return nil
-		}
-		if repo.Parent != nil && repo.Parent.String() != ref.String() {
-			l.Debug("set remote refs")
-			localRef := ref
-			if alias != nil {
-				localRef = *alias
-			}
-			if err := ctrl.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
-				git.DefaultRemoteName: {ref},
-				"upstream":            {*repo.Parent},
-			}); err != nil {
-				return err
-			}
-		}
-		l.Info("finished")
-		return nil
-	}
 }

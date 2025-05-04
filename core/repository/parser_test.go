@@ -199,12 +199,12 @@ func TestReferenceParser(t *testing.T) {
 				},
 			} {
 				t.Run(testcase.title, func(t *testing.T) {
-					ref, _, err := parser.ParseWithAlias(testcase.input)
+					res, err := parser.ParseWithAlias(testcase.input)
 					if err == nil {
 						t.Fatalf(
 							"expect failure to parse %q but parsed to %+v",
 							testcase.input,
-							ref,
+							res.Reference,
 						)
 					}
 					if reflect.TypeOf(testcase.expect) != reflect.TypeOf(err) {
@@ -295,12 +295,12 @@ func TestReferenceParser(t *testing.T) {
 				title:  "same-name",
 				source: name + "=" + name,
 			}} {
-				_, alias, err := parser.ParseWithAlias(testcase.source)
+				res, err := parser.ParseWithAlias(testcase.source)
 				if err != nil {
 					t.Fatalf("failed to parse %q: %s", testcase.source, err)
 				}
-				if alias != nil {
-					t.Errorf("want alias is nil but %#v gotten", alias)
+				if res.Alias != nil {
+					t.Errorf("want alias is nil but %#v gotten", res.Alias)
 				}
 			}
 		})
@@ -341,27 +341,27 @@ func TestReferenceParser(t *testing.T) {
 				wantAliasName: "alias",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					repo, alias, err := parser.ParseWithAlias(testcase.source)
+					res, err := parser.ParseWithAlias(testcase.source)
 					if err != nil {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
-					if alias == nil {
+					if res.Alias == nil {
 						t.Fatal("want valid alisa but got nil")
 					}
-					if testcase.wantHost != alias.Host() {
-						t.Errorf("want host %q but %q gotten", testcase.wantHost, alias.Host())
+					if testcase.wantHost != res.Alias.Host() {
+						t.Errorf("want host %q but %q gotten", testcase.wantHost, res.Alias.Host())
 					}
-					if testcase.wantRepoUser != repo.Owner() {
-						t.Errorf("want repo owner %q but %q gotten", testcase.wantRepoUser, alias.Owner())
+					if testcase.wantRepoUser != res.Reference.Owner() {
+						t.Errorf("want repo owner %q but %q gotten", testcase.wantRepoUser, res.Alias.Owner())
 					}
-					if testcase.wantRepoName != repo.Name() {
-						t.Errorf("want repo name %q but %q gotten", testcase.wantRepoName, alias.Name())
+					if testcase.wantRepoName != res.Reference.Name() {
+						t.Errorf("want repo name %q but %q gotten", testcase.wantRepoName, res.Alias.Name())
 					}
-					if testcase.wantAliasUser != alias.Owner() {
-						t.Errorf("want alias owner %q but %q gotten", testcase.wantAliasUser, alias.Owner())
+					if testcase.wantAliasUser != res.Alias.Owner() {
+						t.Errorf("want res.Alias owner %q but %q gotten", testcase.wantAliasUser, res.Alias.Owner())
 					}
-					if testcase.wantAliasName != alias.Name() {
-						t.Errorf("want alias name %q but %q gotten", testcase.wantAliasName, alias.Name())
+					if testcase.wantAliasName != res.Alias.Name() {
+						t.Errorf("want res.Alias name %q but %q gotten", testcase.wantAliasName, res.Alias.Name())
 					}
 				})
 			}
@@ -391,7 +391,7 @@ func TestReferenceParser(t *testing.T) {
 				source: name + "=example.com/baz/many",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
-					_, _, err := parser.ParseWithAlias(testcase.source)
+					_, err := parser.ParseWithAlias(testcase.source)
 					if err == nil {
 						t.Fatal("want error, but got nil")
 					}

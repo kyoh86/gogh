@@ -2,12 +2,10 @@ package github
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"iter"
 	"net/url"
 	"strings"
-	"sync"
-	"sync/atomic"
 
 	"github.com/Khan/genqlient/graphql"
 	github "github.com/google/go-github/v69/github"
@@ -79,8 +77,8 @@ func getClient(ctx context.Context, host string, token *Token) *Connection {
 	}
 }
 
-// NewRemoteService creates a new RemoteService instance
-func NewRemoteService(tokenService auth.TokenService) *HostingService {
+// NewHostingService creates a new HostingService instance
+func NewHostingService(tokenService auth.TokenService) *HostingService {
 	return &HostingService{
 		tokenService: tokenService,
 		knownOwners:  map[string]string{},
@@ -177,65 +175,94 @@ const (
 )
 
 // ListRepository retrieves a list of repositories from a remote source
-func (s *HostingService) ListRepository(ctx context.Context, opt *hosting.ListRepositoryOptions) (list []*hosting.Repository, _ error) {
-	for _, entry := range s.tokenService.Entries() {
-		if err := ctx.Err(); err != nil {
-			return nil, err
+func (s *HostingService) ListRepository(ctx context.Context, opt *hosting.ListRepositoryOptions) iter.Seq2[*hosting.Repository, error] {
+	return func(yield func(*hosting.Repository, error) bool) {
+		var limit int
+		switch {
+		case opt.Limit == 0:
+			limit = RepoListMaxLimitPerPage
+		case opt.Limit > RepoListMaxLimitPerPage:
+			limit = RepoListMaxLimitPerPage
+		default:
+			limit = opt.Limit
 		}
-		conn := getClient(ctx, entry.Host, &entry.Token)
-		var after string
-		for {
+		var count int
+		for _, entry := range s.tokenService.Entries() {
 			if err := ctx.Err(); err != nil {
-				return nil, err
+				yield(nil, err)
+				return
 			}
-			repos, err := listReposOptions(ctx, conn.gqlClient, opt, after)
-			if err != nil {
-				return nil, err
-			}
-			repositories := repos.Viewer.Repositories
-			for _, edge := range repositories.Edges {
-				list = append(list, util.Ptr(ingestRepositoryFragment(entry.Host, edge.Node.RepositoryFragment)))
-				if opt.Limit > 0 && len(list) >= opt.Limit {
+
+			conn := getClient(ctx, entry.Host, &entry.Token)
+			var after string
+
+			for {
+				if err := ctx.Err(); err != nil {
+					yield(nil, err)
+					return
+				}
+
+				repos, err := githubv4.ListRepos(
+					ctx,
+					conn.gqlClient,
+					limit,
+					after,
+					opt.IsFork.AsBoolPtr(),
+					convertPrivacy(opt.Privacy),
+					convertOwnerAffiliations(opt.OwnerAffiliations),
+					convertRepositoryOrder(opt.OrderBy),
+					convertBooleanFilter(opt.IsArchived),
+				)
+				if err != nil {
+					yield(nil, err)
+					return
+				}
+
+				repositories := repos.Viewer.Repositories
+				for _, edge := range repositories.Edges {
+					if err := ctx.Err(); err != nil {
+						yield(nil, err)
+						return
+					}
+					if !yield(util.Ptr(convertRepositoryFragment(entry.Host, edge.Node.RepositoryFragment)), nil) {
+						return
+					}
+
+					count++
+					if opt.Limit > 0 && count >= opt.Limit {
+						return
+					}
+				}
+
+				page := repositories.PageInfo.PageInfoFragment
+				if !page.HasNextPage {
 					break
 				}
+				after = page.EndCursor
 			}
-			page := repositories.PageInfo.PageInfoFragment
-			if !page.HasNextPage {
-				break
+
+			if opt.Limit > 0 && count >= opt.Limit {
+				return
 			}
-			after = page.EndCursor
-		}
-		if opt.Limit > 0 && len(list) >= opt.Limit {
-			break
 		}
 	}
-	return list, nil
 }
 
-func listReposOptions(ctx context.Context, client graphql.Client, opt *hosting.ListRepositoryOptions, after string) (*githubv4.ListReposResponse, error) {
-	var limit int
-	switch {
-	case opt.Limit == 0:
-		limit = RepoListMaxLimitPerPage
-	case opt.Limit > RepoListMaxLimitPerPage:
-		limit = RepoListMaxLimitPerPage
-	default:
-		limit = opt.Limit
+// DeleteRepository deletes a repository from a remote source
+func (s *HostingService) DeleteRepository(ctx context.Context, reference repository.Reference) error {
+	_, token, err := s.GetTokenFor(ctx, reference)
+	if err != nil {
+		return fmt.Errorf("failed to get token for %s/%s: %w", reference.Host(), reference.Owner(), err)
 	}
-	return githubv4.ListRepos(
-		ctx,
-		client,
-		limit,
-		after,
-		opt.IsFork.AsBoolPtr(),
-		convertPrivacy(opt.Privacy),
-		convertOwnerAffiliations(opt.OwnerAffiliations),
-		convertRepositoryOrder(opt.OrderBy),
-		convertBooleanFilter(opt.IsArchived),
-	)
+	conn := getClient(ctx, reference.Host(), &token)
+	_, err = conn.restClient.Repositories.Delete(ctx, reference.Owner(), reference.Name())
+	if err != nil {
+		return fmt.Errorf("failed to delete repository: %w", err)
+	}
+	return nil
 }
 
-func ingestRepositoryFragment(host string, f githubv4.RepositoryFragment) hosting.Repository {
+func convertRepositoryFragment(host string, f githubv4.RepositoryFragment) hosting.Repository {
 	parentOwner := f.GetParent().Owner.GetLogin()
 	parentName := f.GetParent().Name
 	var parentRepo *hosting.ParentRepository
@@ -260,72 +287,6 @@ func ingestRepositoryFragment(host string, f githubv4.RepositoryFragment) hostin
 		IsTemplate:  f.GetIsTemplate(),
 		Fork:        f.GetIsFork(),
 	}
-}
-
-func (s *HostingService) ListRepositoryAsync(
-	raw context.Context,
-	listOption *hosting.ListRepositoryOptions,
-) (<-chan *hosting.Repository, <-chan error) {
-	repoChan := make(chan *hosting.Repository)
-	errChan := make(chan error)
-	raise := func(err error) {
-		if !errors.Is(err, context.Canceled) {
-			errChan <- err
-		}
-	}
-	ctx, cancel := context.WithCancel(raw)
-	defer cancel()
-
-	var count int32
-	var wg sync.WaitGroup
-	for _, entry := range s.tokenService.Entries() {
-		wg.Add(1)
-		go func(entry auth.TokenEntry) {
-			defer wg.Done()
-
-			conn := getClient(ctx, entry.Host, &entry.Token)
-			var after string
-			for {
-				if err := ctx.Err(); err != nil {
-					raise(err)
-					return
-				}
-				repos, err := listReposOptions(ctx, conn.gqlClient, listOption, after)
-				if err != nil {
-					raise(err)
-					return
-				}
-				repositories := repos.Viewer.Repositories
-				for _, edge := range repositories.Edges {
-					select {
-					case repoChan <- util.Ptr(ingestRepositoryFragment(entry.Host, edge.Node.RepositoryFragment)):
-						if int(atomic.AddInt32(&count, 1)) >= listOption.Limit {
-							cancel()
-							return
-						}
-					case <-ctx.Done():
-						if err := ctx.Err(); err != nil {
-							raise(err)
-						}
-						return
-					}
-				}
-				page := repositories.PageInfo.PageInfoFragment
-				if !page.HasNextPage {
-					break
-				}
-				after = page.EndCursor
-			}
-		}(entry)
-	}
-
-	go func() {
-		wg.Wait()
-		close(repoChan)
-		close(errChan)
-	}()
-
-	return repoChan, errChan
 }
 
 // Helper functions to convert between types

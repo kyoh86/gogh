@@ -28,26 +28,29 @@ type ReferenceParser struct {
 //
 // If it's not specified, alias will be nil value.
 // If it's specified a value which equals to the ref, alias will be nil value.
-func (p ReferenceParser) ParseWithAlias(s string) (*Reference, *Reference, error) {
+func (p ReferenceParser) ParseWithAlias(s string) (*ReferenceWithAlias, error) {
 	switch parts := strings.Split(s, "="); len(parts) {
 	case 1:
 		ref, err := p.Parse(s)
-		return ref, nil, err
+		if err != nil {
+			return nil, err
+		}
+		return &ReferenceWithAlias{Reference: *ref}, err
 	case 2:
 		ref, err := p.Parse(parts[0])
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		alias, err := ParseSiblingReference(*ref, parts[1])
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		if alias.String() == ref.String() {
-			return ref, nil, err
+			return &ReferenceWithAlias{Reference: *ref}, err
 		}
-		return ref, alias, nil
+		return &ReferenceWithAlias{Reference: *ref, Alias: alias}, nil
 	default:
-		return nil, nil, fmt.Errorf("invalid ref: %s", s)
+		return nil, fmt.Errorf("invalid ref: %s", s)
 	}
 }
 

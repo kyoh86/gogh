@@ -32,3 +32,9 @@ func NewReference(host, owner, name string) Reference {
 		name:  name,
 	}
 }
+
+// ReferenceWithAlias is a struct that contains a Reference and an optional alias.
+type ReferenceWithAlias struct {
+	Reference Reference
+	Alias     *Reference
+}
