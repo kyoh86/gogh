@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -45,76 +44,49 @@ func NewCreateCommand(conf *config.ConfigStore, defaultNames repository.DefaultN
 			}
 
 			ctx := cmd.Context()
-			ref, err := parser.Parse(name)
+			me, err := ctrl.Me(ctx)
 			if err != nil {
 				return err
 			}
+			if f.Template == "" {
+				ropt := &remote.CreateOption{
+					Description:         f.Description,
+					Homepage:            f.Homepage,
+					LicenseTemplate:     f.LicenseTemplate,
+					GitignoreTemplate:   f.GitignoreTemplate,
+					Private:             f.Private,
+					IsTemplate:          f.IsTemplate,
+					DisableDownloads:    f.DisableDownloads,
+					DisableWiki:         f.DisableWiki,
+					AutoInit:            f.AutoInit,
+					DisableProjects:     f.DisableProjects,
+					DisableIssues:       f.DisableIssues,
+					PreventSquashMerge:  f.PreventSquashMerge,
+					PreventMergeCommit:  f.PreventMergeCommit,
+					PreventRebaseMerge:  f.PreventRebaseMerge,
+					DeleteBranchOnMerge: f.DeleteBranchOnMerge,
+				}
+				if me != ref.Owner() {
+					ropt.Organization = ref.Owner()
+				}
 
-			local := local.NewController(conf.DefaultRoot())
-			exist, err := local.Exist(ctx, ref, nil)
-			if err != nil {
-				return err
-			}
-			if exist {
-				return errors.New("local repository already exists")
-			}
-
-			l := log.FromContext(ctx).WithFields(log.Fields{
-				"ref": ref,
-			})
-			adaptor, ctrl, err := RemoteControllerFor(ctx, *tokens, ref)
-			if err != nil {
-				return fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
-			}
-
-			// check repo has already existed
-			if _, err := ctrl.Get(ctx, ref.Owner(), ref.Name(), nil); err == nil {
-				l.Info("remote repository already exists")
+				if _, err := ctrl.Create(ctx, ref.Name(), ropt); err != nil {
+					return err
+				}
 			} else {
-				me, err := ctrl.Me(ctx)
+				from, err := reporef.ParseSiblingRepoRef(ref, f.Template)
 				if err != nil {
 					return err
 				}
-				if f.Template == "" {
-					ropt := &remote.CreateOption{
-						Description:         f.Description,
-						Homepage:            f.Homepage,
-						LicenseTemplate:     f.LicenseTemplate,
-						GitignoreTemplate:   f.GitignoreTemplate,
-						Private:             f.Private,
-						IsTemplate:          f.IsTemplate,
-						DisableDownloads:    f.DisableDownloads,
-						DisableWiki:         f.DisableWiki,
-						AutoInit:            f.AutoInit,
-						DisableProjects:     f.DisableProjects,
-						DisableIssues:       f.DisableIssues,
-						PreventSquashMerge:  f.PreventSquashMerge,
-						PreventMergeCommit:  f.PreventMergeCommit,
-						PreventRebaseMerge:  f.PreventRebaseMerge,
-						DeleteBranchOnMerge: f.DeleteBranchOnMerge,
-					}
-					if me != ref.Owner() {
-						ropt.Organization = ref.Owner()
-					}
-
-					if _, err := ctrl.Create(ctx, ref.Name(), ropt); err != nil {
-						return err
-					}
-				} else {
-					from, err := reporef.ParseSiblingRepoRef(ref, f.Template)
-					if err != nil {
-						return err
-					}
-					ropt := &remote.CreateFromTemplateOption{}
-					if me != ref.Owner() {
-						ropt.Owner = ref.Owner()
-					}
-					if f.Private {
-						ropt.Private = true
-					}
-					if _, err = ctrl.CreateFromTemplate(ctx, from.Owner(), from.Name(), ref.Name(), ropt); err != nil {
-						return err
-					}
+				ropt := &remote.CreateFromTemplateOption{}
+				if me != ref.Owner() {
+					ropt.Owner = ref.Owner()
+				}
+				if f.Private {
+					ropt.Private = true
+				}
+				if _, err = ctrl.CreateFromTemplate(ctx, from.Owner(), from.Name(), ref.Name(), ropt); err != nil {
+					return err
 				}
 			}
 			accessToken, err := adaptor.GetAccessToken()

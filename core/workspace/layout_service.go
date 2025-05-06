@@ -8,8 +8,8 @@ import (
 
 var ErrNotMatched = errors.New("repository layout not matched")
 
-// Layout defines the layout structure of a repository
-type Layout interface {
+// LayoutService defines the layout structure of a repository
+type LayoutService interface {
 	// Match returns the repository reference corresponding to the given path
 	// If the path does not match the layout, it returns the error `repository.ErrNotMatched`
 	Match(path string) (*repository.Reference, error)

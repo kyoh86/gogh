@@ -28,10 +28,10 @@ type WorkspaceService interface {
 	GetDefaultRoot() Root
 
 	// GetLayoutFor returns a Layout for the root
-	GetLayoutFor(root Root) Layout
+	GetLayoutFor(root Root) LayoutService
 
 	// GetDefaultLayout returns a Layout for the default root
-	GetDefaultLayout() Layout
+	GetDefaultLayout() LayoutService
 
 	// SetDefaultRoot sets the default root
 	SetDefaultRoot(Root) error

@@ -302,6 +302,56 @@ func (s *HostingService) CreateRepository(
 	if err != nil {
 		return nil, err
 	}
+	return convertRepository(ref, repo)
+}
+
+func (s *HostingService) CreateRepositoryFromTemplate(
+	ctx context.Context,
+	ref repository.Reference,
+	template repository.Reference,
+	options *hosting.CreateRepositoryFromTemplateOptions,
+) (*hosting.Repository, error) {
+	user, token, err := s.GetTokenFor(ctx, ref)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+	}
+	conn := getClient(ctx, ref.Host(), &token)
+	req := github.TemplateRepoRequest{
+		Name:               util.Ptr(ref.Name()),
+		Description:        options.Description,
+		IncludeAllBranches: options.IncludeAllBranches,
+		Private:            options.Private,
+	}
+	if user != ref.Owner() {
+		req.Owner = util.Ptr(ref.Owner())
+	}
+	repo, _, err := conn.restClient.Repositories.CreateFromTemplate(
+		ctx,
+		template.Owner(),
+		template.Name(),
+		&req,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return convertRepository(ref, repo)
+}
+
+// DeleteRepository deletes a repository from a remote source
+func (s *HostingService) DeleteRepository(ctx context.Context, reference repository.Reference) error {
+	_, token, err := s.GetTokenFor(ctx, reference)
+	if err != nil {
+		return fmt.Errorf("failed to get token for %s/%s: %w", reference.Host(), reference.Owner(), err)
+	}
+	conn := getClient(ctx, reference.Host(), &token)
+	_, err = conn.restClient.Repositories.Delete(ctx, reference.Owner(), reference.Name())
+	if err != nil {
+		return fmt.Errorf("failed to delete repository: %w", err)
+	}
+	return nil
+}
+
+func convertRepository(ref repository.Reference, repo *github.Repository) (*hosting.Repository, error) {
 	var parent *hosting.ParentRepository
 	if raw := repo.GetParent(); raw != nil {
 		u, err := url.Parse(raw.GetHTMLURL())
@@ -331,21 +381,6 @@ func (s *HostingService) CreateRepository(
 		Fork:        repo.GetFork(),
 	}, nil
 }
-
-// DeleteRepository deletes a repository from a remote source
-func (s *HostingService) DeleteRepository(ctx context.Context, reference repository.Reference) error {
-	_, token, err := s.GetTokenFor(ctx, reference)
-	if err != nil {
-		return fmt.Errorf("failed to get token for %s/%s: %w", reference.Host(), reference.Owner(), err)
-	}
-	conn := getClient(ctx, reference.Host(), &token)
-	_, err = conn.restClient.Repositories.Delete(ctx, reference.Owner(), reference.Name())
-	if err != nil {
-		return fmt.Errorf("failed to delete repository: %w", err)
-	}
-	return nil
-}
-
 func convertRepositoryFragment(host string, f githubv4.RepositoryFragment) hosting.Repository {
 	parentOwner := f.GetParent().Owner.GetLogin()
 	parentName := f.GetParent().Name

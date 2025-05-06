@@ -31,11 +31,11 @@ type RepoInfo struct {
 // 実装は外部システム層で行われる
 type FinderService interface {
 	// FindByReference は参照に一致するリポジトリを検索
-	FindByReference(ctx context.Context, ws WorkspaceService, layout Layout, ref repository.Reference) (*RepoInfo, error)
+	FindByReference(ctx context.Context, ws WorkspaceService, layout LayoutService, ref repository.Reference) (*RepoInfo, error)
 
 	// FindInRoot は特定のルート下でリポジトリを検索
-	FindInRoot(ctx context.Context, root Root, layout Layout, opts FindOptions) ([]RepoInfo, error)
+	FindInRoot(ctx context.Context, root Root, layout LayoutService, opts FindOptions) ([]RepoInfo, error)
 
 	// FindAll は全ルート下でリポジトリを検索
-	FindAll(ctx context.Context, ws WorkspaceService, layout Layout, opts FindOptions) ([]RepoInfo, error)
+	FindAll(ctx context.Context, ws WorkspaceService, layout LayoutService, opts FindOptions) ([]RepoInfo, error)
 }

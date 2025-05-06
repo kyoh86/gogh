@@ -32,17 +32,31 @@ func NewUseCase(
 	}
 }
 
-type CreateOptions struct {
+type CreateFromTemplateOptions struct {
 	Local           bool
 	Remote          bool
 	Alias           *repository.Reference
 	CloneRetryLimit int
-	hosting.CreateRepositoryOptions
+	hosting.CreateRepositoryFromTemplateOptions
 }
 
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options CreateOptions) error {
+func (uc *UseCase) Execute(
+	ctx context.Context,
+	ref repository.Reference,
+	template repository.Reference,
+	options CreateFromTemplateOptions,
+) error {
+	// TODO: share the processes with CreateRepository
+	// Maybe, "Create" is not a valid usecase.
+	// It should be splitted to usecases below.
+	// - Create remote
+	// - Create remote from template
+	// - Create and init local
+	// - Try to get
+	//     - Repeat to get repository while it is not exist.
+	//     - When the repository is found that is empty, return that.
 	if options.Remote {
-		repo, err := uc.hostingService.CreateRepository(ctx, ref, options.CreateRepositoryOptions)
+		repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref, template, &options.CreateRepositoryFromTemplateOptions)
 		if err != nil {
 			return err
 		}

@@ -30,6 +30,13 @@ type HostingService interface {
 		ref repository.Reference,
 		opt CreateRepositoryOptions,
 	) (*Repository, error)
+	//TODO: Comment
+	CreateRepositoryFromTemplate(
+		ctx context.Context,
+		ref repository.Reference,
+		template repository.Reference,
+		options *CreateRepositoryFromTemplateOptions,
+	) (*Repository, error)
 }
 
 // BooleanFilter represents a filter state for boolean repository attributes
@@ -149,4 +156,11 @@ type CreateRepositoryOptions struct {
 	PreventMergeCommit  bool
 	PreventRebaseMerge  bool
 	DeleteBranchOnMerge bool
+}
+
+type CreateRepositoryFromTemplateOptions struct {
+	Owner              *string
+	Description        *string
+	IncludeAllBranches *bool // TODO: Boolean
+	Private            *bool
 }
