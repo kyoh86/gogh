@@ -37,16 +37,13 @@ func NewDeleteCommand(
 	}
 
 	reposUseCase := repos.NewUseCase(hostingService)
-	// parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
 	checkFlags := func(ctx context.Context, args []string) (string, error) {
 		if len(args) != 0 {
 			return args[0], nil
 		}
 		var options []huh.Option[string]
-		for repo, err := range reposUseCase.Execute(ctx, &repos.Options{
-			//TODO; filter?
-		}) {
+		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return "", err
 			}

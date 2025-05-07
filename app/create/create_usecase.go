@@ -25,27 +25,17 @@ func NewUseCase(
 	}
 }
 
-type CreateOptions struct {
-	Local           bool
-	Remote          bool
+type Options struct {
 	Alias           *repository.Reference
 	CloneRetryLimit int
 	hosting.CreateRepositoryOptions
 }
 
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options CreateOptions) error {
+func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options Options) error {
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
-	if options.Remote {
-		repo, err := uc.hostingService.CreateRepository(ctx, ref, options.CreateRepositoryOptions)
-		if err != nil {
-			return err
-		}
-		if options.Local {
-			return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, options.CloneRetryLimit)
-		}
-	} else if options.Local {
-		repositoryService.CreateLocalRepository(ctx, ref)
+	repo, err := uc.hostingService.CreateRepository(ctx, ref, options.CreateRepositoryOptions)
+	if err != nil {
+		return err
 	}
-
-	return nil
+	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, options.CloneRetryLimit)
 }

@@ -32,7 +32,7 @@ func NewService() *GitService {
 }
 
 // Clone clones a remote repository to a local path.
-func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, options *coregit.CloneOptions) error {
+func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, options coregit.CloneOptions) error {
 	_, err := git.PlainCloneContext(ctx, localPath, false, &git.CloneOptions{
 		URL:  remoteURL,
 		Auth: s.auth,

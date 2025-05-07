@@ -1,55 +1,63 @@
 package commands
 
 import (
-	"errors"
-	"fmt"
-	"time"
+	"context"
 
+	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	git "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/kyoh86/gogh/v3/app/create"
+	"github.com/kyoh86/gogh/v3/app/create_from_template"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/domain/local"
-	"github.com/kyoh86/gogh/v3/domain/remote"
-	"github.com/kyoh86/gogh/v3/domain/reporef"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
-func NewCreateCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
-	var f config.CreateFlags
-	cmd := &cobra.Command{
-		Use:     "create [flags] [[OWNER/]NAME]",
-		Aliases: []string{"new"},
-		Short:   "Create a new local and remote repository",
-		Args:    cobra.RangeArgs(0, 1),
-		RunE: func(cmd *cobra.Command, refs []string) error {
-			var name string
-			parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
-			if len(refs) == 0 {
-				if err := huh.NewForm(huh.NewGroup(
-					huh.NewInput().
-						Title("A ref of repository name to create").
-						Validate(func(s string) error {
-							_, err := parser.Parse(s)
-							return err
-						}).
-						Value(&name),
-				)).Run(); err != nil {
-					return err
-				}
-			} else {
-				name = refs[0]
-			}
+func NewCreateCommand(
+	conf *config.ConfigStore,
+	defaultNameService repository.DefaultNameService,
+	tokens auth.TokenService,
+	hostingService hosting.HostingService,
+	workspaceService workspace.WorkspaceService,
+	defaults *config.FlagStore,
+) *cobra.Command {
+	createUseCase := create.NewUseCase(
+		hostingService,
+		workspaceService,
+	)
+	createFromTemplateUseCase := create_from_template.NewUseCase(
+		hostingService,
+		workspaceService,
+	)
+	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
-			ctx := cmd.Context()
-			me, err := ctrl.Me(ctx)
-			if err != nil {
-				return err
+	var f config.CreateFlags
+
+	checkFlags := func(ctx context.Context, args []string) (*repository.ReferenceWithAlias, error) {
+		var name string
+		if len(args) == 0 {
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewInput().
+					Title("A ref of repository name to create").
+					Validate(func(s string) error {
+						_, err := parser.Parse(s)
+						return err
+					}).
+					Value(&name),
+			)).Run(); err != nil {
+				return nil, err
 			}
-			if f.Template == "" {
-				ropt := &remote.CreateOption{
+			return parser.ParseWithAlias(name)
+		}
+		return parser.ParseWithAlias(args[0])
+	}
+
+	runFunc := func(ctx context.Context, ref *repository.ReferenceWithAlias) error {
+		if f.Template == "" {
+			ropt := create.Options{
+				CreateRepositoryOptions: hosting.CreateRepositoryOptions{
 					Description:         f.Description,
 					Homepage:            f.Homepage,
 					LicenseTemplate:     f.LicenseTemplate,
@@ -65,62 +73,44 @@ func NewCreateCommand(conf *config.ConfigStore, defaultNames repository.DefaultN
 					PreventMergeCommit:  f.PreventMergeCommit,
 					PreventRebaseMerge:  f.PreventRebaseMerge,
 					DeleteBranchOnMerge: f.DeleteBranchOnMerge,
-				}
-				if me != ref.Owner() {
-					ropt.Organization = ref.Owner()
-				}
-
-				if _, err := ctrl.Create(ctx, ref.Name(), ropt); err != nil {
-					return err
-				}
-			} else {
-				from, err := reporef.ParseSiblingRepoRef(ref, f.Template)
-				if err != nil {
-					return err
-				}
-				ropt := &remote.CreateFromTemplateOption{}
-				if me != ref.Owner() {
-					ropt.Owner = ref.Owner()
-				}
-				if f.Private {
-					ropt.Private = true
-				}
-				if _, err = ctrl.CreateFromTemplate(ctx, from.Owner(), from.Name(), ref.Name(), ropt); err != nil {
-					return err
-				}
+				},
+				Alias: ref.Alias,
 			}
-			accessToken, err := adaptor.GetAccessToken()
+			if err := createUseCase.Execute(ctx, ref.Reference, ropt); err != nil {
+				return err
+			}
+		} else {
+			template, err := parser.Parse(f.Template)
 			if err != nil {
-				l.WithField("error", err).Error("failed to get access token")
-				return nil
+				return err
 			}
-			for range f.CloneRetryLimit {
-				_, err := local.Clone(ctx, ref, accessToken, nil)
-				switch {
-				case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
-					l.Info("waiting the remote repository is ready")
-				case errors.Is(err, transport.ErrEmptyRemoteRepository):
-					if _, err := local.Create(ctx, ref, nil); err != nil {
-						l.WithField("error", err).
-							WithField("error-type", fmt.Sprintf("%t", err)).
-							Error("failed to create empty repository")
-					} else {
-						l.Info("created empty repository")
-					}
-					return nil
-				case err == nil:
-					return nil
-				default:
-					l.WithField("error", err).
-						WithField("error-type", fmt.Sprintf("%t", err)).
-						Error("failed to get repository")
-					return nil
-				}
-				select {
-				case <-ctx.Done():
-					return nil
-				case <-time.After(1 * time.Second):
-				}
+			if err := createFromTemplateUseCase.Execute(ctx, ref.Reference, *template, create_from_template.CreateFromTemplateOptions{
+				CreateRepositoryFromTemplateOptions: hosting.CreateRepositoryFromTemplateOptions{
+					Description: f.Description,
+					//TODO: IncludeAllBranches: f.IncludeAllBranches,
+					//TODO: Private:             f.Private,
+				},
+				Alias: ref.Alias,
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	cmd := &cobra.Command{
+		Use:     "create [flags] [[OWNER/]NAME]",
+		Aliases: []string{"new"},
+		Short:   "Create a new local and remote repository",
+		Args:    cobra.RangeArgs(0, 1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			ref, err := checkFlags(ctx, args)
+			if err != nil {
+				return err
+			}
+			if err := runFunc(ctx, ref); err != nil {
+				log.FromContext(ctx).Errorf("failed to create repository: %v", err)
 			}
 			return nil
 		},

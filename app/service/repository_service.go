@@ -74,8 +74,8 @@ func (s *RepositoryService) CloneRepositoryWithRetry(
 }
 
 func cloneWithRetry(ctx context.Context, gitService *gitimpl.GitService, layout workspace.LayoutService, ref repository.Reference, cloneURL, localPath string, retryLimit int) (err error) {
-	for i := 0; i < retryLimit; i++ {
-		err = gitService.Clone(ctx, cloneURL, localPath, &gitcore.CloneOptions{})
+	for range retryLimit {
+		err = gitService.Clone(ctx, cloneURL, localPath, gitcore.CloneOptions{})
 		switch {
 		case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
 			log.FromContext(ctx).Info("waiting the remote repository is ready")
@@ -102,20 +102,4 @@ func cloneWithRetry(ctx context.Context, gitService *gitimpl.GitService, layout 
 		}
 	}
 	return err
-}
-
-func (s *RepositoryService) CreateLocalRepository(ctx context.Context, ref repository.Reference) error {
-	layout := s.workspaceService.GetDefaultLayout()
-	path, err := layout.CreateRepositoryFolder(ref)
-	if err != nil {
-		return err
-	}
-	remoteURL, err := s.hostingService.GetURLOf(ref)
-	if err != nil {
-		return err
-	}
-	if err := gitimpl.NewService().Init(remoteURL.String(), path, false); err != nil {
-		return err
-	}
-	return nil
 }

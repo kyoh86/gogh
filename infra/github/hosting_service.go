@@ -193,7 +193,7 @@ const (
 )
 
 // ListRepository retrieves a list of repositories from a remote source
-func (s *HostingService) ListRepository(ctx context.Context, opt *hosting.ListRepositoryOptions) iter.Seq2[*hosting.Repository, error] {
+func (s *HostingService) ListRepository(ctx context.Context, opt hosting.ListRepositoryOptions) iter.Seq2[*hosting.Repository, error] {
 	return func(yield func(*hosting.Repository, error) bool) {
 		var limit int
 		switch {
@@ -309,7 +309,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	ctx context.Context,
 	ref repository.Reference,
 	template repository.Reference,
-	options *hosting.CreateRepositoryFromTemplateOptions,
+	options hosting.CreateRepositoryFromTemplateOptions,
 ) (*hosting.Repository, error) {
 	user, token, err := s.GetTokenFor(ctx, ref)
 	if err != nil {
@@ -318,7 +318,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	conn := getClient(ctx, ref.Host(), &token)
 	req := github.TemplateRepoRequest{
 		Name:               util.Ptr(ref.Name()),
-		Description:        options.Description,
+		Description:        &options.Description,
 		IncludeAllBranches: options.IncludeAllBranches.AsBoolPtr(),
 		Private:            options.Private.AsBoolPtr(),
 	}

@@ -32,7 +32,7 @@ type CloneOptions struct {
 }
 
 // Execute performs the clone operation
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options *CloneOptions) error {
+func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options CloneOptions) error {
 	// Get repository information from remote
 	repo, err := uc.hostingService.GetRepository(ctx, ref)
 	if err != nil {

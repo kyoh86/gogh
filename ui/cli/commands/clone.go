@@ -36,9 +36,7 @@ func NewCloneCommand(
 			return args, nil
 		}
 		var options []huh.Option[string]
-		for repo, err := range reposUseCase.Execute(ctx, &repos.Options{
-			//TODO; filter?
-		}) {
+		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return nil, err
 			}
@@ -89,7 +87,7 @@ func NewCloneCommand(
 		eg, ctx := errgroup.WithContext(ctx)
 		for _, ref := range refs {
 			eg.Go(func() error {
-				return cloneUseCase.Execute(ctx, ref.Reference, &clone.CloneOptions{
+				return cloneUseCase.Execute(ctx, ref.Reference, clone.CloneOptions{
 					Alias: ref.Alias,
 				})
 			})
@@ -122,7 +120,10 @@ func NewCloneCommand(
 			if err != nil {
 				return err
 			}
-			return runFunc(ctx, refs)
+			if err := runFunc(ctx, refs); err != nil {
+				log.FromContext(ctx).Errorf("failed to clone repositories: %v", err)
+			}
+			return nil
 		},
 	}
 

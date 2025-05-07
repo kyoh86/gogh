@@ -54,6 +54,28 @@ func (p ReferenceParser) ParseWithAlias(s string) (*ReferenceWithAlias, error) {
 	}
 }
 
+// ParseSiblingReference parses string as a repository ref and following alias
+// in the same host and same owner.
+func ParseSiblingReference(base Reference, s string) (*Reference, error) {
+	parts := strings.Split(s, "/")
+	var owner, name string
+	switch len(parts) {
+	case 1:
+		owner, name = base.Owner(), parts[0]
+	case 2:
+		owner, name = parts[0], parts[1]
+	default:
+		return nil, ErrTooManySlashes
+	}
+	if err := ValidateOwner(owner); err != nil {
+		return nil, err
+	}
+	if err := ValidateName(name); err != nil {
+		return nil, err
+	}
+	return util.Ptr(NewReference(base.Host(), owner, name)), nil
+}
+
 // Parse a string and build a Reference.
 //
 // If the string does not have a host or a user explicitly, they will be

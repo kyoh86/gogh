@@ -18,11 +18,9 @@ func NewUseCase(hostingService hosting.HostingService) *UseCase {
 }
 
 type Options struct {
-	// TODO: add options
+	hosting.ListRepositoryOptions
 }
 
-func (uc *UseCase) Execute(ctx context.Context, options *Options) iter.Seq2[*hosting.Repository, error] {
-	return uc.hostingService.ListRepository(ctx, &hosting.ListRepositoryOptions{
-		//TODO: copy
-	})
+func (uc *UseCase) Execute(ctx context.Context, options Options) iter.Seq2[*hosting.Repository, error] {
+	return uc.hostingService.ListRepository(ctx, options.ListRepositoryOptions)
 }

@@ -21,7 +21,7 @@ type HostingService interface {
 	// GetRepository retrieves repository information from a remote source
 	GetRepository(context.Context, repository.Reference) (*Repository, error)
 	// ListRepository retrieves a list of repositories from a remote source
-	ListRepository(context.Context, *ListRepositoryOptions) iter.Seq2[*Repository, error]
+	ListRepository(context.Context, ListRepositoryOptions) iter.Seq2[*Repository, error]
 	// DeleteRepository deletes a repository from a remote source
 	DeleteRepository(context.Context, repository.Reference) error
 	// CreateRepository creates a new repository on the remote hosting service
@@ -35,7 +35,7 @@ type HostingService interface {
 		ctx context.Context,
 		ref repository.Reference,
 		template repository.Reference,
-		options *CreateRepositoryFromTemplateOptions,
+		options CreateRepositoryFromTemplateOptions,
 	) (*Repository, error)
 }
 
@@ -159,8 +159,7 @@ type CreateRepositoryOptions struct {
 }
 
 type CreateRepositoryFromTemplateOptions struct {
-	Owner              *string
-	Description        *string
+	Description        string
 	IncludeAllBranches BooleanFilter
 	Private            BooleanFilter
 }

@@ -1,4 +1,4 @@
-package create
+package create_from_template
 
 import (
 	"context"
@@ -26,8 +26,6 @@ func NewUseCase(
 }
 
 type CreateFromTemplateOptions struct {
-	Local           bool
-	Remote          bool
 	Alias           *repository.Reference
 	CloneRetryLimit int
 	hosting.CreateRepositoryFromTemplateOptions
@@ -40,17 +38,9 @@ func (uc *UseCase) Execute(
 	options CreateFromTemplateOptions,
 ) error {
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
-	if options.Remote {
-		repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref, template, &options.CreateRepositoryFromTemplateOptions)
-		if err != nil {
-			return err
-		}
-		if options.Local {
-			return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, options.CloneRetryLimit)
-		}
-	} else if options.Local {
-		repositoryService.CreateLocalRepository(ctx, ref)
+	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref, template, options.CreateRepositoryFromTemplateOptions)
+	if err != nil {
+		return err
 	}
-
-	return nil
+	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, options.CloneRetryLimit)
 }

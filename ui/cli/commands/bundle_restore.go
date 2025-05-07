@@ -53,7 +53,7 @@ func NewBundleRestoreCommand(
 				}
 			} else {
 				eg.Go(func() error {
-					return cloneUseCase.Execute(ctx, ref.Reference, &clone.CloneOptions{
+					return cloneUseCase.Execute(ctx, ref.Reference, clone.CloneOptions{
 						Alias: ref.Alias,
 					})
 				})
