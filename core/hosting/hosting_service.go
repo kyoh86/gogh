@@ -12,9 +12,9 @@ import (
 
 // HostingService provides access to remote repositories
 type HostingService interface {
-	//TODO: Comment
+	// GetURLOf converts a repository reference to its remote URL
 	GetURLOf(ref repository.Reference) (*url.URL, error)
-	//TODO: Comment
+	// ParseURL converts a remote URL to a repository reference
 	ParseURL(u *url.URL) (*repository.Reference, error)
 	// GetTokenFor retrieves an authentication token and user for a specific repository reference
 	GetTokenFor(ctx context.Context, reference repository.Reference) (string, auth.Token, error)
@@ -24,13 +24,13 @@ type HostingService interface {
 	ListRepository(context.Context, *ListRepositoryOptions) iter.Seq2[*Repository, error]
 	// DeleteRepository deletes a repository from a remote source
 	DeleteRepository(context.Context, repository.Reference) error
-	//TODO: Comment
+	// CreateRepository creates a new repository on the remote hosting service
 	CreateRepository(
 		ctx context.Context,
 		ref repository.Reference,
 		opt CreateRepositoryOptions,
 	) (*Repository, error)
-	//TODO: Comment
+	// CreateRepositoryFromTemplate creates a new repository from an existing template repository
 	CreateRepositoryFromTemplate(
 		ctx context.Context,
 		ref repository.Reference,
@@ -161,6 +161,6 @@ type CreateRepositoryOptions struct {
 type CreateRepositoryFromTemplateOptions struct {
 	Owner              *string
 	Description        *string
-	IncludeAllBranches *bool // TODO: Boolean
-	Private            *bool
+	IncludeAllBranches BooleanFilter
+	Private            BooleanFilter
 }

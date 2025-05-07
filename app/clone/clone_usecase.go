@@ -3,11 +3,10 @@ package clone
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v3/core/git"
+	service "github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	gitimpl "github.com/kyoh86/gogh/v3/infra/git"
 )
 
 // UseCase represents the clone use case
@@ -35,42 +34,10 @@ type CloneOptions struct {
 // Execute performs the clone operation
 func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options *CloneOptions) error {
 	// Get repository information from remote
-	remoteRepo, err := uc.hostingService.GetRepository(ctx, ref)
+	repo, err := uc.hostingService.GetRepository(ctx, ref)
 	if err != nil {
 		return err
 	}
-
-	// Determine local path based on layout
-	targetRef := ref
-	if options != nil && options.Alias != nil {
-		targetRef = *options.Alias
-	}
-	layout := uc.workspaceService.GetDefaultLayout()
-	localPath := layout.PathFor(targetRef)
-
-	// Get the user and token for authentication
-	user, token, err := uc.hostingService.GetTokenFor(ctx, ref)
-	if err != nil {
-		return err
-	}
-	gitService := gitimpl.NewAuthenticatedService(user, token.AccessToken)
-
-	// Perform git clone operation
-	if err := gitService.Clone(ctx, remoteRepo.CloneURL, localPath, &git.CloneOptions{}); err != nil {
-		return err
-	}
-
-	// Set up remotes
-	if err := gitService.SetDefaultRemotes(ctx, localPath, []string{remoteRepo.CloneURL}); err != nil {
-		return err
-	}
-
-	// Set up additional remotes if needed
-	if remoteRepo.Parent != nil {
-		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{remoteRepo.Parent.CloneURL}); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
+	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, 0)
 }
