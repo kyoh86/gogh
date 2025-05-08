@@ -87,5 +87,32 @@ func (s *GitService) SetDefaultRemotes(
 	return s.SetRemotes(ctx, localPath, git.DefaultRemoteName, remotes)
 }
 
+func (s *GitService) GetRemotes(
+	ctx context.Context,
+	localPath string,
+	name string,
+) ([]string, error) {
+	repo, err := git.PlainOpen(localPath)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := repo.Config()
+	if err != nil {
+		return nil, err
+	}
+	remote, ok := cfg.Remotes[name]
+	if !ok {
+		return nil, nil
+	}
+	return remote.URLs, nil
+}
+
+func (s *GitService) GetDefaultRemotes(
+	ctx context.Context,
+	localPath string,
+) ([]string, error) {
+	return s.GetRemotes(ctx, localPath, git.DefaultRemoteName)
+}
+
 // Ensure GitService implements core.GitService
 var _ coregit.GitService = (*GitService)(nil)

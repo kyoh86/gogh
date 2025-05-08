@@ -1,19 +1,17 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
-	"net/url"
 	"os"
-	"strings"
 
-	git "github.com/go-git/go-git/v5"
-	"github.com/kyoh86/gogh/v3/domain/local"
+	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/bundle_dump"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.Command {
+func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService) *cobra.Command {
 	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",
@@ -34,34 +32,17 @@ func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore) 
 				defer f.Close()
 				out = f
 			}
-			ctx := cmd.Context()
-			list := conf.GetRoots()
-			if len(list) == 0 {
-				return nil
-			}
-			ctrl := local.NewController(list[0])
-			if err := ctrl.Walk(ctx, nil, func(repo local.Repo) error {
-				utxt, err := local.GetDefaultRemoteURL(ctx, repo)
+			useCase := bundle_dump.NewUseCase(workspaceService)
+			for entry, err := range useCase.Execute(cmd.Context()) {
 				if err != nil {
-					if errors.Is(err, git.ErrRemoteNotFound) {
-						return nil
-					}
-					return err
-				}
-				uobj, err := url.Parse(utxt)
-				if err != nil {
-					return err
-				}
-				remoteName := strings.Join([]string{uobj.Host, strings.TrimPrefix(strings.TrimSuffix(uobj.Path, ".git"), "/")}, "/")
-				localName := repo.RelPath()
-				if remoteName == localName {
-					fmt.Fprintln(out, localName)
+					log.FromContext(cmd.Context()).Error(err.Error())
 					return nil
 				}
-				fmt.Fprintf(out, "%s=%s\n", remoteName, localName)
-				return nil
-			}); err != nil {
-				return err
+				if entry.Alias == nil {
+					fmt.Fprintln(out, entry.Name)
+				} else {
+					fmt.Fprintf(out, "%s=%s\n", *entry.Alias, entry.Name)
+				}
 			}
 			return nil
 		},

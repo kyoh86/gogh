@@ -48,6 +48,7 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore, worksp
 		},
 	}
 	f.Format = defaults.List.Format
+	// TODO: use "query" flag
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", defaults.List.Primary, "List up repositories in just a primary root")
 	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
