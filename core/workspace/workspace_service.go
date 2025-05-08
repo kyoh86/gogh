@@ -1,7 +1,9 @@
 package workspace
 
 import (
+	"context"
 	"errors"
+	"iter"
 
 	"github.com/kyoh86/gogh/v3/core/store"
 )
@@ -25,6 +27,7 @@ type WorkspaceService interface {
 	GetRoots() []Root
 
 	// GetDefaultRoot returns the default root
+	// TODO: Default -> Primary
 	GetDefaultRoot() Root
 
 	// GetLayoutFor returns a Layout for the root
@@ -32,6 +35,9 @@ type WorkspaceService interface {
 
 	// GetDefaultLayout returns a Layout for the default root
 	GetDefaultLayout() LayoutService
+
+	// ListRepository retrieves a list of repositories under the all roots
+	ListRepository(ctx context.Context, limit int) iter.Seq2[Repository, error]
 
 	// SetDefaultRoot sets the default root
 	SetDefaultRoot(Root) error
@@ -41,6 +47,19 @@ type WorkspaceService interface {
 
 	// RemoveRoot removes a root
 	RemoveRoot(root Root) error
+}
+
+type Repository interface {
+	// FullPath returns the full path of the repository
+	FullPath() string
+	// Path returns the path from root of the repository
+	Path() string
+	// Host returns the host of the repository
+	Host() string
+	// Owner returns the owner of the repository
+	Owner() string
+	// Name returns the name of the repository
+	Name() string
 }
 
 // WorkspaceStore is a service for saving and loading workspaces

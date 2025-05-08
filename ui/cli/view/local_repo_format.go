@@ -1,80 +1,56 @@
 package view
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"strings"
 
-	git "github.com/go-git/go-git/v5"
-	"github.com/kyoh86/gogh/v3/domain/local"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 )
 
+// LocalRepoFormat defines the interface for formatting local repository references
 type LocalRepoFormat interface {
-	Format(p local.Repo) (string, error)
+	Format(ref workspace.Repository) (string, error)
 }
 
-type LocalRepoFormatFunc func(local.Repo) (string, error)
+// LocalRepoFormatFunc is a function type that implements the LocalRepoFormat interface
+type LocalRepoFormatFunc func(workspace.Repository) (string, error)
 
-func (f LocalRepoFormatFunc) Format(p local.Repo) (string, error) {
-	return f(p)
+// Format calls the function itself to format the local repository reference
+func (f LocalRepoFormatFunc) Format(ref workspace.Repository) (string, error) {
+	return f(ref)
 }
 
-var LocalRepoFormatFullFilePath = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
-	return p.FullFilePath(), nil
+// LocalRepoFormatRelPath formats the local repository reference to its full path
+var LocalRepoFormatFullPath = LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
+	return ref.FullPath(), nil
 })
 
-var LocalRepoFormatRelPath = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
-	return p.RelPath(), nil
+// LocalRepoFormatRelFilePath formats the local repository reference to its path
+var LocalRepoFormatPath = LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
+	return ref.Path(), nil
 })
 
-var LocalRepoFormatRelFilePath = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
-	return p.RelFilePath(), nil
-})
-
-var LocalRepoFormatURL = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
-	utxt, err := local.GetDefaultRemoteURL(context.Background(), p)
-	if err != nil {
-		if errors.Is(err, git.ErrRemoteNotFound) {
-			utxt = "https://" + p.RelPath()
-		} else {
-			return "", err
-		}
-	}
-	return utxt, nil
-})
-
-var LocalRepoFormatJSON = LocalRepoFormatFunc(func(p local.Repo) (string, error) {
-	utxt, err := LocalRepoFormatURL(p)
-	if err != nil {
-		return "", err
-	}
+// LocalRepoFormatJSON formats the local repository reference to a JSON string
+var LocalRepoFormatJSON = LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
 	buf, _ := json.Marshal(map[string]any{
-		"fullFilePath": p.FullFilePath(),
-		"relFilePath":  p.RelFilePath(),
-		"url":          utxt,
-		"relPath":      p.RelPath(),
-		"host":         p.Host(),
-		"owner":        p.Owner(),
-		"name":         p.Name(),
+		"fullFilePath": ref.FullPath(),
+		"relFilePath":  ref.Path(),
+		"host":         ref.Host(),
+		"owner":        ref.Owner(),
+		"name":         ref.Name(),
 	})
 	return string(buf), nil
 })
 
+// LocalRepoFormatFields formats the local repository reference to a string with specified fields
 func LocalRepoFormatFields(s string) LocalRepoFormat {
-	return LocalRepoFormatFunc(func(p local.Repo) (string, error) {
-		utxt, err := local.GetDefaultRemoteURL(context.Background(), p)
-		if err != nil {
-			return "", err
-		}
+	return LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
 		return strings.Join([]string{
-			p.FullFilePath(),
-			p.RelFilePath(),
-			utxt,
-			p.RelPath(),
-			p.Host(),
-			p.Owner(),
-			p.Name(),
+			ref.FullPath(),
+			ref.Path(),
+			ref.Host(),
+			ref.Owner(),
+			ref.Name(),
 		}, s), nil
 	})
 }

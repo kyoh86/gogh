@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3/domain/local"
+	"github.com/kyoh86/gogh/v3/app/list"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
-func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.Command {
+func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService) *cobra.Command {
 	var f config.ListFlags
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -24,29 +25,25 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra
 			}
 
 			ctx := cmd.Context()
-			list := conf.GetRoots()
-			if f.Primary && len(list) > 1 {
-				list = list[0:1]
-			}
-			for _, root := range list {
-				ctrl := local.NewController(root)
-				repos, err := ctrl.List(ctx, &local.ListOption{Query: f.Query})
+			useCase := list.NewUseCase(workspaceService)
+			for repo, err := range useCase.Execute(ctx, 0, f.Primary) {
 				if err != nil {
-					return err
+					log.FromContext(ctx).WithFields(log.Fields{
+						"error": err,
+					}).Error("failed to list repositories")
+					return nil
 				}
-				log.FromContext(ctx).Debugf("found %d repositories in %q", len(repos), root)
-				for _, repo := range repos {
-					str, err := formatter.Format(repo)
-					if err != nil {
-						log.FromContext(ctx).WithFields(log.Fields{
-							"error":  err,
-							"format": f.Format.String(),
-							"path":   repo.FullFilePath(),
-						}).Info("failed to format")
-					}
-					fmt.Println(str)
+				str, err := formatter.Format(repo)
+				if err != nil {
+					log.FromContext(ctx).WithFields(log.Fields{
+						"error":  err,
+						"format": f.Format.String(),
+						"path":   repo.FullPath(),
+					}).Info("failed to format")
 				}
+				fmt.Println(str)
 			}
+
 			return nil
 		},
 	}

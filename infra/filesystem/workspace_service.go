@@ -1,7 +1,9 @@
 package filesystem
 
 import (
+	"context"
 	"errors"
+	"iter"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -51,6 +53,55 @@ func (s *WorkspaceService) GetDefaultLayout() workspace.LayoutService {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return NewLayoutService(s.defaultRoot)
+}
+
+type repoRef struct {
+	fullPath string
+	path     string
+	host     string
+	owner    string
+	name     string
+}
+
+// Host is a hostname (i.g.: "github.com")
+func (r *repoRef) Host() string { return r.host }
+
+// Owner is a owner name (i.g.: "kyoh86")
+func (r *repoRef) Owner() string { return r.owner }
+
+// Name of the repository (i.g.: "gogh")
+func (r *repoRef) Name() string { return r.name }
+
+// Path returns the path from root of the repository (i.g.: "github.com/kyoh86/gogh")
+func (r *repoRef) Path() string { return r.path }
+
+// FullPath returns the full path of the repository (i.g.: "/path/to/workspace/github.com/kyoh86/gogh")
+func (r *repoRef) FullPath() string { return r.fullPath }
+
+// Execute retrieves a list of repositories under the specified workspace roots
+func (s *WorkspaceService) ListRepository(ctx context.Context, limit int) iter.Seq2[workspace.Repository, error] {
+	return func(yield func(workspace.Repository, error) bool) {
+		var i int
+		for _, root := range s.GetRoots() {
+			layout := s.GetLayoutFor(root)
+			for ref, err := range layout.ListRepository(ctx, limit) {
+				if err != nil {
+					yield(nil, err)
+					return
+				}
+				if ref == nil {
+					continue
+				}
+				if !yield(ref, nil) {
+					return
+				}
+				i++
+				if limit > 0 && i >= limit {
+					return
+				}
+			}
+		}
+	}
 }
 
 // SetDefaultRoot sets the specified path as the default workspace root
