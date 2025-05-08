@@ -119,8 +119,10 @@ const (
 type RepositoryPrivacy int
 
 const (
+	// None
+	RepositoryPrivacyNone RepositoryPrivacy = iota
 	// Private
-	RepositoryPrivacyPrivate RepositoryPrivacy = iota
+	RepositoryPrivacyPrivate
 	// Public
 	RepositoryPrivacyPublic
 )
@@ -160,6 +162,6 @@ type CreateRepositoryOptions struct {
 
 type CreateRepositoryFromTemplateOptions struct {
 	Description        string
-	IncludeAllBranches BooleanFilter
-	Private            BooleanFilter
+	IncludeAllBranches bool
+	Private            bool
 }

@@ -9,32 +9,32 @@ import (
 // Repository represents a repository on a remote source
 type Repository struct {
 	// Ref is a reference of the repository
-	Ref repository.Reference
+	Ref repository.Reference `json:"ref"`
 	// URL is a full URL for the repository (i.g.: "https://github.com/kyoh86/gogh")
-	URL string
+	URL string `json:"url"`
 
 	// CloneURL is a clone URL for the repository (i.g.: "
-	CloneURL string
+	CloneURL string `json:"cloneUrl,omitempty"`
 
 	// UpdatedAt is the last updated time of the repository
-	UpdatedAt time.Time
+	UpdatedAt time.Time `json:"updatedAt"`
 	// Parent is the parent repository if it is a fork
-	Parent *ParentRepository
+	Parent *ParentRepository `json:"parent,omitempty"`
 
 	// Description is a description of the repository (i.g.: "Gogh is a collection of themes for Gnome Terminal and Pantheon Terminal")
-	Description string
+	Description string `json:"description,omitempty"`
 	// Homepage is a homepage of the repository (i.g.: "https://example.com")
-	Homepage string
+	Homepage string `json:"homepage,omitempty"`
 	// Language is a primary language of the repository (i.g.: "Go")
-	Language string
+	Language string `json:"language,omitempty"`
 	// Archived is if the repository is archived
-	Archived bool
+	Archived bool `json:"language,omitempty"`
 	// Private is if the repository is private
-	Private bool
+	Private bool `json:"private,omitempty"`
 	// IsTemplate is if the repository is a template
-	IsTemplate bool
+	IsTemplate bool `json:"isTemplate,omitempty"`
 	// Fork is if the repository is a fork
-	Fork bool
+	Fork bool `json:"fork,omitempty"`
 }
 
 // ParentRepository represents a parent repository of a fork

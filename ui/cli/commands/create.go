@@ -33,6 +33,12 @@ func NewCreateCommand(
 	)
 	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
+	// TODO: Split flags from defaults
+	// - Load defaults from config to config.CreateFlags
+	// - If the flag is not set in config, use the default value (e.g. config.Create.CloneRetryLimit == 0 => 5)
+	// - If the flag is set in config, use the value from config (e.g. config.Create.CloneRetryLimit == 5 => 5)
+	// - If the flag is set in command line, use the value from command line (e.g. --clone-retry-limit 10 => 10)
+	// ref: infra/config/token_store.go depends on core/auth/token_service.go
 	var f config.CreateFlags
 
 	checkFlags := func(ctx context.Context, args []string) (*repository.ReferenceWithAlias, error) {
@@ -86,9 +92,9 @@ func NewCreateCommand(
 			}
 			if err := createFromTemplateUseCase.Execute(ctx, ref.Reference, *template, create_from_template.CreateFromTemplateOptions{
 				CreateRepositoryFromTemplateOptions: hosting.CreateRepositoryFromTemplateOptions{
-					Description: f.Description,
-					//TODO: IncludeAllBranches: f.IncludeAllBranches,
-					//TODO: Private:             f.Private,
+					Description:        f.Description,
+					IncludeAllBranches: f.IncludeAllBranches,
+					Private:            f.Private,
 				},
 				Alias: ref.Alias,
 			}); err != nil {
@@ -115,12 +121,13 @@ func NewCreateCommand(
 			return nil
 		},
 	}
-	defaults.Create.CloneRetryLimit = 5
-
+	// TODO: Validate flag combinations
 	cmd.Flags().
 		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().
 		StringVarP(&f.Template, "template", "", defaults.Create.Template, "Create new repository from the template")
+	cmd.Flags().
+		BoolVarP(&f.IncludeAllBranches, "template", "", defaults.Create.IncludeAllBranches, "Create all branches in the template")
 	cmd.Flags().
 		StringVarP(&f.Description, "description", "", "", "A short description of the repository")
 	cmd.Flags().

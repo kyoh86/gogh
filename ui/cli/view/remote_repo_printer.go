@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/kyoh86/gogh/v3/domain/remote"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 )
 
 type RemoteRepoPrinter interface {
-	Print(p remote.Repo) error
+	Print(p hosting.Repository) error
 	Close() error
 }
 
-type RemoteRepoFuncPrinter func(remote.Repo) error
+type RemoteRepoFuncPrinter func(hosting.Repository) error
 
-func (f RemoteRepoFuncPrinter) Print(r remote.Repo) error {
+func (f RemoteRepoFuncPrinter) Print(r hosting.Repository) error {
 	return f(r)
 }
 
@@ -24,21 +24,21 @@ func (f RemoteRepoFuncPrinter) Close() error {
 }
 
 func NewRemoteRepoRefPrinter(w io.Writer) RemoteRepoPrinter {
-	return RemoteRepoFuncPrinter(func(r remote.Repo) error {
+	return RemoteRepoFuncPrinter(func(r hosting.Repository) error {
 		fmt.Fprintln(w, r.Ref.String())
 		return nil
 	})
 }
 
 func NewRemoteRepoURLPrinter(w io.Writer) RemoteRepoPrinter {
-	return RemoteRepoFuncPrinter(func(r remote.Repo) error {
+	return RemoteRepoFuncPrinter(func(r hosting.Repository) error {
 		fmt.Fprintln(w, r.URL)
 		return nil
 	})
 }
 
 func NewRemoteRepoJSONPrinter(w io.Writer) RemoteRepoPrinter {
-	return RemoteRepoFuncPrinter(func(r remote.Repo) error {
+	return RemoteRepoFuncPrinter(func(r hosting.Repository) error {
 		buf, _ := json.Marshal(r)
 		fmt.Fprintln(w, string(buf))
 		return nil

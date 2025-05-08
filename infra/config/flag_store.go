@@ -46,6 +46,7 @@ type CreateFlags struct {
 	PreventRebaseMerge  bool   `yaml:"preventRebaseMerge,omitempty"`
 	DeleteBranchOnMerge bool   `yaml:"deleteBranchOnMerge,omitempty"`
 	Private             bool   `yaml:"private,omitempty"`
+	IncludeAllBranches  bool   `yaml:"includeAllBranches,omitempty"`
 	Dryrun              bool   `yaml:"-"`
 }
 

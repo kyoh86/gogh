@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyoh86/gogh/v3/domain/remote"
-	"github.com/kyoh86/gogh/v3/domain/reporef"
+	"github.com/kyoh86/gogh/v3/core/hosting"
+	"github.com/kyoh86/gogh/v3/core/repository"
 	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
 )
 
@@ -16,11 +16,8 @@ func TestRemoteRepoPrinters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ref, err := reporef.NewRepoRef("github.com", "kyoh86", "gogh")
-	if err != nil {
-		t.Fatal(err)
-	}
-	repo := remote.Repo{
+	ref := repository.NewReference("github.com", "kyoh86", "gogh")
+	repo := hosting.Repository{
 		UpdatedAt: uat,
 		Ref:       ref,
 		URL:       "https://github.com/kyoh86/gogh",
@@ -43,7 +40,7 @@ func TestRemoteRepoPrinters(t *testing.T) {
 		{
 			title:   "json",
 			printer: testtarget.NewRemoteRepoJSONPrinter,
-			want:    `{"updatedAt":"2021-05-01T01:00:00Z","ref":{"host":"github.com","owner":"kyoh86","name":"gogh"},"url":"https://github.com/kyoh86/gogh"}` + "\n",
+			want:    `{"ref":{"host":"github.com","owner":"kyoh86","name":"gogh"},"url":"https://github.com/kyoh86/gogh","updatedAt":"2021-05-01T01:00:00Z"}` + "\n",
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {

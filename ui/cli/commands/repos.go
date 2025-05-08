@@ -1,22 +1,19 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/domain/remote"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/infra/config"
-	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/spf13/cobra"
-	"golang.org/x/sync/errgroup"
 )
 
 func quoteEnums(values []string) string {
@@ -27,127 +24,130 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
-func NewReposCommand(tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
+func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingService, defaults *config.FlagStore) *cobra.Command {
 	var (
 		f config.ReposFlags
 	)
-	remoteRepoSortAccept := make([]string, 0, len(remote.AllRepoOrderField))
-	remoteRepoOrderAccept := make([]string, 0, len(remote.AllOrderDirection))
-	remoteRepoRelationAccept := make([]string, 0, len(remote.AllRepoRelation))
-	for _, v := range remote.AllRepoOrderField {
-		remoteRepoSortAccept = append(remoteRepoSortAccept, string(v))
+	remoteRepoSortAccept := []string{
+		"CREATED_AT",
+		"created_at",
+		"created-at",
+		"createdAt",
+		"NAME",
+		"name",
+		"PUSHED_AT",
+		"pushed_at",
+		"pushed-at",
+		"pushedAt",
+		"STARGAZERS",
+		"stargazers",
+		"UPDATED_AT",
+		"updated_at",
+		"updated-at",
+		"updatedAt",
 	}
-	for _, v := range remote.AllOrderDirection {
-		remoteRepoOrderAccept = append(remoteRepoOrderAccept, string(v))
+	remoteRepoOrderAccept := []string{
+		"asc", "ascending",
+		"ASC", "ASCENDING",
+		"desc", "descending",
+		"DESC", "DESCENDING",
 	}
-	for _, v := range remote.AllRepoRelation {
-		remoteRepoRelationAccept = append(remoteRepoRelationAccept, v.String())
+	remoteRepoRelationAccept := []string{
+		"owner",
+		"organization-member",
+		"organization_member",
+		"organizationMember",
+		"collaborator",
+	}
+	checkFlags := func(cmd *cobra.Command, args []string) (printer view.RemoteRepoPrinter, options *repos.Options, err error) {
+		switch f.Limit {
+		case 0:
+			options.Limit = 30
+		case -1:
+			options.Limit = 0 // no limit
+		default:
+			options.Limit = f.Limit
+		}
+		if f.Private && f.Public {
+			return nil, nil, errors.New("specify only one of `--private` or `--public`")
+		}
+		if f.Private {
+			options.Privacy = hosting.RepositoryPrivacyPrivate
+		}
+		if f.Public {
+			options.Privacy = hosting.RepositoryPrivacyPublic
+		}
+
+		if f.Fork && f.NotFork {
+			return nil, nil, errors.New("specify only one of `--fork` or `--no-fork`")
+		}
+		if f.Fork {
+			options.IsFork = hosting.BooleanFilterTrue
+		}
+		if f.NotFork {
+			options.IsFork = hosting.BooleanFilterFalse
+		}
+
+		if f.Archived && f.NotArchived {
+			return nil, nil, errors.New("specify only one of `--archived` or `--no-archived`")
+		}
+		if f.Archived {
+			options.IsArchived = hosting.BooleanFilterTrue
+		}
+		if f.NotArchived {
+			options.IsArchived = hosting.BooleanFilterFalse
+		}
+		for _, r := range f.Relation {
+			switch r {
+			case "owner":
+				options.OwnerAffiliations = append(options.OwnerAffiliations, hosting.RepositoryAffiliationOwner)
+			case "organizationMember", "organization-member", "organization_member":
+				options.OwnerAffiliations = append(options.OwnerAffiliations, hosting.RepositoryAffiliationOrganizationMember)
+			case "collaborator":
+				options.OwnerAffiliations = append(options.OwnerAffiliations, hosting.RepositoryAffiliationCollaborator)
+			default:
+				return nil, nil, fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(remoteRepoRelationAccept)))
+			}
+		}
+
+		switch strings.ToLower(f.Sort) {
+		case "created-at", "createdAt", "created_at":
+			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldCreatedAt
+		case "name":
+			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldName
+		case "pushed-at", "pushedAt", "pushed_at":
+			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldPushedAt
+		case "stargazers":
+			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldStargazers
+		case "updated-at", "updatedAt", "updated_at":
+			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldUpdatedAt
+		}
+
+		switch strings.ToLower(f.Order) {
+		case "asc", "ascending":
+			options.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionAsc
+		case "desc", "descending":
+			options.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionDesc
+		}
+
+		printer, err = f.Format.Formatter(os.Stdout)
+		return printer, options, err
 	}
 	cmd := &cobra.Command{
 		Use:   "repos",
 		Short: "List remote repositories",
 		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			var listOption remote.ListOption
-			switch f.Limit {
-			case 0:
-				listOption.Limit = 30
-			case -1:
-				listOption.Limit = 0 // no limit
-			default:
-				listOption.Limit = f.Limit
-			}
-			if f.Private && f.Public {
-				return errors.New("specify only one of `--private` or `--public`")
-			}
-			if f.Private {
-				listOption.Private = &f.Private // &true
-			}
-			if f.Public {
-				listOption.Private = &f.Public // &false
-			}
-
-			if f.Fork && f.NotFork {
-				return errors.New("specify only one of `--fork` or `--no-fork`")
-			}
-			if f.Fork {
-				listOption.IsFork = &f.Fork // &true
-			}
-			if f.NotFork {
-				listOption.IsFork = &f.Fork // &false
-			}
-
-			if f.Archived && f.NotArchived {
-				return errors.New("specify only one of `--archived` or `--no-archived`")
-			}
-			if f.Archived {
-				listOption.IsArchived = &f.Archived // &true
-			}
-			if f.NotArchived {
-				listOption.IsArchived = &f.Archived // &false
-			}
-		LOOP_CONVERT_RELATION:
-			for _, r := range f.Relation {
-				rdef := remote.RepoRelation(r)
-				for _, def := range remote.AllRepoRelation {
-					if def == rdef {
-						listOption.Relation = append(listOption.Relation, rdef)
-						continue LOOP_CONVERT_RELATION
-					}
-				}
-				return fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(remoteRepoRelationAccept)))
-			}
-			var format view.RemoteRepoPrinter
-			var err error
-			format, err = f.Format.Formatter(os.Stdout)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			printer, options, err := checkFlags(cmd, args)
 			if err != nil {
 				return err
 			}
-			defer format.Close()
-
-			if f.Sort != "" {
-				listOption.Sort = remote.RepoOrderField(f.Sort)
+			defer printer.Close()
+			useCase := repos.NewUseCase(hostingService)
+			for repo := range useCase.Execute(cmd.Context(), *options) {
+				printer.Print(*repo)
 			}
-			if f.Order != "" {
-				listOption.Order = remote.OrderDirection(f.Order)
-			}
-			ctx, cancel := context.WithCancel(cmd.Context())
-			defer cancel()
-			eg, ctx := errgroup.WithContext(ctx)
-
-			entries := tokens.Entries()
-			if len(entries) == 0 {
-				log.FromContext(ctx).Warn("No valid token found: you need to set token by `gogh auth login`")
-				return nil
-			}
-			for _, entry := range entries {
-				eg.Go(func() error {
-					adaptor, err := github.NewAdaptor(ctx, entry.Host, &entry.Token)
-					if err != nil {
-						return err
-					}
-					ctrl := remote.NewController(adaptor)
-					rch, ech := ctrl.ListAsync(ctx, &listOption)
-					for {
-						select {
-						case repo, more := <-rch:
-							if !more {
-								return nil
-							}
-							format.Print(repo)
-						case err := <-ech:
-							if err != nil {
-								return err
-							}
-						case <-ctx.Done():
-							if err := ctx.Err(); err != nil {
-								return err
-							}
-						}
-					}
-				})
-			}
-			return eg.Wait()
+			return nil
 		},
 	}
 

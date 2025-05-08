@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/kyoh86/gogh/v3/domain/remote"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/mattn/go-runewidth"
 	"github.com/morikuni/aec"
 )
@@ -114,7 +114,7 @@ func NewPrinter(w io.Writer, option ...Option) *Printer {
 	return p
 }
 
-func (p *Printer) Print(r remote.Repo) error {
+func (p *Printer) Print(r hosting.Repository) error {
 	cells := make([]cell, len(p.columns))
 	for i, column := range p.columns {
 		content, style := column.CellBuilder.Build(r)

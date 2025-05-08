@@ -319,8 +319,8 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	req := github.TemplateRepoRequest{
 		Name:               util.Ptr(ref.Name()),
 		Description:        &options.Description,
-		IncludeAllBranches: options.IncludeAllBranches.AsBoolPtr(),
-		Private:            options.Private.AsBoolPtr(),
+		IncludeAllBranches: &options.IncludeAllBranches,
+		Private:            &options.Private,
 	}
 	if user != ref.Owner() {
 		req.Owner = util.Ptr(ref.Owner())
