@@ -46,9 +46,9 @@ func NewForkCommand(conf *config.ConfigStore, defaultNames repository.DefaultNam
 			ctrl := local.NewController(root)
 
 			localRef := ref
-			var opt *local.CloneOption
+			var opts *local.CloneOption
 			if f.Own {
-				opt = &local.CloneOption{Alias: &forked.Ref}
+				opts = &local.CloneOption{Alias: &forked.Ref}
 				localRef = forked.Ref
 			}
 			log.FromContext(ctx).Infof("git clone %q", ref.URL())
@@ -57,7 +57,7 @@ func NewForkCommand(conf *config.ConfigStore, defaultNames repository.DefaultNam
 				log.FromContext(ctx).WithField("error", err).Error("failed to get access token")
 				return nil
 			}
-			if _, err := ctrl.Clone(ctx, ref, accessToken, opt); err != nil {
+			if _, err := ctrl.Clone(ctx, ref, accessToken, opts); err != nil {
 				return fmt.Errorf("cloning the remote repository %q: %w", ref, err)
 			}
 			return ctrl.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{

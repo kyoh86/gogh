@@ -5,7 +5,7 @@ import "context"
 // GitService handles actual Git operations
 type GitService interface {
 	// Clone performs the actual git clone operation
-	Clone(ctx context.Context, remoteURL string, localPath string, options CloneOptions) error
+	Clone(ctx context.Context, remoteURL string, localPath string, opts CloneOptions) error
 
 	Init(remoteURL string, localPath string, isBare bool) error
 

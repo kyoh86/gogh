@@ -35,12 +35,12 @@ func (uc *UseCase) Execute(
 	ctx context.Context,
 	ref repository.Reference,
 	template repository.Reference,
-	options CreateFromTemplateOptions,
+	opts CreateFromTemplateOptions,
 ) error {
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
-	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref, template, options.CreateRepositoryFromTemplateOptions)
+	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref, template, opts.CreateRepositoryFromTemplateOptions)
 	if err != nil {
 		return err
 	}
-	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, options.CloneRetryLimit)
+	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, opts.Alias, opts.CloneRetryLimit)
 }

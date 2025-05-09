@@ -34,10 +34,10 @@ type BundleEntry struct {
 }
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (u *UseCase) Execute(ctx context.Context, opt workspace.ListOptions) iter.Seq2[*BundleEntry, error] {
+func (u *UseCase) Execute(ctx context.Context, opts workspace.ListOptions) iter.Seq2[*BundleEntry, error] {
 	return func(yield func(*BundleEntry, error) bool) {
 		gitService := git.NewService()
-		for repo, err := range u.finderService.ListAllRepository(ctx, u.workspaceService, opt) {
+		for repo, err := range u.finderService.ListAllRepository(ctx, u.workspaceService, opts) {
 			if err != nil {
 				yield(nil, err)
 				return

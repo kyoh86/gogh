@@ -21,17 +21,17 @@ func NewAuthLogoutCommand(tokens auth.TokenService) *cobra.Command {
 				if len(configured) == 0 {
 					return nil
 				}
-				options := make([]huh.Option[string], 0, len(configured))
+				opts := make([]huh.Option[string], 0, len(configured))
 				for _, c := range configured {
 					name := fmt.Sprintf("%s/%s", c.Host, c.Owner)
-					options = append(options, huh.Option[string]{Key: name, Value: name})
+					opts = append(opts, huh.Option[string]{Key: name, Value: name})
 				}
 
 				var selected []string
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewMultiSelect[string]().
 						Title("Hosts to logout from").
-						Options(options...).
+						Options(opts...).
 						Value(&selected),
 				)).Run(); err != nil {
 					return err

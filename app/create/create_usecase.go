@@ -31,11 +31,11 @@ type Options struct {
 	hosting.CreateRepositoryOptions
 }
 
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options Options) error {
+func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, opts Options) error {
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
-	repo, err := uc.hostingService.CreateRepository(ctx, ref, options.CreateRepositoryOptions)
+	repo, err := uc.hostingService.CreateRepository(ctx, ref, opts.CreateRepositoryOptions)
 	if err != nil {
 		return err
 	}
-	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, options.CloneRetryLimit)
+	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, opts.Alias, opts.CloneRetryLimit)
 }

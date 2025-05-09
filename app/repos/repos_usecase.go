@@ -21,6 +21,6 @@ type Options struct {
 	hosting.ListRepositoryOptions
 }
 
-func (uc *UseCase) Execute(ctx context.Context, options Options) iter.Seq2[*hosting.Repository, error] {
-	return uc.hostingService.ListRepository(ctx, options.ListRepositoryOptions)
+func (uc *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*hosting.Repository, error] {
+	return uc.hostingService.ListRepository(ctx, opts.ListRepositoryOptions)
 }

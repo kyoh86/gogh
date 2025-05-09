@@ -56,15 +56,15 @@ func NewRootsRemoveCommand(conf *config.ConfigStore) *cobra.Command {
 		RunE: func(_ *cobra.Command, rootList []string) error {
 			var selected string
 			if len(rootList) == 0 {
-				options := make([]huh.Option[string], 0, len(conf.GetRoots()))
+				opts := make([]huh.Option[string], 0, len(conf.GetRoots()))
 				for _, root := range conf.GetRoots() {
-					options = append(options, huh.Option[string]{Key: root, Value: root})
+					opts = append(opts, huh.Option[string]{Key: root, Value: root})
 				}
 
 				form := huh.NewForm(huh.NewGroup(
 					huh.NewSelect[string]().
 						Title("Roots to remove").
-						Options(options...).
+						Options(opts...).
 						Value(&selected),
 				))
 				if err := form.Run(); err != nil {
@@ -88,15 +88,15 @@ func NewRootsSetPrimaryCommand(conf *config.ConfigStore) *cobra.Command {
 		RunE: func(_ *cobra.Command, rootList []string) error {
 			var selected string
 			if len(rootList) == 0 {
-				options := make([]huh.Option[string], 0, len(conf.GetRoots()))
+				opts := make([]huh.Option[string], 0, len(conf.GetRoots()))
 				for _, root := range conf.GetRoots() {
-					options = append(options, huh.Option[string]{Key: root, Value: root})
+					opts = append(opts, huh.Option[string]{Key: root, Value: root})
 				}
 
 				form := huh.NewForm(huh.NewGroup(
 					huh.NewSelect[string]().
 						Title("A directory to set as default root").
-						Options(options...).
+						Options(opts...).
 						Value(&selected),
 				))
 				if err := form.Run(); err != nil {

@@ -28,14 +28,21 @@ type HostingService interface {
 	CreateRepository(
 		ctx context.Context,
 		ref repository.Reference,
-		opt CreateRepositoryOptions,
+		opts CreateRepositoryOptions,
 	) (*Repository, error)
 	// CreateRepositoryFromTemplate creates a new repository from an existing template repository
 	CreateRepositoryFromTemplate(
 		ctx context.Context,
 		ref repository.Reference,
 		template repository.Reference,
-		options CreateRepositoryFromTemplateOptions,
+		opts CreateRepositoryFromTemplateOptions,
+	) (*Repository, error)
+	// ForkRepository creates a fork of a repository on the remote hosting service
+	ForkRepository(
+		ctx context.Context,
+		ref repository.Reference,
+		target repository.Reference,
+		opts ForkRepositoryOptions,
 	) (*Repository, error)
 }
 
@@ -164,4 +171,8 @@ type CreateRepositoryFromTemplateOptions struct {
 	Description        string
 	IncludeAllBranches bool
 	Private            bool
+}
+
+type ForkRepositoryOptions struct {
+	DefaultBranchOnly bool
 }

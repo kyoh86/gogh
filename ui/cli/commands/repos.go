@@ -59,52 +59,52 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 		"organizationMember",
 		"collaborator",
 	}
-	checkFlags := func(cmd *cobra.Command, args []string) (printer view.RemoteRepoPrinter, options *repos.Options, err error) {
+	checkFlags := func(cmd *cobra.Command, args []string) (printer view.RemoteRepoPrinter, opts *repos.Options, err error) {
 		switch f.Limit {
 		case 0:
-			options.Limit = 30
+			opts.Limit = 30
 		case -1:
-			options.Limit = 0 // no limit
+			opts.Limit = 0 // no limit
 		default:
-			options.Limit = f.Limit
+			opts.Limit = f.Limit
 		}
 		if f.Private && f.Public {
 			return nil, nil, errors.New("specify only one of `--private` or `--public`")
 		}
 		if f.Private {
-			options.Privacy = hosting.RepositoryPrivacyPrivate
+			opts.Privacy = hosting.RepositoryPrivacyPrivate
 		}
 		if f.Public {
-			options.Privacy = hosting.RepositoryPrivacyPublic
+			opts.Privacy = hosting.RepositoryPrivacyPublic
 		}
 
 		if f.Fork && f.NotFork {
 			return nil, nil, errors.New("specify only one of `--fork` or `--no-fork`")
 		}
 		if f.Fork {
-			options.IsFork = hosting.BooleanFilterTrue
+			opts.IsFork = hosting.BooleanFilterTrue
 		}
 		if f.NotFork {
-			options.IsFork = hosting.BooleanFilterFalse
+			opts.IsFork = hosting.BooleanFilterFalse
 		}
 
 		if f.Archived && f.NotArchived {
 			return nil, nil, errors.New("specify only one of `--archived` or `--no-archived`")
 		}
 		if f.Archived {
-			options.IsArchived = hosting.BooleanFilterTrue
+			opts.IsArchived = hosting.BooleanFilterTrue
 		}
 		if f.NotArchived {
-			options.IsArchived = hosting.BooleanFilterFalse
+			opts.IsArchived = hosting.BooleanFilterFalse
 		}
 		for _, r := range f.Relation {
 			switch r {
 			case "owner":
-				options.OwnerAffiliations = append(options.OwnerAffiliations, hosting.RepositoryAffiliationOwner)
+				opts.OwnerAffiliations = append(opts.OwnerAffiliations, hosting.RepositoryAffiliationOwner)
 			case "organizationMember", "organization-member", "organization_member":
-				options.OwnerAffiliations = append(options.OwnerAffiliations, hosting.RepositoryAffiliationOrganizationMember)
+				opts.OwnerAffiliations = append(opts.OwnerAffiliations, hosting.RepositoryAffiliationOrganizationMember)
 			case "collaborator":
-				options.OwnerAffiliations = append(options.OwnerAffiliations, hosting.RepositoryAffiliationCollaborator)
+				opts.OwnerAffiliations = append(opts.OwnerAffiliations, hosting.RepositoryAffiliationCollaborator)
 			default:
 				return nil, nil, fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(remoteRepoRelationAccept)))
 			}
@@ -112,39 +112,39 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 
 		switch strings.ToLower(f.Sort) {
 		case "created-at", "createdAt", "created_at":
-			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldCreatedAt
+			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldCreatedAt
 		case "name":
-			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldName
+			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldName
 		case "pushed-at", "pushedAt", "pushed_at":
-			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldPushedAt
+			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldPushedAt
 		case "stargazers":
-			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldStargazers
+			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldStargazers
 		case "updated-at", "updatedAt", "updated_at":
-			options.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldUpdatedAt
+			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldUpdatedAt
 		}
 
 		switch strings.ToLower(f.Order) {
 		case "asc", "ascending":
-			options.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionAsc
+			opts.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionAsc
 		case "desc", "descending":
-			options.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionDesc
+			opts.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionDesc
 		}
 
 		printer, err = f.Format.Formatter(os.Stdout)
-		return printer, options, err
+		return printer, opts, err
 	}
 	cmd := &cobra.Command{
 		Use:   "repos",
 		Short: "List remote repositories",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			printer, options, err := checkFlags(cmd, args)
+			printer, opts, err := checkFlags(cmd, args)
 			if err != nil {
 				return err
 			}
 			defer printer.Close()
 			useCase := repos.NewUseCase(hostingService)
-			for repo := range useCase.Execute(cmd.Context(), *options) {
+			for repo := range useCase.Execute(cmd.Context(), *opts) {
 				printer.Print(*repo)
 			}
 			return nil

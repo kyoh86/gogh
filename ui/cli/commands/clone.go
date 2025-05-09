@@ -35,12 +35,12 @@ func NewCloneCommand(
 		if len(args) != 0 {
 			return args, nil
 		}
-		var options []huh.Option[string]
+		var opts []huh.Option[string]
 		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return nil, err
 			}
-			options = append(options, huh.Option[string]{
+			opts = append(opts, huh.Option[string]{
 				Key:   repo.Ref.String(),
 				Value: repo.Ref.String(),
 			})
@@ -48,7 +48,7 @@ func NewCloneCommand(
 		if err := huh.NewForm(huh.NewGroup(
 			huh.NewMultiSelect[string]().
 				Title("A remote repository to clone").
-				Options(options...).
+				Options(opts...).
 				Value(&args),
 		)).Run(); err != nil {
 			return nil, err
@@ -87,7 +87,7 @@ func NewCloneCommand(
 		eg, ctx := errgroup.WithContext(ctx)
 		for _, ref := range refs {
 			eg.Go(func() error {
-				return cloneUseCase.Execute(ctx, ref.Reference, clone.CloneOptions{
+				return cloneUseCase.Execute(ctx, ref.Reference, clone.Options{
 					Alias: ref.Alias,
 				})
 			})

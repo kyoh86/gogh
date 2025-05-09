@@ -131,12 +131,12 @@ func (f *FinderService) FindByPath(ctx context.Context, ws workspace.WorkspaceSe
 }
 
 // ListAllRepository implements workspace.FinderService.
-func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.WorkspaceService, opt workspace.ListOptions) iter.Seq2[workspace.RepoInfo, error] {
+func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.WorkspaceService, opts workspace.ListOptions) iter.Seq2[workspace.RepoInfo, error] {
 	return func(yield func(workspace.RepoInfo, error) bool) {
 		var i int
 		for _, root := range ws.GetRoots() {
 			layout := ws.GetLayoutFor(root)
-			for ref, err := range f.ListRepositoryInRoot(ctx, layout, opt) {
+			for ref, err := range f.ListRepositoryInRoot(ctx, layout, opts) {
 				if err != nil {
 					yield(nil, err)
 					return
@@ -148,7 +148,7 @@ func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.Work
 					return
 				}
 				i++
-				if opt.Limit > 0 && i >= opt.Limit {
+				if opts.Limit > 0 && i >= opts.Limit {
 					return
 				}
 			}
@@ -157,7 +157,7 @@ func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.Work
 }
 
 // ListRepositoryInRoot implements workspace.FinderService.
-func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.LayoutService, opt workspace.ListOptions) iter.Seq2[workspace.RepoInfo, error] {
+func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.LayoutService, opts workspace.ListOptions) iter.Seq2[workspace.RepoInfo, error] {
 	var i int
 	return func(yield func(workspace.RepoInfo, error) bool) {
 		if err := filepath.Walk(l.GetRoot(), func(p string, info os.FileInfo, err error) error {
@@ -186,7 +186,7 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 				return err
 			}
 			i++
-			if opt.Limit > 0 && i >= opt.Limit {
+			if opts.Limit > 0 && i >= opts.Limit {
 				return filepath.SkipAll
 			}
 			return nil

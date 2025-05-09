@@ -40,14 +40,14 @@ func (f RemoteRepoFormat) Formatter(w io.Writer) (view.RemoteRepoPrinter, error)
 func remoteRepoFormatter(v string, w io.Writer) (view.RemoteRepoPrinter, error) {
 	switch v {
 	case "", "table":
-		var options []repotab.Option
+		var opts []repotab.Option
 		if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
-			options = append(options, repotab.Width(width))
+			opts = append(opts, repotab.Width(width))
 		}
 		if term.IsTerminal(int(os.Stdout.Fd())) {
-			options = append(options, repotab.Styled())
+			opts = append(opts, repotab.Styled())
 		}
-		return repotab.NewPrinter(w, options...), nil
+		return repotab.NewPrinter(w, opts...), nil
 	case "ref":
 		return view.NewRemoteRepoRefPrinter(w), nil
 	case "url":

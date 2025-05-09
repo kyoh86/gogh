@@ -126,49 +126,49 @@ func (o *ListOption) GetOptions() *github.RepositoryListOptions {
 			OwnerAffiliations: []github.RepositoryAffiliation{owner},
 		}
 	}
-	opt := &github.RepositoryListOptions{
+	opts := &github.RepositoryListOptions{
 		IsFork:     o.IsFork,
 		IsArchived: o.IsArchived,
 	}
 
 	if o.Sort == "" {
-		opt.OrderBy = github.RepositoryOrder{
+		opts.OrderBy = github.RepositoryOrder{
 			Field:     github.RepositoryOrderFieldUpdatedAt,
 			Direction: githubv4.OrderDirectionDesc,
 		}
 	} else {
-		opt.OrderBy = github.RepositoryOrder{
+		opts.OrderBy = github.RepositoryOrder{
 			Field: o.Sort,
 		}
 		if o.Order == "" {
-			if opt.OrderBy.Field == github.RepositoryOrderFieldName {
-				opt.OrderBy.Direction = github.OrderDirectionAsc
+			if opts.OrderBy.Field == github.RepositoryOrderFieldName {
+				opts.OrderBy.Direction = github.OrderDirectionAsc
 			} else {
-				opt.OrderBy.Direction = github.OrderDirectionDesc
+				opts.OrderBy.Direction = github.OrderDirectionDesc
 			}
 		} else {
-			opt.OrderBy.Direction = o.Order
+			opts.OrderBy.Direction = o.Order
 		}
 	}
 	if o.Limit == 0 {
-		opt.Limit = RepoListMaxLimitPerPage
+		opts.Limit = RepoListMaxLimitPerPage
 	} else {
-		opt.Limit = o.Limit
+		opts.Limit = o.Limit
 	}
 
 	if len(o.Relation) == 0 {
-		opt.OwnerAffiliations = []github.RepositoryAffiliation{owner}
+		opts.OwnerAffiliations = []github.RepositoryAffiliation{owner}
 	} else {
 		member := github.RepositoryAffiliationOrganizationMember
 		collabo := github.RepositoryAffiliationCollaborator
 		for _, r := range o.Relation {
 			switch r {
 			case RepoRelationOwner:
-				opt.OwnerAffiliations = append(opt.OwnerAffiliations, owner)
+				opts.OwnerAffiliations = append(opts.OwnerAffiliations, owner)
 			case RepoRelationOrganizationMember:
-				opt.OwnerAffiliations = append(opt.OwnerAffiliations, member)
+				opts.OwnerAffiliations = append(opts.OwnerAffiliations, member)
 			case RepoRelationCollaborator:
-				opt.OwnerAffiliations = append(opt.OwnerAffiliations, collabo)
+				opts.OwnerAffiliations = append(opts.OwnerAffiliations, collabo)
 			}
 		}
 	}
@@ -176,13 +176,13 @@ func (o *ListOption) GetOptions() *github.RepositoryListOptions {
 	if o.Private != nil {
 		if *o.Private {
 			private := github.RepositoryPrivacyPrivate
-			opt.Privacy = private
+			opts.Privacy = private
 		} else {
 			public := github.RepositoryPrivacyPublic
-			opt.Privacy = public
+			opts.Privacy = public
 		}
 	}
-	return opt
+	return opts
 }
 
 func (c *Controller) Me(
@@ -274,7 +274,7 @@ func (c *Controller) ListAsync(
 	ctx context.Context,
 	option *ListOption,
 ) (<-chan Repo, <-chan error) {
-	opt := option.GetOptions()
+	opts := option.GetOptions()
 	sch := make(chan Repo, 1)
 	ech := make(chan error, 1)
 	go func() {
@@ -284,17 +284,17 @@ func (c *Controller) ListAsync(
 		var count int
 		var limit int
 		switch {
-		case opt.Limit == 0:
+		case opts.Limit == 0:
 			limit = 0
-			opt.Limit = RepoListMaxLimitPerPage
-		case opt.Limit > RepoListMaxLimitPerPage:
-			limit = opt.Limit
-			opt.Limit = RepoListMaxLimitPerPage
+			opts.Limit = RepoListMaxLimitPerPage
+		case opts.Limit > RepoListMaxLimitPerPage:
+			limit = opts.Limit
+			opts.Limit = RepoListMaxLimitPerPage
 		default:
-			limit = opt.Limit
+			limit = opts.Limit
 		}
 		for {
-			repos, page, err := c.adaptor.RepositoryList(ctx, opt)
+			repos, page, err := c.adaptor.RepositoryList(ctx, opts)
 			if err != nil {
 				ech <- err
 				return
@@ -309,7 +309,7 @@ func (c *Controller) ListAsync(
 			if !page.HasNextPage {
 				return
 			}
-			opt.After = page.EndCursor
+			opts.After = page.EndCursor
 		}
 	}()
 	return sch, ech

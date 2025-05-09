@@ -36,12 +36,12 @@ func NewDeleteCommand(
 		if len(args) != 0 {
 			return args[0], nil
 		}
-		var options []huh.Option[string]
+		var opts []huh.Option[string]
 		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return "", err
 			}
-			options = append(options, huh.Option[string]{
+			opts = append(opts, huh.Option[string]{
 				Key:   repo.Ref.String(),
 				Value: repo.Ref.String(),
 			})
@@ -50,7 +50,7 @@ func NewDeleteCommand(
 		if err := huh.NewForm(huh.NewGroup(
 			huh.NewSelect[string]().
 				Title("A repository to delete").
-				Options(options...).
+				Options(opts...).
 				Value(&selected),
 		)).Run(); err != nil {
 			return "", err

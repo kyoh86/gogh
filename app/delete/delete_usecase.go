@@ -36,18 +36,18 @@ type Options struct {
 }
 
 // Execute deletes the specified repository from local and remote
-func (u *UseCase) Execute(ctx context.Context, ref repository.Reference, opt Options) error {
-	if err := u.deleteLocal(ctx, ref, opt); err != nil {
+func (u *UseCase) Execute(ctx context.Context, ref repository.Reference, opts Options) error {
+	if err := u.deleteLocal(ctx, ref, opts); err != nil {
 		return err
 	}
-	if err := u.deleteRemote(ctx, ref, opt); err != nil {
+	if err := u.deleteRemote(ctx, ref, opts); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, opt Options) error {
-	if !opt.Local {
+func (u *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, opts Options) error {
+	if !opts.Local {
 		return nil
 	}
 	match, err := u.finderService.FindByReference(ctx, u.workspaceService, ref)
@@ -63,8 +63,8 @@ func (u *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, opt
 	return os.RemoveAll(match.FullPath())
 }
 
-func (u *UseCase) deleteRemote(ctx context.Context, ref repository.Reference, opt Options) error {
-	if !opt.Remote {
+func (u *UseCase) deleteRemote(ctx context.Context, ref repository.Reference, opts Options) error {
+	if !opts.Remote {
 		return nil
 	}
 	return u.hostingService.DeleteRepository(ctx, ref)

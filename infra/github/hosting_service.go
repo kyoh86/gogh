@@ -193,16 +193,16 @@ const (
 )
 
 // ListRepository retrieves a list of repositories from a remote source
-func (s *HostingService) ListRepository(ctx context.Context, opt hosting.ListRepositoryOptions) iter.Seq2[*hosting.Repository, error] {
+func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRepositoryOptions) iter.Seq2[*hosting.Repository, error] {
 	return func(yield func(*hosting.Repository, error) bool) {
 		var limit int
 		switch {
-		case opt.Limit == 0:
+		case opts.Limit == 0:
 			limit = RepoListMaxLimitPerPage
-		case opt.Limit > RepoListMaxLimitPerPage:
+		case opts.Limit > RepoListMaxLimitPerPage:
 			limit = RepoListMaxLimitPerPage
 		default:
-			limit = opt.Limit
+			limit = opts.Limit
 		}
 		var count int
 		for _, entry := range s.tokenService.Entries() {
@@ -225,11 +225,11 @@ func (s *HostingService) ListRepository(ctx context.Context, opt hosting.ListRep
 					conn.gqlClient,
 					limit,
 					after,
-					opt.IsFork.AsBoolPtr(),
-					convertPrivacy(opt.Privacy),
-					convertOwnerAffiliations(opt.OwnerAffiliations),
-					convertRepositoryOrder(opt.OrderBy),
-					convertBooleanFilter(opt.IsArchived),
+					opts.IsFork.AsBoolPtr(),
+					convertPrivacy(opts.Privacy),
+					convertOwnerAffiliations(opts.OwnerAffiliations),
+					convertRepositoryOrder(opts.OrderBy),
+					convertBooleanFilter(opts.IsArchived),
 				)
 				if err != nil {
 					yield(nil, err)
@@ -247,7 +247,7 @@ func (s *HostingService) ListRepository(ctx context.Context, opt hosting.ListRep
 					}
 
 					count++
-					if opt.Limit > 0 && count >= opt.Limit {
+					if opts.Limit > 0 && count >= opts.Limit {
 						return
 					}
 				}
@@ -259,7 +259,7 @@ func (s *HostingService) ListRepository(ctx context.Context, opt hosting.ListRep
 				after = page.EndCursor
 			}
 
-			if opt.Limit > 0 && count >= opt.Limit {
+			if opts.Limit > 0 && count >= opts.Limit {
 				return
 			}
 		}
@@ -269,7 +269,7 @@ func (s *HostingService) ListRepository(ctx context.Context, opt hosting.ListRep
 func (s *HostingService) CreateRepository(
 	ctx context.Context,
 	ref repository.Reference,
-	opt hosting.CreateRepositoryOptions,
+	opts hosting.CreateRepositoryOptions,
 ) (*hosting.Repository, error) {
 	user, token, err := s.GetTokenFor(ctx, ref)
 	if err != nil {
@@ -282,22 +282,22 @@ func (s *HostingService) CreateRepository(
 	}
 	repo, _, err := conn.restClient.Repositories.Create(ctx, org, &github.Repository{
 		Name:                util.NilablePtr(ref.Name()),
-		Description:         util.NilablePtr(opt.Description),
-		Homepage:            util.NilablePtr(opt.Homepage),
-		Private:             util.NilablePtr(opt.Private),
-		HasIssues:           util.FalsePtr(opt.DisableIssues),
-		HasProjects:         util.FalsePtr(opt.DisableProjects),
-		HasWiki:             util.FalsePtr(opt.DisableWiki),
-		HasDownloads:        util.FalsePtr(opt.DisableDownloads),
-		IsTemplate:          util.NilablePtr(opt.IsTemplate),
-		TeamID:              util.NilablePtr(opt.TeamID),
-		AutoInit:            util.NilablePtr(opt.AutoInit),
-		GitignoreTemplate:   util.NilablePtr(opt.GitignoreTemplate),
-		LicenseTemplate:     util.NilablePtr(opt.LicenseTemplate),
-		AllowSquashMerge:    util.FalsePtr(opt.PreventSquashMerge),
-		AllowMergeCommit:    util.FalsePtr(opt.PreventMergeCommit),
-		AllowRebaseMerge:    util.FalsePtr(opt.PreventRebaseMerge),
-		DeleteBranchOnMerge: util.NilablePtr(opt.DeleteBranchOnMerge),
+		Description:         util.NilablePtr(opts.Description),
+		Homepage:            util.NilablePtr(opts.Homepage),
+		Private:             util.NilablePtr(opts.Private),
+		HasIssues:           util.FalsePtr(opts.DisableIssues),
+		HasProjects:         util.FalsePtr(opts.DisableProjects),
+		HasWiki:             util.FalsePtr(opts.DisableWiki),
+		HasDownloads:        util.FalsePtr(opts.DisableDownloads),
+		IsTemplate:          util.NilablePtr(opts.IsTemplate),
+		TeamID:              util.NilablePtr(opts.TeamID),
+		AutoInit:            util.NilablePtr(opts.AutoInit),
+		GitignoreTemplate:   util.NilablePtr(opts.GitignoreTemplate),
+		LicenseTemplate:     util.NilablePtr(opts.LicenseTemplate),
+		AllowSquashMerge:    util.FalsePtr(opts.PreventSquashMerge),
+		AllowMergeCommit:    util.FalsePtr(opts.PreventMergeCommit),
+		AllowRebaseMerge:    util.FalsePtr(opts.PreventRebaseMerge),
+		DeleteBranchOnMerge: util.NilablePtr(opts.DeleteBranchOnMerge),
 	})
 	if err != nil {
 		return nil, err
@@ -309,7 +309,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	ctx context.Context,
 	ref repository.Reference,
 	template repository.Reference,
-	options hosting.CreateRepositoryFromTemplateOptions,
+	opts hosting.CreateRepositoryFromTemplateOptions,
 ) (*hosting.Repository, error) {
 	user, token, err := s.GetTokenFor(ctx, ref)
 	if err != nil {
@@ -318,9 +318,9 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	conn := getClient(ctx, ref.Host(), &token)
 	req := github.TemplateRepoRequest{
 		Name:               util.Ptr(ref.Name()),
-		Description:        &options.Description,
-		IncludeAllBranches: &options.IncludeAllBranches,
-		Private:            &options.Private,
+		Description:        &opts.Description,
+		IncludeAllBranches: &opts.IncludeAllBranches,
+		Private:            &opts.Private,
 	}
 	if user != ref.Owner() {
 		req.Owner = util.Ptr(ref.Owner())
@@ -349,6 +349,32 @@ func (s *HostingService) DeleteRepository(ctx context.Context, reference reposit
 		return fmt.Errorf("failed to delete repository: %w", err)
 	}
 	return nil
+}
+
+// ForkRepository implements hosting.HostingService.
+func (s *HostingService) ForkRepository(
+	ctx context.Context,
+	ref repository.Reference,
+	target repository.Reference,
+	opts hosting.ForkRepositoryOptions,
+) (*hosting.Repository, error) {
+	user, token, err := s.GetTokenFor(ctx, target)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+	}
+	conn := getClient(ctx, ref.Host(), &token)
+	ghOpts := &github.RepositoryCreateForkOptions{
+		Name:              target.Name(),
+		DefaultBranchOnly: opts.DefaultBranchOnly,
+	}
+	if user != target.Owner() {
+		ghOpts.Organization = target.Owner()
+	}
+	fork, _, err := conn.restClient.Repositories.CreateFork(ctx, ref.Owner(), ref.Name(), ghOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create fork: %w", err)
+	}
+	return convertRepository(ref, fork)
 }
 
 func convertRepository(ref repository.Reference, repo *github.Repository) (*hosting.Repository, error) {

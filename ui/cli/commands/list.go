@@ -25,11 +25,11 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore, worksp
 			}
 
 			ctx := cmd.Context()
-			opt := workspace.ListOptions{
+			opts := workspace.ListOptions{
 				Query: f.Query,
 				Limit: 0,
 			}
-			for repo, err := range list.NewUseCase(workspaceService, finderService).Execute(ctx, f.Primary, opt) {
+			for repo, err := range list.NewUseCase(workspaceService, finderService).Execute(ctx, f.Primary, opts) {
 				if err != nil {
 					log.FromContext(ctx).WithFields(log.Fields{
 						"error": err,

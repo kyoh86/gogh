@@ -26,18 +26,18 @@ func NewUseCase(
 	}
 }
 
-// CloneOptions contains options for the clone operation
-type CloneOptions struct {
+// Options contains options for the clone operation
+type Options struct {
 	Alias *repository.Reference
 }
 
 // Execute performs the clone operation
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, options CloneOptions) error {
+func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, opts Options) error {
 	// Get repository information from remote
 	repo, err := uc.hostingService.GetRepository(ctx, ref)
 	if err != nil {
 		return err
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
-	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, options.Alias, 0)
+	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, opts.Alias, 0)
 }
