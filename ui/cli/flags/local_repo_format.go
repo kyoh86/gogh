@@ -36,16 +36,12 @@ func (f LocalRepoFormat) Formatter() (view.LocalRepoFormat, error) {
 
 func formatter(v string) (view.LocalRepoFormat, error) {
 	switch v {
-	case "", "rel-path", "rel":
-		return view.LocalRepoFormatRelPath, nil
-	case "rel-file-path":
-		return view.LocalRepoFormatRelFilePath, nil
+	case "", "rel-path", "rel", "path", "rel-file-path":
+		return view.LocalRepoFormatPath, nil
 	case "full-file-path", "full":
-		return view.LocalRepoFormatFullFilePath, nil
+		return view.LocalRepoFormatFullPath, nil
 	case "json":
 		return view.LocalRepoFormatJSON, nil
-	case "url":
-		return view.LocalRepoFormatURL, nil
 	case "fields":
 		return view.LocalRepoFormatFields("\t"), nil
 	}
@@ -55,11 +51,8 @@ func formatter(v string) (view.LocalRepoFormat, error) {
 	return nil, fmt.Errorf("invalid format: %q", v)
 }
 
-const LocalRepoFormatShortUsage = `
-Print each local repository in a given format, where [format] can be one of "rel-path", "rel-file-path",
-"full-file-path", "json", "url", "fields" or "fields:[separator]".
-`
+const LocalRepoFormatShortUsage = `Print each local repository in a given format, where [format] can be one of "path", "full-path", "json", "fields" or "fields:[separator]".`
 
 func CompleteLocalRepoFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	return []string{"rel-path", "rel-file-path", "full-file-path", "json", "url", "fields", "fields:"}, cobra.ShellCompDirectiveDefault
+	return []string{"path", "full-path", "json", "fields", "fields:"}, cobra.ShellCompDirectiveDefault
 }

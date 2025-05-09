@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService) *cobra.Command {
+func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
 	var f config.ListFlags
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -25,8 +25,11 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore, worksp
 			}
 
 			ctx := cmd.Context()
-			useCase := list.NewUseCase(workspaceService)
-			for repo, err := range useCase.Execute(ctx, 0, f.Primary) {
+			opt := workspace.ListOptions{
+				Query: f.Query,
+				Limit: 0,
+			}
+			for repo, err := range list.NewUseCase(workspaceService, finderService).Execute(ctx, f.Primary, opt) {
 				if err != nil {
 					log.FromContext(ctx).WithFields(log.Fields{
 						"error": err,
@@ -49,6 +52,7 @@ func NewListCommand(conf *config.ConfigStore, defaults *config.FlagStore, worksp
 	}
 	f.Format = defaults.List.Format
 	// TODO: use "query" flag
+	// TODO: prepare "limit" flag
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", defaults.List.Primary, "List up repositories in just a primary root")
 	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)

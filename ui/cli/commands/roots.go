@@ -79,11 +79,12 @@ func NewRootsRemoveCommand(conf *config.ConfigStore) *cobra.Command {
 	}
 }
 
-func NewRootsSetDefaultCommand(conf *config.ConfigStore) *cobra.Command {
+func NewRootsSetPrimaryCommand(conf *config.ConfigStore) *cobra.Command {
 	return &cobra.Command{
-		Use:   "set-default",
-		Short: "Set a directory as the default in the roots",
-		Args:  cobra.RangeArgs(0, 1),
+		Use:     "set-primary",
+		Aliases: []string{"set-default"},
+		Short:   "Set a directory as the primary in the roots",
+		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(_ *cobra.Command, rootList []string) error {
 			var selected string
 			if len(rootList) == 0 {
@@ -105,7 +106,7 @@ func NewRootsSetDefaultCommand(conf *config.ConfigStore) *cobra.Command {
 				selected = rootList[0]
 			}
 
-			return conf.SetDefaultRoot(selected)
+			return conf.SetPrimaryRoot(selected)
 		},
 	}
 }

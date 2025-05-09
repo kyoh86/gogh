@@ -18,7 +18,7 @@ import (
 	"github.com/saracen/walker"
 )
 
-const DefaultRootDirName = "Projects"
+const PrimaryRootDirName = "Projects"
 
 func NewController(root string) *Controller {
 	return &Controller{root: root}

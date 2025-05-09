@@ -10,22 +10,26 @@ import (
 // UseCase defines the use case for listing repositories
 type UseCase struct {
 	workspaceService workspace.WorkspaceService
+	finderService    workspace.FinderService
 }
 
 // NewUseCase creates a new instance of UseCase
 func NewUseCase(
 	workspaceService workspace.WorkspaceService,
+	finderService workspace.FinderService,
 ) *UseCase {
 	return &UseCase{
 		workspaceService: workspaceService,
+		finderService:    finderService,
 	}
 }
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (u *UseCase) Execute(ctx context.Context, limit int, primary bool) iter.Seq2[workspace.Repository, error] {
+func (u *UseCase) Execute(ctx context.Context, primary bool, opt workspace.ListOptions) iter.Seq2[workspace.RepoInfo, error] {
+	ws := u.workspaceService
 	if primary {
-		ws := u.workspaceService
-		return ws.GetLayoutFor(ws.GetDefaultRoot()).ListRepository(ctx, limit)
+		layout := ws.GetLayoutFor(ws.GetPrimaryRoot())
+		return u.finderService.ListRepositoryInRoot(ctx, layout, opt)
 	}
-	return u.workspaceService.ListRepository(ctx, limit)
+	return u.finderService.ListAllRepository(ctx, ws, opt)
 }

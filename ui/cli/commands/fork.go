@@ -42,7 +42,7 @@ func NewForkCommand(conf *config.ConfigStore, defaultNames repository.DefaultNam
 				return err
 			}
 
-			root := conf.DefaultRoot()
+			root := conf.PrimaryRoot()
 			ctrl := local.NewController(root)
 
 			localRef := ref

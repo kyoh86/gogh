@@ -7,13 +7,14 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
-func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore) *cobra.Command {
+func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore, finderService workspace.FinderService) *cobra.Command {
 	var f config.CwdFlags
 	cmd := &cobra.Command{
 		Use:   "cwd",

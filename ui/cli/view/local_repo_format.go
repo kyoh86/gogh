@@ -9,42 +9,42 @@ import (
 
 // LocalRepoFormat defines the interface for formatting local repository references
 type LocalRepoFormat interface {
-	Format(ref workspace.Repository) (string, error)
+	Format(ref workspace.RepoInfo) (string, error)
 }
 
 // LocalRepoFormatFunc is a function type that implements the LocalRepoFormat interface
-type LocalRepoFormatFunc func(workspace.Repository) (string, error)
+type LocalRepoFormatFunc func(workspace.RepoInfo) (string, error)
 
 // Format calls the function itself to format the local repository reference
-func (f LocalRepoFormatFunc) Format(ref workspace.Repository) (string, error) {
+func (f LocalRepoFormatFunc) Format(ref workspace.RepoInfo) (string, error) {
 	return f(ref)
 }
 
 // LocalRepoFormatRelPath formats the local repository reference to its full path
-var LocalRepoFormatFullPath = LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
+var LocalRepoFormatFullPath = LocalRepoFormatFunc(func(ref workspace.RepoInfo) (string, error) {
 	return ref.FullPath(), nil
 })
 
 // LocalRepoFormatRelFilePath formats the local repository reference to its path
-var LocalRepoFormatPath = LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
+var LocalRepoFormatPath = LocalRepoFormatFunc(func(ref workspace.RepoInfo) (string, error) {
 	return ref.Path(), nil
 })
 
 // LocalRepoFormatJSON formats the local repository reference to a JSON string
-var LocalRepoFormatJSON = LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
+var LocalRepoFormatJSON = LocalRepoFormatFunc(func(ref workspace.RepoInfo) (string, error) {
 	buf, _ := json.Marshal(map[string]any{
-		"fullFilePath": ref.FullPath(),
-		"relFilePath":  ref.Path(),
-		"host":         ref.Host(),
-		"owner":        ref.Owner(),
-		"name":         ref.Name(),
+		"fullPath": ref.FullPath(),
+		"path":     ref.Path(),
+		"host":     ref.Host(),
+		"owner":    ref.Owner(),
+		"name":     ref.Name(),
 	})
 	return string(buf), nil
 })
 
 // LocalRepoFormatFields formats the local repository reference to a string with specified fields
 func LocalRepoFormatFields(s string) LocalRepoFormat {
-	return LocalRepoFormatFunc(func(ref workspace.Repository) (string, error) {
+	return LocalRepoFormatFunc(func(ref workspace.RepoInfo) (string, error) {
 		return strings.Join([]string{
 			ref.FullPath(),
 			ref.Path(),

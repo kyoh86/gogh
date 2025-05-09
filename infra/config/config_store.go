@@ -60,7 +60,7 @@ func SaveConfig() error {
 	return saveYAML(path, globalConfig)
 }
 
-func (c *ConfigStore) DefaultRoot() string {
+func (c *ConfigStore) PrimaryRoot() string {
 	return c.Roots[0].expanded
 }
 
@@ -72,7 +72,7 @@ func (c *ConfigStore) GetRoots() []string {
 	return list
 }
 
-func (c *ConfigStore) SetDefaultRoot(r string) error {
+func (c *ConfigStore) SetPrimaryRoot(r string) error {
 	rootList := make([]Path, 0, len(c.Roots))
 	newDefault, err := parsePath(r)
 	if err != nil {

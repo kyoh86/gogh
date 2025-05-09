@@ -1,9 +1,7 @@
 package filesystem
 
 import (
-	"context"
 	"errors"
-	"iter"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -14,13 +12,13 @@ import (
 // WorkspaceService manages workspace roots stored in the filesystem
 type WorkspaceService struct {
 	roots       []workspace.Root
-	defaultRoot workspace.Root
+	primaryRoot workspace.Root
 	mu          sync.RWMutex
 	// You might need a config file path or other storage mechanism
 }
 
-// NewRootService creates a new instance of RootService
-func NewRootService() *WorkspaceService {
+// NewWorkspaceService creates a new instance of RootService
+func NewWorkspaceService() *WorkspaceService {
 	return &WorkspaceService{
 		roots: []workspace.Root{},
 	}
@@ -36,11 +34,11 @@ func (s *WorkspaceService) GetRoots() []workspace.Root {
 	return result
 }
 
-// GetDefaultRoot returns the default workspace root
-func (s *WorkspaceService) GetDefaultRoot() workspace.Root {
+// GetPrimaryRoot returns the primary workspace root
+func (s *WorkspaceService) GetPrimaryRoot() workspace.Root {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.defaultRoot
+	return s.primaryRoot
 }
 
 // GetLayoutFor returns a Layout for the root
@@ -48,11 +46,11 @@ func (s *WorkspaceService) GetLayoutFor(root workspace.Root) workspace.LayoutSer
 	return NewLayoutService(root)
 }
 
-// GetDefaultLayout returns a Layout for the default root
-func (s *WorkspaceService) GetDefaultLayout() workspace.LayoutService {
+// GetPrimaryLayout returns a Layout for the primary root
+func (s *WorkspaceService) GetPrimaryLayout() workspace.LayoutService {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return NewLayoutService(s.defaultRoot)
+	return NewLayoutService(s.primaryRoot)
 }
 
 type repoRef struct {
@@ -78,34 +76,8 @@ func (r *repoRef) Path() string { return r.path }
 // FullPath returns the full path of the repository (i.g.: "/path/to/workspace/github.com/kyoh86/gogh")
 func (r *repoRef) FullPath() string { return r.fullPath }
 
-// Execute retrieves a list of repositories under the specified workspace roots
-func (s *WorkspaceService) ListRepository(ctx context.Context, limit int) iter.Seq2[workspace.Repository, error] {
-	return func(yield func(workspace.Repository, error) bool) {
-		var i int
-		for _, root := range s.GetRoots() {
-			layout := s.GetLayoutFor(root)
-			for ref, err := range layout.ListRepository(ctx, limit) {
-				if err != nil {
-					yield(nil, err)
-					return
-				}
-				if ref == nil {
-					continue
-				}
-				if !yield(ref, nil) {
-					return
-				}
-				i++
-				if limit > 0 && i >= limit {
-					return
-				}
-			}
-		}
-	}
-}
-
-// SetDefaultRoot sets the specified path as the default workspace root
-func (s *WorkspaceService) SetDefaultRoot(path workspace.Root) error {
+// SetPrimaryRoot sets the specified path as the primary workspace root
+func (s *WorkspaceService) SetPrimaryRoot(path workspace.Root) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -115,20 +87,12 @@ func (s *WorkspaceService) SetDefaultRoot(path workspace.Root) error {
 		return errors.New("specified path is not registered as a root")
 	}
 
-	s.defaultRoot = path
+	s.primaryRoot = path
 	return nil // You would typically persist this change
 }
 
-// IsDefault checks if the specified path is the default workspace root
-func (s *WorkspaceService) IsDefault(path workspace.Root) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return path == s.defaultRoot
-}
-
 // AddRoot adds a new workspace root
-func (s *WorkspaceService) AddRoot(root workspace.Root, asDefault bool) error {
+func (s *WorkspaceService) AddRoot(root workspace.Root, asPrimary bool) error {
 	absPath, err := filepath.Abs(root)
 	if err != nil {
 		return err
@@ -144,9 +108,9 @@ func (s *WorkspaceService) AddRoot(root workspace.Root, asDefault bool) error {
 
 	s.roots = append(s.roots, absPath)
 
-	// If this is the first root, make it default
-	if len(s.roots) == 1 || asDefault {
-		s.defaultRoot = absPath
+	// If this is the first root, make it the primary
+	if len(s.roots) == 1 || asPrimary {
+		s.primaryRoot = absPath
 	}
 
 	return nil // You would typically persist this change
@@ -162,12 +126,12 @@ func (s *WorkspaceService) RemoveRoot(path workspace.Root) error {
 			// Remove from slice
 			s.roots = slices.Delete(s.roots, i, i+1)
 
-			// If we removed the default root, update default
-			if path == s.defaultRoot {
+			// If we removed the primary root, update it
+			if path == s.primaryRoot {
 				if len(s.roots) > 0 {
-					s.defaultRoot = s.roots[0]
+					s.primaryRoot = s.roots[0]
 				} else {
-					s.defaultRoot = ""
+					s.primaryRoot = ""
 				}
 			}
 

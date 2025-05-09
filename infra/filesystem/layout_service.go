@@ -1,11 +1,7 @@
 package filesystem
 
 import (
-	"context"
-	"errors"
-	"iter"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -22,6 +18,11 @@ type LayoutService struct {
 // NewLayoutService creates a new instance of Layout
 func NewLayoutService(root workspace.Root) *LayoutService {
 	return &LayoutService{root: root}
+}
+
+// GetRoot returns the root of the layout
+func (l *LayoutService) GetRoot() string {
+	return l.root
 }
 
 // Match returns the reference corresponding to the given path
@@ -44,45 +45,6 @@ func (l *LayoutService) Match(path string) (*repository.Reference, error) {
 
 func (l *LayoutService) PathFor(ref repository.Reference) string {
 	return filepath.Join(l.root, ref.Host(), ref.Owner(), ref.Name())
-}
-
-// ListRepository retrieves a list of repositories under a root directory
-func (l *LayoutService) ListRepository(ctx context.Context, limit int) iter.Seq2[workspace.Repository, error] {
-	var i int
-	return func(yield func(workspace.Repository, error) bool) {
-		if err := filepath.Walk(l.root, func(p string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if !info.IsDir() {
-				return nil
-			}
-			ref, err := l.Match(p)
-			switch {
-			case errors.Is(err, workspace.ErrNotMatched):
-				// Ignore directories that do not match the layout
-			case err == nil:
-				if !yield(&repoRef{
-					fullPath: p,
-					path:     path.Join(ref.Host(), ref.Owner(), ref.Name()),
-					host:     ref.Host(),
-					owner:    ref.Owner(),
-					name:     ref.Name(),
-				}, nil) {
-					return filepath.SkipAll
-				}
-			default:
-				return err
-			}
-			i++
-			if limit > 0 && i >= limit {
-				return filepath.SkipAll
-			}
-			return nil
-		}); err != nil {
-			yield(nil, err)
-		}
-	}
 }
 
 func (l *LayoutService) CreateRepositoryFolder(ref repository.Reference) (string, error) {

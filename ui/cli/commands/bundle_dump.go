@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService) *cobra.Command {
+func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
 	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",
@@ -32,8 +32,8 @@ func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore, 
 				defer f.Close()
 				out = f
 			}
-			useCase := bundle_dump.NewUseCase(workspaceService)
-			for entry, err := range useCase.Execute(cmd.Context()) {
+			useCase := bundle_dump.NewUseCase(workspaceService, finderService)
+			for entry, err := range useCase.Execute(cmd.Context(), workspace.ListOptions{}) {
 				if err != nil {
 					log.FromContext(cmd.Context()).Error(err.Error())
 					return nil

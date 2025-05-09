@@ -44,7 +44,7 @@ func (s *RepositoryService) CloneRepositoryWithRetry(
 	if alias != nil {
 		targetRef = *alias
 	}
-	layout := s.workspaceService.GetDefaultLayout()
+	layout := s.workspaceService.GetPrimaryLayout()
 	localPath := layout.PathFor(targetRef)
 
 	// Get the user and token for authentication

@@ -17,7 +17,7 @@ type WorkspaceStore struct {
 
 type tomlWorkspaceStore struct {
 	Roots       []workspace.Root `toml:"roots,omitempty"`
-	DefaultRoot string           `toml:"default_root,omitempty"`
+	PrimaryRoot string           `toml:"primary_root,omitempty"`
 }
 
 // Load implements workspace.WorkspaceRepository.
@@ -31,13 +31,13 @@ func (w *WorkspaceStore) Load(ctx context.Context) (workspace.WorkspaceService, 
 	if err := toml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	svc := filesystem.WorkspaceService{}
+	svc := filesystem.NewWorkspaceService()
 	for _, root := range v.Roots {
-		if err := svc.AddRoot(root, root == v.DefaultRoot); err != nil {
+		if err := svc.AddRoot(root, root == v.PrimaryRoot); err != nil {
 			return nil, err
 		}
 	}
-	return &svc, nil
+	return svc, nil
 }
 
 // Save implements workspace.WorkspaceRepository.
@@ -50,7 +50,7 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 
 	v := tomlWorkspaceStore{
 		Roots:       ws.GetRoots(),
-		DefaultRoot: ws.GetDefaultRoot(),
+		PrimaryRoot: ws.GetPrimaryRoot(),
 	}
 
 	if err := toml.NewEncoder(file).Encode(v); err != nil {

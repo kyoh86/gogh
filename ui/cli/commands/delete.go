@@ -143,7 +143,7 @@ func newFunction(
 	tokenService auth.TokenService,
 ) (bool, error) {
 	if _local {
-		ctrl := local.NewController(conf.DefaultRoot())
+		ctrl := local.NewController(conf.PrimaryRoot())
 		if !force {
 			var confirmed bool
 			if err := huh.NewForm(huh.NewGroup(

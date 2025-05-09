@@ -1,33 +1,45 @@
 package view_test
 
 import (
-	"context"
 	"encoding/json"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/kyoh86/gogh/v3/domain/local"
-	"github.com/kyoh86/gogh/v3/domain/reporef"
 	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
 )
 
-func TestLocalRepoFormat(t *testing.T) {
-	tempDir := t.TempDir()
-	ref, err := reporef.NewRepoRef("github.com", "kyoh86", "gogh")
-	if err != nil {
-		t.Fatalf("failed to init Ref: %s", err)
-	}
-	locRepo := local.NewRepo(tempDir, ref)
-	if err != nil {
-		t.Fatalf("failed to get a local repository from Ref: %s", err)
-	}
-	if err := local.CreateRepo(context.Background(), locRepo, ref.URL(), nil); err != nil {
-		t.Fatalf("failed to prepare local repository from Ref: %s", err)
-	}
+type repoRef struct {
+	fullPath string
+	path     string
+	host     string
+	owner    string
+	name     string
+}
 
-	wantPath := filepath.Join(tempDir, "github.com/kyoh86/gogh")
+// Host is a hostname (i.g.: "github.com")
+func (r *repoRef) Host() string { return r.host }
+
+// Owner is a owner name (i.g.: "kyoh86")
+func (r *repoRef) Owner() string { return r.owner }
+
+// Name of the repository (i.g.: "gogh")
+func (r *repoRef) Name() string { return r.name }
+
+// Path returns the path from root of the repository (i.g.: "github.com/kyoh86/gogh")
+func (r *repoRef) Path() string { return r.path }
+
+// FullPath returns the full path of the repository (i.g.: "/path/to/workspace/github.com/kyoh86/gogh")
+func (r *repoRef) FullPath() string { return r.fullPath }
+
+func TestLocalRepoFormat(t *testing.T) {
+	repo := &repoRef{
+		fullPath: "/path/to/workspace/github.com/kyoh86/gogh",
+		path:     "github.com/kyoh86/gogh",
+		host:     "github.com",
+		owner:    "kyoh86",
+		name:     "gogh",
+	}
 
 	// NOTE: When the path is checked, it should be passed with filepath.Clean.
 	// Because windows uses '\' for path separator.
@@ -37,54 +49,40 @@ func TestLocalRepoFormat(t *testing.T) {
 		expect string
 	}{
 		{
-			title:  "FullFilePath",
-			format: testtarget.LocalRepoFormatFullFilePath,
-			expect: wantPath,
+			title:  "FullPath",
+			format: testtarget.LocalRepoFormatFullPath,
+			expect: repo.fullPath,
 		},
 		{
-			title:  "RelPath",
-			format: testtarget.LocalRepoFormatRelPath,
-			expect: "github.com/kyoh86/gogh",
-		},
-		{
-			title:  "RelFilePath",
-			format: testtarget.LocalRepoFormatRelFilePath,
-			expect: filepath.Clean("github.com/kyoh86/gogh"),
-		},
-		{
-			title:  "URL",
-			format: testtarget.LocalRepoFormatURL,
-			expect: "https://github.com/kyoh86/gogh",
+			title:  "Path",
+			format: testtarget.LocalRepoFormatPath,
+			expect: repo.path,
 		},
 		{
 			title:  "FieldsWithSpace",
 			format: testtarget.LocalRepoFormatFields(" "),
 			expect: strings.Join([]string{
-				wantPath,
-				filepath.Clean("github.com/kyoh86/gogh"),
-				"https://github.com/kyoh86/gogh",
-				"github.com/kyoh86/gogh",
-				"github.com",
-				"kyoh86",
-				"gogh",
+				repo.fullPath,
+				repo.path,
+				repo.host,
+				repo.owner,
+				repo.name,
 			}, " "),
 		},
 		{
 			title:  "FieldsWithSpecial",
 			format: testtarget.LocalRepoFormatFields("<<>>"),
 			expect: strings.Join([]string{
-				wantPath,
-				filepath.Clean("github.com/kyoh86/gogh"),
-				"https://github.com/kyoh86/gogh",
-				"github.com/kyoh86/gogh",
-				"github.com",
-				"kyoh86",
-				"gogh",
+				repo.fullPath,
+				repo.path,
+				repo.host,
+				repo.owner,
+				repo.name,
 			}, "<<>>"),
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
-			actual, err := testcase.format.Format(locRepo)
+			actual, err := testcase.format.Format(repo)
 			if err != nil {
 				t.Fatalf("failed to format: %s", err)
 			}
@@ -95,7 +93,7 @@ func TestLocalRepoFormat(t *testing.T) {
 	}
 
 	t.Run("JSON", func(t *testing.T) {
-		formatted, err := testtarget.LocalRepoFormatJSON(locRepo)
+		formatted, err := testtarget.LocalRepoFormatJSON(repo)
 		if err != nil {
 			t.Fatalf("failed to format: %s", err)
 		}
@@ -104,13 +102,11 @@ func TestLocalRepoFormat(t *testing.T) {
 			t.Fatalf("failed to unmarshal JSON formatted: %s", err)
 		}
 		want := map[string]any{
-			"fullFilePath": wantPath,
-			"relFilePath":  filepath.Clean("github.com/kyoh86/gogh"),
-			"url":          "https://github.com/kyoh86/gogh",
-			"relPath":      "github.com/kyoh86/gogh",
-			"host":         "github.com",
-			"owner":        "kyoh86",
-			"name":         "gogh",
+			"fullPath": repo.fullPath,
+			"path":     repo.path,
+			"host":     repo.host,
+			"owner":    repo.owner,
+			"name":     repo.name,
 		}
 
 		if diff := cmp.Diff(want, got); diff != "" {

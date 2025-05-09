@@ -41,7 +41,7 @@ func NewApp(
 
 	rootsCommand := commands.NewRootsCommand(conf)
 	rootsCommand.AddCommand(
-		commands.NewRootsSetDefaultCommand(conf),
+		commands.NewRootsSetPrimaryCommand(conf),
 		commands.NewRootsRemoveCommand(conf),
 		commands.NewRootsAddCommand(conf),
 		commands.NewRootsListCommand(conf),
