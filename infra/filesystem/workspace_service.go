@@ -53,29 +53,6 @@ func (s *WorkspaceService) GetPrimaryLayout() workspace.LayoutService {
 	return NewLayoutService(s.primaryRoot)
 }
 
-type repoRef struct {
-	fullPath string
-	path     string
-	host     string
-	owner    string
-	name     string
-}
-
-// Host is a hostname (i.g.: "github.com")
-func (r *repoRef) Host() string { return r.host }
-
-// Owner is a owner name (i.g.: "kyoh86")
-func (r *repoRef) Owner() string { return r.owner }
-
-// Name of the repository (i.g.: "gogh")
-func (r *repoRef) Name() string { return r.name }
-
-// Path returns the path from root of the repository (i.g.: "github.com/kyoh86/gogh")
-func (r *repoRef) Path() string { return r.path }
-
-// FullPath returns the full path of the repository (i.g.: "/path/to/workspace/github.com/kyoh86/gogh")
-func (r *repoRef) FullPath() string { return r.fullPath }
-
 // SetPrimaryRoot sets the specified path as the primary workspace root
 func (s *WorkspaceService) SetPrimaryRoot(path workspace.Root) error {
 	s.mu.Lock()

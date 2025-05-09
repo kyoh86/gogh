@@ -3,6 +3,8 @@ package workspace
 import (
 	"context"
 	"iter"
+
+	"github.com/kyoh86/gogh/v3/core/repository"
 )
 
 // ListOptions is the options for repository search
@@ -16,6 +18,7 @@ type ListOptions struct {
 
 // Repository is informations of a repository
 type RepoInfo interface {
+	Exists() bool
 	// FullPath returns the full path of the repository
 	FullPath() string
 	// Path returns the path from root of the repository
@@ -30,6 +33,9 @@ type RepoInfo interface {
 
 // FinderService is a service for searching repositories
 type FinderService interface {
+	// FindByReference retrieves a repository by its reference
+	FindByReference(ctx context.Context, ws WorkspaceService, reference repository.Reference) (RepoInfo, error)
+
 	// FindByPath retrieves a repository by its reference
 	FindByPath(ctx context.Context, ws WorkspaceService, path string) (RepoInfo, error)
 

@@ -3,18 +3,16 @@ package commands
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/cwd"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/domain/local"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
-func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore, finderService workspace.FinderService) *cobra.Command {
+func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
 	var f config.CwdFlags
 	cmd := &cobra.Command{
 		Use:   "cwd",
@@ -27,37 +25,23 @@ func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore, finderS
 			}
 
 			ctx := cmd.Context()
-			cwd, err := os.Getwd()
+			wd, err := os.Getwd()
 			if err != nil {
 				return err
 			}
-			cwd = strings.ToLower(filepath.ToSlash(cwd))
-
-			list := conf.GetRoots()
-			for _, root := range list {
-				ctrl := local.NewController(root)
-				repos, err := ctrl.List(ctx, &local.ListOption{})
-				if err != nil {
-					return err
-				}
-				log.FromContext(ctx).Debugf("found %d local repositories in %q", len(repos), root)
-				for _, repo := range repos {
-					reg := strings.ToLower(filepath.ToSlash(repo.FullFilePath()))
-					if cwd == reg || strings.HasPrefix(cwd, reg+"/") {
-						str, err := formatter.Format(repo)
-						if err != nil {
-							log.FromContext(ctx).WithFields(log.Fields{
-								"error":  err,
-								"format": f.Format.String(),
-								"path":   repo.FullFilePath(),
-							}).Info("failed to format")
-						}
-						fmt.Println(str)
-						return nil
-					}
-				}
+			repo, err := cwd.NewUseCase(workspaceService, finderService).Execute(ctx, wd)
+			if err != nil {
+				return err
 			}
-			log.FromContext(ctx).WithField("cwd", cwd).Info("it is not in any local repository")
+			str, err := formatter.Format(repo)
+			if err != nil {
+				log.FromContext(ctx).WithFields(log.Fields{
+					"error":  err,
+					"format": f.Format.String(),
+					"path":   repo.FullPath(),
+				}).Info("failed to format")
+			}
+			fmt.Println(str)
 			return nil
 		},
 	}

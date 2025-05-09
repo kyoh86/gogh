@@ -17,6 +17,7 @@ func NewApp(
 	conf *config.ConfigStore,
 	defaultNameService repository.DefaultNameService,
 	hostingService hosting.HostingService,
+	finderService workspace.FinderService,
 	workspaceService workspace.WorkspaceService,
 	tokenService auth.TokenService,
 	defaults *config.FlagStore,
@@ -28,7 +29,7 @@ func NewApp(
 
 	bundleCommand := commands.NewBundleCommand()
 	bundleCommand.AddCommand(
-		commands.NewBundleDumpCommand(conf, defaults),
+		commands.NewBundleDumpCommand(conf, defaults, workspaceService, finderService),
 		commands.NewBundleRestoreCommand(conf, defaultNameService, tokenService, defaults, hostingService, workspaceService),
 	)
 
@@ -54,12 +55,12 @@ func NewApp(
 	)
 
 	facadeCommand.AddCommand(
-		commands.NewCwdCommand(conf, defaults),
-		commands.NewListCommand(conf, defaults),
+		commands.NewCwdCommand(conf, defaults, workspaceService, finderService),
+		commands.NewListCommand(conf, defaults, workspaceService, finderService),
 		commands.NewCloneCommand(conf, defaultNameService, tokenService, hostingService, workspaceService),
 		commands.NewCreateCommand(conf, defaultNameService, tokenService, hostingService, workspaceService, defaults),
 		commands.NewReposCommand(tokenService, hostingService, defaults),
-		commands.NewDeleteCommand(conf, defaultNameService, tokenService, hostingService, workspaceService),
+		commands.NewDeleteCommand(conf, defaultNameService, tokenService, hostingService, finderService, workspaceService),
 		commands.NewForkCommand(conf, defaultNameService, tokenService, defaults),
 		configCommand,
 		authCommand,
