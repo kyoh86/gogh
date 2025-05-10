@@ -1,16 +1,16 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
 	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/apex/log/handlers/level"
-	"github.com/apex/log/handlers/multi"
-	"github.com/kyoh86/gogh/v3/cmdutil"
-	"github.com/spf13/cobra"
+	"github.com/kyoh86/gogh/v3/core/store"
+	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/infra/filesystem"
+	"github.com/kyoh86/gogh/v3/infra/github"
+	"github.com/kyoh86/gogh/v3/infra/logger"
+	"github.com/kyoh86/gogh/v3/ui/cli"
 )
 
 var (
@@ -19,40 +19,80 @@ var (
 	date    = "snapshot"
 )
 
-var facadeCommand = &cobra.Command{
-	Use:     cmdutil.AppName,
-	Short:   "GO GitHub project manager",
-	Version: fmt.Sprintf("%s-%s (%s)", version, commit, date),
-}
-
-// StdoutLogHandler implementation.
-type StdoutLogHandler struct {
-	Handler log.Handler
-}
-
-// HandleLog implements log.Handler.
-func (h *StdoutLogHandler) HandleLog(e *log.Entry) error {
-	if e.Level >= log.ErrorLevel {
-		return nil
+func loadConfigOrExit[T any](name string, loader func() (T, error)) T {
+	v, err := loader()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to load %s: %s\n", name, err)
+		os.Exit(1)
 	}
-
-	return h.Handler.HandleLog(e)
+	return v
 }
 
 func main() {
-	setup()
-	errLog := level.New(cli.New(os.Stderr), log.ErrorLevel)
-	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stdout)}
-	level := log.InfoLevel
-	if os.Getenv("GOGH_DEBUG") == "1" {
-		level = log.DebugLevel
-	}
-	ctx := log.NewContext(context.Background(), &log.Logger{
-		Handler: multi.New(stdLog, errLog),
-		Level:   level,
-	})
-	if err := facadeCommand.ExecuteContext(ctx); err != nil {
-		log.FromContext(ctx).Error(err.Error())
+	if err := run(); err != nil {
+		log.Error(err.Error())
 		os.Exit(1)
 	}
+}
+
+func run() error {
+	ctx := logger.NewLogger()
+
+	defaults := loadConfigOrExit("flags", config.LoadFlags)
+
+	tokensPathV0, err := config.TokensPathV0()
+	if err != nil {
+		return fmt.Errorf("failed to get tokens path (v0): %w", err)
+	}
+	tokensPath, err := config.TokensPath()
+	if err != nil {
+		return fmt.Errorf("failed to get tokens path (v0): %w", err)
+	}
+	workspacePath, err := config.WorkspacePath()
+	if err != nil {
+		return fmt.Errorf("failed to get workspace path: %w", err)
+	}
+	workspacePathV0, err := config.WorkspacePathV0()
+	if err != nil {
+		return fmt.Errorf("failed to get workspace path (v0): %w", err)
+	}
+	defaultNamesPath, err := config.DefaultNamesPath()
+	if err != nil {
+		return fmt.Errorf("failed to get default names path: %w", err)
+	}
+
+	defaultNameService, err := store.LoadAlternative(ctx,
+		config.NewDefaultNameStore(defaultNamesPath),
+		config.NewDefaultNameStoreV0(tokensPathV0),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load default names: %w", err)
+	}
+
+	tokenService, err := store.LoadAlternative(ctx,
+		config.NewTokenStore(tokensPath),
+		config.NewTokenStoreV0(tokensPathV0),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load tokens: %w", err)
+	}
+
+	workspaceService, err := store.LoadAlternative(ctx,
+		config.NewWorkspaceStore(workspacePath),
+		config.NewWorkspaceStoreV0(workspacePathV0),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load workspace: %w", err)
+	}
+
+	hostingService := github.NewHostingService(tokenService)
+	finderService := filesystem.NewFinderService()
+
+	cmd := cli.NewApp(ctx, defaultNameService, hostingService, finderService, workspaceService, tokenService, defaults)
+	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
+
+	if err := cmd.ExecuteContext(ctx); err != nil {
+		return err
+	}
+	return nil
 }
