@@ -60,6 +60,7 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 }
 
 func WorkspacePath() (string, error) {
+	// TODO: v1? v3?
 	path, err := appContextPath("GOGH_WORKSPACE_PATH", os.UserCacheDir, "workspace.v1.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search workspace path: %w", err)

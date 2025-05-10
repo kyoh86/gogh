@@ -14,7 +14,6 @@ import (
 
 func NewApp(
 	ctx context.Context,
-	conf *config.ConfigStore,
 	defaultNameService repository.DefaultNameService,
 	hostingService hosting.HostingService,
 	finderService workspace.FinderService,

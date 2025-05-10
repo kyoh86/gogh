@@ -38,7 +38,6 @@ func main() {
 func run() error {
 	ctx := logger.NewLogger()
 
-	conf := loadConfigOrExit("config", config.LoadConfig)
 	defaults := loadConfigOrExit("flags", config.LoadFlags)
 
 	tokensPathV0, err := config.TokensPathV0()
@@ -89,7 +88,7 @@ func run() error {
 	hostingService := github.NewHostingService(tokenService)
 	finderService := filesystem.NewFinderService()
 
-	cmd := cli.NewApp(ctx, conf, defaultNameService, hostingService, finderService, workspaceService, tokenService, defaults)
+	cmd := cli.NewApp(ctx, defaultNameService, hostingService, finderService, workspaceService, tokenService, defaults)
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
