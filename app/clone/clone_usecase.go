@@ -39,5 +39,6 @@ func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, opts O
 		return err
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
+	// TODO: Set the retry limit
 	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, opts.Alias, 0)
 }

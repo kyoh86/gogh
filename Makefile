@@ -40,7 +40,7 @@ test: gen
 man: gen
 	rm -rf ./doc/usage/**.md
 	rm -rf ./doc/man/*
-	go run -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
+	GOGH_FLAG_PATH=./dummy.yaml go run -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
 .PHONY: man
 
 install: test

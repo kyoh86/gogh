@@ -62,6 +62,7 @@ func NewCreateCommand(
 	runFunc := func(ctx context.Context, ref *repository.ReferenceWithAlias) error {
 		if f.Template == "" {
 			ropt := create.Options{
+				// TODO: Set CloneRetryLimit
 				CreateRepositoryOptions: hosting.CreateRepositoryOptions{
 					Description:         f.Description,
 					Homepage:            f.Homepage,
@@ -90,6 +91,7 @@ func NewCreateCommand(
 				return err
 			}
 			if err := createFromTemplateUseCase.Execute(ctx, ref.Reference, *template, create_from_template.CreateFromTemplateOptions{
+				// TODO: Set CloneRetryLimit
 				CreateRepositoryFromTemplateOptions: hosting.CreateRepositoryFromTemplateOptions{
 					Description:        f.Description,
 					IncludeAllBranches: f.IncludeAllBranches,
