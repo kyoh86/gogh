@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
+func NewBundleDumpCommand(defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
 	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",

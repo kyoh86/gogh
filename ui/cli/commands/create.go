@@ -16,7 +16,6 @@ import (
 )
 
 func NewCreateCommand(
-	conf *config.ConfigStore,
 	defaultNameService repository.DefaultNameService,
 	tokens auth.TokenService,
 	hostingService hosting.HostingService,
@@ -34,14 +33,14 @@ func NewCreateCommand(
 	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
 	// TODO: Split flags from defaults
-	// - Load defaults from config to config.CreateFlags
+	// - Load defaults from config to config.CreateFlags (except that the subcommand is "man")
 	// - If the flag is not set in config, use the default value (e.g. config.Create.CloneRetryLimit == 0 => 5)
 	// - If the flag is set in config, use the value from config (e.g. config.Create.CloneRetryLimit == 5 => 5)
 	// - If the flag is set in command line, use the value from command line (e.g. --clone-retry-limit 10 => 10)
 	// ref: infra/config/token_store.go depends on core/auth/token_service.go
 	var f config.CreateFlags
 
-	checkFlags := func(ctx context.Context, args []string) (*repository.ReferenceWithAlias, error) {
+	checkFlags := func(_ context.Context, args []string) (*repository.ReferenceWithAlias, error) {
 		var name string
 		if len(args) == 0 {
 			if err := huh.NewForm(huh.NewGroup(

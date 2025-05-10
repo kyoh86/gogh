@@ -154,7 +154,7 @@ func (s *HostingService) getTokenForCore(ctx context.Context, host, owner string
 		if entry.Owner == owner {
 			return entry.Owner, entry.Token, nil
 		}
-		adaptor, err := NewAdaptor(ctx, entry.Host, util.Ptr((Token)(entry.Token)))
+		adaptor, err := NewAdaptor(ctx, entry.Host, util.Ptr(entry.Token))
 		if err != nil {
 			continue // Try next token if this one fails
 		}

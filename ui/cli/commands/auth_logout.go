@@ -46,7 +46,7 @@ func NewAuthLogoutCommand(tokens auth.TokenService) *cobra.Command {
 		return selected, nil
 	}
 
-	preprocessFlags := func(cmd *cobra.Command, args []string) ([][2]string, error) {
+	preprocessFlags := func(cmd *cobra.Command, args []string) [][2]string {
 		rets := make([][2]string, 0, len(args))
 		for _, target := range args {
 			words := strings.SplitN(target, "/", 2)
@@ -56,7 +56,7 @@ func NewAuthLogoutCommand(tokens auth.TokenService) *cobra.Command {
 			}
 			rets = append(rets, [2]string{words[0], words[1]})
 		}
-		return rets, nil
+		return rets
 	}
 
 	return &cobra.Command{
@@ -69,10 +69,7 @@ func NewAuthLogoutCommand(tokens auth.TokenService) *cobra.Command {
 				return err
 			}
 
-			owners, err := preprocessFlags(cmd, indices)
-			if err != nil {
-				return err
-			}
+			owners := preprocessFlags(cmd, indices)
 
 			for _, target := range owners {
 				log.FromContext(cmd.Context()).WithField("target", target).Info("logout from")

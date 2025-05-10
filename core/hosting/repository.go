@@ -28,7 +28,7 @@ type Repository struct {
 	// Language is a primary language of the repository (i.g.: "Go")
 	Language string `json:"language,omitempty"`
 	// Archived is if the repository is archived
-	Archived bool `json:"language,omitempty"`
+	Archived bool `json:"archived,omitempty"`
 	// Private is if the repository is private
 	Private bool `json:"private,omitempty"`
 	// IsTemplate is if the repository is a template

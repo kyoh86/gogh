@@ -17,7 +17,6 @@ import (
 )
 
 func NewBundleRestoreCommand(
-	conf *config.ConfigStore,
 	defaultNameService repository.DefaultNameService,
 	tokenService auth.TokenService,
 	defaults *config.FlagStore,
@@ -58,9 +57,8 @@ func NewBundleRestoreCommand(
 					})
 				})
 			}
-			return eg.Wait()
 		}
-		return nil
+		return eg.Wait()
 	}
 
 	cmd := &cobra.Command{

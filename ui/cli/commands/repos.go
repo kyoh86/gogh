@@ -59,7 +59,8 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 		"organizationMember",
 		"collaborator",
 	}
-	checkFlags := func(cmd *cobra.Command, args []string) (printer view.RemoteRepoPrinter, opts *repos.Options, err error) {
+	checkFlags := func() (printer view.RemoteRepoPrinter, opts *repos.Options, err error) {
+		opts = &repos.Options{}
 		switch f.Limit {
 		case 0:
 			opts.Limit = 30
@@ -112,22 +113,22 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 
 		switch strings.ToLower(f.Sort) {
 		case "created-at", "createdAt", "created_at":
-			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldCreatedAt
+			opts.OrderBy.Field = hosting.RepositoryOrderFieldCreatedAt
 		case "name":
-			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldName
+			opts.OrderBy.Field = hosting.RepositoryOrderFieldName
 		case "pushed-at", "pushedAt", "pushed_at":
-			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldPushedAt
+			opts.OrderBy.Field = hosting.RepositoryOrderFieldPushedAt
 		case "stargazers":
-			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldStargazers
+			opts.OrderBy.Field = hosting.RepositoryOrderFieldStargazers
 		case "updated-at", "updatedAt", "updated_at":
-			opts.ListRepositoryOptions.OrderBy.Field = hosting.RepositoryOrderFieldUpdatedAt
+			opts.OrderBy.Field = hosting.RepositoryOrderFieldUpdatedAt
 		}
 
 		switch strings.ToLower(f.Order) {
 		case "asc", "ascending":
-			opts.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionAsc
+			opts.OrderBy.Direction = hosting.OrderDirectionAsc
 		case "desc", "descending":
-			opts.ListRepositoryOptions.OrderBy.Direction = hosting.OrderDirectionDesc
+			opts.OrderBy.Direction = hosting.OrderDirectionDesc
 		}
 
 		printer, err = f.Format.Formatter(os.Stdout)
@@ -138,7 +139,7 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 		Short: "List remote repositories",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			printer, opts, err := checkFlags(cmd, args)
+			printer, opts, err := checkFlags()
 			if err != nil {
 				return err
 			}

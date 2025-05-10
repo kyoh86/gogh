@@ -14,7 +14,6 @@ import (
 )
 
 func NewForkCommand(
-	conf *config.ConfigStore,
 	defaultNames repository.DefaultNameService,
 	tokens auth.TokenService,
 	defaults *config.FlagStore,
@@ -22,7 +21,7 @@ func NewForkCommand(
 ) *cobra.Command {
 	var f config.ForkFlags
 
-	checkFlags := func(cmd *cobra.Command, args []string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
+	checkFlags := func(_ *cobra.Command, args []string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
 		if len(args) != 1 {
 			return nil, nil, fmt.Errorf("invalid number of arguments")
 		}

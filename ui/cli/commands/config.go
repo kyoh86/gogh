@@ -10,6 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ import (
 //go:embed config_template.txt
 var configTemplate string
 
-func NewConfigCommand(conf *config.ConfigStore, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
+func NewConfigCommand(workspaceService workspace.WorkspaceService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
 	return &cobra.Command{
 		Use:     "config",
 		Short:   "Show configurations",
@@ -52,7 +53,7 @@ func NewConfigCommand(conf *config.ConfigStore, tokens auth.TokenService, defaul
 				"configFilePath":      configFilePath,
 				"tokensFilePath":      tokensFilePath,
 				"defaultFlagFilePath": flagsFilePath,
-				"roots":               conf.GetRoots(),
+				"roots":               workspaceService.GetRoots(),
 				"tokens":              tokens.Entries(),
 				"defaultFlags":        defaultFlags,
 			}); err != nil {

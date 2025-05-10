@@ -11,13 +11,11 @@ import (
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
 func NewCloneCommand(
-	conf *config.ConfigStore,
 	defaultNameService repository.DefaultNameService,
 	tokenService auth.TokenService,
 	hostingService hosting.HostingService,

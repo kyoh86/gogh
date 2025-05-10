@@ -20,53 +20,56 @@ func NewUseCase(tokenService auth.TokenService) *UseCase {
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, host string) (resch chan *oauth2.DeviceAuthResponse, errch chan error) {
-	resch = make(chan *oauth2.DeviceAuthResponse)
-	errch = make(chan error)
+func (uc *UseCase) Execute(ctx context.Context, host string) (chan *oauth2.DeviceAuthResponse, chan error) {
+	resch := make(chan *oauth2.DeviceAuthResponse)
+	errch := make(chan error)
 
-	go func() {
-		defer close(resch)
-		defer close(errch)
+	go uc.executeCore(ctx, resch, errch, host)
 
-		// Get OAuth2 config
-		config, err := uc.hostingService.GetOauth2Config(ctx, host)
-		if err != nil {
-			errch <- fmt.Errorf("failed to get OAuth2 config: %w", err)
-			return
-		}
+	return resch, errch
+}
 
-		// Request device code
-		deviceCodeResp, err := config.DeviceAuth(ctx)
-		if err != nil {
-			errch <- fmt.Errorf("failed to request device code: %w", err)
-			return
-		}
-		resch <- deviceCodeResp
+func (uc *UseCase) executeCore(ctx context.Context, resch chan *oauth2.DeviceAuthResponse, errch chan error, host string) {
+	defer close(resch)
+	defer close(errch)
 
-		// Poll for token
-		deviceCodeResp.Interval++ // Add a second for safety
-		tokenResp, err := config.DeviceAccessToken(ctx, deviceCodeResp)
-		if err != nil {
-			errch <- fmt.Errorf("failed to poll for token: %w", err)
-			return
-		}
+	// Get OAuth2 config
+	config, err := uc.hostingService.GetOauth2Config(ctx, host)
+	if err != nil {
+		errch <- fmt.Errorf("failed to get OAuth2 config: %w", err)
+		return
+	}
 
-		if tokenResp == nil {
-			errch <- fmt.Errorf("got nil token response")
-			return
-		}
+	// Request device code
+	deviceCodeResp, err := config.DeviceAuth(ctx)
+	if err != nil {
+		errch <- fmt.Errorf("failed to request device code: %w", err)
+		return
+	}
+	resch <- deviceCodeResp
 
-		// Get user info
-		user, err := uc.hostingService.GetAuthenticatedUserName(ctx, host, tokenResp)
-		if err != nil {
-			errch <- fmt.Errorf("failed to get authenticated user info: %w", err)
-			return
-		}
+	// Poll for token
+	deviceCodeResp.Interval++ // Add a second for safety
+	tokenResp, err := config.DeviceAccessToken(ctx, deviceCodeResp)
+	if err != nil {
+		errch <- fmt.Errorf("failed to poll for token: %w", err)
+		return
+	}
 
-		if err := uc.tokenService.Set(host, user, *tokenResp); err != nil {
-			errch <- fmt.Errorf("failed to save token: %w", err)
-			return
-		}
-	}()
-	return
+	if tokenResp == nil {
+		errch <- fmt.Errorf("got nil token response")
+		return
+	}
+
+	// Get user info
+	user, err := uc.hostingService.GetAuthenticatedUserName(ctx, host, tokenResp)
+	if err != nil {
+		errch <- fmt.Errorf("failed to get authenticated user info: %w", err)
+		return
+	}
+
+	if err := uc.tokenService.Set(host, user, *tokenResp); err != nil {
+		errch <- fmt.Errorf("failed to save token: %w", err)
+		return
+	}
 }

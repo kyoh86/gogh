@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCwdCommand(conf *config.ConfigStore, defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
+func NewCwdCommand(defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
 	var f config.CwdFlags
 	cmd := &cobra.Command{
 		Use:   "cwd",

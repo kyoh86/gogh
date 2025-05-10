@@ -29,8 +29,8 @@ func NewApp(
 
 	bundleCommand := commands.NewBundleCommand()
 	bundleCommand.AddCommand(
-		commands.NewBundleDumpCommand(conf, defaults, workspaceService, finderService),
-		commands.NewBundleRestoreCommand(conf, defaultNameService, tokenService, defaults, hostingService, workspaceService),
+		commands.NewBundleDumpCommand(defaults, workspaceService, finderService),
+		commands.NewBundleRestoreCommand(defaultNameService, tokenService, defaults, hostingService, workspaceService),
 	)
 
 	authCommand := commands.NewAuthCommand(tokenService)
@@ -40,15 +40,15 @@ func NewApp(
 		commands.NewAuthLogoutCommand(tokenService),
 	)
 
-	rootsCommand := commands.NewRootsCommand(conf)
+	rootsCommand := commands.NewRootsCommand(workspaceService)
 	rootsCommand.AddCommand(
-		commands.NewRootsSetPrimaryCommand(conf),
-		commands.NewRootsRemoveCommand(conf),
-		commands.NewRootsAddCommand(conf),
-		commands.NewRootsListCommand(conf),
+		commands.NewRootsSetPrimaryCommand(workspaceService),
+		commands.NewRootsRemoveCommand(workspaceService),
+		commands.NewRootsAddCommand(workspaceService),
+		commands.NewRootsListCommand(workspaceService),
 	)
 
-	configCommand := commands.NewConfigCommand(conf, tokenService, defaults)
+	configCommand := commands.NewConfigCommand(workspaceService, tokenService, defaults)
 	configCommand.AddCommand(
 		authCommand,
 		rootsCommand,
@@ -56,13 +56,13 @@ func NewApp(
 
 	facadeCommand.AddCommand(
 		commands.NewManCommand(),
-		commands.NewCwdCommand(conf, defaults, workspaceService, finderService),
-		commands.NewListCommand(conf, defaults, workspaceService, finderService),
-		commands.NewCloneCommand(conf, defaultNameService, tokenService, hostingService, workspaceService),
-		commands.NewCreateCommand(conf, defaultNameService, tokenService, hostingService, workspaceService, defaults),
+		commands.NewCwdCommand(defaults, workspaceService, finderService),
+		commands.NewListCommand(defaults, workspaceService, finderService),
+		commands.NewCloneCommand(defaultNameService, tokenService, hostingService, workspaceService),
+		commands.NewCreateCommand(defaultNameService, tokenService, hostingService, workspaceService, defaults),
 		commands.NewReposCommand(tokenService, hostingService, defaults),
-		commands.NewDeleteCommand(conf, defaultNameService, tokenService, hostingService, finderService, workspaceService),
-		commands.NewForkCommand(conf, defaultNameService, tokenService, defaults, hostingService),
+		commands.NewDeleteCommand(defaultNameService, tokenService, hostingService, finderService, workspaceService),
+		commands.NewForkCommand(defaultNameService, tokenService, defaults, hostingService),
 		configCommand,
 		authCommand,
 		bundleCommand,

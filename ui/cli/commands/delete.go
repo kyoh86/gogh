@@ -11,12 +11,10 @@ import (
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
 func NewDeleteCommand(
-	conf *config.ConfigStore,
 	defaultNameService repository.DefaultNameService,
 	tokenService auth.TokenService,
 	hostingService hosting.HostingService,
@@ -58,7 +56,7 @@ func NewDeleteCommand(
 		return selected, nil
 	}
 
-	prepareFlags := func(ctx context.Context, arg string) (*repository.Reference, error) {
+	prepareFlags := func(_ context.Context, arg string) (*repository.Reference, error) {
 		parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 		ref, err := parser.Parse(arg)
 		if err != nil {

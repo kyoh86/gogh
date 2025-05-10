@@ -69,7 +69,7 @@ func (t tokenServiceImpl) Has(hostName, ownerName string) bool {
 }
 
 func (t tokenServiceImpl) Entries() []TokenEntry {
-	var entries []TokenEntry
+	entries := make([]TokenEntry, 0, len(t))
 	for key, token := range t {
 		words := strings.SplitN(key, hostOwnerSeparator, 2)
 		if len(words) != 2 {
