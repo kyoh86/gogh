@@ -34,12 +34,13 @@ lint: gen
 .PHONY: lint
 
 test: gen
-	go test -tags man -v --race ./...
+	go test -v --race ./...
 .PHONY: test
 
 man: gen
 	rm -rf ./doc/usage/**.md
-	go run -tags man -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
+	rm -rf ./doc/man/*
+	go run -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
 .PHONY: man
 
 install: test

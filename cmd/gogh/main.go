@@ -43,23 +43,23 @@ func run() error {
 
 	tokensPathV0, err := config.TokensPathV0()
 	if err != nil {
-		return fmt.Errorf("failed to get tokens path (v0): %w\n", err)
+		return fmt.Errorf("failed to get tokens path (v0): %w", err)
 	}
 	tokensPath, err := config.TokensPath()
 	if err != nil {
-		return fmt.Errorf("failed to get tokens path (v0): %w\n", err)
+		return fmt.Errorf("failed to get tokens path (v0): %w", err)
 	}
 	workspacePath, err := config.WorkspacePath()
 	if err != nil {
-		return fmt.Errorf("failed to get workspace path: %w\n", err)
+		return fmt.Errorf("failed to get workspace path: %w", err)
 	}
 	workspacePathV0, err := config.WorkspacePathV0()
 	if err != nil {
-		return fmt.Errorf("failed to get workspace path (v0): %w\n", err)
+		return fmt.Errorf("failed to get workspace path (v0): %w", err)
 	}
 	defaultNamesPath, err := config.DefaultNamesPath()
 	if err != nil {
-		return fmt.Errorf("failed to get default names path: %w\n", err)
+		return fmt.Errorf("failed to get default names path: %w", err)
 	}
 
 	defaultNameService, err := store.LoadAlternative(ctx,
@@ -67,7 +67,7 @@ func run() error {
 		config.NewDefaultNameStoreV0(tokensPathV0),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to load default names: %w\n", err)
+		return fmt.Errorf("failed to load default names: %w", err)
 	}
 
 	tokenService, err := store.LoadAlternative(ctx,
@@ -75,7 +75,7 @@ func run() error {
 		config.NewTokenStoreV0(tokensPathV0),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to load tokens: %w\n", err)
+		return fmt.Errorf("failed to load tokens: %w", err)
 	}
 
 	workspaceService, err := store.LoadAlternative(ctx,
@@ -83,7 +83,7 @@ func run() error {
 		config.NewWorkspaceStoreV0(workspacePathV0),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to load workspace: %w\n", err)
+		return fmt.Errorf("failed to load workspace: %w", err)
 	}
 
 	hostingService := github.NewHostingService(tokenService)

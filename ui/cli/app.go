@@ -55,6 +55,7 @@ func NewApp(
 	)
 
 	facadeCommand.AddCommand(
+		commands.NewManCommand(),
 		commands.NewCwdCommand(conf, defaults, workspaceService, finderService),
 		commands.NewListCommand(conf, defaults, workspaceService, finderService),
 		commands.NewCloneCommand(conf, defaultNameService, tokenService, hostingService, workspaceService),

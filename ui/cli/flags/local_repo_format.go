@@ -51,7 +51,30 @@ func formatter(v string) (view.LocalRepoFormat, error) {
 	return nil, fmt.Errorf("invalid format: %q", v)
 }
 
-const LocalRepoFormatShortUsage = `Print each local repository in a given format, where [format] can be one of "path", "full-path", "json", "fields" or "fields:[separator]".`
+const LocalRepoFormatShortUsage = `Print repository in a given format, where [format] can be one of "path", "full-path", "json", "fields" or "fields:[separator]".`
+
+const LocalRepoFormatLongUsage = `
+Print each local repository in a given format, where [format] can be one of "path",
+"full-path", "fields" and "fields:[separator]".
+
+- path:
+
+	A part of the URL to specify a repository.  For example: "github.com/kyoh86/gogh"
+
+- full-path
+
+	A full path of the local repository.  For example:
+	"/root/Projects/github.com/kyoh86/gogh".
+
+- fields
+
+	Tab separated all formats and properties of the local repository.
+	i.e. [full-path]\t[path]\t[host]\t[owner]\t[name]
+
+- fields:[separator]
+
+	Like "fields" but with the explicit separator.
+`
 
 func CompleteLocalRepoFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return []string{"path", "full-path", "json", "fields", "fields:"}, cobra.ShellCompDirectiveDefault

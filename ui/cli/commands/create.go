@@ -127,7 +127,7 @@ func NewCreateCommand(
 	cmd.Flags().
 		StringVarP(&f.Template, "template", "", defaults.Create.Template, "Create new repository from the template")
 	cmd.Flags().
-		BoolVarP(&f.IncludeAllBranches, "template", "", defaults.Create.IncludeAllBranches, "Create all branches in the template")
+		BoolVarP(&f.IncludeAllBranches, "include-all-branches", "", defaults.Create.IncludeAllBranches, "Create all branches in the template")
 	cmd.Flags().
 		StringVarP(&f.Description, "description", "", "", "A short description of the repository")
 	cmd.Flags().
