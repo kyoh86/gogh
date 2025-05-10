@@ -18,6 +18,7 @@ type ListOptions struct {
 
 // Repository is informations of a repository
 type RepoInfo interface {
+	// Exists returns true if the repository exists
 	Exists() bool
 	// FullPath returns the full path of the repository
 	FullPath() string

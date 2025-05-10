@@ -60,7 +60,7 @@ type ListFlags struct {
 }
 
 type ForkFlags struct {
-	Own bool `yaml:"own,omitempty"`
+	To string `yaml:"to,omitempty"`
 }
 
 type BundleDumpFlags struct {

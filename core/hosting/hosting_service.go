@@ -8,10 +8,15 @@ import (
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/util"
+	"golang.org/x/oauth2"
 )
 
 // HostingService provides access to remote repositories
 type HostingService interface {
+	// GetOauth2Config retrieves OAuth2 configuration for a specific host
+	GetOauth2Config(ctx context.Context, host string) (*oauth2.Config, error)
+	// GetAuthenticatedUserName retrieves the authenticated user from the remote service with the provided host/token
+	GetAuthenticatedUserName(ctx context.Context, host string, token *oauth2.Token) (string, error)
 	// GetURLOf converts a repository reference to its remote URL
 	GetURLOf(ref repository.Reference) (*url.URL, error)
 	// ParseURL converts a remote URL to a repository reference

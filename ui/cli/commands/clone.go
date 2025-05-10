@@ -99,13 +99,14 @@ func NewCloneCommand(
 		Use:     "clone [flags] [[OWNER/]NAME[=ALIAS]]...",
 		Aliases: []string{"get"},
 		Short:   "Clone remote repositories to local",
-		Example: `  It accepts a shortly notation for a remote repository
+		Example: `  It accepts a short notation for a remote repository
   (for example, "github.com/kyoh86/example") like below.
     - "NAME": e.g. "example"; 
     - "OWNER/NAME": e.g. "kyoh86/example"
   They'll be completed with the default host and owner set by "config set-default".
 
   It accepts an alias for each repository.
+	The alias is a local name for the remote repository.
   For example:
     - "kyoh86/example=sample"
     - "kyoh86/example=kyoh86-tryouts/tryout"

@@ -2,72 +2,95 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/apex/log"
-	"github.com/go-git/go-git/v5"
+	"github.com/kyoh86/gogh/v3/app/fork"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/domain/local"
-	"github.com/kyoh86/gogh/v3/domain/remote"
-	"github.com/kyoh86/gogh/v3/domain/reporef"
 	"github.com/kyoh86/gogh/v3/infra/config"
-	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
 )
 
-func NewForkCommand(conf *config.ConfigStore, defaultNames repository.DefaultNameService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
+func NewForkCommand(
+	conf *config.ConfigStore,
+	defaultNames repository.DefaultNameService,
+	tokens auth.TokenService,
+	defaults *config.FlagStore,
+	hostingService hosting.HostingService,
+) *cobra.Command {
 	var f config.ForkFlags
+
+	checkFlags := func(cmd *cobra.Command, args []string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
+		if len(args) != 1 {
+			return nil, nil, fmt.Errorf("invalid number of arguments")
+		}
+		parser := repository.NewReferenceParser(defaultNames.GetDefaultHostAndOwner())
+		srcRef, err := parser.Parse(args[0])
+		if err != nil {
+			return nil, nil, err
+		}
+		if f.To == "" {
+			owner, err := defaultNames.GetDefaultOwnerFor(srcRef.Host())
+			if err != nil {
+				return nil, nil, err
+			}
+			return srcRef, &repository.ReferenceWithAlias{
+				Reference: repository.NewReference(srcRef.Host(), owner, srcRef.Name()),
+			}, nil
+		}
+		toRef, err := parser.ParseWithAlias(f.To)
+		if err != nil {
+			return nil, nil, err
+		}
+		if toRef.Reference.Host() != srcRef.Host() {
+			return nil, nil, fmt.Errorf("the host of the forked repository must be the same as the original repository")
+		}
+		if toRef.Reference.Owner() == "" {
+			return nil, nil, fmt.Errorf("the owner of the forked repository must be specified")
+		}
+		return srcRef, toRef, nil
+	}
+
+	useCase := fork.NewUseCase(hostingService)
+
 	cmd := &cobra.Command{
 		Use:   "fork [flags] OWNER/NAME",
 		Short: "Fork a repository",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
-			parser := reporef.NewRepoRefParser(defaultNames.GetDefaultHostAndOwner())
-			ref, err := parser.Parse(refs[0])
+			ref, toRef, err := checkFlags(cmd, refs)
 			if err != nil {
 				return err
 			}
-			_, token, err := tokens.GetDefaultTokenFor(ref.Host())
-			if err != nil {
-				return err
+			opts := fork.Options{
+				//TODO: flag:Clone Retry Limit
+				//TODO: flag:Default Branch Only
 			}
-			adaptor, err := github.NewAdaptor(ctx, ref.Host(), &token)
-			if err != nil {
-				return err
-			}
-			remote := remote.NewController(adaptor)
-			forked, err := remote.Fork(ctx, ref.Owner(), ref.Name(), nil)
-			if err != nil {
-				return err
-			}
-
-			root := conf.PrimaryRoot()
-			ctrl := local.NewController(root)
-
-			localRef := ref
-			var opts *local.CloneOption
-			if f.Own {
-				opts = &local.CloneOption{Alias: &forked.Ref}
-				localRef = forked.Ref
-			}
-			log.FromContext(ctx).Infof("git clone %q", ref.URL())
-			accessToken, err := adaptor.GetAccessToken()
-			if err != nil {
-				log.FromContext(ctx).WithField("error", err).Error("failed to get access token")
+			if err := useCase.Execute(ctx, *ref, *toRef, opts); err != nil {
+				log.FromContext(ctx).WithError(err).Error("failed to fork the repository")
 				return nil
 			}
-			if _, err := ctrl.Clone(ctx, ref, accessToken, opts); err != nil {
-				return fmt.Errorf("cloning the remote repository %q: %w", ref, err)
-			}
-			return ctrl.SetRemoteRefs(ctx, localRef, map[string][]reporef.RepoRef{
-				git.DefaultRemoteName: {forked.Ref},
-				"upstream":            {ref},
-			})
+			return nil
 		},
 	}
-	f.Own = defaults.Fork.Own
+	f.To = defaults.Fork.To
+	// TODO: flag:Clone Retry Limit
+	// TODO: flag:Default Branch Only
 	cmd.Flags().
-		BoolVarP(&f.Own, "own", "", false, "Clones the forked remote repo to local as my-own repo")
+		StringVarP(
+			&f.To,
+			"to",
+			"",
+			"",
+			strings.Join([]string{
+				"Fork to the specified repository.",
+				"It accepts a notation like 'OWNER/NAME' or 'OWNER/NAME=ALIAS'.",
+				"If not specified, it will be forked to the default owner and same name as the original repository.",
+				"If the alias is specified, it will be set as the local repository name.",
+			}, " "),
+		)
 	return cmd
 }

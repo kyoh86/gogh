@@ -10,6 +10,7 @@ import (
 )
 
 type repoRef struct {
+	exists   bool
 	fullPath string
 	path     string
 	host     string
@@ -31,6 +32,9 @@ func (r *repoRef) Path() string { return r.path }
 
 // FullPath returns the full path of the repository (i.g.: "/path/to/workspace/github.com/kyoh86/gogh")
 func (r *repoRef) FullPath() string { return r.fullPath }
+
+// Exists returns true if the repository exists
+func (r *repoRef) Exists() bool { return r.exists }
 
 func TestLocalRepoFormat(t *testing.T) {
 	repo := &repoRef{

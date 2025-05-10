@@ -61,7 +61,7 @@ func NewApp(
 		commands.NewCreateCommand(conf, defaultNameService, tokenService, hostingService, workspaceService, defaults),
 		commands.NewReposCommand(tokenService, hostingService, defaults),
 		commands.NewDeleteCommand(conf, defaultNameService, tokenService, hostingService, finderService, workspaceService),
-		commands.NewForkCommand(conf, defaultNameService, tokenService, defaults),
+		commands.NewForkCommand(conf, defaultNameService, tokenService, defaults, hostingService),
 		configCommand,
 		authCommand,
 		bundleCommand,
