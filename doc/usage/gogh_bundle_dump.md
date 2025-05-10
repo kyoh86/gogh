@@ -1,6 +1,6 @@
 ## gogh bundle dump
 
-Export current local projects
+Export current local repository list
 
 ```
 gogh bundle dump [flags]

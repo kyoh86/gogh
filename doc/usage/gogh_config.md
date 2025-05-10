@@ -14,7 +14,7 @@ gogh config [flags]
 
 ### SEE ALSO
 
-* [gogh](gogh.md)	 - GO GitHub project manager
+* [gogh](gogh.md)	 - GO GitHub local repository manager
 * [gogh config auth](gogh_config_auth.md)	 - Manage tokens
 * [gogh config roots](gogh_config_roots.md)	 - Manage roots
 

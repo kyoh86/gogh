@@ -16,7 +16,7 @@ See each sub-command's help for details on how to use the generated script.
 
 ### SEE ALSO
 
-* [gogh](gogh.md)	 - GO GitHub project manager
+* [gogh](gogh.md)	 - GO GitHub local repository manager
 * [gogh completion bash](gogh_completion_bash.md)	 - Generate the autocompletion script for bash
 * [gogh completion fish](gogh_completion_fish.md)	 - Generate the autocompletion script for fish
 * [gogh completion powershell](gogh_completion_powershell.md)	 - Generate the autocompletion script for powershell

@@ -1,6 +1,6 @@
 ## gogh delete
 
-Delete a project with a remote repository
+Delete local and remote repository
 
 ```
 gogh delete [flags] [[OWNER/]NAME]
@@ -12,11 +12,11 @@ gogh delete [flags] [[OWNER/]NAME]
       --dryrun   Displays the operations that would be performed using the specified command without actually running them
       --force    Do NOT confirm to delete.
   -h, --help     help for delete
-      --local    Delete local project. (default true)
-      --remote   Delete remote project.
+      --local    Delete local repository. (default true)
+      --remote   Delete remote repository.
 ```
 
 ### SEE ALSO
 
-* [gogh](gogh.md)	 - GO GitHub project manager
+* [gogh](gogh.md)	 - GO GitHub local repository manager
 

@@ -1,6 +1,6 @@
 ## gogh bundle restore
 
-Get dumped projects
+Get dumped local repositoiries
 
 ```
 gogh bundle restore [flags]
