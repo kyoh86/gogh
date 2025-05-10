@@ -55,8 +55,7 @@ func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameSe
 }
 
 func DefaultNamesPath() (string, error) {
-	// TODO: v1? v3?
-	path, err := appContextPath("GOGH_DEFAULT_NAMES_PATH", os.UserConfigDir, "default_names.yaml")
+	path, err := appContextPath("GOGH_DEFAULT_NAMES_PATH", os.UserConfigDir, "default_names.v4.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search default names path: %w", err)
 	}

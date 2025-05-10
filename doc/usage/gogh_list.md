@@ -32,6 +32,7 @@ gogh list [flags]
                         	Like "fields" but with the explicit separator.
                         
   -h, --help            help for list
+      --limit int       Max number of repositories to list. -1 means unlimited (default 100)
       --primary         List up repositories in just a primary root
   -q, --query string    Query for selecting repositories
 ```

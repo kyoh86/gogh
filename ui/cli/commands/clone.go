@@ -86,7 +86,8 @@ func NewCloneCommand(
 		for _, ref := range refs {
 			eg.Go(func() error {
 				return cloneUseCase.Execute(ctx, ref.Reference, clone.Options{
-					Alias: ref.Alias,
+					Alias:      ref.Alias,
+					RetryLimit: 1,
 				})
 			})
 		}

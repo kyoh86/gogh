@@ -28,7 +28,8 @@ func NewUseCase(
 
 // Options contains options for the clone operation
 type Options struct {
-	Alias *repository.Reference
+	Alias      *repository.Reference
+	RetryLimit int
 }
 
 // Execute performs the clone operation
@@ -39,6 +40,5 @@ func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, opts O
 		return err
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
-	// TODO: Set the retry limit
-	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, opts.Alias, 0)
+	return repositoryService.CloneRepositoryWithRetry(ctx, repo, ref, opts.Alias, opts.RetryLimit)
 }

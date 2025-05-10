@@ -9,8 +9,9 @@ import (
 )
 
 type BundleRestoreFlags struct {
-	File   Path `yaml:"file,omitempty"`
-	Dryrun bool `yaml:"-"`
+	File            Path `yaml:"file,omitempty"`
+	CloneRetryLimit int  `yaml:"cloneRetryLimit,omitempty"`
+	Dryrun          bool `yaml:"-"`
 }
 
 type ReposFlags struct {
@@ -53,14 +54,18 @@ type CreateFlags struct {
 type CwdFlags struct {
 	Format flags.LocalRepoFormat `yaml:"format,omitempty"`
 }
+
 type ListFlags struct {
+	Limit   int                   `yaml:"limit,omitempty"`
 	Query   string                `yaml:"-"`
 	Format  flags.LocalRepoFormat `yaml:"format,omitempty"`
 	Primary bool                  `yaml:"primary,omitempty"`
 }
 
 type ForkFlags struct {
-	To string `yaml:"to,omitempty"`
+	To                string `yaml:"to,omitempty"`
+	DefaultBranchOnly bool   `yaml:"defaultBranchOnly,omitempty"`
+	CloneRetryLimit   int    `yaml:"cloneRetryLimit,omitempty"`
 }
 
 type BundleDumpFlags struct {

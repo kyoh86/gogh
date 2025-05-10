@@ -27,7 +27,7 @@ func NewListCommand(defaults *config.FlagStore, workspaceService workspace.Works
 			ctx := cmd.Context()
 			opts := workspace.ListOptions{
 				Query: f.Query,
-				Limit: 0,
+				Limit: f.Limit,
 			}
 			for repo, err := range list.NewUseCase(workspaceService, finderService).Execute(ctx, f.Primary, opts) {
 				if err != nil {
@@ -51,7 +51,7 @@ func NewListCommand(defaults *config.FlagStore, workspaceService workspace.Works
 		},
 	}
 	f.Format = defaults.List.Format
-	// TODO: prepare "limit" flag
+	cmd.Flags().IntVarP(&f.Limit, "limit", "", DefaultValue(defaults.List.Limit, 100), "Max number of repositories to list. -1 means unlimited")
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", defaults.List.Primary, "List up repositories in just a primary root")
 	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)

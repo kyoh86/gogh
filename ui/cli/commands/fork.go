@@ -65,8 +65,10 @@ func NewForkCommand(
 				return err
 			}
 			opts := fork.Options{
-				//TODO: flag:Clone Retry Limit
-				//TODO: flag:Default Branch Only
+				CloneRetryLimit: f.CloneRetryLimit,
+				ForkRepositoryOptions: hosting.ForkRepositoryOptions{
+					DefaultBranchOnly: f.DefaultBranchOnly,
+				},
 			}
 			if err := useCase.Execute(ctx, *ref, *toRef, opts); err != nil {
 				log.FromContext(ctx).WithError(err).Error("failed to fork the repository")
@@ -76,8 +78,6 @@ func NewForkCommand(
 		},
 	}
 	f.To = defaults.Fork.To
-	// TODO: flag:Clone Retry Limit
-	// TODO: flag:Default Branch Only
 	cmd.Flags().
 		StringVarP(
 			&f.To,
@@ -91,5 +91,9 @@ func NewForkCommand(
 				"If the alias is specified, it will be set as the local repository name.",
 			}, " "),
 		)
+	cmd.Flags().
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", defaults.Create.CloneRetryLimit, "")
+	cmd.Flags().
+		BoolVarP(&f.DefaultBranchOnly, "default-branch-only", "", false, "Only fork the default branch")
 	return cmd
 }

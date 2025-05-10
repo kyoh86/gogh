@@ -53,7 +53,8 @@ func NewBundleRestoreCommand(
 			} else {
 				eg.Go(func() error {
 					return cloneUseCase.Execute(ctx, ref.Reference, clone.Options{
-						Alias: ref.Alias,
+						Alias:      ref.Alias,
+						RetryLimit: f.CloneRetryLimit,
 					})
 				})
 			}
@@ -74,5 +75,7 @@ func NewBundleRestoreCommand(
 	f.File = defaults.BundleRestore.File
 	cmd.Flags().
 		VarP(&f.File, "file", "", "Read the file as input; if not specified, read from stdin")
+	cmd.Flags().
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", defaults.Create.CloneRetryLimit, "")
 	return cmd
 }
