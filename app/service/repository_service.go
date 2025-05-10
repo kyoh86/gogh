@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/apex/log"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	gitcore "github.com/kyoh86/gogh/v3/core/git"
@@ -38,7 +37,8 @@ func (s *RepositoryService) CloneRepositoryWithRetry(
 	ref repository.Reference,
 	alias *repository.Reference,
 	retryLimit int,
-) error {
+	retry chan<- struct{},
+) (bool, error) {
 	// Determine local path based on layout
 	targetRef := ref
 	if alias != nil {
@@ -50,56 +50,61 @@ func (s *RepositoryService) CloneRepositoryWithRetry(
 	// Get the user and token for authentication
 	user, token, err := s.hostingService.GetTokenFor(ctx, ref)
 	if err != nil {
-		return err
+		return false, err
 	}
 	gitService := gitimpl.NewAuthenticatedService(user, token.AccessToken)
 
 	// Perform git clone operation
-	if err := cloneWithRetry(ctx, gitService, layout, ref, repo.CloneURL, localPath, retryLimit); err != nil {
-		return err
+	empty, err := cloneWithRetry(ctx, gitService, layout, ref, repo.CloneURL, localPath, retryLimit, retry)
+	if err != nil {
+		return empty, err
 	}
 
 	// Set up remotes
 	if err := gitService.SetDefaultRemotes(ctx, localPath, []string{repo.CloneURL}); err != nil {
-		return err
+		return empty, err
 	}
 
 	// Set up additional remotes if needed
 	if repo.Parent != nil {
 		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{repo.Parent.CloneURL}); err != nil {
-			return err
+			return empty, err
 		}
 	}
-	return nil
+	return empty, nil
 }
 
-func cloneWithRetry(ctx context.Context, gitService *gitimpl.GitService, layout workspace.LayoutService, ref repository.Reference, cloneURL, localPath string, retryLimit int) (err error) {
+func cloneWithRetry(ctx context.Context, gitService *gitimpl.GitService, layout workspace.LayoutService, ref repository.Reference, cloneURL, localPath string, retryLimit int, retry chan<- struct{}) (empty bool, err error) {
+	defer close(retry)
 	for range retryLimit {
 		err = gitService.Clone(ctx, cloneURL, localPath, gitcore.CloneOptions{})
 		switch {
 		case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
-			log.FromContext(ctx).Info("waiting the remote repository is ready")
+			select {
+			case retry <- struct{}{}:
+			default:
+			}
 		case err == nil:
-			return nil
+			return false, nil
 		case errors.Is(err, transport.ErrEmptyRemoteRepository):
 			path, err := layout.CreateRepositoryFolder(ref)
 			if err != nil {
-				return err
+				return true, err
 			}
 			if err := gitimpl.NewService().Init(cloneURL, path, false); err != nil {
-				return err
+				return true, err
 			}
-			log.FromContext(ctx).Info("created empty repository")
-			return nil
+			return true, nil
 		default:
-			return err // return immediately for unrecoverable errors
+			return false, err // return immediately for unrecoverable errors
 		}
+
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return false, ctx.Err()
 		case <-time.After(1 * time.Second):
 			// next retry
 		}
 	}
-	return err
+	return false, err
 }
