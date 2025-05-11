@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
@@ -13,10 +12,7 @@ func NewRootsCommand(svc *ServiceSet) *cobra.Command {
 		Use:     "roots",
 		Short:   "Manage roots",
 		Aliases: []string{"root"},
-		PersistentPostRunE: func(*cobra.Command, []string) error {
-			return config.SaveConfig()
-		},
-		Run: RootsListRun(svc),
+		Run:     RootsListRun(svc),
 	}
 }
 

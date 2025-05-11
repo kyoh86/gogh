@@ -28,10 +28,6 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 				logger.Error("[Bug] Failed to parse template string")
 				return nil
 			}
-			configFilePath, err := config.ConfigPath()
-			if err != nil {
-				return fmt.Errorf("failed to get config file path: %w", err)
-			}
 			tokensFilePath, err := config.TokensPathV0()
 			if err != nil {
 				return fmt.Errorf("failed to get tokens file path: %w", err)
@@ -48,7 +44,6 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 			}
 			var w strings.Builder
 			if err := t.Execute(&w, map[string]any{
-				"configFilePath":      configFilePath,
 				"tokensFilePath":      tokensFilePath,
 				"defaultFlagFilePath": flagsFilePath,
 				"roots":               svc.workspaceService.GetRoots(),

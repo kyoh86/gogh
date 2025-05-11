@@ -88,7 +88,7 @@ var (
 )
 
 func FlagsPath() (string, error) {
-	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flag.yaml")
+	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, AppName, "flag.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)
 	}
