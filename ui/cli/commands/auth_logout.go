@@ -9,13 +9,12 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/auth_list"
 	"github.com/kyoh86/gogh/v3/app/auth_logout"
-	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/spf13/cobra"
 )
 
-func NewAuthLogoutCommand(tokens auth.TokenService) *cobra.Command {
-	listUseCase := auth_list.NewUseCase(tokens)
-	logoutUseCase := auth_logout.NewUseCase(tokens)
+func NewAuthLogoutCommand(svc *ServiceSet) *cobra.Command {
+	listUseCase := auth_list.NewUseCase(svc.tokenService)
+	logoutUseCase := auth_logout.NewUseCase(svc.tokenService)
 
 	checkFlags := func(cmd *cobra.Command, args []string) ([]string, error) {
 		if len(args) > 0 {

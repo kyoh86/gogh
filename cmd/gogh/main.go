@@ -7,11 +7,9 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/infra/config"
-	"github.com/kyoh86/gogh/v3/infra/filesystem"
-	"github.com/kyoh86/gogh/v3/infra/git"
-	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/logger"
 	"github.com/kyoh86/gogh/v3/ui/cli"
+	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 )
 
 var (
@@ -86,21 +84,13 @@ func run() error {
 		return fmt.Errorf("failed to load workspace: %w", err)
 	}
 
-	hostingService := github.NewHostingService(tokenService)
-	finderService := filesystem.NewFinderService()
-	gitService := git.NewService()
-	authenticateService := github.NewAuthenticateService()
-
 	cmd := cli.NewApp(
-		ctx,
-		defaultNameService,
-		hostingService,
-		finderService,
-		workspaceService,
-		tokenService,
-		authenticateService,
-		defaults,
-		gitService,
+		commands.NewServiceSet(
+			defaultNameService,
+			tokenService,
+			workspaceService,
+			defaults,
+		),
 	)
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
 

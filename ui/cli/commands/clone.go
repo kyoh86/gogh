@@ -8,29 +8,18 @@ import (
 	"github.com/kyoh86/gogh/v3/app/clone"
 	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/git"
-	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCloneCommand(
-	defaultNameService repository.DefaultNameService,
-	tokenService auth.TokenService,
-	hostingService hosting.HostingService,
-	workspaceService workspace.WorkspaceService,
-	gitService git.GitService,
-) *cobra.Command {
+func NewCloneCommand(svc *ServiceSet) *cobra.Command {
 	var f struct {
 		dryrun bool
 	}
 
-	reposUseCase := repos.NewUseCase(hostingService)
-	cloneUseCase := clone.NewUseCase(hostingService, workspaceService, gitService)
-	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
+	reposUseCase := repos.NewUseCase(svc.hostingService)
+	cloneUseCase := clone.NewUseCase(svc.hostingService, svc.workspaceService, svc.gitService)
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
@@ -64,7 +53,7 @@ func NewCloneCommand(
 		}
 		refs := make([]repository.ReferenceWithAlias, 0, len(args))
 		for _, s := range args {
-			ref, err := parser.ParseWithAlias(s)
+			ref, err := svc.referenceParser.ParseWithAlias(s)
 			if err != nil {
 				return nil, err
 			}

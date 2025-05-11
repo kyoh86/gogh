@@ -7,20 +7,11 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/delete"
 	"github.com/kyoh86/gogh/v3/app/repos"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(
-	defaultNameService repository.DefaultNameService,
-	tokenService auth.TokenService,
-	hostingService hosting.HostingService,
-	finderService workspace.FinderService,
-	workspaceService workspace.WorkspaceService,
-) *cobra.Command {
+func NewDeleteCommand(svc *ServiceSet) *cobra.Command {
 	var f struct {
 		local  bool
 		remote bool
@@ -28,7 +19,7 @@ func NewDeleteCommand(
 		dryrun bool
 	}
 
-	reposUseCase := repos.NewUseCase(hostingService)
+	reposUseCase := repos.NewUseCase(svc.hostingService)
 
 	checkFlags := func(ctx context.Context, args []string) (string, error) {
 		if len(args) != 0 {
@@ -57,8 +48,7 @@ func NewDeleteCommand(
 	}
 
 	prepareFlags := func(_ context.Context, arg string) (*repository.Reference, error) {
-		parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
-		ref, err := parser.Parse(arg)
+		ref, err := svc.referenceParser.Parse(arg)
 		if err != nil {
 			return nil, err
 		}
@@ -120,9 +110,9 @@ func NewDeleteCommand(
 				return nil
 			}
 			useCase := delete.NewUseCase(
-				workspaceService,
-				finderService,
-				hostingService,
+				svc.workspaceService,
+				svc.finderService,
+				svc.hostingService,
 			)
 			return useCase.Execute(ctx, *ref, delete.Options{
 				Local:  f.local,

@@ -8,28 +8,15 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/clone"
 	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/git"
-	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
-func NewBundleRestoreCommand(
-	defaultNameService repository.DefaultNameService,
-	tokenService auth.TokenService,
-	defaults *config.FlagStore,
-	hostingService hosting.HostingService,
-	workspaceService workspace.WorkspaceService,
-	gitService git.GitService,
-) *cobra.Command {
+func NewBundleRestoreCommand(svc *ServiceSet) *cobra.Command {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(hostingService, workspaceService, gitService)
-	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
+	cloneUseCase := clone.NewUseCase(svc.hostingService, svc.workspaceService, svc.gitService)
 
 	runFunc := func(ctx context.Context) error {
 		in := os.Stdin
@@ -44,7 +31,7 @@ func NewBundleRestoreCommand(
 		eg, ctx := errgroup.WithContext(ctx)
 		scan := bufio.NewScanner(in)
 		for scan.Scan() {
-			ref, err := parser.ParseWithAlias(scan.Text())
+			ref, err := svc.referenceParser.ParseWithAlias(scan.Text())
 			if err != nil {
 				return err
 			}
@@ -76,10 +63,10 @@ func NewBundleRestoreCommand(
 	}
 	cmd.Flags().
 		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	f.File = defaults.BundleRestore.File
+	f.File = svc.defaults.BundleRestore.File
 	cmd.Flags().
 		VarP(&f.File, "file", "", "Read the file as input; if not specified, read from stdin")
 	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", defaults.Create.CloneRetryLimit, "")
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.defaults.Create.CloneRetryLimit, "")
 	return cmd
 }

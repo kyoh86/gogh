@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
-func NewRootsCommand(workspaceService workspace.WorkspaceService) *cobra.Command {
+func NewRootsCommand(svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:     "roots",
 		Short:   "Manage roots",
@@ -17,42 +16,42 @@ func NewRootsCommand(workspaceService workspace.WorkspaceService) *cobra.Command
 		PersistentPostRunE: func(*cobra.Command, []string) error {
 			return config.SaveConfig()
 		},
-		Run: RootsListRun(workspaceService),
+		Run: RootsListRun(svc),
 	}
 }
 
-func NewRootsListCommand(workspaceService workspace.WorkspaceService) *cobra.Command {
+func NewRootsListCommand(svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all of the roots",
 		Args:  cobra.ExactArgs(0),
-		Run:   RootsListRun(workspaceService),
+		Run:   RootsListRun(svc),
 	}
 }
 
-func RootsListRun(workspaceService workspace.WorkspaceService) func(*cobra.Command, []string) {
+func RootsListRun(svc *ServiceSet) func(*cobra.Command, []string) {
 	return func(*cobra.Command, []string) {
-		for _, root := range workspaceService.GetRoots() {
+		for _, root := range svc.workspaceService.GetRoots() {
 			fmt.Println(root)
 		}
 	}
 }
 
-func NewRootsAddCommand(workspaceService workspace.WorkspaceService) *cobra.Command {
+func NewRootsAddCommand(svc *ServiceSet) *cobra.Command {
 	var asPrimary bool
 	cmd := &cobra.Command{
 		Use:   "add",
 		Short: "Add directories into the roots",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(_ *cobra.Command, rootList []string) error {
-			return workspaceService.AddRoot(rootList[0], asPrimary)
+			return svc.workspaceService.AddRoot(rootList[0], asPrimary)
 		},
 	}
 	cmd.Flags().BoolVarP(&asPrimary, "as-primary", "", false, "Set as primary root")
 	return cmd
 }
 
-func NewRootsRemoveCommand(workspaceService workspace.WorkspaceService) *cobra.Command {
+func NewRootsRemoveCommand(svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:   "remove",
 		Short: "Remove a directory from the roots",
@@ -60,8 +59,8 @@ func NewRootsRemoveCommand(workspaceService workspace.WorkspaceService) *cobra.C
 		RunE: func(_ *cobra.Command, rootList []string) error {
 			var selected string
 			if len(rootList) == 0 {
-				opts := make([]huh.Option[string], 0, len(workspaceService.GetRoots()))
-				for _, root := range workspaceService.GetRoots() {
+				opts := make([]huh.Option[string], 0, len(svc.workspaceService.GetRoots()))
+				for _, root := range svc.workspaceService.GetRoots() {
 					opts = append(opts, huh.Option[string]{Key: root, Value: root})
 				}
 
@@ -77,12 +76,12 @@ func NewRootsRemoveCommand(workspaceService workspace.WorkspaceService) *cobra.C
 			} else {
 				selected = rootList[0]
 			}
-			return workspaceService.RemoveRoot(selected)
+			return svc.workspaceService.RemoveRoot(selected)
 		},
 	}
 }
 
-func NewRootsSetPrimaryCommand(workspaceService workspace.WorkspaceService) *cobra.Command {
+func NewRootsSetPrimaryCommand(svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:     "set-primary",
 		Aliases: []string{"set-default"},
@@ -91,8 +90,8 @@ func NewRootsSetPrimaryCommand(workspaceService workspace.WorkspaceService) *cob
 		RunE: func(_ *cobra.Command, rootList []string) error {
 			var selected string
 			if len(rootList) == 0 {
-				opts := make([]huh.Option[string], 0, len(workspaceService.GetRoots()))
-				for _, root := range workspaceService.GetRoots() {
+				opts := make([]huh.Option[string], 0, len(svc.workspaceService.GetRoots()))
+				for _, root := range svc.workspaceService.GetRoots() {
 					opts = append(opts, huh.Option[string]{Key: root, Value: root})
 				}
 
@@ -109,7 +108,7 @@ func NewRootsSetPrimaryCommand(workspaceService workspace.WorkspaceService) *cob
 				selected = rootList[0]
 			}
 
-			return workspaceService.SetPrimaryRoot(selected)
+			return svc.workspaceService.SetPrimaryRoot(selected)
 		},
 	}
 }

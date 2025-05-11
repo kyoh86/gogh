@@ -10,7 +10,6 @@ import (
 	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v3/app/auth_login"
 	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
@@ -28,12 +27,12 @@ type ErrorResponse struct {
 	ErrorURI         string
 }
 
-func NewAuthLoginCommand(tokens auth.TokenService, authService auth.AuthenticateService, hostingService hosting.HostingService) *cobra.Command {
+func NewAuthLoginCommand(svc *ServiceSet) *cobra.Command {
 	var f struct {
 		Host string
 	}
 
-	useCase := auth_login.NewUseCase(tokens, authService, hostingService)
+	useCase := auth_login.NewUseCase(svc.tokenService, svc.authenticateService, svc.hostingService)
 
 	cmd := &cobra.Command{
 		Use:     "login",

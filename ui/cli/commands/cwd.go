@@ -6,13 +6,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/cwd"
-	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
-func NewCwdCommand(defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
+func NewCwdCommand(svc *ServiceSet) *cobra.Command {
 	var f config.CwdFlags
 	cmd := &cobra.Command{
 		Use:   "cwd",
@@ -29,7 +28,7 @@ func NewCwdCommand(defaults *config.FlagStore, workspaceService workspace.Worksp
 			if err != nil {
 				return err
 			}
-			repo, err := cwd.NewUseCase(workspaceService, finderService).Execute(ctx, wd)
+			repo, err := cwd.NewUseCase(svc.workspaceService, svc.finderService).Execute(ctx, wd)
 			if err != nil {
 				return err
 			}
@@ -46,7 +45,7 @@ func NewCwdCommand(defaults *config.FlagStore, workspaceService workspace.Worksp
 		},
 	}
 
-	f.Format = defaults.Cwd.Format
+	f.Format = svc.defaults.Cwd.Format
 	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
 	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
 		panic(err)

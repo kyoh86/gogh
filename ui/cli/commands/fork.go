@@ -7,37 +7,26 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/fork"
 	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/spf13/cobra"
 )
 
-func NewForkCommand(
-	defaultNames repository.DefaultNameService,
-	tokens auth.TokenService,
-	defaults *config.FlagStore,
-	hostingService hosting.HostingService,
-	workspaceService workspace.WorkspaceService,
-	gitService git.GitService,
-) *cobra.Command {
+func NewForkCommand(svc *ServiceSet) *cobra.Command {
 	var f config.ForkFlags
 
 	checkFlags := func(_ *cobra.Command, args []string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
 		if len(args) != 1 {
 			return nil, nil, fmt.Errorf("invalid number of arguments")
 		}
-		parser := repository.NewReferenceParser(defaultNames.GetDefaultHostAndOwner())
-		srcRef, err := parser.Parse(args[0])
+		srcRef, err := svc.referenceParser.Parse(args[0])
 		if err != nil {
 			return nil, nil, err
 		}
 		if f.To == "" {
-			owner, err := defaultNames.GetDefaultOwnerFor(srcRef.Host())
+			owner, err := svc.defaultNameService.GetDefaultOwnerFor(srcRef.Host())
 			if err != nil {
 				return nil, nil, err
 			}
@@ -45,7 +34,7 @@ func NewForkCommand(
 				Reference: repository.NewReference(srcRef.Host(), owner, srcRef.Name()),
 			}, nil
 		}
-		toRef, err := parser.ParseWithAlias(f.To)
+		toRef, err := svc.referenceParser.ParseWithAlias(f.To)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -58,7 +47,7 @@ func NewForkCommand(
 		return srcRef, toRef, nil
 	}
 
-	useCase := fork.NewUseCase(hostingService, workspaceService, gitService)
+	useCase := fork.NewUseCase(svc.hostingService, svc.workspaceService, svc.gitService)
 
 	cmd := &cobra.Command{
 		Use:   "fork [flags] OWNER/NAME",
@@ -83,7 +72,7 @@ func NewForkCommand(
 			return nil
 		},
 	}
-	f.To = defaults.Fork.To
+	f.To = svc.defaults.Fork.To
 	cmd.Flags().
 		StringVarP(
 			&f.To,
@@ -98,7 +87,7 @@ func NewForkCommand(
 			}, " "),
 		)
 	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", defaults.Create.CloneRetryLimit, "")
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.defaults.Create.CloneRetryLimit, "")
 	cmd.Flags().
 		BoolVarP(&f.DefaultBranchOnly, "default-branch-only", "", false, "Only fork the default branch")
 	return cmd

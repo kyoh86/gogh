@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewListCommand(defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
+func NewListCommand(svc *ServiceSet) *cobra.Command {
 	var f config.ListFlags
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -29,7 +29,7 @@ func NewListCommand(defaults *config.FlagStore, workspaceService workspace.Works
 				Query: f.Query,
 				Limit: f.Limit,
 			}
-			for repo, err := range list.NewUseCase(workspaceService, finderService).Execute(ctx, f.Primary, opts) {
+			for repo, err := range list.NewUseCase(svc.workspaceService, svc.finderService).Execute(ctx, f.Primary, opts) {
 				if err != nil {
 					log.FromContext(ctx).WithFields(log.Fields{
 						"error": err,
@@ -50,10 +50,10 @@ func NewListCommand(defaults *config.FlagStore, workspaceService workspace.Works
 			return nil
 		},
 	}
-	f.Format = defaults.List.Format
-	cmd.Flags().IntVarP(&f.Limit, "limit", "", DefaultValue(defaults.List.Limit, 100), "Max number of repositories to list. -1 means unlimited")
+	f.Format = svc.defaults.List.Format
+	cmd.Flags().IntVarP(&f.Limit, "limit", "", DefaultValue(svc.defaults.List.Limit, 100), "Max number of repositories to list. -1 means unlimited")
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
-	cmd.Flags().BoolVarP(&f.Primary, "primary", "", defaults.List.Primary, "List up repositories in just a primary root")
+	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.defaults.List.Primary, "List up repositories in just a primary root")
 	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
 	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
 		panic(err)

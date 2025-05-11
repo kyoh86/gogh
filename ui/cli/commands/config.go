@@ -9,8 +9,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +16,7 @@ import (
 //go:embed config_template.txt
 var configTemplate string
 
-func NewConfigCommand(workspaceService workspace.WorkspaceService, tokens auth.TokenService, defaults *config.FlagStore) *cobra.Command {
+func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:     "config",
 		Short:   "Show configurations",
@@ -43,7 +41,7 @@ func NewConfigCommand(workspaceService workspace.WorkspaceService, tokens auth.T
 				return fmt.Errorf("failed to get flags file path: %w", err)
 			}
 
-			defaultFlags, err := encodeYAML(defaults)
+			defaultFlags, err := encodeYAML(svc.defaults)
 			if err != nil {
 				logger.Error("[Bug] Failed to build default flag map")
 				return nil
@@ -53,8 +51,8 @@ func NewConfigCommand(workspaceService workspace.WorkspaceService, tokens auth.T
 				"configFilePath":      configFilePath,
 				"tokensFilePath":      tokensFilePath,
 				"defaultFlagFilePath": flagsFilePath,
-				"roots":               workspaceService.GetRoots(),
-				"tokens":              tokens.Entries(),
+				"roots":               svc.workspaceService.GetRoots(),
+				"tokens":              svc.tokenService.Entries(),
 				"defaultFlags":        defaultFlags,
 			}); err != nil {
 				log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")

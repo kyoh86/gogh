@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/v3/app/repos"
-	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
@@ -24,7 +23,7 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
-func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingService, defaults *config.FlagStore) *cobra.Command {
+func NewReposCommand(svc *ServiceSet) *cobra.Command {
 	var (
 		f config.ReposFlags
 	)
@@ -144,7 +143,7 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 				return err
 			}
 			defer printer.Close()
-			useCase := repos.NewUseCase(hostingService)
+			useCase := repos.NewUseCase(svc.hostingService)
 			for repo := range useCase.Execute(cmd.Context(), *opts) {
 				printer.Print(*repo)
 			}
@@ -153,22 +152,22 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 	}
 
 	cmd.Flags().
-		IntVarP(&f.Limit, "limit", "", DefaultValue(defaults.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
+		IntVarP(&f.Limit, "limit", "", DefaultValue(svc.defaults.Repos.Limit, 30), "Max number of repositories to list. -1 means unlimited")
 
 	cmd.Flags().
-		BoolVarP(&f.Public, "public", "", defaults.Repos.Public, "Show only public repositories")
+		BoolVarP(&f.Public, "public", "", svc.defaults.Repos.Public, "Show only public repositories")
 	cmd.Flags().
-		BoolVarP(&f.Private, "private", "", defaults.Repos.Private, "Show only private repositories")
+		BoolVarP(&f.Private, "private", "", svc.defaults.Repos.Private, "Show only private repositories")
 
 	cmd.Flags().
-		BoolVarP(&f.Fork, "fork", "", defaults.Repos.Fork, "Show only forks")
+		BoolVarP(&f.Fork, "fork", "", svc.defaults.Repos.Fork, "Show only forks")
 	cmd.Flags().
-		BoolVarP(&f.NotFork, "no-fork", "", defaults.Repos.NotFork, "Omit forks")
+		BoolVarP(&f.NotFork, "no-fork", "", svc.defaults.Repos.NotFork, "Omit forks")
 
 	cmd.Flags().
-		BoolVarP(&f.Archived, "archived", "", defaults.Repos.Archived, "Show only archived repositories")
+		BoolVarP(&f.Archived, "archived", "", svc.defaults.Repos.Archived, "Show only archived repositories")
 	cmd.Flags().
-		BoolVarP(&f.NotArchived, "no-archived", "", defaults.Repos.NotArchived, "Omit archived repositories")
+		BoolVarP(&f.NotArchived, "no-archived", "", svc.defaults.Repos.NotArchived, "Omit archived repositories")
 
 	cmd.Flags().
 		VarP(&f.Format, "format", "", flags.RemoteRepoFormatShortUsage)
@@ -176,14 +175,14 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 		panic(err)
 	}
 	cmd.Flags().
-		StringVarP(&f.Color, "color", "", DefaultValue(defaults.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
+		StringVarP(&f.Color, "color", "", DefaultValue(svc.defaults.Repos.Color, "auto"), "Colorize the output; It can accept 'auto', 'always' or 'never'")
 	if err := cmd.RegisterFlagCompletionFunc("color", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"auto", "always", "never"}, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		panic(err)
 	}
 	cmd.Flags().
-		StringSliceVarP(&f.Relation, "relation", "", DefaultSlice(defaults.Repos.Relation, []string{"owner", "organizationMember"}), fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(remoteRepoRelationAccept)))
+		StringSliceVarP(&f.Relation, "relation", "", DefaultSlice(svc.defaults.Repos.Relation, []string{"owner", "organizationMember"}), fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(remoteRepoRelationAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return remoteRepoRelationAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {
@@ -191,14 +190,14 @@ func NewReposCommand(tokens auth.TokenService, hostingService hosting.HostingSer
 	}
 
 	cmd.Flags().
-		StringVarP(&f.Sort, "sort", "", defaults.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(remoteRepoSortAccept)))
+		StringVarP(&f.Sort, "sort", "", svc.defaults.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(remoteRepoSortAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("sort", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return remoteRepoSortAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		panic(err)
 	}
 	cmd.Flags().
-		StringVarP(&f.Order, "order", "", defaults.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(remoteRepoOrderAccept)))
+		StringVarP(&f.Order, "order", "", svc.defaults.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(remoteRepoOrderAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("order", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return remoteRepoOrderAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {
