@@ -6,10 +6,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/fork"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/spf13/cobra"
 )
 
@@ -65,7 +67,7 @@ func NewForkCommand(
 				return err
 			}
 			opts := fork.Options{
-				CloneRetryLimit: f.CloneRetryLimit,
+				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				ForkRepositoryOptions: hosting.ForkRepositoryOptions{
 					DefaultBranchOnly: f.DefaultBranchOnly,
 				},

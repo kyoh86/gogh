@@ -6,7 +6,7 @@ import (
 
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
-	"golang.org/x/oauth2"
+	"golang.org/x/oauth2" //TODO: remove oauth2 dependency
 )
 
 type UseCase struct {

@@ -6,24 +6,27 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/git"
 )
 
 // UseCase defines the use case for listing repositories
 type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
+	gitService       git.GitService
 }
 
 // NewUseCase creates a new instance of UseCase
 func NewUseCase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
+	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
+		gitService:       gitService,
 	}
 }
 
@@ -36,7 +39,6 @@ type BundleEntry struct {
 // Execute retrieves a list of repositories under the specified workspace roots
 func (u *UseCase) Execute(ctx context.Context, opts workspace.ListOptions) iter.Seq2[*BundleEntry, error] {
 	return func(yield func(*BundleEntry, error) bool) {
-		gitService := git.NewService()
 		for repo, err := range u.finderService.ListAllRepository(ctx, u.workspaceService, opts) {
 			if err != nil {
 				yield(nil, err)
@@ -46,7 +48,7 @@ func (u *UseCase) Execute(ctx context.Context, opts workspace.ListOptions) iter.
 				continue
 			}
 			name := repo.Path()
-			remotes, err := gitService.GetDefaultRemotes(ctx, repo.FullPath())
+			remotes, err := u.gitService.GetDefaultRemotes(ctx, repo.FullPath())
 			if err != nil {
 				yield(nil, err)
 				return

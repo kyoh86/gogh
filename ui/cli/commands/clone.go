@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/clone"
 	"github.com/kyoh86/gogh/v3/app/repos"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
@@ -86,8 +87,8 @@ func NewCloneCommand(
 		for _, ref := range refs {
 			eg.Go(func() error {
 				return cloneUseCase.Execute(ctx, ref.Reference, clone.Options{
-					Alias:      ref.Alias,
-					RetryLimit: 1,
+					Alias:          ref.Alias,
+					TryCloneNotify: service.RetryLimit(1, nil),
 				})
 			})
 		}

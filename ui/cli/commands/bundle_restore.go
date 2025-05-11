@@ -7,11 +7,13 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/clone"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
@@ -53,8 +55,8 @@ func NewBundleRestoreCommand(
 			} else {
 				eg.Go(func() error {
 					return cloneUseCase.Execute(ctx, ref.Reference, clone.Options{
-						Alias:      ref.Alias,
-						RetryLimit: f.CloneRetryLimit,
+						Alias:          ref.Alias,
+						TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 					})
 				})
 			}

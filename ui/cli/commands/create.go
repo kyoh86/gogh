@@ -7,11 +7,13 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/create"
 	"github.com/kyoh86/gogh/v3/app/create_from_template"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/spf13/cobra"
 )
 
@@ -62,7 +64,7 @@ func NewCreateCommand(
 	runFunc := func(ctx context.Context, ref *repository.ReferenceWithAlias) error {
 		if f.Template == "" {
 			ropt := create.Options{
-				CloneRetryLimit: f.CloneRetryLimit,
+				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				CreateRepositoryOptions: hosting.CreateRepositoryOptions{
 					Description:         f.Description,
 					Homepage:            f.Homepage,
@@ -91,7 +93,7 @@ func NewCreateCommand(
 				return err
 			}
 			if err := createFromTemplateUseCase.Execute(ctx, ref.Reference, *template, create_from_template.CreateFromTemplateOptions{
-				CloneRetryLimit: f.CloneRetryLimit,
+				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				CreateRepositoryFromTemplateOptions: hosting.CreateRepositoryFromTemplateOptions{
 					Description:        f.Description,
 					IncludeAllBranches: f.IncludeAllBranches,

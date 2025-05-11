@@ -17,6 +17,7 @@ type GitService struct {
 
 // NewService creates a new Service instance with the given username and password
 // for HTTP basic authentication.
+// TODO: to method; (s *GitService) AuthenticateWithPassowrd(username, password string) error
 func NewAuthenticatedService(username string, password string) *GitService {
 	return &GitService{
 		auth: &http.BasicAuth{
