@@ -32,7 +32,7 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to get tokens file path: %w", err)
 			}
-			flagsFilePath, err := config.FlagsPath()
+			flagsFilePath, err := config.FlagsPathV0()
 			if err != nil {
 				return fmt.Errorf("failed to get flags file path: %w", err)
 			}

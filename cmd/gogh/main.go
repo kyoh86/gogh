@@ -18,15 +18,6 @@ var (
 	date    = "snapshot"
 )
 
-func loadConfigOrExit[T any](name string, loader func() (T, error)) T {
-	v, err := loader()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to load %s: %s\n", name, err)
-		os.Exit(1)
-	}
-	return v
-}
-
 func main() {
 	if err := run(); err != nil {
 		log.Error(err.Error())
@@ -37,8 +28,14 @@ func main() {
 func run() error {
 	ctx := logger.NewLogger()
 
-	defaults := loadConfigOrExit("flags", config.LoadFlags)
-
+	flagsPathV0, err := config.FlagsPathV0()
+	if err != nil {
+		return fmt.Errorf("failed to get flags path (v0): %w", err)
+	}
+	flagsPath, err := config.FlagsPath()
+	if err != nil {
+		return fmt.Errorf("failed to get flags path: %w", err)
+	}
 	tokensPathV0, err := config.TokensPathV0()
 	if err != nil {
 		return fmt.Errorf("failed to get tokens path (v0): %w", err)
@@ -58,6 +55,14 @@ func run() error {
 	defaultNamesPath, err := config.DefaultNamesPath()
 	if err != nil {
 		return fmt.Errorf("failed to get default names path: %w", err)
+	}
+
+	flags, err := store.LoadAlternative(ctx,
+		config.NewFlagsStore(flagsPath),
+		config.NewFlagsStoreV0(flagsPathV0),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load flags: %w", err)
 	}
 
 	defaultNameService, err := store.LoadAlternative(ctx,
@@ -89,7 +94,7 @@ func run() error {
 			defaultNameService,
 			tokenService,
 			workspaceService,
-			defaults,
+			flags,
 		),
 	)
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
