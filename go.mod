@@ -16,7 +16,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.16
 	github.com/morikuni/aec v1.0.0
 	github.com/pelletier/go-toml/v2 v2.2.4
-	github.com/saracen/walker v0.1.4
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	go.uber.org/mock v0.5.1
