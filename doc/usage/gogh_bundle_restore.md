@@ -9,9 +9,9 @@ gogh bundle restore [flags]
 ### Options
 
 ```
-      --clone-retry-limit int   
+      --clone-retry-limit int    (default 3)
       --dryrun                  Displays the operations that would be performed using the specified command without actually running them
-      --file string             Read the file as input; if not specified, read from stdin (default "~/.config/gogh/dump.txt")
+      --file string             Read the file as input; if not specified, read from stdin (default "~/.config/gogh/bundle.txt")
   -h, --help                    help for restore
 ```
 
