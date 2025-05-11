@@ -27,12 +27,6 @@ func NewCreateCommand(svc *ServiceSet) *cobra.Command {
 		svc.gitService,
 	)
 
-	// TODO: Split flags from defaults
-	// - Load defaults from config to config.CreateFlags (except that the subcommand is "man")
-	// - If the flag is not set in config, use the default value (e.g. config.Create.CloneRetryLimit == 0 => 5)
-	// - If the flag is set in config, use the value from config (e.g. config.Create.CloneRetryLimit == 5 => 5)
-	// - If the flag is set in command line, use the value from command line (e.g. --clone-retry-limit 10 => 10)
-	// ref: infra/config/token_store.go depends on core/auth/token_service.go
 	var f config.CreateFlags
 
 	checkFlags := func(_ context.Context, args []string) (*repository.ReferenceWithAlias, error) {
@@ -121,40 +115,40 @@ func NewCreateCommand(svc *ServiceSet) *cobra.Command {
 	cmd.Flags().
 		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().
-		StringVarP(&f.Template, "template", "", svc.defaults.Create.Template, "Create new repository from the template")
+		StringVarP(&f.Template, "template", "", svc.flags.Create.Template, "Create new repository from the template")
 	cmd.Flags().
-		BoolVarP(&f.IncludeAllBranches, "include-all-branches", "", svc.defaults.Create.IncludeAllBranches, "Create all branches in the template")
+		BoolVarP(&f.IncludeAllBranches, "include-all-branches", "", svc.flags.Create.IncludeAllBranches, "Create all branches in the template")
 	cmd.Flags().
 		StringVarP(&f.Description, "description", "", "", "A short description of the repository")
 	cmd.Flags().
 		StringVarP(&f.Homepage, "homepage", "", "", "A URL with more information about the repository")
 	cmd.Flags().
-		StringVarP(&f.LicenseTemplate, "license-template", "", svc.defaults.Create.LicenseTemplate, `Choose an open source license template that best suits your needs, and then use the license keyword as the license_template string when "auto-init" flag is set. For example, "mit" or "mpl-2.0"`)
+		StringVarP(&f.LicenseTemplate, "license-template", "", svc.flags.Create.LicenseTemplate, `Choose an open source license template that best suits your needs, and then use the license keyword as the license_template string when "auto-init" flag is set. For example, "mit" or "mpl-2.0"`)
 	cmd.Flags().
-		StringVarP(&f.GitignoreTemplate, "gitignore-template", "", svc.defaults.Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
+		StringVarP(&f.GitignoreTemplate, "gitignore-template", "", svc.flags.Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
 	cmd.Flags().
-		BoolVarP(&f.Private, "private", "", svc.defaults.Create.Private, "Whether the repository is private")
+		BoolVarP(&f.Private, "private", "", svc.flags.Create.Private, "Whether the repository is private")
 	cmd.Flags().
 		BoolVarP(&f.IsTemplate, "is-template", "", false, "Whether the repository is available as a template")
 	cmd.Flags().
-		BoolVarP(&f.DisableDownloads, "disable-downloads", "", svc.defaults.Create.DisableDownloads, `Disable "Downloads" page`)
+		BoolVarP(&f.DisableDownloads, "disable-downloads", "", svc.flags.Create.DisableDownloads, `Disable "Downloads" page`)
 	cmd.Flags().
-		BoolVarP(&f.DisableWiki, "disable-wiki", "", svc.defaults.Create.DisableWiki, `Disable Wiki for the repository`)
+		BoolVarP(&f.DisableWiki, "disable-wiki", "", svc.flags.Create.DisableWiki, `Disable Wiki for the repository`)
 	cmd.Flags().
-		BoolVarP(&f.AutoInit, "auto-init", "", svc.defaults.Create.AutoInit, "Create an initial commit with empty README")
+		BoolVarP(&f.AutoInit, "auto-init", "", svc.flags.Create.AutoInit, "Create an initial commit with empty README")
 	cmd.Flags().
-		BoolVarP(&f.DisableProjects, "disable-projects", "", svc.defaults.Create.DisableProjects, `Disable projects for the repository`)
+		BoolVarP(&f.DisableProjects, "disable-projects", "", svc.flags.Create.DisableProjects, `Disable projects for the repository`)
 	cmd.Flags().
-		BoolVarP(&f.DisableIssues, "disable-issues", "", svc.defaults.Create.DisableIssues, `Disable issues for the repository`)
+		BoolVarP(&f.DisableIssues, "disable-issues", "", svc.flags.Create.DisableIssues, `Disable issues for the repository`)
 	cmd.Flags().
-		BoolVarP(&f.PreventSquashMerge, "prevent-squash-merge", "", svc.defaults.Create.PreventSquashMerge, "Prevent squash-merging pull requests")
+		BoolVarP(&f.PreventSquashMerge, "prevent-squash-merge", "", svc.flags.Create.PreventSquashMerge, "Prevent squash-merging pull requests")
 	cmd.Flags().
-		BoolVarP(&f.PreventMergeCommit, "prevent-merge-commit", "", svc.defaults.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
+		BoolVarP(&f.PreventMergeCommit, "prevent-merge-commit", "", svc.flags.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
 	cmd.Flags().
-		BoolVarP(&f.PreventRebaseMerge, "prevent-rebase-merge", "", svc.defaults.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
+		BoolVarP(&f.PreventRebaseMerge, "prevent-rebase-merge", "", svc.flags.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
 	cmd.Flags().
-		BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.defaults.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
+		BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
 	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.defaults.Create.CloneRetryLimit, "")
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.flags.Create.CloneRetryLimit, "")
 	return cmd
 }

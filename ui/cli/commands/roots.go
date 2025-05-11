@@ -93,7 +93,7 @@ func NewRootsSetPrimaryCommand(svc *ServiceSet) *cobra.Command {
 
 				form := huh.NewForm(huh.NewGroup(
 					huh.NewSelect[string]().
-						Title("A directory to set as default root").
+						Title("A directory to set as primary root").
 						Options(opts...).
 						Value(&selected),
 				))

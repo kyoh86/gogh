@@ -48,7 +48,7 @@ func NewBundleDumpCommand(svc *ServiceSet) *cobra.Command {
 		},
 	}
 
-	f.File = svc.defaults.BundleDump.File
+	f.File = svc.flags.BundleDump.File
 	cmd.Flags().VarP(&f.File, "file", "", "A file to output; if not specified, output to stdout")
 	return cmd
 }

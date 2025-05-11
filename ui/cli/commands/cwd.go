@@ -45,7 +45,7 @@ func NewCwdCommand(svc *ServiceSet) *cobra.Command {
 		},
 	}
 
-	f.Format = svc.defaults.Cwd.Format
+	f.Format = svc.flags.Cwd.Format
 	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
 	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
 		panic(err)

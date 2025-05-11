@@ -4,6 +4,10 @@ import (
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 )
 
+type BundleDumpFlags struct {
+	File Path `yaml:"file,omitempty" toml:"file,omitempty"`
+}
+
 type BundleRestoreFlags struct {
 	File            Path `yaml:"file,omitempty" toml:"file,omitempty"`
 	CloneRetryLimit int  `yaml:"cloneRetryLimit,omitempty" toml:"cloneRetryLimit,omitempty"`
@@ -59,21 +63,34 @@ type ListFlags struct {
 }
 
 type ForkFlags struct {
-	To                string `yaml:"to,omitempty" toml:"to,omitempty"`
+	To                string `yaml:"-" toml:"-"`
 	DefaultBranchOnly bool   `yaml:"defaultBranchOnly,omitempty" toml:"defaultBranchOnly,omitempty"`
 	CloneRetryLimit   int    `yaml:"cloneRetryLimit,omitempty" toml:"cloneRetryLimit,omitempty"`
 }
 
-type BundleDumpFlags struct {
-	File Path `yaml:"file,omitempty" toml:"file,omitempty"`
-}
-
 type Flags struct {
-	BundleRestore BundleRestoreFlags `yaml:"bundleRestore,omitempty" toml:"bundleRestore,omitempty"`
 	BundleDump    BundleDumpFlags    `yaml:"bundleDump,omitempty" toml:"bundleDump,omitempty"`
+	BundleRestore BundleRestoreFlags `yaml:"bundleRestore,omitempty" toml:"bundleRestore,omitempty"`
 	List          ListFlags          `yaml:"list,omitempty" toml:"list,omitempty"`
 	Cwd           CwdFlags           `yaml:"cwd,omitempty" toml:"cwd,omitempty"`
 	Create        CreateFlags        `yaml:"create,omitempty" toml:"create,omitempty"`
 	Repos         ReposFlags         `yaml:"repos,omitempty" toml:"repos,omitempty"`
 	Fork          ForkFlags          `yaml:"fork,omitempty" toml:"fork,omitempty"`
+}
+
+func SetDefault(f *Flags) {
+	f.BundleDump.File.Set("~/.config/gogh/bundle.txt")
+	f.BundleRestore.File.Set("~/.config/gogh/bundle.txt")
+	f.BundleRestore.CloneRetryLimit = 3
+
+	f.Repos.Limit = 30
+	f.Repos.Color = "auto"
+	f.Repos.Relation = []string{"owner", "organizationMember"}
+
+	f.Create.CloneRetryLimit = 3
+
+	f.List.Limit = 100
+
+	f.Fork.CloneRetryLimit = 3
+
 }

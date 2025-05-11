@@ -72,13 +72,12 @@ func NewForkCommand(svc *ServiceSet) *cobra.Command {
 			return nil
 		},
 	}
-	f.To = svc.defaults.Fork.To
 	cmd.Flags().
 		StringVarP(
 			&f.To,
 			"to",
 			"",
-			"",
+			svc.flags.Fork.To,
 			strings.Join([]string{
 				"Fork to the specified repository.",
 				"It accepts a notation like 'OWNER/NAME' or 'OWNER/NAME=ALIAS'.",
@@ -87,7 +86,7 @@ func NewForkCommand(svc *ServiceSet) *cobra.Command {
 			}, " "),
 		)
 	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.defaults.Create.CloneRetryLimit, "")
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.flags.Create.CloneRetryLimit, "")
 	cmd.Flags().
 		BoolVarP(&f.DefaultBranchOnly, "default-branch-only", "", false, "Only fork the default branch")
 	return cmd

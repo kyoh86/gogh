@@ -20,7 +20,7 @@ type ServiceSet struct {
 	finderService       workspace.FinderService
 	workspaceService    workspace.WorkspaceService
 	authenticateService auth.AuthenticateService
-	defaults            *config.Flags
+	flags               *config.Flags
 	gitService          gitcore.GitService
 }
 
@@ -28,7 +28,7 @@ func NewServiceSet(
 	defaultNameService repository.DefaultNameService,
 	tokenService auth.TokenService,
 	workspaceService workspace.WorkspaceService,
-	defaults *config.Flags,
+	flags *config.Flags,
 ) *ServiceSet {
 	return &ServiceSet{
 		defaultNameService:  defaultNameService,
@@ -38,7 +38,7 @@ func NewServiceSet(
 		finderService:       filesystem.NewFinderService(),
 		workspaceService:    workspaceService,
 		authenticateService: github.NewAuthenticateService(),
-		defaults:            defaults,
+		flags:               flags,
 		gitService:          gitimpl.NewService(),
 	}
 }

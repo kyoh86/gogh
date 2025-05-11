@@ -16,6 +16,7 @@ type FlagsStoreV0 struct {
 // Load implements repository.DefaultNAmeRepositoryOld.
 func (d *FlagsStoreV0) Load(ctx context.Context) (*Flags, error) {
 	var v Flags
+	SetDefault(&v)
 	file, err := os.Open(d.filename)
 	if err != nil {
 		return nil, err

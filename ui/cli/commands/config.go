@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: fix it
+//
 //go:embed config_template.txt
 var configTemplate string
 
@@ -22,6 +24,8 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 		Short:   "Show configurations",
 		Aliases: []string{"conf", "setting", "context"},
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			//TODO: fix it
+			//TODO: support set-default subcommand
 			logger := log.FromContext(cmd.Context())
 			t, err := template.New("gogh context").Parse(configTemplate)
 			if err != nil {
@@ -37,18 +41,19 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 				return fmt.Errorf("failed to get flags file path: %w", err)
 			}
 
-			defaultFlags, err := encodeYAML(svc.defaults)
+			flags, err := encodeYAML(svc.flags)
 			if err != nil {
-				logger.Error("[Bug] Failed to build default flag map")
+				logger.Error("[Bug] Failed to load flags")
 				return nil
 			}
 			var w strings.Builder
 			if err := t.Execute(&w, map[string]any{
-				"tokensFilePath":      tokensFilePath,
-				"defaultFlagFilePath": flagsFilePath,
-				"roots":               svc.workspaceService.GetRoots(),
-				"tokens":              svc.tokenService.Entries(),
-				"defaultFlags":        defaultFlags,
+				// TODO: DEFAULT NAMES
+				"tokensFilePath": tokensFilePath,
+				"flagsFilePath":  flagsFilePath,
+				"roots":          svc.workspaceService.GetRoots(),
+				"tokens":         svc.tokenService.Entries(),
+				"flags":          flags,
 			}); err != nil {
 				log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")
 				return nil

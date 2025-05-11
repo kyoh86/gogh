@@ -50,10 +50,10 @@ func NewListCommand(svc *ServiceSet) *cobra.Command {
 			return nil
 		},
 	}
-	f.Format = svc.defaults.List.Format
-	cmd.Flags().IntVarP(&f.Limit, "limit", "", DefaultValue(svc.defaults.List.Limit, 100), "Max number of repositories to list. -1 means unlimited")
+	cmd.Flags().IntVarP(&f.Limit, "limit", "", DefaultValue(svc.flags.List.Limit, 100), "Max number of repositories to list. -1 means unlimited")
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
-	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.defaults.List.Primary, "List up repositories in just a primary root")
+	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.flags.List.Primary, "List up repositories in just a primary root")
+	f.Format = svc.flags.List.Format
 	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
 	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
 		panic(err)

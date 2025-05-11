@@ -63,10 +63,10 @@ func NewBundleRestoreCommand(svc *ServiceSet) *cobra.Command {
 	}
 	cmd.Flags().
 		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	f.File = svc.defaults.BundleRestore.File
+	f.File = svc.flags.BundleRestore.File
 	cmd.Flags().
 		VarP(&f.File, "file", "", "Read the file as input; if not specified, read from stdin")
 	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.defaults.Create.CloneRetryLimit, "")
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.flags.Create.CloneRetryLimit, "")
 	return cmd
 }
