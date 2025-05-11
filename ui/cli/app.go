@@ -32,7 +32,7 @@ func NewApp(
 	bundleCommand := commands.NewBundleCommand()
 	bundleCommand.AddCommand(
 		commands.NewBundleDumpCommand(defaults, workspaceService, finderService, gitService),
-		commands.NewBundleRestoreCommand(defaultNameService, tokenService, defaults, hostingService, workspaceService),
+		commands.NewBundleRestoreCommand(defaultNameService, tokenService, defaults, hostingService, workspaceService, gitService),
 	)
 
 	authCommand := commands.NewAuthCommand(tokenService)
@@ -60,11 +60,11 @@ func NewApp(
 		commands.NewManCommand(),
 		commands.NewCwdCommand(defaults, workspaceService, finderService),
 		commands.NewListCommand(defaults, workspaceService, finderService),
-		commands.NewCloneCommand(defaultNameService, tokenService, hostingService, workspaceService),
-		commands.NewCreateCommand(defaultNameService, tokenService, hostingService, workspaceService, defaults),
+		commands.NewCloneCommand(defaultNameService, tokenService, hostingService, workspaceService, gitService),
+		commands.NewCreateCommand(defaultNameService, tokenService, hostingService, workspaceService, defaults, gitService),
 		commands.NewReposCommand(tokenService, hostingService, defaults),
 		commands.NewDeleteCommand(defaultNameService, tokenService, hostingService, finderService, workspaceService),
-		commands.NewForkCommand(defaultNameService, tokenService, defaults, hostingService),
+		commands.NewForkCommand(defaultNameService, tokenService, defaults, hostingService, workspaceService, gitService),
 		configCommand,
 		authCommand,
 		bundleCommand,

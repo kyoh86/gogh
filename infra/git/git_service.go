@@ -2,6 +2,7 @@ package git
 
 import (
 	"context"
+	"errors"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -17,7 +18,6 @@ type GitService struct {
 
 // NewService creates a new Service instance with the given username and password
 // for HTTP basic authentication.
-// TODO: to method; (s *GitService) AuthenticateWithPassowrd(username, password string) error
 func NewAuthenticatedService(username string, password string) *GitService {
 	return &GitService{
 		auth: &http.BasicAuth{
@@ -32,12 +32,23 @@ func NewService() *GitService {
 	return &GitService{}
 }
 
+// AuthenticateWithUsernamePassword implements git.GitService.
+func (s *GitService) AuthenticateWithUsernamePassword(_ context.Context, username string, password string) (coregit.GitService, error) {
+	return NewAuthenticatedService(username, password), nil
+}
+
 // Clone clones a remote repository to a local path.
 func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, opts coregit.CloneOptions) error {
 	_, err := git.PlainCloneContext(ctx, localPath, false, &git.CloneOptions{
 		URL:  remoteURL,
 		Auth: s.auth,
 	})
+	switch {
+	case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
+		return coregit.ErrRepositoryNotExists
+	case errors.Is(err, transport.ErrEmptyRemoteRepository):
+		return coregit.ErrRepositoryEmpty
+	}
 	return err
 }
 

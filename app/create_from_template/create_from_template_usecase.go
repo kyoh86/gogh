@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
@@ -13,15 +14,18 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
+	gitService       git.GitService
 }
 
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
+		gitService:       gitService,
 	}
 }
 
@@ -37,7 +41,7 @@ func (uc *UseCase) Execute(
 	template repository.Reference,
 	opts CreateFromTemplateOptions,
 ) error {
-	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
+	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref, template, opts.CreateRepositoryFromTemplateOptions)
 	if err != nil {
 		return err

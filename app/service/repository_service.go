@@ -5,28 +5,28 @@ import (
 	"errors"
 	"time"
 
-	git "github.com/go-git/go-git/v5"                // TODO: remove this import
-	"github.com/go-git/go-git/v5/plumbing/transport" // TODO: remove this import
-	gitcore "github.com/kyoh86/gogh/v3/core/git"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	gitimpl "github.com/kyoh86/gogh/v3/infra/git" // TODO: remove this import; with methodise NewAuthenticatedService infra/git/git_service.go
 )
 
 // RepositoryService provides common operations for repository manipulation
 type RepositoryService struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
+	gitService       git.GitService
 }
 
 func NewRepositoryService(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	gitService git.GitService,
 ) *RepositoryService {
 	return &RepositoryService{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
+		gitService:       gitService,
 	}
 }
 
@@ -75,7 +75,10 @@ func (s *RepositoryService) TryClone(
 	if err != nil {
 		return err
 	}
-	gitService := gitimpl.NewAuthenticatedService(user, token.AccessToken)
+	gitService, err := s.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
+	if err != nil {
+		return err
+	}
 
 	// Perform git clone operation
 	if err := cloneWithRetry(ctx, gitService, layout, ref, repo.CloneURL, localPath, notify); err != nil {
@@ -96,25 +99,25 @@ func (s *RepositoryService) TryClone(
 	return nil
 }
 
-func cloneWithRetry(ctx context.Context, gitService *gitimpl.GitService, layout workspace.LayoutService, ref repository.Reference, cloneURL, localPath string, notify TryCloneNotify) (err error) {
+func cloneWithRetry(ctx context.Context, gitService git.GitService, layout workspace.LayoutService, ref repository.Reference, cloneURL, localPath string, notify TryCloneNotify) (err error) {
 	if notify == nil {
 		notify = func(n TryCloneProgress) error { return nil }
 	}
 	for {
-		err = gitService.Clone(ctx, cloneURL, localPath, gitcore.CloneOptions{})
+		err = gitService.Clone(ctx, cloneURL, localPath, git.CloneOptions{})
 		switch {
-		case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
+		case errors.Is(err, git.ErrRepositoryNotExists):
 			if err := notify(TryCloneProgressRetry); err != nil {
 				return err
 			}
 		case err == nil:
 			return nil
-		case errors.Is(err, transport.ErrEmptyRemoteRepository):
+		case errors.Is(err, git.ErrRepositoryEmpty):
 			path, err := layout.CreateRepositoryFolder(ref)
 			if err != nil {
 				return err
 			}
-			if err := gitimpl.NewService().Init(cloneURL, path, false); err != nil {
+			if err := gitService.Init(cloneURL, path, false); err != nil {
 				return err
 			}
 			if err := notify(TryCloneProgressEmpty); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
@@ -13,12 +14,19 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
+	gitService       git.GitService
 }
 
 // NewUseCase creates a new fork use case
-func NewUseCase(hostingService hosting.HostingService) *UseCase {
+func NewUseCase(
+	hostingService hosting.HostingService,
+	workspaceService workspace.WorkspaceService,
+	gitService git.GitService,
+) *UseCase {
 	return &UseCase{
-		hostingService: hostingService,
+		hostingService:   hostingService,
+		workspaceService: workspaceService,
+		gitService:       gitService,
 	}
 }
 
@@ -35,6 +43,6 @@ func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, target
 		return err
 	}
 
-	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService)
+	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
 	return repositoryService.TryClone(ctx, fork, target.Reference, target.Alias, opts.TryCloneNotify)
 }

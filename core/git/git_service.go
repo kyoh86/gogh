@@ -1,9 +1,21 @@
 package git
 
-import "context"
+import (
+	"context"
+	"errors"
+)
+
+// ErrRepositoryNotExists is returned when the repository does not exist
+var ErrRepositoryNotExists = errors.New("repository not exists")
+
+// ErrRepositoryEmpty is returned when the repository is empty
+var ErrRepositoryEmpty = errors.New("repository is empty")
 
 // GitService handles actual Git operations
 type GitService interface {
+	// AuthenticateWithUsernamePassword authenticates with a username and password
+	AuthenticateWithUsernamePassword(ctx context.Context, username, password string) (GitService, error)
+
 	// Clone performs the actual git clone operation
 	Clone(ctx context.Context, remoteURL string, localPath string, opts CloneOptions) error
 

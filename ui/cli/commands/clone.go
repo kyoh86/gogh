@@ -9,6 +9,7 @@ import (
 	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
@@ -21,13 +22,14 @@ func NewCloneCommand(
 	tokenService auth.TokenService,
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	gitService git.GitService,
 ) *cobra.Command {
 	var f struct {
 		dryrun bool
 	}
 
 	reposUseCase := repos.NewUseCase(hostingService)
-	cloneUseCase := clone.NewUseCase(hostingService, workspaceService)
+	cloneUseCase := clone.NewUseCase(hostingService, workspaceService, gitService)
 	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {

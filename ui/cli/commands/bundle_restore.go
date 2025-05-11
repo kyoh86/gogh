@@ -9,6 +9,7 @@ import (
 	"github.com/kyoh86/gogh/v3/app/clone"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
@@ -24,9 +25,10 @@ func NewBundleRestoreCommand(
 	defaults *config.FlagStore,
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	gitService git.GitService,
 ) *cobra.Command {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(hostingService, workspaceService)
+	cloneUseCase := clone.NewUseCase(hostingService, workspaceService, gitService)
 	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
 	runFunc := func(ctx context.Context) error {

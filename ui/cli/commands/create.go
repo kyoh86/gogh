@@ -9,6 +9,7 @@ import (
 	"github.com/kyoh86/gogh/v3/app/create_from_template"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
@@ -23,14 +24,17 @@ func NewCreateCommand(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
 	defaults *config.FlagStore,
+	gitService git.GitService,
 ) *cobra.Command {
 	createUseCase := create.NewUseCase(
 		hostingService,
 		workspaceService,
+		gitService,
 	)
 	createFromTemplateUseCase := create_from_template.NewUseCase(
 		hostingService,
 		workspaceService,
+		gitService,
 	)
 	parser := repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner())
 
