@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v3/app/auth_login"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/spf13/cobra"
@@ -26,12 +28,12 @@ type ErrorResponse struct {
 	ErrorURI         string
 }
 
-func NewAuthLoginCommand(tokens auth.TokenService) *cobra.Command {
+func NewAuthLoginCommand(tokens auth.TokenService, authService auth.AuthenticateService, hostingService hosting.HostingService) *cobra.Command {
 	var f struct {
 		Host string
 	}
 
-	useCase := auth_login.NewUseCase(tokens)
+	useCase := auth_login.NewUseCase(tokens, authService, hostingService)
 
 	cmd := &cobra.Command{
 		Use:     "login",
@@ -51,25 +53,18 @@ func NewAuthLoginCommand(tokens auth.TokenService) *cobra.Command {
 				}
 			}
 
-			deviceCodeCh, errCh := useCase.Execute(cmd.Context(), f.Host)
-			for {
-				select {
-				case deviceCodeResp, ok := <-deviceCodeCh:
-					if ok {
-						if errors.Is(browser.OpenURL(deviceCodeResp.VerificationURI), exec.ErrNotFound) {
-							fmt.Printf("Visit %s and enter the code: %s\n", deviceCodeResp.VerificationURI, deviceCodeResp.UserCode)
-						} else {
-							fmt.Printf("Opened %s, so enter the code: %s\n", deviceCodeResp.VerificationURI, deviceCodeResp.UserCode)
-						}
-					}
-				case err, ok := <-errCh:
-					if ok {
-						return err
-					}
-					fmt.Println("Login successful!")
-					return nil
+			if err := useCase.Execute(cmd.Context(), f.Host, func(ctx context.Context, response auth.DeviceAuthResponse) error {
+				if errors.Is(browser.OpenURL(response.VerificationURI), exec.ErrNotFound) {
+					fmt.Printf("Visit %s and enter the code: %s\n", response.VerificationURI, response.UserCode)
+				} else {
+					fmt.Printf("Opened %s, so enter the code: %s\n", response.VerificationURI, response.UserCode)
 				}
+				return nil
+			}); err != nil {
+				return err
 			}
+			fmt.Println("Login successful!")
+			return nil
 		},
 	}
 	cmd.Flags().StringVarP(&f.Host, "host", "", "", "Host name to login")

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
@@ -19,7 +20,9 @@ func NewApp(
 	finderService workspace.FinderService,
 	workspaceService workspace.WorkspaceService,
 	tokenService auth.TokenService,
+	authService auth.AuthenticateService,
 	defaults *config.FlagStore,
+	gitService git.GitService,
 ) *cobra.Command {
 	facadeCommand := &cobra.Command{
 		Use:   config.AppName,
@@ -28,14 +31,14 @@ func NewApp(
 
 	bundleCommand := commands.NewBundleCommand()
 	bundleCommand.AddCommand(
-		commands.NewBundleDumpCommand(defaults, workspaceService, finderService),
+		commands.NewBundleDumpCommand(defaults, workspaceService, finderService, gitService),
 		commands.NewBundleRestoreCommand(defaultNameService, tokenService, defaults, hostingService, workspaceService),
 	)
 
 	authCommand := commands.NewAuthCommand(tokenService)
 	authCommand.AddCommand(
 		commands.NewAuthListCommand(tokenService),
-		commands.NewAuthLoginCommand(tokenService),
+		commands.NewAuthLoginCommand(tokenService, authService, hostingService),
 		commands.NewAuthLogoutCommand(tokenService),
 	)
 

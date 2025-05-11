@@ -85,29 +85,6 @@ func NewHostingService(tokenService auth.TokenService) *HostingService {
 	}
 }
 
-// GetOauth2Config implements hosting.HostingService.
-func (s *HostingService) GetOauth2Config(ctx context.Context, host string) (*oauth2.Config, error) {
-	return &oauth2.Config{
-		ClientID: ClientID,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:       fmt.Sprintf("https://%s/login/oauth/authorize", host),
-			TokenURL:      fmt.Sprintf("https://%s/login/oauth/access_token", host),
-			DeviceAuthURL: fmt.Sprintf("https://%s/login/device/code", host),
-		},
-		Scopes: []string{string(github.ScopeRepo), string(github.ScopeDeleteRepo)},
-	}, nil
-}
-
-// GetAuthenticatedUserName implements hosting.HostingService.
-func (s *HostingService) GetAuthenticatedUserName(ctx context.Context, host string, token *oauth2.Token) (string, error) {
-	conn := getClient(ctx, host, token)
-	user, _, err := conn.restClient.Users.Get(ctx, "")
-	if err != nil {
-		return "", fmt.Errorf("failed to get authenticated user: %w", err)
-	}
-	return user.GetLogin(), nil
-}
-
 // GetURLOf implements hosting.HostingService.
 func (s *HostingService) GetURLOf(ref repository.Reference) (*url.URL, error) {
 	return &url.URL{

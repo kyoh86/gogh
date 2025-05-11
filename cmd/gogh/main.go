@@ -8,6 +8,7 @@ import (
 	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/filesystem"
+	"github.com/kyoh86/gogh/v3/infra/git"
 	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/logger"
 	"github.com/kyoh86/gogh/v3/ui/cli"
@@ -87,8 +88,20 @@ func run() error {
 
 	hostingService := github.NewHostingService(tokenService)
 	finderService := filesystem.NewFinderService()
+	gitService := git.NewService()
+	authenticateService := github.NewAuthenticateService()
 
-	cmd := cli.NewApp(ctx, defaultNameService, hostingService, finderService, workspaceService, tokenService, defaults)
+	cmd := cli.NewApp(
+		ctx,
+		defaultNameService,
+		hostingService,
+		finderService,
+		workspaceService,
+		tokenService,
+		authenticateService,
+		defaults,
+		gitService,
+	)
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {

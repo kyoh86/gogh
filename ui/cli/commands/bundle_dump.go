@@ -6,12 +6,13 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/bundle_dump"
+	"github.com/kyoh86/gogh/v3/core/git"
 	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService) *cobra.Command {
+func NewBundleDumpCommand(defaults *config.FlagStore, workspaceService workspace.WorkspaceService, finderService workspace.FinderService, gitService git.GitService) *cobra.Command {
 	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",
@@ -32,7 +33,7 @@ func NewBundleDumpCommand(defaults *config.FlagStore, workspaceService workspace
 				defer f.Close()
 				out = f
 			}
-			useCase := bundle_dump.NewUseCase(workspaceService, finderService)
+			useCase := bundle_dump.NewUseCase(workspaceService, finderService, gitService)
 			for entry, err := range useCase.Execute(cmd.Context(), workspace.ListOptions{}) {
 				if err != nil {
 					log.FromContext(cmd.Context()).Error(err.Error())
