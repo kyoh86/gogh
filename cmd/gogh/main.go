@@ -58,6 +58,7 @@ func run() error {
 	}
 
 	flags, err := store.LoadAlternative(ctx,
+		config.DefaultFlags,
 		config.NewFlagsStore(flagsPath),
 		config.NewFlagsStoreV0(flagsPathV0),
 	)
@@ -66,6 +67,7 @@ func run() error {
 	}
 
 	defaultNameService, err := store.LoadAlternative(ctx,
+		config.DefaultName,
 		config.NewDefaultNameStore(defaultNamesPath),
 		config.NewDefaultNameStoreV0(tokensPathV0),
 	)
@@ -74,6 +76,7 @@ func run() error {
 	}
 
 	tokenService, err := store.LoadAlternative(ctx,
+		config.DefaultTokenService,
 		config.NewTokenStore(tokensPath),
 		config.NewTokenStoreV0(tokensPathV0),
 	)
@@ -82,6 +85,7 @@ func run() error {
 	}
 
 	workspaceService, err := store.LoadAlternative(ctx,
+		config.DefaultWorkspaceService,
 		config.NewWorkspaceStore(workspacePath),
 		config.NewWorkspaceStoreV0(workspacePathV0),
 	)

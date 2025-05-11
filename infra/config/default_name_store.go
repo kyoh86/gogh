@@ -62,6 +62,13 @@ func DefaultNamesPath() (string, error) {
 	return path, nil
 }
 
+func DefaultName() repository.DefaultNameService {
+	return &DefaultNameService{
+		hosts:       map[string]string{},
+		defaultHost: "github.com",
+	}
+}
+
 func NewDefaultNameStore(filename string) *DefaultNameStore {
 	return &DefaultNameStore{
 		filename: filename,

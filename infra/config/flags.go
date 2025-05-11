@@ -78,7 +78,8 @@ type Flags struct {
 	Fork          ForkFlags          `yaml:"fork,omitempty" toml:"fork,omitempty"`
 }
 
-func SetDefault(f *Flags) {
+func DefaultFlags() *Flags {
+	f := new(Flags)
 	f.BundleDump.File.Set("~/.config/gogh/bundle.txt")
 	f.BundleRestore.File.Set("~/.config/gogh/bundle.txt")
 	f.BundleRestore.CloneRetryLimit = 3
@@ -92,5 +93,5 @@ func SetDefault(f *Flags) {
 	f.List.Limit = 100
 
 	f.Fork.CloneRetryLimit = 3
-
+	return f
 }

@@ -67,6 +67,10 @@ func WorkspacePath() (string, error) {
 	return path, nil
 }
 
+func DefaultWorkspaceService() workspace.WorkspaceService {
+	return filesystem.NewWorkspaceService()
+}
+
 // NewWorkspaceStore creates a new WorkspaceStore instance.
 func NewWorkspaceStore(filename string) *WorkspaceStore {
 	return &WorkspaceStore{

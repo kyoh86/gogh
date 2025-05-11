@@ -67,6 +67,10 @@ func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService) error {
 	return nil
 }
 
+func DefaultTokenService() auth.TokenService {
+	return auth.NewTokenService()
+}
+
 func NewTokenStore(filename string) *TokenStore {
 	return &TokenStore{
 		filename: filename,

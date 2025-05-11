@@ -10,7 +10,7 @@ type Store[T any] interface {
 	Save(ctx context.Context, v T) error
 }
 
-func LoadAlternative[T any](ctx context.Context, stores ...Store[T]) (T, error) {
+func LoadAlternative[T any](ctx context.Context, getDefault func() T, stores ...Store[T]) (T, error) {
 	for _, store := range stores {
 		svc, err := store.Load(ctx)
 		if os.IsNotExist(err) {
@@ -18,6 +18,5 @@ func LoadAlternative[T any](ctx context.Context, stores ...Store[T]) (T, error) 
 		}
 		return svc, nil
 	}
-	var zero T
-	return zero, os.ErrNotExist
+	return getDefault(), nil
 }

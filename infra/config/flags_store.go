@@ -15,17 +15,16 @@ type FlagsStore struct {
 
 // Load implements repository.DefaultNAmeRepositoryOld.
 func (s *FlagsStore) Load(ctx context.Context) (*Flags, error) {
-	var v Flags
-	SetDefault(&v)
+	v := DefaultFlags()
 	file, err := os.Open(s.filename)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	if err := toml.NewDecoder(file).Decode(&v); err != nil {
+	if err := toml.NewDecoder(file).Decode(v); err != nil {
 		return nil, err
 	}
-	return &v, nil
+	return v, nil
 }
 
 // Save implements repository.DefaultNAmeRepositoryOld.
