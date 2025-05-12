@@ -6,6 +6,7 @@ import (
 
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/store"
 )
 
 type DefaultNameStoreV0 struct {
@@ -42,15 +43,10 @@ func (d *DefaultNameStoreV0) Load(ctx context.Context) (repository.DefaultNameSe
 	}, nil
 }
 
-// Save implements repository.DefaultNAmeRepositoryOld.
-func (d *DefaultNameStoreV0) Save(ctx context.Context, ds repository.DefaultNameService) error {
-	panic("not supported")
-}
-
 func NewDefaultNameStoreV0(filename string) *DefaultNameStoreV0 {
 	return &DefaultNameStoreV0{
 		filename: filename,
 	}
 }
 
-var _ repository.DefaultNameStore = (*DefaultNameStoreV0)(nil)
+var _ store.Loader[repository.DefaultNameService] = (*DefaultNameStoreV0)(nil)

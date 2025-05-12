@@ -10,7 +10,8 @@ func NewAuthCommand(svc *ServiceSet) *cobra.Command {
 		Use:   "auth",
 		Short: "Manage tokens",
 		PersistentPostRunE: func(cmd *cobra.Command, _ []string) error {
-			path, err := config.TokensPathV0()
+			// TODO: here...?
+			path, err := config.TokensPath()
 			if err != nil {
 				return err
 			}

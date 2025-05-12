@@ -27,11 +27,6 @@ func (d *FlagsStoreV0) Load(ctx context.Context) (*Flags, error) {
 	return v, nil
 }
 
-// Save implements repository.DefaultNAmeRepositoryOld.
-func (d *FlagsStoreV0) Save(ctx context.Context, ds *Flags) error {
-	panic("not supported")
-}
-
 func NewFlagsStoreV0(filename string) *FlagsStoreV0 {
 	return &FlagsStoreV0{
 		filename: filename,
@@ -39,11 +34,11 @@ func NewFlagsStoreV0(filename string) *FlagsStoreV0 {
 }
 
 func FlagsPathV0() (string, error) {
-	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, AppName, "flag.yaml")
+	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flag.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)
 	}
 	return path, nil
 }
 
-var _ store.Store[*Flags] = (*FlagsStoreV0)(nil)
+var _ store.Loader[*Flags] = (*FlagsStoreV0)(nil)

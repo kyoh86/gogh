@@ -78,6 +78,14 @@ type Flags struct {
 	Fork          ForkFlags          `yaml:"fork,omitempty" toml:"fork,omitempty"`
 }
 
+func (f *Flags) HasChanges() bool {
+	return false
+}
+
+func (f *Flags) MarkSaved() {
+	// No-op
+}
+
 func DefaultFlags() *Flags {
 	f := new(Flags)
 	f.BundleDump.File.Set("~/.config/gogh/bundle.txt")

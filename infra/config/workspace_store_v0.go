@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/filesystem"
 	"gopkg.in/yaml.v2"
@@ -36,12 +37,8 @@ func (w *WorkspaceStoreV0) Load(ctx context.Context) (workspace.WorkspaceService
 			return nil, err
 		}
 	}
+	svc.MarkSaved()
 	return &svc, nil
-}
-
-// Save implements workspace.WorkspaceRepository.
-func (w *WorkspaceStoreV0) Save(ctx context.Context, ws workspace.WorkspaceService) error {
-	panic("not supported")
 }
 
 func WorkspacePathV0() (string, error) {
@@ -53,10 +50,10 @@ func WorkspacePathV0() (string, error) {
 }
 
 // NewWorkspaceStore creates a new WorkspaceStore instance.
-func NewWorkspaceStoreV0(filename string) *WorkspaceStore {
-	return &WorkspaceStore{
+func NewWorkspaceStoreV0(filename string) *WorkspaceStoreV0 {
+	return &WorkspaceStoreV0{
 		filename: filename,
 	}
 }
 
-var _ workspace.WorkspaceStore = (*WorkspaceStoreV0)(nil)
+var _ store.Loader[workspace.WorkspaceService] = (*WorkspaceStoreV0)(nil)

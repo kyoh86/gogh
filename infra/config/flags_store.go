@@ -13,7 +13,7 @@ type FlagsStore struct {
 	filename string
 }
 
-// Load implements repository.DefaultNAmeRepositoryOld.
+// Load implements repository.DefaultNameRepositoryOld.
 func (s *FlagsStore) Load(ctx context.Context) (*Flags, error) {
 	v := DefaultFlags()
 	file, err := os.Open(s.filename)
@@ -27,17 +27,6 @@ func (s *FlagsStore) Load(ctx context.Context) (*Flags, error) {
 	return v, nil
 }
 
-// Save implements repository.DefaultNAmeRepositoryOld.
-func (s *FlagsStore) Save(ctx context.Context, ds *Flags) error {
-	file, err := os.OpenFile(s.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	return toml.NewEncoder(file).Encode(ds)
-}
-
 func NewFlagsStore(filename string) *FlagsStore {
 	return &FlagsStore{
 		filename: filename,
@@ -45,11 +34,12 @@ func NewFlagsStore(filename string) *FlagsStore {
 }
 
 func FlagsPath() (string, error) {
-	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, AppName, "flags.v4.toml")
+	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flags.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)
 	}
 	return path, nil
 }
 
-var _ store.Store[*Flags] = (*FlagsStore)(nil)
+// TODO: Implement store.Store and save it is required.
+var _ store.Loader[*Flags] = (*FlagsStore)(nil)

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/oauth2"
 )
@@ -39,11 +40,15 @@ func (d *TokenStore) Load(ctx context.Context) (auth.TokenService, error) {
 			}
 		}
 	}
+	svc.MarkSaved()
 	return svc, nil
 }
 
 // Save implements auth.TokenRepository.
 func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService) error {
+	if !ds.HasChanges() {
+		return nil
+	}
 	file, err := os.OpenFile(d.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -78,11 +83,11 @@ func NewTokenStore(filename string) *TokenStore {
 }
 
 func TokensPath() (string, error) {
-	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, AppName, "tokens.v4.yaml")
+	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
 	}
 	return path, nil
 }
 
-var _ auth.TokenStore = (*TokenStore)(nil)
+var _ store.Store[auth.TokenService] = (*TokenStore)(nil)

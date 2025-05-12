@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/filesystem"
 	"github.com/pelletier/go-toml/v2"
@@ -37,11 +38,15 @@ func (w *WorkspaceStore) Load(ctx context.Context) (workspace.WorkspaceService, 
 			return nil, err
 		}
 	}
+	svc.MarkSaved()
 	return svc, nil
 }
 
 // Save implements workspace.WorkspaceRepository.
 func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService) error {
+	if !ws.HasChanges() {
+		return nil
+	}
 	file, err := os.OpenFile(w.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -60,7 +65,7 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 }
 
 func WorkspacePath() (string, error) {
-	path, err := appContextPath("GOGH_WORKSPACE_PATH", os.UserCacheDir, AppName, "workspace.v4.yaml")
+	path, err := appContextPath("GOGH_WORKSPACE_PATH", os.UserConfigDir, "workspace.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search workspace path: %w", err)
 	}
@@ -78,4 +83,4 @@ func NewWorkspaceStore(filename string) *WorkspaceStore {
 	}
 }
 
-var _ workspace.WorkspaceStore = (*WorkspaceStore)(nil)
+var _ store.Store[workspace.WorkspaceService] = (*WorkspaceStore)(nil)

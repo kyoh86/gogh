@@ -11,6 +11,7 @@ const DefaultHost = github.GlobalHost
 type DefaultNameService struct {
 	hosts       Map[string, string]
 	defaultHost string
+	changed     bool
 }
 
 // GetMap implements auth.DefaultsService
@@ -48,6 +49,7 @@ func (d *DefaultNameService) SetDefaultHost(host string) error {
 		return err
 	}
 	d.defaultHost = host
+	d.changed = true
 	return nil
 }
 
@@ -60,7 +62,18 @@ func (d *DefaultNameService) SetDefaultOwnerFor(host, owner string) error {
 		return err
 	}
 	d.hosts.Set(host, owner)
+	d.changed = true
 	return nil
+}
+
+// HasChanges implements repository.DefaultNameService.
+func (d *DefaultNameService) HasChanges() bool {
+	return d.changed
+}
+
+// MarkSaved implements repository.DefaultNameService.
+func (d *DefaultNameService) MarkSaved() {
+	d.changed = false
 }
 
 var _ repository.DefaultNameService = (*DefaultNameService)(nil)

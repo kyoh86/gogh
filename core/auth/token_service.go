@@ -27,6 +27,8 @@ type TokenService interface {
 
 	// Entries returns all stored token entries
 	Entries() []TokenEntry
+
+	store.Content
 }
 
 // TokenEntry represents a stored token with its host and owner
@@ -41,12 +43,15 @@ type TokenStore store.Store[TokenService]
 
 var ErrTokenNotFound = errors.New("no token found")
 
-type tokenServiceImpl map[string]oauth2.Token
+type tokenServiceImpl struct {
+	m       map[string]oauth2.Token
+	changed bool
+}
 
 const hostOwnerSeparator = "/"
 
 func (t tokenServiceImpl) Get(hostName, ownerName string) (oauth2.Token, error) {
-	token, ok := t[hostName+hostOwnerSeparator+ownerName]
+	token, ok := t.m[hostName+hostOwnerSeparator+ownerName]
 	if !ok {
 		return oauth2.Token{}, ErrTokenNotFound
 	}
@@ -54,23 +59,25 @@ func (t tokenServiceImpl) Get(hostName, ownerName string) (oauth2.Token, error) 
 }
 
 func (t *tokenServiceImpl) Set(hostName, ownerName string, token Token) error {
-	(*t)[hostName+hostOwnerSeparator+ownerName] = token
+	t.m[hostName+hostOwnerSeparator+ownerName] = token
+	t.changed = true
 	return nil
 }
 
 func (t *tokenServiceImpl) Delete(hostName, ownerName string) error {
-	delete(*t, hostName+hostOwnerSeparator+ownerName)
+	delete(t.m, hostName+hostOwnerSeparator+ownerName)
+	t.changed = true
 	return nil
 }
 
 func (t tokenServiceImpl) Has(hostName, ownerName string) bool {
-	_, ok := t[hostName+hostOwnerSeparator+ownerName]
+	_, ok := t.m[hostName+hostOwnerSeparator+ownerName]
 	return ok
 }
 
 func (t tokenServiceImpl) Entries() []TokenEntry {
-	entries := make([]TokenEntry, 0, len(t))
-	for key, token := range t {
+	entries := make([]TokenEntry, 0, len(t.m))
+	for key, token := range t.m {
 		words := strings.SplitN(key, hostOwnerSeparator, 2)
 		if len(words) != 2 {
 			continue
@@ -86,6 +93,18 @@ func (t tokenServiceImpl) Entries() []TokenEntry {
 	return entries
 }
 
+// HasChanges implements TokenService.
+func (t *tokenServiceImpl) HasChanges() bool {
+	return t.changed
+}
+
+// MarkSaved implements TokenService.
+func (t *tokenServiceImpl) MarkSaved() {
+	t.changed = false
+}
+
 func NewTokenService() TokenService {
-	return &tokenServiceImpl{}
+	return &tokenServiceImpl{
+		m: make(map[string]Token),
+	}
 }

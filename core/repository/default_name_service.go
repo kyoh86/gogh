@@ -23,7 +23,6 @@ type DefaultNameService interface {
 
 	// SetDefaultOwnerFor sets the default owner for the specified host
 	SetDefaultOwnerFor(host, owner string) error
-}
 
-// DefaultNameStore is a service for saving and loading tokens
-type DefaultNameStore store.Store[DefaultNameService]
+	store.Content
+}

@@ -41,7 +41,6 @@ type WorkspaceService interface {
 
 	// RemoveRoot removes a root
 	RemoveRoot(root Root) error
-}
 
-// WorkspaceStore is a service for saving and loading workspaces
-type WorkspaceStore store.Store[WorkspaceService]
+	store.Content
+}

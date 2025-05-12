@@ -9,7 +9,6 @@ import (
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/logger"
 	"github.com/kyoh86/gogh/v3/ui/cli"
-	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 )
 
 var (
@@ -57,7 +56,8 @@ func run() error {
 		return fmt.Errorf("failed to get default names path: %w", err)
 	}
 
-	flags, err := store.LoadAlternative(ctx,
+	flags, err := store.LoadAlternative(
+		ctx,
 		config.DefaultFlags,
 		config.NewFlagsStore(flagsPath),
 		config.NewFlagsStoreV0(flagsPathV0),
@@ -66,27 +66,32 @@ func run() error {
 		return fmt.Errorf("failed to load flags: %w", err)
 	}
 
-	defaultNameService, err := store.LoadAlternative(ctx,
+	defaultNameStore := config.NewDefaultNameStore(defaultNamesPath)
+	defaultNameService, err := store.LoadAlternative(
+		ctx,
 		config.DefaultName,
-		config.NewDefaultNameStore(defaultNamesPath),
+		defaultNameStore,
 		config.NewDefaultNameStoreV0(tokensPathV0),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to load default names: %w", err)
 	}
-
-	tokenService, err := store.LoadAlternative(ctx,
+	tokenStore := config.NewTokenStore(tokensPath)
+	tokenService, err := store.LoadAlternative(
+		ctx,
 		config.DefaultTokenService,
-		config.NewTokenStore(tokensPath),
+		tokenStore,
 		config.NewTokenStoreV0(tokensPathV0),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to load tokens: %w", err)
 	}
 
-	workspaceService, err := store.LoadAlternative(ctx,
+	workspaceStore := config.NewWorkspaceStore(workspacePath)
+	workspaceService, err := store.LoadAlternative(
+		ctx,
 		config.DefaultWorkspaceService,
-		config.NewWorkspaceStore(workspacePath),
+		workspaceStore,
 		config.NewWorkspaceStoreV0(workspacePathV0),
 	)
 	if err != nil {
@@ -94,16 +99,24 @@ func run() error {
 	}
 
 	cmd := cli.NewApp(
-		commands.NewServiceSet(
-			defaultNameService,
-			tokenService,
-			workspaceService,
-			flags,
-		),
+		defaultNameService,
+		tokenService,
+		workspaceService,
+		flags,
 	)
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
 
 	if err := cmd.ExecuteContext(ctx); err != nil {
+		return err
+	}
+
+	if err := defaultNameStore.Save(ctx, defaultNameService); err != nil {
+		return err
+	}
+	if err := tokenStore.Save(ctx, tokenService); err != nil {
+		return err
+	}
+	if err := workspaceStore.Save(ctx, workspaceService); err != nil {
 		return err
 	}
 	return nil

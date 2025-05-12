@@ -13,6 +13,7 @@ import (
 type WorkspaceService struct {
 	roots       []workspace.Root
 	primaryRoot workspace.Root
+	changed     bool
 	mu          sync.RWMutex
 	// You might need a config file path or other storage mechanism
 }
@@ -65,6 +66,7 @@ func (s *WorkspaceService) SetPrimaryRoot(path workspace.Root) error {
 	}
 
 	s.primaryRoot = path
+	s.changed = true
 	return nil // You would typically persist this change
 }
 
@@ -89,6 +91,8 @@ func (s *WorkspaceService) AddRoot(root workspace.Root, asPrimary bool) error {
 	if len(s.roots) == 1 || asPrimary {
 		s.primaryRoot = absPath
 	}
+
+	s.changed = true
 
 	return nil // You would typically persist this change
 }
@@ -116,7 +120,23 @@ func (s *WorkspaceService) RemoveRoot(path workspace.Root) error {
 		}
 	}
 
+	s.changed = true
+
 	return errors.New("root not found")
+}
+
+// HasChanges implements workspace.WorkspaceService.
+func (s *WorkspaceService) HasChanges() bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.changed
+}
+
+// MarkSaved implements workspace.WorkspaceService.
+func (s *WorkspaceService) MarkSaved() {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	s.changed = false
 }
 
 // Ensure RootService implements workspace.RootService

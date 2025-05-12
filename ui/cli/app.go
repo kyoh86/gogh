@@ -1,12 +1,26 @@
 package cli
 
 import (
+	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/workspace"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 	"github.com/spf13/cobra"
 )
 
-func NewApp(svc *commands.ServiceSet) *cobra.Command {
+func NewApp(
+	defaultNameService repository.DefaultNameService,
+	tokenService auth.TokenService,
+	workspaceService workspace.WorkspaceService,
+	flags *config.Flags,
+) *cobra.Command {
+	svc := commands.NewServiceSet(
+		defaultNameService,
+		tokenService,
+		workspaceService,
+		flags,
+	)
 	facadeCommand := &cobra.Command{
 		Use:   config.AppName,
 		Short: "GO GitHub local repository manager",

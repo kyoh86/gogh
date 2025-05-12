@@ -7,6 +7,7 @@ import (
 
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/store"
 	"golang.org/x/oauth2"
 )
 
@@ -48,12 +49,8 @@ func (d *TokenStoreV0) Load(ctx context.Context) (auth.TokenService, error) {
 			}
 		}
 	}
+	svc.MarkSaved()
 	return svc, nil
-}
-
-// Save implements auth.TokenRepository.
-func (d *TokenStoreV0) Save(ctx context.Context, ds auth.TokenService) error {
-	panic("not supported")
 }
 
 func NewTokenStoreV0(filename string) *TokenStoreV0 {
@@ -70,4 +67,4 @@ func TokensPathV0() (string, error) {
 	return path, nil
 }
 
-var _ auth.TokenStore = (*TokenStoreV0)(nil)
+var _ store.Loader[auth.TokenService] = (*TokenStoreV0)(nil)

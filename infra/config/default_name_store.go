@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -37,6 +38,9 @@ func (d *DefaultNameStore) Load(ctx context.Context) (repository.DefaultNameServ
 
 // Save implements repository.DefaultNameRepository.
 func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameService) error {
+	if !ds.HasChanges() {
+		return nil
+	}
 	file, err := os.OpenFile(d.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -55,7 +59,7 @@ func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameSe
 }
 
 func DefaultNamesPath() (string, error) {
-	path, err := appContextPath("GOGH_DEFAULT_NAMES_PATH", os.UserConfigDir, AppName, "default_names.v4.yaml")
+	path, err := appContextPath("GOGH_DEFAULT_NAMES_PATH", os.UserConfigDir, "default_names.v4.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search default names path: %w", err)
 	}
@@ -75,4 +79,4 @@ func NewDefaultNameStore(filename string) *DefaultNameStore {
 	}
 }
 
-var _ repository.DefaultNameStore = (*DefaultNameStore)(nil)
+var _ store.Store[repository.DefaultNameService] = (*DefaultNameStore)(nil)
