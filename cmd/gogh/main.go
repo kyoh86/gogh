@@ -31,8 +31,5 @@ func run() error {
 	}
 	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
 
-	if err := cmd.ExecuteContext(ctx); err != nil {
-		return err
-	}
-	return nil
+	return cmd.ExecuteContext(ctx)
 }
