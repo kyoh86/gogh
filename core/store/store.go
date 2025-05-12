@@ -16,6 +16,7 @@ type Content interface {
 }
 
 type Loader[T any] interface {
+	Source() (string, error)
 	Load(ctx context.Context) (T, error)
 }
 
@@ -24,7 +25,7 @@ type Store[T Content] interface {
 	Save(ctx context.Context, v T) error
 }
 
-func LoadAlternative[T Content](ctx context.Context, getDefault func() T, loaders ...Loader[T]) (T, error) {
+func LoadAlternative[T Content](ctx context.Context, getDefault func() T, loaders ...Loader[T]) (T, string, error) {
 	for i, loader := range loaders {
 		svc, err := loader.Load(ctx)
 		if os.IsNotExist(err) {
@@ -35,9 +36,10 @@ func LoadAlternative[T Content](ctx context.Context, getDefault func() T, loader
 		}
 		if err != nil {
 			var empty T
-			return empty, fmt.Errorf("faield to load at %dth loader: %w", i+1, err)
+			return empty, "", fmt.Errorf("faield to load at %dth loader: %w", i+1, err)
 		}
-		return svc, nil
+		source, err := loader.Source()
+		return svc, source, err
 	}
-	return getDefault(), nil
+	return getDefault(), "default", nil
 }

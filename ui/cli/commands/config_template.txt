@@ -1,13 +1,14 @@
 Now gogh is executed in the following context.
 
 ## Default names
-  (from {{.configFilePath}})
+  (from {{.defaultNameFilePath}})
 
   Host: {{if ne .defaultHost ""}}{{.defaultHost}}{{else}}github.com{{end}}
-  {{if ne .defaultOwner ""}}Owner: {{.defaultOwner}}
+  Owners:
+  {{range $host, $owner := .defaultNames}}  {{$host}}: {{$owner}}
   {{end}}
-## Root directories
-  (from {{.configFilePath}})
+## Workspaces
+  (from {{.workspaceFilePath}})
 
 {{range .roots}}  {{.}}
 {{end}}
@@ -16,7 +17,7 @@ Now gogh is executed in the following context.
 
 {{range .tokens}}  {{.}}
 {{end}}
-## Default flags
-  (from {{.defaultFlagFilePath}})
+## Flags
+  (from {{.flagsFilePath}})
 
-{{.defaultFlags}}
+{{.flags}}

@@ -11,7 +11,6 @@ import (
 )
 
 type DefaultNameStore struct {
-	filename string
 }
 
 type tomlDefaultNameStore struct {
@@ -22,7 +21,11 @@ type tomlDefaultNameStore struct {
 // Load implements repository.DefaultNameRepository.
 func (d *DefaultNameStore) Load(ctx context.Context) (repository.DefaultNameService, error) {
 	var v tomlDefaultNameStore
-	file, err := os.Open(d.filename)
+	source, err := d.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +44,11 @@ func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameSe
 	if !ds.HasChanges() {
 		return nil
 	}
-	file, err := os.OpenFile(d.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	source, err := d.Source()
+	if err != nil {
+		return err
+	}
+	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -58,7 +65,7 @@ func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameSe
 	return nil
 }
 
-func DefaultNamesPath() (string, error) {
+func (*DefaultNameStore) Source() (string, error) {
 	path, err := appContextPath("GOGH_DEFAULT_NAMES_PATH", os.UserConfigDir, "default_names.v4.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search default names path: %w", err)
@@ -73,10 +80,8 @@ func DefaultName() repository.DefaultNameService {
 	}
 }
 
-func NewDefaultNameStore(filename string) *DefaultNameStore {
-	return &DefaultNameStore{
-		filename: filename,
-	}
+func NewDefaultNameStore() *DefaultNameStore {
+	return &DefaultNameStore{}
 }
 
 var _ store.Store[repository.DefaultNameService] = (*DefaultNameStore)(nil)

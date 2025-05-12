@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	yaml "github.com/goccy/go-yaml"
@@ -9,9 +10,7 @@ import (
 	"github.com/kyoh86/gogh/v3/core/store"
 )
 
-type DefaultNameStoreV0 struct {
-	filename string
-}
+type DefaultNameStoreV0 struct{}
 
 type v0YAMLDefaultNameStore struct {
 	Hosts map[string]struct {
@@ -23,7 +22,11 @@ type v0YAMLDefaultNameStore struct {
 // Load implements repository.DefaultNAmeRepositoryOld.
 func (d *DefaultNameStoreV0) Load(ctx context.Context) (repository.DefaultNameService, error) {
 	var v v0YAMLDefaultNameStore
-	file, err := os.Open(d.filename)
+	source, err := d.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -43,10 +46,16 @@ func (d *DefaultNameStoreV0) Load(ctx context.Context) (repository.DefaultNameSe
 	}, nil
 }
 
-func NewDefaultNameStoreV0(filename string) *DefaultNameStoreV0 {
-	return &DefaultNameStoreV0{
-		filename: filename,
+func (*DefaultNameStoreV0) Source() (string, error) {
+	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.yaml")
+	if err != nil {
+		return "", fmt.Errorf("search config path: %w", err)
 	}
+	return path, nil
+}
+
+func NewDefaultNameStoreV0() *DefaultNameStoreV0 {
+	return &DefaultNameStoreV0{}
 }
 
 var _ store.Loader[repository.DefaultNameService] = (*DefaultNameStoreV0)(nil)

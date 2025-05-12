@@ -12,16 +12,18 @@ import (
 )
 
 // TokenStore is a repository for managing token configuration.
-type TokenStore struct {
-	filename string
-}
+type TokenStore struct{}
 
 type tomlTokenStore map[string]map[string]oauth2.Token
 
 // Load implements auth.TokenRepository.
 func (d *TokenStore) Load(ctx context.Context) (auth.TokenService, error) {
 	var v tomlTokenStore
-	file, err := os.Open(d.filename)
+	source, err := d.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,11 @@ func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService) error {
 	if !ds.HasChanges() {
 		return nil
 	}
-	file, err := os.OpenFile(d.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	source, err := d.Source()
+	if err != nil {
+		return err
+	}
+	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -76,13 +82,11 @@ func DefaultTokenService() auth.TokenService {
 	return auth.NewTokenService()
 }
 
-func NewTokenStore(filename string) *TokenStore {
-	return &TokenStore{
-		filename: filename,
-	}
+func NewTokenStore() *TokenStore {
+	return &TokenStore{}
 }
 
-func TokensPath() (string, error) {
+func (d *TokenStore) Source() (string, error) {
 	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)

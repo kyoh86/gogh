@@ -9,14 +9,16 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-type FlagsStore struct {
-	filename string
-}
+type FlagsStore struct{}
 
 // Load implements repository.DefaultNameRepositoryOld.
 func (s *FlagsStore) Load(ctx context.Context) (*Flags, error) {
 	v := DefaultFlags()
-	file, err := os.Open(s.filename)
+	source, err := s.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -27,13 +29,11 @@ func (s *FlagsStore) Load(ctx context.Context) (*Flags, error) {
 	return v, nil
 }
 
-func NewFlagsStore(filename string) *FlagsStore {
-	return &FlagsStore{
-		filename: filename,
-	}
+func NewFlagsStore() *FlagsStore {
+	return &FlagsStore{}
 }
 
-func FlagsPath() (string, error) {
+func (s *FlagsStore) Source() (string, error) {
 	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flags.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)

@@ -12,9 +12,7 @@ import (
 )
 
 // WorkspaceStore is a repository for managing workspace configuration.
-type WorkspaceStore struct {
-	filename string
-}
+type WorkspaceStore struct{}
 
 type tomlWorkspaceStore struct {
 	Roots       []workspace.Root `toml:"roots,omitempty"`
@@ -24,7 +22,11 @@ type tomlWorkspaceStore struct {
 // Load implements workspace.WorkspaceRepository.
 func (w *WorkspaceStore) Load(ctx context.Context) (workspace.WorkspaceService, error) {
 	var v tomlWorkspaceStore
-	file, err := os.Open(w.filename)
+	source, err := w.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +49,11 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 	if !ws.HasChanges() {
 		return nil
 	}
-	file, err := os.OpenFile(w.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	source, err := w.Source()
+	if err != nil {
+		return err
+	}
+	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -64,7 +70,7 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 	return nil
 }
 
-func WorkspacePath() (string, error) {
+func (*WorkspaceStore) Source() (string, error) {
 	path, err := appContextPath("GOGH_WORKSPACE_PATH", os.UserConfigDir, "workspace.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search workspace path: %w", err)
@@ -77,10 +83,8 @@ func DefaultWorkspaceService() workspace.WorkspaceService {
 }
 
 // NewWorkspaceStore creates a new WorkspaceStore instance.
-func NewWorkspaceStore(filename string) *WorkspaceStore {
-	return &WorkspaceStore{
-		filename: filename,
-	}
+func NewWorkspaceStore() *WorkspaceStore {
+	return &WorkspaceStore{}
 }
 
 var _ store.Store[workspace.WorkspaceService] = (*WorkspaceStore)(nil)

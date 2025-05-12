@@ -9,14 +9,16 @@ import (
 	"github.com/kyoh86/gogh/v3/core/store"
 )
 
-type FlagsStoreV0 struct {
-	filename string
-}
+type FlagsStoreV0 struct{}
 
 // Load implements repository.DefaultNAmeRepositoryOld.
 func (d *FlagsStoreV0) Load(ctx context.Context) (*Flags, error) {
 	v := DefaultFlags()
-	file, err := os.Open(d.filename)
+	source, err := d.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -27,13 +29,11 @@ func (d *FlagsStoreV0) Load(ctx context.Context) (*Flags, error) {
 	return v, nil
 }
 
-func NewFlagsStoreV0(filename string) *FlagsStoreV0 {
-	return &FlagsStoreV0{
-		filename: filename,
-	}
+func NewFlagsStoreV0() *FlagsStoreV0 {
+	return &FlagsStoreV0{}
 }
 
-func FlagsPathV0() (string, error) {
+func (d *FlagsStoreV0) Source() (string, error) {
 	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flag.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)

@@ -111,7 +111,6 @@ func NewCreateCommand(svc *ServiceSet) *cobra.Command {
 			return nil
 		},
 	}
-	// TODO: Validate flag combinations
 	cmd.Flags().
 		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().

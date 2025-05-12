@@ -12,9 +12,7 @@ import (
 )
 
 // WorkspaceStore is a repository for managing workspace configuration.
-type WorkspaceStoreV0 struct {
-	filename string
-}
+type WorkspaceStoreV0 struct{}
 
 type yamlWorkspaceStoreV0 struct {
 	Roots []workspace.Root `yaml:"roots,omitempty"`
@@ -23,7 +21,11 @@ type yamlWorkspaceStoreV0 struct {
 // Load implements workspace.WorkspaceRepository.
 func (w *WorkspaceStoreV0) Load(ctx context.Context) (workspace.WorkspaceService, error) {
 	var v yamlWorkspaceStoreV0
-	file, err := os.Open(w.filename)
+	source, err := w.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +43,7 @@ func (w *WorkspaceStoreV0) Load(ctx context.Context) (workspace.WorkspaceService
 	return &svc, nil
 }
 
-func WorkspacePathV0() (string, error) {
+func (*WorkspaceStoreV0) Source() (string, error) {
 	path, err := appContextPath("GOGH_CONFIG_PATH", os.UserConfigDir, "config.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
@@ -50,10 +52,8 @@ func WorkspacePathV0() (string, error) {
 }
 
 // NewWorkspaceStore creates a new WorkspaceStore instance.
-func NewWorkspaceStoreV0(filename string) *WorkspaceStoreV0 {
-	return &WorkspaceStoreV0{
-		filename: filename,
-	}
+func NewWorkspaceStoreV0() *WorkspaceStoreV0 {
+	return &WorkspaceStoreV0{}
 }
 
 var _ store.Loader[workspace.WorkspaceService] = (*WorkspaceStoreV0)(nil)

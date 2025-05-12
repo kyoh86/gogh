@@ -38,6 +38,10 @@ type TokenEntry struct {
 	Token Token
 }
 
+func (t TokenEntry) String() string {
+	return t.Token.AccessToken + "@" + t.Host + hostOwnerSeparator + t.Owner
+}
+
 // TokenStore is a service for saving and loading tokens
 type TokenStore store.Store[TokenService]
 

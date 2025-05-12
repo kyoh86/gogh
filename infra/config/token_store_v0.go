@@ -12,9 +12,7 @@ import (
 )
 
 // TokenStoreV0 is a repository for managing token configuration.
-type TokenStoreV0 struct {
-	filename string
-}
+type TokenStoreV0 struct{}
 
 type yamlTokenServiceV0 struct {
 	Hosts Map[string, *yamlTokenHostEntryV0] `yaml:"hosts,omitempty"`
@@ -27,7 +25,11 @@ type yamlTokenHostEntryV0 struct {
 // Load implements auth.TokenRepository.
 func (d *TokenStoreV0) Load(ctx context.Context) (auth.TokenService, error) {
 	var v yamlTokenServiceV0
-	file, err := os.Open(d.filename)
+	source, err := d.Source()
+	if err != nil {
+		return nil, err
+	}
+	file, err := os.Open(source)
 	if err != nil {
 		return nil, err
 	}
@@ -53,13 +55,11 @@ func (d *TokenStoreV0) Load(ctx context.Context) (auth.TokenService, error) {
 	return svc, nil
 }
 
-func NewTokenStoreV0(filename string) *TokenStoreV0 {
-	return &TokenStoreV0{
-		filename: filename,
-	}
+func NewTokenStoreV0() *TokenStoreV0 {
+	return &TokenStoreV0{}
 }
 
-func TokensPathV0() (string, error) {
+func (*TokenStoreV0) Source() (string, error) {
 	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)

@@ -9,12 +9,9 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
-	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
-// TODO: fix it
-//
 //go:embed config_template.txt
 var configTemplate string
 
@@ -24,21 +21,12 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 		Short:   "Show configurations",
 		Aliases: []string{"conf", "setting", "context"},
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			//TODO: fix it
 			//TODO: support set-default subcommand
 			logger := log.FromContext(cmd.Context())
 			t, err := template.New("gogh context").Parse(configTemplate)
 			if err != nil {
-				logger.Error("[Bug] Failed to parse template string")
+				logger.WithError(err).Error("[Bug] Failed to parse template string")
 				return nil
-			}
-			tokensFilePath, err := config.TokensPathV0()
-			if err != nil {
-				return fmt.Errorf("failed to get tokens file path: %w", err)
-			}
-			flagsFilePath, err := config.FlagsPathV0()
-			if err != nil {
-				return fmt.Errorf("failed to get flags file path: %w", err)
 			}
 
 			flags, err := encodeYAML(svc.flags)
@@ -48,12 +36,15 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 			}
 			var w strings.Builder
 			if err := t.Execute(&w, map[string]any{
-				// TODO: DEFAULT NAMES
-				"tokensFilePath": tokensFilePath,
-				"flagsFilePath":  flagsFilePath,
-				"roots":          svc.workspaceService.GetRoots(),
-				"tokens":         svc.tokenService.Entries(),
-				"flags":          flags,
+				"defaultNameFilePath": svc.defaultNameSource,
+				"tokensFilePath":      svc.tokenSource,
+				"flagsFilePath":       svc.flagsSource,
+				"workspaceFilePath":   svc.workspaceSource,
+				"roots":               svc.workspaceService.GetRoots(),
+				"defaultHost":         svc.defaultNameService.GetDefaultHost(),
+				"defaultNames":        svc.defaultNameService.GetMap(),
+				"tokens":              svc.tokenService.Entries(),
+				"flags":               flags,
 			}); err != nil {
 				log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")
 				return nil

@@ -10,15 +10,23 @@ import (
 )
 
 func NewApp(
+	defaultNameSource string,
 	defaultNameService repository.DefaultNameService,
+	tokenSource string,
 	tokenService auth.TokenService,
+	workspaceSource string,
 	workspaceService workspace.WorkspaceService,
+	flagsSource string,
 	flags *config.Flags,
 ) *cobra.Command {
 	svc := commands.NewServiceSet(
+		defaultNameSource,
 		defaultNameService,
+		tokenSource,
 		tokenService,
+		workspaceSource,
 		workspaceService,
+		flagsSource,
 		flags,
 	)
 	facadeCommand := &cobra.Command{
