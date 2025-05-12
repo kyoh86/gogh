@@ -20,7 +20,7 @@ func NewRootsListCommand(svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all of the roots",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 		Run:   RootsListRun(svc),
 	}
 }

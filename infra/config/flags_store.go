@@ -41,5 +41,4 @@ func (s *FlagsStore) Source() (string, error) {
 	return path, nil
 }
 
-// TODO: Implement store.Store and save it is required.
 var _ store.Loader[*Flags] = (*FlagsStore)(nil)

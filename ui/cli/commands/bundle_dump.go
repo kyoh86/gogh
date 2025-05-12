@@ -17,7 +17,7 @@ func NewBundleDumpCommand(svc *ServiceSet) *cobra.Command {
 		Use:     "dump",
 		Aliases: []string{"export"},
 		Short:   "Export current local repository list",
-		Args:    cobra.ExactArgs(0),
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
 			if f.File.Expand() != "" {

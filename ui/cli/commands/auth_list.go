@@ -13,7 +13,7 @@ func NewAuthListCommand(svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "Listup authenticated host and owners",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := cmd.Context()
 			entries, err := useCase.Execute(ctx)

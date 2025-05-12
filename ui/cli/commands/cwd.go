@@ -16,7 +16,7 @@ func NewCwdCommand(svc *ServiceSet) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cwd",
 		Short: "Print the local reposiotry in current working directory",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			formatter, err := f.Format.Formatter()
 			if err != nil {

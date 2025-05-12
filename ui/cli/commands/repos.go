@@ -136,8 +136,8 @@ func NewReposCommand(svc *ServiceSet) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repos",
 		Short: "List remote repositories",
-		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			printer, opts, err := checkFlags()
 			if err != nil {
 				return err

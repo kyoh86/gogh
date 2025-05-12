@@ -17,7 +17,7 @@ func NewListCommand(svc *ServiceSet) *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List local repositories",
-		Args:    cobra.ExactArgs(0),
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			formatter, err := f.Format.Formatter()
 			if err != nil {

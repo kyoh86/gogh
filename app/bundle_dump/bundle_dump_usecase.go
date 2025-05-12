@@ -55,7 +55,6 @@ func (u *UseCase) Execute(ctx context.Context, opts workspace.ListOptions) iter.
 			}
 
 			for _, remote := range remotes {
-				//TODO: Parse URL with hosting service?
 				uobj, err := url.Parse(remote)
 				if err != nil {
 					yield(nil, err)

@@ -1,24 +1,58 @@
 package cli
 
 import (
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"context"
+	"fmt"
+
+	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 	"github.com/spf13/cobra"
 )
 
-func NewApp(
-	defaultNameSource string,
-	defaultNameService repository.DefaultNameService,
-	tokenSource string,
-	tokenService auth.TokenService,
-	workspaceSource string,
-	workspaceService workspace.WorkspaceService,
-	flagsSource string,
-	flags *config.Flags,
-) *cobra.Command {
+func NewApp(ctx context.Context) (*cobra.Command, error) {
+	flags, flagsSource, err := store.LoadAlternative(
+		ctx,
+		config.DefaultFlags,
+		config.NewFlagsStore(),
+		config.NewFlagsStoreV0(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load flags: %w", err)
+	}
+
+	defaultNameStore := config.NewDefaultNameStore()
+	defaultNameService, defaultNameSource, err := store.LoadAlternative(
+		ctx,
+		config.DefaultName,
+		defaultNameStore,
+		config.NewDefaultNameStoreV0(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load default names: %w", err)
+	}
+	tokenStore := config.NewTokenStore()
+	tokenService, tokenSource, err := store.LoadAlternative(
+		ctx,
+		config.DefaultTokenService,
+		tokenStore,
+		config.NewTokenStoreV0(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load tokens: %w", err)
+	}
+
+	workspaceStore := config.NewWorkspaceStore()
+	workspaceService, workspaceSource, err := store.LoadAlternative(
+		ctx,
+		config.DefaultWorkspaceService,
+		workspaceStore,
+		config.NewWorkspaceStoreV0(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load workspace: %w", err)
+	}
+
 	svc := commands.NewServiceSet(
 		defaultNameSource,
 		defaultNameService,
@@ -29,7 +63,7 @@ func NewApp(
 		flagsSource,
 		flags,
 	)
-	facadeCommand := &cobra.Command{
+	appCommand := &cobra.Command{
 		Use:   config.AppName,
 		Short: "GO GitHub local repository manager",
 	}
@@ -59,9 +93,12 @@ func NewApp(
 	configCommand.AddCommand(
 		authCommand,
 		rootsCommand,
+		commands.NewSetDefaultHostCommand(svc),
+		commands.NewSetDefaultOwnerCommand(svc),
 	)
 
-	facadeCommand.AddCommand(
+	appCommand.AddCommand(
+		commands.NewMigrateCommand(svc, defaultNameStore, tokenStore, workspaceStore),
 		commands.NewManCommand(),
 		commands.NewCwdCommand(svc),
 		commands.NewListCommand(svc),
@@ -75,5 +112,18 @@ func NewApp(
 		bundleCommand,
 		rootsCommand,
 	)
-	return facadeCommand
+
+	appCommand.PostRunE = func(cmd *cobra.Command, args []string) error {
+		if err := defaultNameStore.Save(ctx, defaultNameService, false); err != nil {
+			return err
+		}
+		if err := tokenStore.Save(ctx, tokenService, false); err != nil {
+			return err
+		}
+		if err := workspaceStore.Save(ctx, workspaceService, false); err != nil {
+			return err
+		}
+		return nil
+	}
+	return appCommand, nil
 }

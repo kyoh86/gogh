@@ -56,7 +56,7 @@ func NewBundleRestoreCommand(svc *ServiceSet) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "restore",
 		Short: "Get dumped local repositoiries",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runFunc(cmd.Context())
 		},

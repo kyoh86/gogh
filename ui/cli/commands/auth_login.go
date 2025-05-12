@@ -38,8 +38,8 @@ func NewAuthLoginCommand(svc *ServiceSet) *cobra.Command {
 		Use:     "login",
 		Aliases: []string{"signin", "add"},
 		Short:   "Login for the host and owner",
-		Args:    cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Args:    cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if f.Host == "" {
 				f.Host = github.GlobalHost
 				if err := huh.NewForm(huh.NewGroup(
