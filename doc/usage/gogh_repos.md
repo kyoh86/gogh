@@ -17,9 +17,9 @@ gogh repos [flags]
                            "url" or "json".
                            
   -h, --help               help for repos
-      --limit int          Max number of repositories to list. -1 means unlimited (default 30)
+      --limit int          Max number of repositories to list. -1 means unlimited (default -1)
       --no-archived        Omit archived repositories
-      --no-fork            Omit forks
+      --no-fork            Omit forks (default true)
       --order sort         Directions in which to order a list of items when provided an sort flag; it can accept "asc", "ascending", "ASC", "ASCENDING", "desc", "descending", "DESC" or "DESCENDING"
       --private            Show only private repositories
       --public             Show only public repositories
