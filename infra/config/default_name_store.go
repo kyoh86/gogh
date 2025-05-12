@@ -40,8 +40,8 @@ func (d *DefaultNameStore) Load(ctx context.Context) (repository.DefaultNameServ
 }
 
 // Save implements repository.DefaultNameRepository.
-func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameService) error {
-	if !ds.HasChanges() {
+func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameService, force bool) error {
+	if !ds.HasChanges() && !force {
 		return nil
 	}
 	source, err := d.Source()

@@ -21,7 +21,9 @@ func NewConfigCommand(svc *ServiceSet) *cobra.Command {
 		Short:   "Show configurations",
 		Aliases: []string{"conf", "setting", "context"},
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			//TODO: support set-default subcommand
+			//TODO: support set-default-name subcommand
+			//TODO: support set-flag subcommand
+			//TODO: new command: migrate files to new format
 			logger := log.FromContext(cmd.Context())
 			t, err := template.New("gogh context").Parse(configTemplate)
 			if err != nil {

@@ -47,8 +47,8 @@ func (d *TokenStore) Load(ctx context.Context) (auth.TokenService, error) {
 }
 
 // Save implements auth.TokenRepository.
-func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService) error {
-	if !ds.HasChanges() {
+func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService, force bool) error {
+	if !ds.HasChanges() && !force {
 		return nil
 	}
 	source, err := d.Source()

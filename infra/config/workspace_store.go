@@ -45,8 +45,8 @@ func (w *WorkspaceStore) Load(ctx context.Context) (workspace.WorkspaceService, 
 }
 
 // Save implements workspace.WorkspaceRepository.
-func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService) error {
-	if !ws.HasChanges() {
+func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService, force bool) error {
+	if !ws.HasChanges() && !force {
 		return nil
 	}
 	source, err := w.Source()

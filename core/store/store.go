@@ -22,7 +22,7 @@ type Loader[T any] interface {
 
 type Store[T Content] interface {
 	Loader[T]
-	Save(ctx context.Context, v T) error
+	Save(ctx context.Context, v T, force bool) error
 }
 
 func LoadAlternative[T Content](ctx context.Context, getDefault func() T, loaders ...Loader[T]) (T, string, error) {

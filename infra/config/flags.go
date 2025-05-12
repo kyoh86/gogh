@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 )
 
@@ -88,8 +90,12 @@ func (f *Flags) MarkSaved() {
 
 func DefaultFlags() *Flags {
 	f := new(Flags)
-	f.BundleDump.File.Set("~/.config/gogh/bundle.txt")
-	f.BundleRestore.File.Set("~/.config/gogh/bundle.txt")
+	if err := f.BundleDump.File.Set("~/.config/gogh/bundle.txt"); err != nil {
+		panic(fmt.Errorf("failed to set default bundle file source: %w", err))
+	}
+	if err := f.BundleRestore.File.Set("~/.config/gogh/bundle.txt"); err != nil {
+		panic(fmt.Errorf("failed to set default bundle file source: %w", err))
+	}
 	f.BundleRestore.CloneRetryLimit = 3
 
 	f.Repos.Limit = 30

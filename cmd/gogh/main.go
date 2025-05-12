@@ -85,13 +85,13 @@ func run() error {
 		return err
 	}
 
-	if err := defaultNameStore.Save(ctx, defaultNameService); err != nil {
+	if err := defaultNameStore.Save(ctx, defaultNameService, false); err != nil {
 		return err
 	}
-	if err := tokenStore.Save(ctx, tokenService); err != nil {
+	if err := tokenStore.Save(ctx, tokenService, false); err != nil {
 		return err
 	}
-	if err := workspaceStore.Save(ctx, workspaceService); err != nil {
+	if err := workspaceStore.Save(ctx, workspaceService, false); err != nil {
 		return err
 	}
 	return nil
