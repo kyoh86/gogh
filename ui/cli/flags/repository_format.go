@@ -9,7 +9,6 @@ import (
 	"github.com/kyoh86/gogh/v3/ui/cli/view/repotab"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"golang.org/x/term"
 )
 
 type RemoteRepoFormat string
@@ -33,27 +32,20 @@ func (f RemoteRepoFormat) Type() string {
 	return "string"
 }
 
-func (f RemoteRepoFormat) Formatter(w io.Writer) (view.RemoteRepoPrinter, error) {
+func (f RemoteRepoFormat) Formatter(w io.Writer) (view.RepositoryPrinter, error) {
 	return remoteRepoFormatter(string(f), w)
 }
 
-func remoteRepoFormatter(v string, w io.Writer) (view.RemoteRepoPrinter, error) {
+func remoteRepoFormatter(v string, w io.Writer) (view.RepositoryPrinter, error) {
 	switch v {
 	case "", "table":
-		var opts []repotab.Option
-		if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
-			opts = append(opts, repotab.Width(width))
-		}
-		if term.IsTerminal(int(os.Stdout.Fd())) {
-			opts = append(opts, repotab.Styled())
-		}
-		return repotab.NewPrinter(w, opts...), nil
+		return repotab.NewPrinter(w, repotab.TermWidth(), repotab.Styled(false)), nil
 	case "ref":
-		return view.NewRemoteRepoRefPrinter(w), nil
+		return view.NewRepositoryPrinterRef(w), nil
 	case "url":
-		return view.NewRemoteRepoURLPrinter(w), nil
+		return view.NewRepositoryPrinterURL(w), nil
 	case "json":
-		return view.NewRemoteRepoJSONPrinter(w), nil
+		return view.NewRepositoryPrinterJSON(w), nil
 	}
 	return nil, fmt.Errorf("invalid format: %q", v)
 }
@@ -65,14 +57,4 @@ Print each repository in a given format, where [format] can be one of "table", "
 
 func CompleteRemoteRepoFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return []string{"table", "ref", "url", "json"}, cobra.ShellCompDirectiveDefault
-}
-
-func GetColorOption(colorOpt string) string {
-	if colorOpt != "" {
-		return colorOpt
-	}
-	if term.IsTerminal(int(os.Stdout.Fd())) {
-		return "auto"
-	}
-	return "never"
 }

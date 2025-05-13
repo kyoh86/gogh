@@ -4,57 +4,57 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/ui/cli/view"
+	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
-type LocalRepoFormat string
+type LocationFormat string
 
-var _ pflag.Value = (*LocalRepoFormat)(nil)
+var _ pflag.Value = (*LocationFormat)(nil)
 
-func (f LocalRepoFormat) String() string {
+func (f LocationFormat) String() string {
 	return string(f)
 }
 
-func (f *LocalRepoFormat) Set(v string) error {
+func (f *LocationFormat) Set(v string) error {
 	_, err := formatter(v)
 	if err != nil {
 		return fmt.Errorf("parse local repo format: %w", err)
 	}
-	*f = LocalRepoFormat(v)
+	*f = LocationFormat(v)
 	return nil
 }
 
-func (f LocalRepoFormat) Type() string {
+func (f LocationFormat) Type() string {
 	return "string"
 }
 
-func (f LocalRepoFormat) Formatter() (view.LocalRepoFormat, error) {
+func (f LocationFormat) Formatter() (repository.LocationFormat, error) {
 	return formatter(string(f))
 }
 
-func formatter(v string) (view.LocalRepoFormat, error) {
+func formatter(v string) (repository.LocationFormat, error) {
 	switch v {
 	case "", "rel-path", "rel", "path", "rel-file-path":
-		return view.LocalRepoFormatPath, nil
+		return repository.LocationFormatPath, nil
 	case "full-file-path", "full":
-		return view.LocalRepoFormatFullPath, nil
+		return repository.LocationFormatFullPath, nil
 	case "json":
-		return view.LocalRepoFormatJSON, nil
+		return repository.LocationFormatJSON, nil
 	case "fields":
-		return view.LocalRepoFormatFields("\t"), nil
+		return repository.LocationFormatFields("\t"), nil
 	}
 	if strings.HasPrefix(v, "fields:") {
-		return view.LocalRepoFormatFields(v[len("fields:"):]), nil
+		return repository.LocationFormatFields(v[len("fields:"):]), nil
 	}
 	return nil, fmt.Errorf("invalid format: %q", v)
 }
 
-const LocalRepoFormatShortUsage = `Print repository in a given format, where [format] can be one of "path", "full-path", "json", "fields" or "fields:[separator]".`
+const LocationFormatShortUsage = `Print local repository in a given format, where [format] can be one of "path", "full-path", "json", "fields" or "fields:[separator]".`
 
-const LocalRepoFormatLongUsage = `
-Print each local repository in a given format, where [format] can be one of "path",
+const LocationFormatLongUsage = `
+Print local repository in a given format, where [format] can be one of "path",
 "full-path", "fields" and "fields:[separator]".
 
 - path:
@@ -76,6 +76,6 @@ Print each local repository in a given format, where [format] can be one of "pat
 	Like "fields" but with the explicit separator.
 `
 
-func CompleteLocalRepoFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func CompleteLocationFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return []string{"path", "full-path", "json", "fields", "fields:"}, cobra.ShellCompDirectiveDefault
 }

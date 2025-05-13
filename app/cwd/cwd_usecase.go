@@ -3,6 +3,7 @@ package cwd
 import (
 	"context"
 
+	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
 )
 
@@ -24,6 +25,6 @@ func NewUseCase(
 }
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (u *UseCase) Execute(ctx context.Context, path string) (workspace.RepoInfo, error) {
+func (u *UseCase) Execute(ctx context.Context, path string) (*repository.Location, error) {
 	return u.finderService.FindByPath(ctx, u.workspaceService, path)
 }

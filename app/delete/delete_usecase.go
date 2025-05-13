@@ -57,9 +57,6 @@ func (u *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, opt
 	if match == nil {
 		return nil
 	}
-	if match.Exists() {
-		return nil
-	}
 	return os.RemoveAll(match.FullPath())
 }
 

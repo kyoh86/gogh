@@ -5,12 +5,12 @@ import (
 	"errors"
 	"iter"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v3/util"
 )
 
 type FinderService struct {
@@ -19,33 +19,6 @@ type FinderService struct {
 func NewFinderService() *FinderService {
 	return &FinderService{}
 }
-
-type repoRef struct {
-	fullPath string
-	path     string
-	host     string
-	owner    string
-	name     string
-	exists   bool
-}
-
-// Exists returns true if the repository exists
-func (r *repoRef) Exists() bool { return r.exists }
-
-// Host is a hostname (i.g.: "github.com")
-func (r *repoRef) Host() string { return r.host }
-
-// Owner is a owner name (i.g.: "kyoh86")
-func (r *repoRef) Owner() string { return r.owner }
-
-// Name of the repository (i.g.: "gogh")
-func (r *repoRef) Name() string { return r.name }
-
-// Path returns the path from root of the repository (i.g.: "github.com/kyoh86/gogh")
-func (r *repoRef) Path() string { return r.path }
-
-// FullPath returns the full path of the repository (i.g.: "/path/to/workspace/github.com/kyoh86/gogh")
-func (r *repoRef) FullPath() string { return r.fullPath }
 
 func (f *FinderService) isDir(path string) (bool, error) {
 	info, err := os.Stat(path)
@@ -59,7 +32,7 @@ func (f *FinderService) isDir(path string) (bool, error) {
 }
 
 // FindByReference implements workspace.FinderService.
-func (f *FinderService) FindByReference(ctx context.Context, ws workspace.WorkspaceService, reference repository.Reference) (workspace.RepoInfo, error) {
+func (f *FinderService) FindByReference(ctx context.Context, ws workspace.WorkspaceService, reference repository.Reference) (*repository.Location, error) {
 	for _, root := range ws.GetRoots() {
 		layout := ws.GetLayoutFor(root)
 		ref, err := layout.Match(reference.String())
@@ -68,18 +41,18 @@ func (f *FinderService) FindByReference(ctx context.Context, ws workspace.Worksp
 			root := layout.GetRoot()
 			path := reference.String()
 			abs := filepath.Join(root, path)
-			exists, err := f.isDir(abs)
+			isDir, err := f.isDir(abs)
 			if err != nil {
 				return nil, err
 			}
-			return &repoRef{
-				fullPath: abs,
-				path:     path,
-				host:     ref.Host(),
-				owner:    ref.Owner(),
-				name:     ref.Name(),
-				exists:   exists,
-			}, nil
+			if isDir {
+				return util.Ptr(repository.NewLocation(
+					abs,
+					ref.Host(),
+					ref.Owner(),
+					ref.Name(),
+				)), nil
+			}
 		case errors.Is(err, workspace.ErrNotMatched):
 			// Ignore directories that do not match the layout
 		default:
@@ -90,7 +63,7 @@ func (f *FinderService) FindByReference(ctx context.Context, ws workspace.Worksp
 }
 
 // FindByPath implements workspace.FinderService.
-func (f *FinderService) FindByPath(ctx context.Context, ws workspace.WorkspaceService, path string) (workspace.RepoInfo, error) {
+func (f *FinderService) FindByPath(ctx context.Context, ws workspace.WorkspaceService, path string) (*repository.Location, error) {
 	pre := func(root string) (string, bool) {
 		return filepath.Join(root, path), true
 	}
@@ -109,18 +82,18 @@ func (f *FinderService) FindByPath(ctx context.Context, ws workspace.WorkspaceSe
 		ref, err := layout.Match(path)
 		switch {
 		case err == nil:
-			exists, err := f.isDir(abs)
+			isDir, err := f.isDir(abs)
 			if err != nil {
 				return nil, err
 			}
-			return &repoRef{
-				fullPath: abs,
-				path:     strings.Join([]string{ref.Host(), ref.Owner(), ref.Name()}, "/"),
-				host:     ref.Host(),
-				owner:    ref.Owner(),
-				name:     ref.Name(),
-				exists:   exists,
-			}, nil
+			if isDir {
+				return util.Ptr(repository.NewLocation(
+					abs,
+					ref.Host(),
+					ref.Owner(),
+					ref.Name(),
+				)), nil
+			}
 		case errors.Is(err, workspace.ErrNotMatched):
 			// Ignore directories that do not match the layout
 		default:
@@ -131,8 +104,8 @@ func (f *FinderService) FindByPath(ctx context.Context, ws workspace.WorkspaceSe
 }
 
 // ListAllRepository implements workspace.FinderService.
-func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.WorkspaceService, opts workspace.ListOptions) iter.Seq2[workspace.RepoInfo, error] {
-	return func(yield func(workspace.RepoInfo, error) bool) {
+func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.WorkspaceService, opts workspace.ListOptions) iter.Seq2[*repository.Location, error] {
+	return func(yield func(*repository.Location, error) bool) {
 		var i int
 		for _, root := range ws.GetRoots() {
 			layout := ws.GetLayoutFor(root)
@@ -157,9 +130,9 @@ func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.Work
 }
 
 // ListRepositoryInRoot implements workspace.FinderService.
-func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.LayoutService, opts workspace.ListOptions) iter.Seq2[workspace.RepoInfo, error] {
+func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.LayoutService, opts workspace.ListOptions) iter.Seq2[*repository.Location, error] {
 	var i int
-	return func(yield func(workspace.RepoInfo, error) bool) {
+	return func(yield func(*repository.Location, error) bool) {
 		if err := filepath.Walk(l.GetRoot(), func(p string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -172,14 +145,12 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 			case errors.Is(err, workspace.ErrNotMatched):
 				// Ignore directories that do not match the layout
 			case err == nil:
-				if !yield(&repoRef{
-					fullPath: p,
-					path:     path.Join(ref.Host(), ref.Owner(), ref.Name()),
-					host:     ref.Host(),
-					owner:    ref.Owner(),
-					name:     ref.Name(),
-					exists:   true,
-				}, nil) {
+				if !yield(util.Ptr(repository.NewLocation(
+					p,
+					ref.Host(),
+					ref.Owner(),
+					ref.Name(),
+				)), nil) {
 					return filepath.SkipAll
 				}
 			default:

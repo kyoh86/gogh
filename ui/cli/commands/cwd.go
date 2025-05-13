@@ -32,7 +32,7 @@ func NewCwdCommand(svc *ServiceSet) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			str, err := formatter.Format(repo)
+			str, err := formatter.Format(*repo)
 			if err != nil {
 				log.FromContext(ctx).WithFields(log.Fields{
 					"error":  err,
@@ -46,8 +46,8 @@ func NewCwdCommand(svc *ServiceSet) *cobra.Command {
 	}
 
 	f.Format = svc.flags.Cwd.Format
-	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
-	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
+	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocationFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocationFormat); err != nil {
 		panic(err)
 	}
 	return cmd

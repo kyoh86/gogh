@@ -36,7 +36,7 @@ func NewListCommand(svc *ServiceSet) *cobra.Command {
 					}).Error("failed to list repositories")
 					return nil
 				}
-				str, err := formatter.Format(repo)
+				str, err := formatter.Format(*repo)
 				if err != nil {
 					log.FromContext(ctx).WithFields(log.Fields{
 						"error":  err,
@@ -54,8 +54,8 @@ func NewListCommand(svc *ServiceSet) *cobra.Command {
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.flags.List.Primary, "List up repositories in just a primary root")
 	f.Format = svc.flags.List.Format
-	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocalRepoFormatShortUsage)
-	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocalRepoFormat); err != nil {
+	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocationFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocationFormat); err != nil {
 		panic(err)
 	}
 	return cmd

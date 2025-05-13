@@ -11,7 +11,7 @@ import (
 	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
 )
 
-func TestRemoteRepoPrinters(t *testing.T) {
+func TestRepositoryPrinter(t *testing.T) {
 	uat, err := time.Parse(time.RFC3339, "2021-05-01T01:00:00Z")
 	if err != nil {
 		t.Fatal(err)
@@ -24,22 +24,22 @@ func TestRemoteRepoPrinters(t *testing.T) {
 	}
 	for _, testcase := range []struct {
 		title   string
-		printer func(io.Writer) testtarget.RemoteRepoPrinter
+		printer func(io.Writer) testtarget.RepositoryPrinter
 		want    string
 	}{
 		{
 			title:   "ref",
-			printer: testtarget.NewRemoteRepoRefPrinter,
+			printer: testtarget.NewRepositoryPrinterRef,
 			want:    "github.com/kyoh86/gogh\n",
 		},
 		{
 			title:   "url",
-			printer: testtarget.NewRemoteRepoURLPrinter,
+			printer: testtarget.NewRepositoryPrinterURL,
 			want:    "https://github.com/kyoh86/gogh\n",
 		},
 		{
 			title:   "json",
-			printer: testtarget.NewRemoteRepoJSONPrinter,
+			printer: testtarget.NewRepositoryPrinterJSON,
 			want:    `{"ref":{"host":"github.com","owner":"kyoh86","name":"gogh"},"url":"https://github.com/kyoh86/gogh","updatedAt":"2021-05-01T01:00:00Z"}` + "\n",
 		},
 	} {

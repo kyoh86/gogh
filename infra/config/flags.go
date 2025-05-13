@@ -54,14 +54,14 @@ type CreateFlags struct {
 }
 
 type CwdFlags struct {
-	Format flags.LocalRepoFormat `yaml:"format,omitempty" toml:"format,omitempty"`
+	Format flags.LocationFormat `yaml:"format,omitempty" toml:"format,omitempty"`
 }
 
 type ListFlags struct {
-	Limit   int                   `yaml:"limit,omitempty" toml:"limit,omitempty"`
-	Query   string                `yaml:"-" toml:"-"`
-	Format  flags.LocalRepoFormat `yaml:"format,omitempty" toml:"format,omitempty"`
-	Primary bool                  `yaml:"primary,omitempty" toml:"primary,omitempty"`
+	Limit   int                  `yaml:"limit,omitempty" toml:"limit,omitempty"`
+	Query   string               `yaml:"-" toml:"-"`
+	Format  flags.LocationFormat `yaml:"format,omitempty" toml:"format,omitempty"`
+	Primary bool                 `yaml:"primary,omitempty" toml:"primary,omitempty"`
 }
 
 type ForkFlags struct {

@@ -16,33 +16,17 @@ type ListOptions struct {
 	Limit int
 }
 
-// Repository is informations of a repository
-type RepoInfo interface {
-	// Exists returns true if the repository exists
-	Exists() bool
-	// FullPath returns the full path of the repository
-	FullPath() string
-	// Path returns the path from root of the repository
-	Path() string
-	// Host returns the host of the repository
-	Host() string
-	// Owner returns the owner of the repository
-	Owner() string
-	// Name returns the name of the repository
-	Name() string
-}
-
 // FinderService is a service for searching repositories
 type FinderService interface {
 	// FindByReference retrieves a repository by its reference
-	FindByReference(ctx context.Context, ws WorkspaceService, reference repository.Reference) (RepoInfo, error)
+	FindByReference(ctx context.Context, ws WorkspaceService, reference repository.Reference) (*repository.Location, error)
 
 	// FindByPath retrieves a repository by its reference
-	FindByPath(ctx context.Context, ws WorkspaceService, path string) (RepoInfo, error)
+	FindByPath(ctx context.Context, ws WorkspaceService, path string) (*repository.Location, error)
 
 	// ListAllRepository retrieves a list of repositories under all roots
-	ListAllRepository(context.Context, WorkspaceService, ListOptions) iter.Seq2[RepoInfo, error]
+	ListAllRepository(context.Context, WorkspaceService, ListOptions) iter.Seq2[*repository.Location, error]
 
 	// ListRepositoryInRoot retrieves a list of repositories under a root
-	ListRepositoryInRoot(context.Context, LayoutService, ListOptions) iter.Seq2[RepoInfo, error]
+	ListRepositoryInRoot(context.Context, LayoutService, ListOptions) iter.Seq2[*repository.Location, error]
 }

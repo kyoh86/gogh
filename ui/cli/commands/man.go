@@ -23,8 +23,8 @@ func NewManCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			list.Flag("format").Usage = flags.LocalRepoFormatLongUsage
-			cwd.Flag("format").Usage = flags.LocalRepoFormatLongUsage
+			list.Flag("format").Usage = flags.LocationFormatLongUsage
+			cwd.Flag("format").Usage = flags.LocationFormatLongUsage
 			header := &doc.GenManHeader{
 				Title:   "GOGH",
 				Section: "1",

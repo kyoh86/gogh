@@ -3,10 +3,12 @@ package repotab
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/mattn/go-runewidth"
 	"github.com/morikuni/aec"
+	"golang.org/x/term"
 )
 
 type Printer struct {
@@ -28,10 +30,24 @@ const (
 
 type Option func(*Printer)
 
-func Styled() Option {
-	return func(p *Printer) {
-		p.styled = true
+// Styled sets the printer to use styled output if the terminal supports it.
+func Styled(force bool) Option {
+	if force || term.IsTerminal(int(os.Stdout.Fd())) {
+		return func(p *Printer) {
+			p.styled = true
+		}
 	}
+	return func(*Printer) {}
+}
+
+// TermWidth sets the terminal width to the printer if it is available.
+func TermWidth() Option {
+	if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
+		return func(p *Printer) {
+			p.width = width
+		}
+	}
+	return func(*Printer) {}
 }
 
 func Width(w int) Option {
