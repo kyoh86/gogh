@@ -542,5 +542,4 @@ func convertSSHToHTTPS(sshURL string) string {
 	return "https://" + host + "/" + path
 }
 
-// Ensure RemoteService implements repository.RemoteRepositoryService
 var _ hosting.HostingService = (*HostingService)(nil)

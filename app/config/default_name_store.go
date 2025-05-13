@@ -7,6 +7,7 @@ import (
 
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/store"
+	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -33,10 +34,17 @@ func (d *DefaultNameStore) Load(ctx context.Context) (repository.DefaultNameServ
 	if err := toml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	return &DefaultNameService{
-		hosts:       v.Hosts,
-		defaultHost: v.DefaultHost,
-	}, nil
+	svc := config.NewDefaultNameService()
+	if err := svc.SetDefaultHost(v.DefaultHost); err != nil {
+		return nil, err
+	}
+	for host, owner := range v.Hosts {
+		if err := svc.SetDefaultOwnerFor(host, owner); err != nil {
+			return nil, fmt.Errorf("set default owner for %s: %w", host, err)
+		}
+	}
+	svc.MarkSaved()
+	return svc, nil
 }
 
 // Save implements repository.DefaultNameRepository.
@@ -62,6 +70,7 @@ func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameSe
 	if err := toml.NewEncoder(file).Encode(v); err != nil {
 		return err
 	}
+	ds.MarkSaved()
 	return nil
 }
 
@@ -74,10 +83,9 @@ func (*DefaultNameStore) Source() (string, error) {
 }
 
 func DefaultName() repository.DefaultNameService {
-	return &DefaultNameService{
-		hosts:       map[string]string{},
-		defaultHost: "github.com",
-	}
+	svc := config.NewDefaultNameService()
+	svc.SetDefaultHost("github.com")
+	return svc
 }
 
 func NewDefaultNameStore() *DefaultNameStore {

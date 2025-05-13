@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,8 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/repos"
-	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
@@ -24,130 +22,9 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
-func NewReposCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
-	var relationMap = map[string]hosting.RepositoryAffiliation{
-		"owner":               hosting.RepositoryAffiliationOwner,
-		"organization-member": hosting.RepositoryAffiliationOrganizationMember,
-		"collaborator":        hosting.RepositoryAffiliationCollaborator,
-	}
-	var relationAccepts = []string{
-		"owner",
-		"organization-member",
-		"collaborator",
-	}
-	var sortMap = map[string]hosting.RepositoryOrderField{
-		"created-at": hosting.RepositoryOrderFieldCreatedAt,
-		"name":       hosting.RepositoryOrderFieldName,
-		"pushed-at":  hosting.RepositoryOrderFieldPushedAt,
-		"stargazers": hosting.RepositoryOrderFieldStargazers,
-		"updated-at": hosting.RepositoryOrderFieldUpdatedAt,
-	}
-	var sortAccepts = []string{
-		"created-at",
-		"name",
-		"pushed-at",
-		"stargazers",
-		"updated-at",
-	}
-	var orderMap = map[string]hosting.OrderDirection{
-		"asc":        hosting.OrderDirectionAsc,
-		"ascending":  hosting.OrderDirectionAsc,
-		"desc":       hosting.OrderDirectionDesc,
-		"descending": hosting.OrderDirectionDesc,
-	}
-	var orderAccept = []string{
-		"asc", "ascending",
-		"desc", "descending",
-	}
-
-	// validateReposFlags validates the mutually exclusive flags and flag values
-	validateReposFlags := func(f config.ReposFlags) error {
-		// Check mutually exclusive flags
-		if f.Private && f.Public {
-			return errors.New("specify only one of `--private` or `--public`")
-		}
-		if f.Fork && f.NotFork {
-			return errors.New("specify only one of `--fork` or `--no-fork`")
-		}
-		if f.Archived && f.NotArchived {
-			return errors.New("specify only one of `--archived` or `--no-archived`")
-		}
-
-		// Validate relation values
-		for _, r := range f.Relation {
-			if _, exists := relationMap[r]; !exists {
-				return fmt.Errorf("invalid relation %q; %s", r, fmt.Sprintf("it can accept %s", quoteEnums(relationAccepts)))
-			}
-		}
-		// Validate sort field
-		if _, exists := sortMap[f.Sort]; !exists {
-			return fmt.Errorf("invalid sort field %q; %s", f.Sort, fmt.Sprintf("it can accept %s", quoteEnums(sortAccepts)))
-		}
-		// Validate order field
-		if _, exists := orderMap[f.Order]; !exists {
-			return fmt.Errorf("invalid order field %q; %s", f.Order, fmt.Sprintf("it can accept %s", quoteEnums(orderAccept)))
-		}
-		return nil
-	}
-
-	// preprocessReposFlags converts command flags to repository query options
-	preprocessReposFlags := func(f config.ReposFlags) *repos.Options {
-		opts := &repos.Options{}
-
-		// Set limit
-		switch f.Limit {
-		case 0:
-			opts.Limit = 30
-		case -1:
-			opts.Limit = 0 // no limit
-		default:
-			opts.Limit = f.Limit
-		}
-
-		// Set privacy filter
-		if f.Private {
-			opts.Privacy = hosting.RepositoryPrivacyPrivate
-		}
-		if f.Public {
-			opts.Privacy = hosting.RepositoryPrivacyPublic
-		}
-
-		// Set fork and archive filters
-		if f.Fork {
-			opts.IsFork = hosting.BooleanFilterTrue
-		}
-		if f.NotFork {
-			opts.IsFork = hosting.BooleanFilterFalse
-		}
-		if f.Archived {
-			opts.IsArchived = hosting.BooleanFilterTrue
-		}
-		if f.NotArchived {
-			opts.IsArchived = hosting.BooleanFilterFalse
-		}
-
-		// Set relation filters
-		for _, r := range f.Relation {
-			if field, exists := relationMap[r]; exists {
-				opts.OwnerAffiliations = append(opts.OwnerAffiliations, field)
-			}
-		}
-
-		// Set sort field
-		if field, exists := sortMap[strings.ToLower(f.Sort)]; exists {
-			opts.OrderBy.Field = field
-		}
-
-		// Set sort direction
-		if field, exists := orderMap[strings.ToLower(f.Order)]; exists {
-			opts.OrderBy.Direction = field
-		}
-
-		return opts
-	}
-
+func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var (
-		f      config.ReposFlags
+		opts   repos.Options
 		format flags.RepositoryFormat
 	)
 	cmd := &cobra.Command{
@@ -155,14 +32,6 @@ func NewReposCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 		Short: "List remote repositories",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			// Validate flags
-			if err := validateReposFlags(f); err != nil {
-				return fmt.Errorf("invalid flag configuration: %w", err)
-			}
-
-			// Convert flags to options
-			opts := preprocessReposFlags(f)
-
 			// Setup output formatter
 			printer, err := format.Formatter(os.Stdout)
 			if err != nil {
@@ -170,8 +39,8 @@ func NewReposCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 			}
 			defer printer.Close()
 
-			useCase := repos.NewUseCase(svc.hostingService)
-			for repo, err := range useCase.Execute(cmd.Context(), *opts) {
+			useCase := repos.NewUseCase(svc.HostingService)
+			for repo, err := range useCase.Execute(cmd.Context(), opts) {
 				if err != nil {
 					return fmt.Errorf("failed to list repositories: %w", err)
 				}
@@ -182,50 +51,68 @@ func NewReposCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 	}
 
 	cmd.Flags().
-		IntVarP(&f.Limit, "limit", "", svc.flags.Repos.Limit, "Max number of repositories to list. -1 means unlimited")
+		IntVarP(&opts.Limit, "limit", "", svc.Flags.Repos.Limit, "Max number of repositories to list. -1 means unlimited")
 
 	cmd.Flags().
-		BoolVarP(&f.Public, "public", "", svc.flags.Repos.Public, "Show only public repositories")
+		BoolVarP(&opts.Public, "public", "", svc.Flags.Repos.Public, "Show only public repositories")
 	cmd.Flags().
-		BoolVarP(&f.Private, "private", "", svc.flags.Repos.Private, "Show only private repositories")
+		BoolVarP(&opts.Private, "private", "", svc.Flags.Repos.Private, "Show only private repositories")
 
 	cmd.Flags().
-		BoolVarP(&f.Fork, "fork", "", svc.flags.Repos.Fork, "Show only forks")
+		BoolVarP(&opts.Fork, "fork", "", svc.Flags.Repos.Fork, "Show only forks")
 	cmd.Flags().
-		BoolVarP(&f.NotFork, "no-fork", "", svc.flags.Repos.NotFork, "Omit forks")
+		BoolVarP(&opts.NotFork, "no-fork", "", svc.Flags.Repos.NotFork, "Omit forks")
 
 	cmd.Flags().
-		BoolVarP(&f.Archived, "archived", "", svc.flags.Repos.Archived, "Show only archived repositories")
+		BoolVarP(&opts.Archived, "archived", "", svc.Flags.Repos.Archived, "Show only archived repositories")
 	cmd.Flags().
-		BoolVarP(&f.NotArchived, "no-archived", "", svc.flags.Repos.NotArchived, "Omit archived repositories")
+		BoolVarP(&opts.NotArchived, "no-archived", "", svc.Flags.Repos.NotArchived, "Omit archived repositories")
 
-	if err := flags.RepositoryFormatFlag(cmd, &format, svc.flags.Repos.Format); err != nil {
+	if err := flags.RepositoryFormatFlag(cmd, &format, svc.Flags.Repos.Format); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
 	}
 	cmd.Flags().
-		StringVarP(&f.Color, "color", "", svc.flags.Repos.Color, "Colorize the output; It can accept 'auto', 'always' or 'never'")
+		StringVarP(&opts.Color, "color", "", svc.Flags.Repos.Color, "Colorize the output; It can accept 'auto', 'always' or 'never'")
 	if err := cmd.RegisterFlagCompletionFunc("color", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"auto", "always", "never"}, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to register completion function for color flag")
 	}
+
+	var relationAccepts = []string{
+		"owner",
+		"organization-member",
+		"collaborator",
+	}
 	cmd.Flags().
-		StringSliceVarP(&f.Relation, "relation", "", svc.flags.Repos.Relation, fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(relationAccepts)))
+		StringSliceVarP(&opts.Relation, "relation", "", svc.Flags.Repos.Relation, fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(relationAccepts)))
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return relationAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to register completion function for relation flag")
 	}
 
+	var sortAccepts = []string{
+		"created-at",
+		"name",
+		"pushed-at",
+		"stargazers",
+		"updated-at",
+	}
 	cmd.Flags().
-		StringVarP(&f.Sort, "sort", "", svc.flags.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(sortAccepts)))
+		StringVarP(&opts.Sort, "sort", "", svc.Flags.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(sortAccepts)))
 	if err := cmd.RegisterFlagCompletionFunc("sort", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return sortAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to register completion function for sort flag")
 	}
+
+	var orderAccept = []string{
+		"asc", "ascending",
+		"desc", "descending",
+	}
 	cmd.Flags().
-		StringVarP(&f.Order, "order", "", svc.flags.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(orderAccept)))
+		StringVarP(&opts.Order, "order", "", svc.Flags.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(orderAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("order", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return orderAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {

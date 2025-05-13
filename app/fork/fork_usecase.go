@@ -2,6 +2,7 @@ package fork
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/git"
@@ -12,37 +13,76 @@ import (
 
 // UseCase represents the fork use case
 type UseCase struct {
-	hostingService   hosting.HostingService
-	workspaceService workspace.WorkspaceService
-	gitService       git.GitService
+	hostingService     hosting.HostingService
+	workspaceService   workspace.WorkspaceService
+	defaultNameService repository.DefaultNameService
+	referenceParser    repository.ReferenceParser
+	gitService         git.GitService
 }
 
 // NewUseCase creates a new fork use case
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	defaultNameService repository.DefaultNameService,
+	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
-		hostingService:   hostingService,
-		workspaceService: workspaceService,
-		gitService:       gitService,
+		hostingService:     hostingService,
+		workspaceService:   workspaceService,
+		defaultNameService: defaultNameService,
+		referenceParser:    referenceParser,
+		gitService:         gitService,
 	}
 }
+
+type HostingOptions = hosting.ForkRepositoryOptions
 
 // Options represents the options for the fork use case
 type Options struct {
 	TryCloneNotify service.TryCloneNotify
-	hosting.ForkRepositoryOptions
+	HostingOptions
+}
+
+func (uc *UseCase) parseRefs(source, target string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
+	srcRef, err := uc.referenceParser.Parse(source)
+	if err != nil {
+		return nil, nil, err
+	}
+	if target == "" {
+		owner, err := uc.defaultNameService.GetDefaultOwnerFor(srcRef.Host())
+		if err != nil {
+			return nil, nil, err
+		}
+		return srcRef, &repository.ReferenceWithAlias{
+			Reference: repository.NewReference(srcRef.Host(), owner, srcRef.Name()),
+		}, nil
+	}
+	toRef, err := uc.referenceParser.ParseWithAlias(target)
+	if err != nil {
+		return nil, nil, err
+	}
+	if toRef.Reference.Host() != srcRef.Host() {
+		return nil, nil, fmt.Errorf("the host of the forked repository must be the same as the original repository")
+	}
+	if toRef.Reference.Owner() == "" {
+		return nil, nil, fmt.Errorf("the owner of the forked repository must be specified")
+	}
+	return srcRef, toRef, nil
 }
 
 // Execute forks a repository and clones it to the local machine
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, target repository.ReferenceWithAlias, opts Options) error {
-	fork, err := uc.hostingService.ForkRepository(ctx, ref, target.Reference, opts.ForkRepositoryOptions)
+func (uc *UseCase) Execute(ctx context.Context, source string, target string, opts Options) error {
+	ref, targetRef, err := uc.parseRefs(source, target)
+	if err != nil {
+		return err
+	}
+	fork, err := uc.hostingService.ForkRepository(ctx, *ref, targetRef.Reference, opts.HostingOptions)
 	if err != nil {
 		return err
 	}
 
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
-	return repositoryService.TryClone(ctx, fork, target.Reference, target.Alias, opts.TryCloneNotify)
+	return repositoryService.TryClone(ctx, fork, targetRef.Reference, targetRef.Alias, opts.TryCloneNotify)
 }

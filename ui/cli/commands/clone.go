@@ -8,18 +8,17 @@ import (
 	"github.com/kyoh86/gogh/v3/app/clone"
 	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCloneCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
+func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 	var f struct {
 		dryrun bool
 	}
 
-	reposUseCase := repos.NewUseCase(svc.hostingService)
-	cloneUseCase := clone.NewUseCase(svc.hostingService, svc.workspaceService, svc.gitService)
+	reposUseCase := repos.NewUseCase(svc.HostingService)
+	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService)
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
@@ -46,30 +45,10 @@ func NewCloneCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 		return args, nil
 	}
 
-	preprocessFlags := func(ctx context.Context, args []string) ([]repository.ReferenceWithAlias, error) {
-		args, err := checkFlags(ctx, args)
-		if err != nil {
-			return nil, err
-		}
-		refs := make([]repository.ReferenceWithAlias, 0, len(args))
-		for _, s := range args {
-			ref, err := svc.referenceParser.ParseWithAlias(s)
-			if err != nil {
-				return nil, err
-			}
-			refs = append(refs, *ref)
-		}
-		return refs, nil
-	}
-
-	runFunc := func(ctx context.Context, refs []repository.ReferenceWithAlias) error {
+	runFunc := func(ctx context.Context, refs []string) error {
 		if f.dryrun {
 			for _, ref := range refs {
-				if ref.Alias == nil {
-					log.FromContext(ctx).Infof("git clone %q", ref.Reference)
-				} else {
-					log.FromContext(ctx).Infof("git clone %q into %q", ref.Reference, ref.Alias)
-				}
+				log.FromContext(ctx).Infof("git clone %q", ref)
 			}
 			return nil
 		}
@@ -77,8 +56,7 @@ func NewCloneCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 		eg, ctx := errgroup.WithContext(ctx)
 		for _, ref := range refs {
 			eg.Go(func() error {
-				return cloneUseCase.Execute(ctx, ref.Reference, clone.Options{
-					Alias:          ref.Alias,
+				return cloneUseCase.Execute(ctx, ref, clone.Options{
 					TryCloneNotify: service.RetryLimit(1, nil),
 				})
 			})
@@ -108,11 +86,11 @@ func NewCloneCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			refs, err := preprocessFlags(ctx, args)
+			args, err := checkFlags(ctx, args)
 			if err != nil {
 				return err
 			}
-			if err := runFunc(ctx, refs); err != nil {
+			if err := runFunc(ctx, args); err != nil {
 				log.FromContext(ctx).Errorf("failed to clone repositories: %v", err)
 			}
 			return nil

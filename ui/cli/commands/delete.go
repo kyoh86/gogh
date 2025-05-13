@@ -7,11 +7,11 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/delete"
 	"github.com/kyoh86/gogh/v3/app/repos"
-	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
+func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 	var f struct {
 		local  bool
 		remote bool
@@ -19,7 +19,7 @@ func NewDeleteCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 		dryrun bool
 	}
 
-	reposUseCase := repos.NewUseCase(svc.hostingService)
+	reposUseCase := repos.NewUseCase(svc.HostingService)
 
 	checkFlags := func(ctx context.Context, args []string) (string, error) {
 		if len(args) != 0 {
@@ -47,41 +47,36 @@ func NewDeleteCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 		return selected, nil
 	}
 
-	prepareFlags := func(_ context.Context, arg string) (*repository.Reference, error) {
-		ref, err := svc.referenceParser.Parse(arg)
-		if err != nil {
-			return nil, err
-		}
-
+	prepareFlags := func(_ context.Context, arg string) error {
 		if !f.force {
 			if f.local {
 				var confirmed bool
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewConfirm().
-						Title(fmt.Sprintf("Are you sure you want to delete local repository %s?", ref.String())).
+						Title(fmt.Sprintf("Are you sure you want to delete local repository %s?", arg)).
 						Value(&confirmed),
 				)).Run(); err != nil {
-					return nil, err
+					return err
 				}
 				if !confirmed {
-					return nil, context.Canceled
+					return context.Canceled
 				}
 			}
 			if f.remote {
 				var confirmed bool
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewConfirm().
-						Title(fmt.Sprintf("Are you sure you want to delete remote-repository %s?", ref.String())).
+						Title(fmt.Sprintf("Are you sure you want to delete remote-repository %s?", arg)).
 						Value(&confirmed),
 				)).Run(); err != nil {
-					return nil, err
+					return err
 				}
 				if !confirmed {
-					return nil, context.Canceled
+					return context.Canceled
 				}
 			}
 		}
-		return ref, nil
+		return nil
 	}
 
 	cmd := &cobra.Command{
@@ -95,26 +90,27 @@ func NewDeleteCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			ref, err := prepareFlags(ctx, selected)
-			if err != nil {
+
+			if err := prepareFlags(ctx, selected); err != nil {
 				return err
 			}
 
 			if f.dryrun {
 				if f.local {
-					fmt.Printf("deleting local %s\n", ref.String())
+					fmt.Printf("deleting local %s\n", selected)
 				}
 				if f.remote {
-					fmt.Printf("deleting remote %s\n", ref.String())
+					fmt.Printf("deleting remote %s\n", selected)
 				}
 				return nil
 			}
 			useCase := delete.NewUseCase(
-				svc.workspaceService,
-				svc.finderService,
-				svc.hostingService,
+				svc.WorkspaceService,
+				svc.FinderService,
+				svc.HostingService,
+				svc.ReferenceParser,
 			)
-			return useCase.Execute(ctx, *ref, delete.Options{
+			return useCase.Execute(ctx, selected, delete.Options{
 				Local:  f.local,
 				Remote: f.remote,
 			})

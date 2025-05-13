@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/app/config"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 	"github.com/spf13/cobra"
 )
 
 func NewApp(ctx context.Context) (*cobra.Command, error) {
-	flags, flagsSource, err := store.LoadAlternative(
+	flags, flagsSource, err := config.LoadAlternative(
 		ctx,
 		config.DefaultFlags,
 		config.NewFlagsStore(),
@@ -22,7 +22,7 @@ func NewApp(ctx context.Context) (*cobra.Command, error) {
 	}
 
 	defaultNameStore := config.NewDefaultNameStore()
-	defaultNameService, defaultNameSource, err := store.LoadAlternative(
+	defaultNameService, defaultNameSource, err := config.LoadAlternative(
 		ctx,
 		config.DefaultName,
 		defaultNameStore,
@@ -32,7 +32,7 @@ func NewApp(ctx context.Context) (*cobra.Command, error) {
 		return nil, fmt.Errorf("failed to load default names: %w", err)
 	}
 	tokenStore := config.NewTokenStore()
-	tokenService, tokenSource, err := store.LoadAlternative(
+	tokenService, tokenSource, err := config.LoadAlternative(
 		ctx,
 		config.DefaultTokenService,
 		tokenStore,
@@ -43,7 +43,7 @@ func NewApp(ctx context.Context) (*cobra.Command, error) {
 	}
 
 	workspaceStore := config.NewWorkspaceStore()
-	workspaceService, workspaceSource, err := store.LoadAlternative(
+	workspaceService, workspaceSource, err := config.LoadAlternative(
 		ctx,
 		config.DefaultWorkspaceService,
 		workspaceStore,
@@ -53,7 +53,7 @@ func NewApp(ctx context.Context) (*cobra.Command, error) {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
 
-	svc := commands.NewServiceSet(
+	svc := service.NewServiceSet(
 		defaultNameSource,
 		defaultNameService,
 		tokenSource,

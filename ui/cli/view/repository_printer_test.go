@@ -11,6 +11,8 @@ import (
 	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
 )
 
+//TODO: Move to app/repository_print/repository_print_usecase_test.go
+
 func TestRepositoryPrinter(t *testing.T) {
 	uat, err := time.Parse(time.RFC3339, "2021-05-01T01:00:00Z")
 	if err != nil {

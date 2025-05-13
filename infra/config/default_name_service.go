@@ -14,6 +14,14 @@ type DefaultNameService struct {
 	changed     bool
 }
 
+// NewDefaultNameService creates a new DefaultNameService instance
+func NewDefaultNameService() *DefaultNameService {
+	return &DefaultNameService{
+		hosts:       Map[string, string]{},
+		defaultHost: DefaultHost,
+	}
+}
+
 // GetMap implements auth.DefaultsService
 func (d DefaultNameService) GetMap() map[string]string {
 	if d.hosts == nil {

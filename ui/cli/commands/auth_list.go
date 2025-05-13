@@ -6,11 +6,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/auth_list"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
 )
 
-func NewAuthListCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
-	useCase := auth_list.NewUseCase(svc.tokenService)
+func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+	useCase := auth_list.NewUseCase(svc.TokenService)
 	return &cobra.Command{
 		Use:   "list",
 		Short: "Listup authenticated host and owners",

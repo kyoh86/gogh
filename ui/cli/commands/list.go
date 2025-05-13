@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/list"
-	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
-func NewListCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
+func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var f config.ListFlags
 	var format flags.LocationFormat
 	cmd := &cobra.Command{
@@ -27,11 +27,11 @@ func NewListCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 			}
 
 			ctx := cmd.Context()
-			opts := workspace.ListOptions{
+			opts := list.Options{
 				Query: f.Query,
 				Limit: f.Limit,
 			}
-			for repo, err := range list.NewUseCase(svc.workspaceService, svc.finderService).Execute(ctx, f.Primary, opts) {
+			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, f.Primary, opts) {
 				if err != nil {
 					log.FromContext(ctx).WithFields(log.Fields{
 						"error": err,
@@ -52,10 +52,10 @@ func NewListCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().IntVarP(&f.Limit, "limit", "", svc.flags.List.Limit, "Max number of repositories to list. -1 means unlimited")
+	cmd.Flags().IntVarP(&f.Limit, "limit", "", svc.Flags.List.Limit, "Max number of repositories to list. -1 means unlimited")
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
-	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.flags.List.Primary, "List up repositories in just a primary root")
-	if err := flags.LocationFormatFlag(cmd, &format, svc.flags.List.Format); err != nil {
+	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.Flags.List.Primary, "List up repositories in just a primary root")
+	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.List.Format); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
 	}
 

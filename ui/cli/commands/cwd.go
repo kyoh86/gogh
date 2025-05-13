@@ -7,11 +7,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/cwd"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
-func NewCwdCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
+func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var format flags.LocationFormat
 
 	cmd := &cobra.Command{
@@ -29,7 +30,7 @@ func NewCwdCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			repo, err := cwd.NewUseCase(svc.workspaceService, svc.finderService).Execute(ctx, wd)
+			repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, wd)
 			if err != nil {
 				return err
 			}
@@ -46,7 +47,7 @@ func NewCwdCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 		},
 	}
 
-	if err := flags.LocationFormatFlag(cmd, &format, svc.flags.Cwd.Format); err != nil {
+	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.Cwd.Format); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
 	}
 	return cmd

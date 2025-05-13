@@ -8,6 +8,7 @@ import (
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/store"
+	"github.com/kyoh86/gogh/v3/infra/config"
 	"golang.org/x/oauth2"
 )
 
@@ -15,11 +16,11 @@ import (
 type TokenStoreV0 struct{}
 
 type yamlTokenServiceV0 struct {
-	Hosts Map[string, *yamlTokenHostEntryV0] `yaml:"hosts,omitempty"`
+	Hosts config.Map[string, *yamlTokenHostEntryV0] `yaml:"hosts,omitempty"`
 }
 
 type yamlTokenHostEntryV0 struct {
-	Owners Map[string, oauth2.Token] `yaml:"owners"`
+	Owners config.Map[string, oauth2.Token] `yaml:"owners"`
 }
 
 // Load implements auth.TokenRepository.

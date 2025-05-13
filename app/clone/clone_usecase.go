@@ -14,6 +14,7 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
+	referenceParser  repository.ReferenceParser
 	gitService       git.GitService
 }
 
@@ -21,28 +22,33 @@ type UseCase struct {
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
+		referenceParser:  referenceParser,
 		gitService:       gitService,
 	}
 }
 
 // Options contains options for the clone operation
 type Options struct {
-	Alias          *repository.Reference
 	TryCloneNotify service.TryCloneNotify
 }
 
 // Execute performs the clone operation
-func (uc *UseCase) Execute(ctx context.Context, ref repository.Reference, opts Options) error {
+func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) error {
+	ref, err := uc.referenceParser.ParseWithAlias(refs)
+	if err != nil {
+		return err
+	}
 	// Get repository information from remote
-	repo, err := uc.hostingService.GetRepository(ctx, ref)
+	repo, err := uc.hostingService.GetRepository(ctx, ref.Reference)
 	if err != nil {
 		return err
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
-	return repositoryService.TryClone(ctx, repo, ref, opts.Alias, opts.TryCloneNotify)
+	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.TryCloneNotify)
 }

@@ -34,7 +34,7 @@ func (f RepositoryFormat) String() string {
 }
 
 func (f *RepositoryFormat) Set(v string) error {
-	_, err := remoteRepoFormatter(v, os.Stdout)
+	_, err := repositoryFormatter(v, os.Stdout)
 	if err != nil {
 		return fmt.Errorf("parse remote repo format: %w", err)
 	}
@@ -47,10 +47,10 @@ func (f RepositoryFormat) Type() string {
 }
 
 func (f RepositoryFormat) Formatter(w io.Writer) (view.RepositoryPrinter, error) {
-	return remoteRepoFormatter(string(f), w)
+	return repositoryFormatter(string(f), w)
 }
 
-func remoteRepoFormatter(v string, w io.Writer) (view.RepositoryPrinter, error) {
+func repositoryFormatter(v string, w io.Writer) (view.RepositoryPrinter, error) {
 	switch v {
 	case "", "table":
 		return repotab.NewPrinter(w, repotab.TermWidth(), repotab.Styled(false)), nil

@@ -9,6 +9,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+// FlagStore is a store for flags.
 type FlagsStore struct{}
 
 // Load implements repository.DefaultNameRepositoryOld.
@@ -29,6 +30,7 @@ func (s *FlagsStore) Load(ctx context.Context) (*Flags, error) {
 	return v, nil
 }
 
+// NewFlagsStore creates a new FlagsStore.
 func NewFlagsStore() *FlagsStore {
 	return &FlagsStore{}
 }

@@ -10,13 +10,14 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
 )
 
 //go:embed config_template.txt
 var configTemplate string
 
-func NewConfigCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
+func NewConfigCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:     "config",
 		Short:   "Show configurations",
@@ -29,21 +30,21 @@ func NewConfigCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 				return nil
 			}
 
-			flags, err := encodeYAML(svc.flags)
+			flags, err := encodeYAML(svc.Flags)
 			if err != nil {
 				logger.Error("[Bug] Failed to load flags")
 				return nil
 			}
 			var w strings.Builder
 			if err := t.Execute(&w, map[string]any{
-				"defaultNameFilePath": svc.defaultNameSource,
-				"tokensFilePath":      svc.tokenSource,
-				"flagsFilePath":       svc.flagsSource,
-				"workspaceFilePath":   svc.workspaceSource,
-				"roots":               svc.workspaceService.GetRoots(),
-				"defaultHost":         svc.defaultNameService.GetDefaultHost(),
-				"defaultNames":        svc.defaultNameService.GetMap(),
-				"tokens":              svc.tokenService.Entries(),
+				"defaultNameFilePath": svc.DefaultNameSource,
+				"tokensFilePath":      svc.TokenSource,
+				"flagsFilePath":       svc.FlagsSource,
+				"workspaceFilePath":   svc.WorkspaceSource,
+				"roots":               svc.WorkspaceService.GetRoots(),
+				"defaultHost":         svc.DefaultNameService.GetDefaultHost(),
+				"defaultNames":        svc.DefaultNameService.GetMap(),
+				"tokens":              svc.TokenService.Entries(),
 				"flags":               flags,
 			}); err != nil {
 				log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")

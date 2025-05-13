@@ -9,9 +9,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v3/app/auth_login"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/infra/github"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
 )
 
@@ -27,12 +25,12 @@ type ErrorResponse struct {
 	ErrorURI         string
 }
 
-func NewAuthLoginCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
+func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 	var f struct {
 		Host string
 	}
 
-	useCase := auth_login.NewUseCase(svc.tokenService, svc.authenticateService, svc.hostingService)
+	useCase := auth_login.NewUseCase(svc.TokenService, svc.AuthenticateService, svc.HostingService)
 
 	cmd := &cobra.Command{
 		Use:     "login",
@@ -41,18 +39,17 @@ func NewAuthLoginCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if f.Host == "" {
-				f.Host = github.GlobalHost
+				f.Host = "github.com"
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewInput().
 						Title("Host name").
-						Validate(repository.ValidateHost).
 						Value(&f.Host),
 				)).Run(); err != nil {
 					return err
 				}
 			}
 
-			if err := useCase.Execute(cmd.Context(), f.Host, func(ctx context.Context, response auth.DeviceAuthResponse) error {
+			if err := useCase.Execute(cmd.Context(), f.Host, func(ctx context.Context, response auth_login.DeviceAuthResponse) error {
 				if errors.Is(browser.OpenURL(response.VerificationURI), exec.ErrNotFound) {
 					fmt.Printf("Visit %s and enter the code: %s\n", response.VerificationURI, response.UserCode)
 				} else {

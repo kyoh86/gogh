@@ -26,7 +26,11 @@ func NewUseCase(
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, host string, verify auth.Verify) error {
+type DeviceAuthResponse = auth.DeviceAuthResponse
+
+type Verify = auth.Verify
+
+func (uc *UseCase) Execute(ctx context.Context, host string, verify Verify) error {
 	user, token, err := uc.authService.Authenticate(ctx, host, verify)
 	if err != nil {
 		return fmt.Errorf("failed to authenticate: %w", err)

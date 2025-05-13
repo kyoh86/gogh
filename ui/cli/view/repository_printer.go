@@ -7,6 +7,7 @@ import (
 	"github.com/kyoh86/gogh/v3/core/hosting"
 )
 
+// TODO: Move to app/repository_print/repository_print_usecase.go
 type RepositoryPrinter interface {
 	Print(p hosting.Repository) error
 	Close() error

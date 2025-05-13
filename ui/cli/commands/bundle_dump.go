@@ -7,12 +7,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/bundle_dump"
-	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/app/config"
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
+func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",
@@ -33,8 +33,8 @@ func NewBundleDumpCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 				defer f.Close()
 				out = f
 			}
-			useCase := bundle_dump.NewUseCase(svc.workspaceService, svc.finderService, svc.gitService)
-			for entry, err := range useCase.Execute(cmd.Context(), workspace.ListOptions{}) {
+			useCase := bundle_dump.NewUseCase(svc.WorkspaceService, svc.FinderService, svc.GitService)
+			for entry, err := range useCase.Execute(cmd.Context(), bundle_dump.Options{}) {
 				if err != nil {
 					log.FromContext(cmd.Context()).Error(err.Error())
 					return nil
@@ -49,7 +49,7 @@ func NewBundleDumpCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 		},
 	}
 
-	f.File = svc.flags.BundleDump.File
+	f.File = svc.Flags.BundleDump.File
 	cmd.Flags().VarP(&f.File, "file", "", "A file to output; if not specified, output to stdout")
 	return cmd
 }
