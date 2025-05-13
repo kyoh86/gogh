@@ -70,43 +70,43 @@ func NewApp(ctx context.Context) (*cobra.Command, error) {
 
 	bundleCommand := commands.NewBundleCommand()
 	bundleCommand.AddCommand(
-		commands.NewBundleDumpCommand(svc),
-		commands.NewBundleRestoreCommand(svc),
+		commands.NewBundleDumpCommand(ctx, svc),
+		commands.NewBundleRestoreCommand(ctx, svc),
 	)
 
-	authCommand := commands.NewAuthCommand(svc)
+	authCommand := commands.NewAuthCommand(ctx, svc)
 	authCommand.AddCommand(
-		commands.NewAuthListCommand(svc),
-		commands.NewAuthLoginCommand(svc),
-		commands.NewAuthLogoutCommand(svc),
+		commands.NewAuthListCommand(ctx, svc),
+		commands.NewAuthLoginCommand(ctx, svc),
+		commands.NewAuthLogoutCommand(ctx, svc),
 	)
 
-	rootsCommand := commands.NewRootsCommand(svc)
+	rootsCommand := commands.NewRootsCommand(ctx, svc)
 	rootsCommand.AddCommand(
-		commands.NewRootsSetPrimaryCommand(svc),
-		commands.NewRootsRemoveCommand(svc),
-		commands.NewRootsAddCommand(svc),
-		commands.NewRootsListCommand(svc),
+		commands.NewRootsSetPrimaryCommand(ctx, svc),
+		commands.NewRootsRemoveCommand(ctx, svc),
+		commands.NewRootsAddCommand(ctx, svc),
+		commands.NewRootsListCommand(ctx, svc),
 	)
 
-	configCommand := commands.NewConfigCommand(svc)
+	configCommand := commands.NewConfigCommand(ctx, svc)
 	configCommand.AddCommand(
 		authCommand,
 		rootsCommand,
-		commands.NewSetDefaultHostCommand(svc),
-		commands.NewSetDefaultOwnerCommand(svc),
+		commands.NewSetDefaultHostCommand(ctx, svc),
+		commands.NewSetDefaultOwnerCommand(ctx, svc),
 	)
 
 	appCommand.AddCommand(
-		commands.NewMigrateCommand(svc, defaultNameStore, tokenStore, workspaceStore),
+		commands.NewMigrateCommand(ctx, svc, defaultNameStore, tokenStore, workspaceStore),
 		commands.NewManCommand(),
-		commands.NewCwdCommand(svc),
-		commands.NewListCommand(svc),
-		commands.NewCloneCommand(svc),
-		commands.NewCreateCommand(svc),
-		commands.NewReposCommand(svc),
-		commands.NewDeleteCommand(svc),
-		commands.NewForkCommand(svc),
+		commands.NewCwdCommand(ctx, svc),
+		commands.NewListCommand(ctx, svc),
+		commands.NewCloneCommand(ctx, svc),
+		commands.NewCreateCommand(ctx, svc),
+		commands.NewReposCommand(ctx, svc),
+		commands.NewDeleteCommand(ctx, svc),
+		commands.NewForkCommand(ctx, svc),
 		configCommand,
 		authCommand,
 		bundleCommand,

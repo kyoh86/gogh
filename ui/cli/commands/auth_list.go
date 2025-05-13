@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/apex/log"
@@ -8,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthListCommand(svc *ServiceSet) *cobra.Command {
+func NewAuthListCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	useCase := auth_list.NewUseCase(svc.tokenService)
 	return &cobra.Command{
 		Use:   "list",

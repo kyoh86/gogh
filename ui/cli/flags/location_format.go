@@ -9,6 +9,20 @@ import (
 	"github.com/spf13/pflag"
 )
 
+func LocationFormatFlag(cmd *cobra.Command, format *LocationFormat, defaultValue string) error {
+	// UNDONE: opt ...Options Accepts NameOption, ShortUsageOption, ShorthandOption
+	if defaultValue != "" {
+		if err := format.Set(defaultValue); err != nil {
+			return fmt.Errorf("failed to set default format: %w", err)
+		}
+	}
+	cmd.Flags().VarP(format, "format", "f", LocationFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", CompleteLocationFormat); err != nil {
+		return fmt.Errorf("failed to register completion function for format flag: %w", err)
+	}
+	return nil
+}
+
 type LocationFormat string
 
 var _ pflag.Value = (*LocationFormat)(nil)

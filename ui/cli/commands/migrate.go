@@ -1,11 +1,13 @@
 package commands
 
 import (
+	"context"
+
 	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/spf13/cobra"
 )
 
-func NewMigrateCommand(svc *ServiceSet, defaultNameStore *config.DefaultNameStore, tokenStore *config.TokenStore, workspaceStore *config.WorkspaceStore) *cobra.Command {
+func NewMigrateCommand(_ context.Context, svc *ServiceSet, defaultNameStore *config.DefaultNameStore, tokenStore *config.TokenStore, workspaceStore *config.WorkspaceStore) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "migrate",
 		Short: "Migrate configurations",

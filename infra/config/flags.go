@@ -2,8 +2,6 @@ package config
 
 import (
 	"fmt"
-
-	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 )
 
 type BundleDumpFlags struct {
@@ -17,18 +15,18 @@ type BundleRestoreFlags struct {
 }
 
 type ReposFlags struct {
-	Limit       int                    `yaml:"limit,omitempty" toml:"limit,omitempty"`
-	Public      bool                   `yaml:"public,omitempty" toml:"public,omitempty"`
-	Private     bool                   `yaml:"private,omitempty" toml:"private,omitempty"`
-	Fork        bool                   `yaml:"fork,omitempty" toml:"fork,omitempty"`
-	NotFork     bool                   `yaml:"notFork,omitempty" toml:"notFork,omitempty"`
-	Archived    bool                   `yaml:"archived,omitempty" toml:"archived,omitempty"`
-	NotArchived bool                   `yaml:"notArchived,omitempty" toml:"notArchived,omitempty"`
-	Format      flags.RemoteRepoFormat `yaml:"format,omitempty" toml:"format,omitempty"`
-	Color       string                 `yaml:"color,omitempty" toml:"color,omitempty"`
-	Relation    []string               `yaml:"relation,omitempty" toml:"relation,omitempty"`
-	Sort        string                 `yaml:"sort,omitempty" toml:"sort,omitempty"`
-	Order       string                 `yaml:"order,omitempty" toml:"order,omitempty"`
+	Limit       int      `yaml:"limit,omitempty" toml:"limit,omitempty"`
+	Public      bool     `yaml:"public,omitempty" toml:"public,omitempty"`
+	Private     bool     `yaml:"private,omitempty" toml:"private,omitempty"`
+	Fork        bool     `yaml:"fork,omitempty" toml:"fork,omitempty"`
+	NotFork     bool     `yaml:"notFork,omitempty" toml:"notFork,omitempty"`
+	Archived    bool     `yaml:"archived,omitempty" toml:"archived,omitempty"`
+	NotArchived bool     `yaml:"notArchived,omitempty" toml:"notArchived,omitempty"`
+	Format      string   `yaml:"format,omitempty" toml:"format,omitempty"`
+	Color       string   `yaml:"color,omitempty" toml:"color,omitempty"`
+	Relation    []string `yaml:"relation,omitempty" toml:"relation,omitempty"`
+	Sort        string   `yaml:"sort,omitempty" toml:"sort,omitempty"`
+	Order       string   `yaml:"order,omitempty" toml:"order,omitempty"`
 }
 
 type CreateFlags struct {
@@ -54,14 +52,14 @@ type CreateFlags struct {
 }
 
 type CwdFlags struct {
-	Format flags.LocationFormat `yaml:"format,omitempty" toml:"format,omitempty"`
+	Format string `yaml:"format,omitempty" toml:"format,omitempty"`
 }
 
 type ListFlags struct {
-	Limit   int                  `yaml:"limit,omitempty" toml:"limit,omitempty"`
-	Query   string               `yaml:"-" toml:"-"`
-	Format  flags.LocationFormat `yaml:"format,omitempty" toml:"format,omitempty"`
-	Primary bool                 `yaml:"primary,omitempty" toml:"primary,omitempty"`
+	Limit   int    `yaml:"limit,omitempty" toml:"limit,omitempty"`
+	Query   string `yaml:"-" toml:"-"`
+	Format  string `yaml:"format,omitempty" toml:"format,omitempty"`
+	Primary bool   `yaml:"primary,omitempty" toml:"primary,omitempty"`
 }
 
 type ForkFlags struct {

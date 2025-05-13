@@ -1,13 +1,14 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
-func NewRootsCommand(svc *ServiceSet) *cobra.Command {
+func NewRootsCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:     "roots",
 		Short:   "Manage roots",
@@ -16,7 +17,7 @@ func NewRootsCommand(svc *ServiceSet) *cobra.Command {
 	}
 }
 
-func NewRootsListCommand(svc *ServiceSet) *cobra.Command {
+func NewRootsListCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all of the roots",
@@ -33,7 +34,7 @@ func RootsListRun(svc *ServiceSet) func(*cobra.Command, []string) {
 	}
 }
 
-func NewRootsAddCommand(svc *ServiceSet) *cobra.Command {
+func NewRootsAddCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	var asPrimary bool
 	cmd := &cobra.Command{
 		Use:   "add",
@@ -47,7 +48,7 @@ func NewRootsAddCommand(svc *ServiceSet) *cobra.Command {
 	return cmd
 }
 
-func NewRootsRemoveCommand(svc *ServiceSet) *cobra.Command {
+func NewRootsRemoveCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:   "remove",
 		Short: "Remove a directory from the roots",
@@ -77,7 +78,7 @@ func NewRootsRemoveCommand(svc *ServiceSet) *cobra.Command {
 	}
 }
 
-func NewRootsSetPrimaryCommand(svc *ServiceSet) *cobra.Command {
+func NewRootsSetPrimaryCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:     "set-primary",
 		Aliases: []string{"set-default"},

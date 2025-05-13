@@ -1,24 +1,25 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/cwd"
-	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
-func NewCwdCommand(svc *ServiceSet) *cobra.Command {
-	var f config.CwdFlags
+func NewCwdCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
+	var format flags.LocationFormat
+
 	cmd := &cobra.Command{
 		Use:   "cwd",
 		Short: "Print the local reposiotry in current working directory",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			formatter, err := f.Format.Formatter()
+			formatter, err := format.Formatter()
 			if err != nil {
 				return err
 			}
@@ -36,7 +37,7 @@ func NewCwdCommand(svc *ServiceSet) *cobra.Command {
 			if err != nil {
 				log.FromContext(ctx).WithFields(log.Fields{
 					"error":  err,
-					"format": f.Format.String(),
+					"format": format.String(),
 					"path":   repo.FullPath(),
 				}).Info("failed to format")
 			}
@@ -45,10 +46,8 @@ func NewCwdCommand(svc *ServiceSet) *cobra.Command {
 		},
 	}
 
-	f.Format = svc.flags.Cwd.Format
-	cmd.Flags().VarP(&f.Format, "format", "f", flags.LocationFormatShortUsage)
-	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteLocationFormat); err != nil {
-		panic(err)
+	if err := flags.LocationFormatFlag(cmd, &format, svc.flags.Cwd.Format); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
 	}
 	return cmd
 }

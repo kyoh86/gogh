@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewForkCommand(svc *ServiceSet) *cobra.Command {
+func NewForkCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	var f config.ForkFlags
 
 	checkFlags := func(_ *cobra.Command, args []string) (*repository.Reference, *repository.ReferenceWithAlias, error) {

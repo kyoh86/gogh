@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(svc *ServiceSet) *cobra.Command {
+func NewDeleteCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	var f struct {
 		local  bool
 		remote bool

@@ -1,12 +1,14 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/infra/config"
@@ -22,7 +24,7 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
-func NewReposCommand(svc *ServiceSet) *cobra.Command {
+func NewReposCommand(ctx context.Context, svc *ServiceSet) *cobra.Command {
 	var relationMap = map[string]hosting.RepositoryAffiliation{
 		"owner":               hosting.RepositoryAffiliationOwner,
 		"organization-member": hosting.RepositoryAffiliationOrganizationMember,
@@ -145,7 +147,8 @@ func NewReposCommand(svc *ServiceSet) *cobra.Command {
 	}
 
 	var (
-		f config.ReposFlags
+		f      config.ReposFlags
+		format flags.RepositoryFormat
 	)
 	cmd := &cobra.Command{
 		Use:   "repos",
@@ -161,7 +164,7 @@ func NewReposCommand(svc *ServiceSet) *cobra.Command {
 			opts := preprocessReposFlags(f)
 
 			// Setup output formatter
-			printer, err := f.Format.Formatter(os.Stdout)
+			printer, err := format.Formatter(os.Stdout)
 			if err != nil {
 				return fmt.Errorf("failed to create output formatter: %w", err)
 			}
@@ -196,25 +199,22 @@ func NewReposCommand(svc *ServiceSet) *cobra.Command {
 	cmd.Flags().
 		BoolVarP(&f.NotArchived, "no-archived", "", svc.flags.Repos.NotArchived, "Omit archived repositories")
 
-	f.Format = svc.flags.Repos.Format
-	cmd.Flags().
-		VarP(&f.Format, "format", "", flags.RemoteRepoFormatShortUsage)
-	if err := cmd.RegisterFlagCompletionFunc("format", flags.CompleteRemoteRepoFormat); err != nil {
-		panic(err)
+	if err := flags.RepositoryFormatFlag(cmd, &format, svc.flags.Repos.Format); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
 	}
 	cmd.Flags().
 		StringVarP(&f.Color, "color", "", svc.flags.Repos.Color, "Colorize the output; It can accept 'auto', 'always' or 'never'")
 	if err := cmd.RegisterFlagCompletionFunc("color", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"auto", "always", "never"}, cobra.ShellCompDirectiveDefault
 	}); err != nil {
-		panic(err)
+		log.FromContext(ctx).WithError(err).Error("failed to register completion function for color flag")
 	}
 	cmd.Flags().
 		StringSliceVarP(&f.Relation, "relation", "", svc.flags.Repos.Relation, fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(relationAccepts)))
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return relationAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {
-		panic(err)
+		log.FromContext(ctx).WithError(err).Error("failed to register completion function for relation flag")
 	}
 
 	cmd.Flags().
@@ -222,14 +222,14 @@ func NewReposCommand(svc *ServiceSet) *cobra.Command {
 	if err := cmd.RegisterFlagCompletionFunc("sort", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return sortAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {
-		panic(err)
+		log.FromContext(ctx).WithError(err).Error("failed to register completion function for sort flag")
 	}
 	cmd.Flags().
 		StringVarP(&f.Order, "order", "", svc.flags.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(orderAccept)))
 	if err := cmd.RegisterFlagCompletionFunc("order", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return orderAccept, cobra.ShellCompDirectiveDefault
 	}); err != nil {
-		panic(err)
+		log.FromContext(ctx).WithError(err).Error("failed to register completion function for order flag")
 	}
 	return cmd
 }

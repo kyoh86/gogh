@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(svc *ServiceSet) *cobra.Command {
+func NewBundleDumpCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",

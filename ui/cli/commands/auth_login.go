@@ -27,7 +27,7 @@ type ErrorResponse struct {
 	ErrorURI         string
 }
 
-func NewAuthLoginCommand(svc *ServiceSet) *cobra.Command {
+func NewAuthLoginCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	var f struct {
 		Host string
 	}

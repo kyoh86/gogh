@@ -11,28 +11,42 @@ import (
 	"github.com/spf13/pflag"
 )
 
-type RemoteRepoFormat string
+func RepositoryFormatFlag(cmd *cobra.Command, format *RepositoryFormat, defaultValue string) error {
+	// UNDONE: opt ...Options Accepts NameOption, ShortUsageOption, ShorthandOption
+	if defaultValue != "" {
+		if err := format.Set(defaultValue); err != nil {
+			return fmt.Errorf("failed to set default format: %w", err)
+		}
+	}
+	cmd.Flags().VarP(format, "format", "f", RepositoryFormatShortUsage)
+	if err := cmd.RegisterFlagCompletionFunc("format", CompleteRepositoryFormat); err != nil {
+		return fmt.Errorf("failed to register completion function for format flag: %w", err)
+	}
+	return nil
+}
 
-var _ pflag.Value = (*RemoteRepoFormat)(nil)
+type RepositoryFormat string
 
-func (f RemoteRepoFormat) String() string {
+var _ pflag.Value = (*RepositoryFormat)(nil)
+
+func (f RepositoryFormat) String() string {
 	return string(f)
 }
 
-func (f *RemoteRepoFormat) Set(v string) error {
+func (f *RepositoryFormat) Set(v string) error {
 	_, err := remoteRepoFormatter(v, os.Stdout)
 	if err != nil {
 		return fmt.Errorf("parse remote repo format: %w", err)
 	}
-	*f = RemoteRepoFormat(v)
+	*f = RepositoryFormat(v)
 	return nil
 }
 
-func (f RemoteRepoFormat) Type() string {
+func (f RepositoryFormat) Type() string {
 	return "string"
 }
 
-func (f RemoteRepoFormat) Formatter(w io.Writer) (view.RepositoryPrinter, error) {
+func (f RepositoryFormat) Formatter(w io.Writer) (view.RepositoryPrinter, error) {
 	return remoteRepoFormatter(string(f), w)
 }
 
@@ -50,11 +64,11 @@ func remoteRepoFormatter(v string, w io.Writer) (view.RepositoryPrinter, error) 
 	return nil, fmt.Errorf("invalid format: %q", v)
 }
 
-const RemoteRepoFormatShortUsage = `
+const RepositoryFormatShortUsage = `
 Print each repository in a given format, where [format] can be one of "table", "ref",
 "url" or "json".
 `
 
-func CompleteRemoteRepoFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func CompleteRepositoryFormat(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return []string{"table", "ref", "url", "json"}, cobra.ShellCompDirectiveDefault
 }

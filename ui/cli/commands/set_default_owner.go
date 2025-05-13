@@ -1,12 +1,13 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
 )
 
-func NewSetDefaultOwnerCommand(svc *ServiceSet) *cobra.Command {
+func NewSetDefaultOwnerCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-default-owner <host> <owner>",
 		Short: "Set the default owner for a host for the repository",

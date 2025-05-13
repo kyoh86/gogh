@@ -13,7 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCloneCommand(svc *ServiceSet) *cobra.Command {
+func NewCloneCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	var f struct {
 		dryrun bool
 	}

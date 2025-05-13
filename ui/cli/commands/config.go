@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"regexp"
@@ -15,7 +16,7 @@ import (
 //go:embed config_template.txt
 var configTemplate string
 
-func NewConfigCommand(svc *ServiceSet) *cobra.Command {
+func NewConfigCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:     "config",
 		Short:   "Show configurations",

@@ -14,7 +14,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func NewBundleRestoreCommand(svc *ServiceSet) *cobra.Command {
+func NewBundleRestoreCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	var f config.BundleRestoreFlags
 	cloneUseCase := clone.NewUseCase(svc.hostingService, svc.workspaceService, svc.gitService)
 

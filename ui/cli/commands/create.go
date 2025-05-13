@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCreateCommand(svc *ServiceSet) *cobra.Command {
+func NewCreateCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	createUseCase := create.NewUseCase(
 		svc.hostingService,
 		svc.workspaceService,

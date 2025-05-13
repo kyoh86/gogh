@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -12,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthLogoutCommand(svc *ServiceSet) *cobra.Command {
+func NewAuthLogoutCommand(_ context.Context, svc *ServiceSet) *cobra.Command {
 	listUseCase := auth_list.NewUseCase(svc.tokenService)
 	logoutUseCase := auth_logout.NewUseCase(svc.tokenService)
 
