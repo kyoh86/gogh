@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
@@ -121,7 +122,17 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 	cmd.Flags().
 		StringVarP(&f.Homepage, "homepage", "", "", "A URL with more information about the repository")
 	cmd.Flags().
-		StringVarP(&f.LicenseTemplate, "license-template", "", svc.Flags.Create.LicenseTemplate, `Choose an open source license template that best suits your needs, and then use the license keyword as the license_template string when "auto-init" flag is set. For example, "mit" or "mpl-2.0"`)
+		StringVarP(
+			&f.LicenseTemplate,
+			"license-template",
+			"",
+			svc.Flags.Create.LicenseTemplate,
+			strings.Join([]string{
+				`Choose an open source license template that best suits your needs,`,
+				`and then use the license keyword as the license_template string when "auto-init" flag is set.`,
+				`For example, "mit" or "mpl-2.0"`,
+			}, " "),
+		)
 	cmd.Flags().
 		StringVarP(&f.GitignoreTemplate, "gitignore-template", "", svc.Flags.Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
 	cmd.Flags().
@@ -147,6 +158,6 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 	cmd.Flags().
 		BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
 	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
 	return cmd
 }

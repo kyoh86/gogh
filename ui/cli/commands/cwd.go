@@ -13,12 +13,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewCwdCommand creates a new command to print the local repository which the current working directory belongs to.
 func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var format flags.LocationFormat
 
 	cmd := &cobra.Command{
 		Use:   "cwd",
-		Short: "Print the local reposiotry in current working directory",
+		Short: "Print the local repository which the current working directory belongs to",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			formatter, err := config.LocationFormatter(format.String())

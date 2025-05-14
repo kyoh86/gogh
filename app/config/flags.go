@@ -24,16 +24,19 @@ func LocationFormatter(v string) (repository.LocationFormat, error) {
 	return nil, fmt.Errorf("invalid format: %q", v)
 }
 
+// BundleDumpFlags is a struct that contains flags for dumping a bundle.
 type BundleDumpFlags struct {
 	File Path `yaml:"file,omitempty" toml:"file,omitempty"`
 }
 
+// BundleRestoreFlags is a struct that contains flags for restoring a bundle.
 type BundleRestoreFlags struct {
 	File            Path `yaml:"file,omitempty" toml:"file,omitempty"`
 	CloneRetryLimit int  `yaml:"cloneRetryLimit,omitempty" toml:"cloneRetryLimit,omitempty"`
 	Dryrun          bool `yaml:"-" toml:"-"`
 }
 
+// CreateFlags is a struct that contains flags for creating a repository.
 type CreateFlags struct {
 	Template            string `yaml:"template,omitempty" toml:"template,omitempty"`
 	Description         string `yaml:"-" toml:"-"`
@@ -56,10 +59,12 @@ type CreateFlags struct {
 	Dryrun              bool   `yaml:"-" toml:"-"`
 }
 
+// CwdFlags is a struct that contains flags for the cwd command.
 type CwdFlags struct {
 	Format string `yaml:"format,omitempty" toml:"format,omitempty"`
 }
 
+// ReposFlags is a struct that contains flags for the repos command.
 type ReposFlags struct {
 	Limit    int      `yaml:"limit,omitempty" toml:"limit,omitempty"`
 	Privacy  string   `yaml:"privacy,omitempty" toml:"privacy,omitempty"`
@@ -72,6 +77,7 @@ type ReposFlags struct {
 	Order    string   `yaml:"order,omitempty" toml:"order,omitempty"`
 }
 
+// ListFlags is a struct that contains flags for listing repositories.
 type ListFlags struct {
 	Limit   int    `yaml:"limit,omitempty" toml:"limit,omitempty"`
 	Query   string `yaml:"-" toml:"-"`
@@ -79,12 +85,14 @@ type ListFlags struct {
 	Primary bool   `yaml:"primary,omitempty" toml:"primary,omitempty"`
 }
 
+// ForkFlags is a struct that contains flags for forking a repository.
 type ForkFlags struct {
 	To                string `yaml:"-" toml:"-"`
 	DefaultBranchOnly bool   `yaml:"defaultBranchOnly,omitempty" toml:"defaultBranchOnly,omitempty"`
 	CloneRetryLimit   int    `yaml:"cloneRetryLimit,omitempty" toml:"cloneRetryLimit,omitempty"`
 }
 
+// Flags is a struct that contains all the flags for the application.
 type Flags struct {
 	BundleDump    BundleDumpFlags    `yaml:"bundleDump,omitempty" toml:"bundleDump,omitempty"`
 	BundleRestore BundleRestoreFlags `yaml:"bundleRestore,omitempty" toml:"bundleRestore,omitempty"`
@@ -95,10 +103,12 @@ type Flags struct {
 	Fork          ForkFlags          `yaml:"fork,omitempty" toml:"fork,omitempty"`
 }
 
+// HasChanges always returns false because Flags does not support saving.
 func (f *Flags) HasChanges() bool {
 	return false
 }
 
+// MarkSaved is a no-op function. It does not save any changes to the Flags struct.
 func (f *Flags) MarkSaved() {
 	// No-op
 }

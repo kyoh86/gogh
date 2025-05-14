@@ -16,6 +16,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// quoteEnums takes a slice of strings and returns a string that lists the
+// values in a human-readable format, with the last value preceded by "or".
 func quoteEnums(values []string) string {
 	if len(values) == 0 {
 		return ""
@@ -27,6 +29,8 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
+// enumFlag registers a string flag with a set of accepted values and adds
+// completion for those values.
 func enumFlag(cmd *cobra.Command, v *string, name string, defaultValue string, description string, accepts ...string) error {
 	cmd.Flags().StringVarP(
 		v,
@@ -115,7 +119,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Comman
 		log.FromContext(ctx).WithError(err).Error("failed to register sort flag")
 	}
 
-	if err := enumFlag(cmd, &opts.Order, "order", defs.Order, "Directions in which to order a list of items when provided an `sort` flag", "asc", "ascending", "desc", "descending"); err != nil {
+	if err := enumFlag(cmd, &opts.Order, "order", defs.Order, "Directions in which to order a list of items when provided a `sort` flag", "asc", "ascending", "desc", "descending"); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to register order flag")
 	}
 

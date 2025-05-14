@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewListCommand creates a new command to list local repositories.
 func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var f config.ListFlags
 	var format flags.LocationFormat
@@ -48,8 +49,9 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command
 						"format": format.String(),
 						"path":   repo.FullPath(),
 					}).Info("failed to format")
+				} else {
+					fmt.Println(str)
 				}
-				fmt.Println(str)
 			}
 
 			return nil
