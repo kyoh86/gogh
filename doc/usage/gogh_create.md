@@ -10,7 +10,7 @@ gogh create [flags] [[OWNER/]NAME[=ALIAS]]
 
 ```
       --auto-init                   Create an initial commit with empty README
-      --clone-retry-limit int        (default 3)
+      --clone-retry-limit int       The number of retries to clone a repository (default 3)
       --delete-branch-on-merge      Allow automatically deleting head branches when pull requests are merged
       --description string          A short description of the repository
       --disable-downloads           Disable "Downloads" page

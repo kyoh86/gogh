@@ -16,7 +16,7 @@ GO GitHub local repository manager
 * [gogh completion](gogh_completion.md)	 - Generate the autocompletion script for the specified shell
 * [gogh config](gogh_config.md)	 - Show configurations
 * [gogh create](gogh_create.md)	 - Create a new local and remote repository
-* [gogh cwd](gogh_cwd.md)	 - Print the local reposiotry in current working directory
+* [gogh cwd](gogh_cwd.md)	 - Print the local repository which the current working directory belongs to
 * [gogh delete](gogh_delete.md)	 - Delete local and remote repository
 * [gogh fork](gogh_fork.md)	 - Fork a repository
 * [gogh list](gogh_list.md)	 - List local repositories
