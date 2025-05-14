@@ -2,12 +2,11 @@ package repos
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"iter"
-	"strings"
 
 	"github.com/kyoh86/gogh/v3/core/hosting"
+	"github.com/kyoh86/gogh/v3/core/typ"
 )
 
 type UseCase struct {
@@ -21,51 +20,19 @@ func NewUseCase(hostingService hosting.HostingService) *UseCase {
 }
 
 type Options struct {
-	Limit       int
-	Public      bool
-	Private     bool
-	Fork        bool
-	NotFork     bool
-	Archived    bool
-	NotArchived bool
-	Format      string
-	Color       string
-	Relation    []string
-	Sort        string
-	Order       string
-}
-
-var relationMap = map[string]hosting.RepositoryAffiliation{
-	"owner":               hosting.RepositoryAffiliationOwner,
-	"organization-member": hosting.RepositoryAffiliationOrganizationMember,
-	"collaborator":        hosting.RepositoryAffiliationCollaborator,
-}
-var sortMap = map[string]hosting.RepositoryOrderField{
-	"created-at": hosting.RepositoryOrderFieldCreatedAt,
-	"name":       hosting.RepositoryOrderFieldName,
-	"pushed-at":  hosting.RepositoryOrderFieldPushedAt,
-	"stargazers": hosting.RepositoryOrderFieldStargazers,
-	"updated-at": hosting.RepositoryOrderFieldUpdatedAt,
-}
-var orderMap = map[string]hosting.OrderDirection{
-	"asc":        hosting.OrderDirectionAsc,
-	"ascending":  hosting.OrderDirectionAsc,
-	"desc":       hosting.OrderDirectionDesc,
-	"descending": hosting.OrderDirectionDesc,
+	Limit    int
+	Privacy  string
+	Fork     string
+	Archive  string
+	Format   string
+	Color    string
+	Relation []string
+	Sort     string
+	Order    string
 }
 
 func convertOpts(f Options) (hosting.ListRepositoryOptions, error) {
 	var opts hosting.ListRepositoryOptions
-	// Check mutually exclusive flags
-	if f.Private && f.Public {
-		return opts, errors.New("specify only one of `--private` or `--public`")
-	}
-	if f.Fork && f.NotFork {
-		return opts, errors.New("specify only one of `--fork` or `--no-fork`")
-	}
-	if f.Archived && f.NotArchived {
-		return opts, errors.New("specify only one of `--archived` or `--no-archived`")
-	}
 
 	// Set limit
 	switch f.Limit {
@@ -77,49 +44,55 @@ func convertOpts(f Options) (hosting.ListRepositoryOptions, error) {
 		opts.Limit = f.Limit
 	}
 
-	// Set privacy filter
-	if f.Private {
-		opts.Privacy = hosting.RepositoryPrivacyPrivate
+	if err := typ.Remap(&opts.Privacy, map[string]hosting.RepositoryPrivacy{
+		"private": hosting.RepositoryPrivacyPrivate,
+		"public":  hosting.RepositoryPrivacyPublic,
+	}, f.Privacy); err != nil {
+		return opts, fmt.Errorf("invalid privacy option %q", f.Privacy)
 	}
-	if f.Public {
-		opts.Privacy = hosting.RepositoryPrivacyPublic
+	if err := typ.Remap(&opts.IsFork, map[string]hosting.Tristate{
+		"forked":     hosting.TristateTrue,
+		"not-forked": hosting.TristateFalse,
+	}, f.Fork); err != nil {
+		return opts, fmt.Errorf("invalid fork option %q", f.Fork)
 	}
-
-	// Set fork and archive filters
-	if f.Fork {
-		opts.IsFork = hosting.BoolFilterTrue
-	}
-	if f.NotFork {
-		opts.IsFork = hosting.BoolFilterFalse
-	}
-	if f.Archived {
-		opts.IsArchived = hosting.BoolFilterTrue
-	}
-	if f.NotArchived {
-		opts.IsArchived = hosting.BoolFilterFalse
+	if err := typ.Remap(&opts.IsArchived, map[string]hosting.Tristate{
+		"archived":     hosting.TristateTrue,
+		"not-archived": hosting.TristateFalse,
+	}, f.Archive); err != nil {
+		return opts, fmt.Errorf("invalid archive option %q", f.Archive)
 	}
 
 	// Set relation filters
 	for _, r := range f.Relation {
-		if field, exists := relationMap[r]; exists {
+		if field, exists := map[string]hosting.RepositoryAffiliation{
+			"owner":               hosting.RepositoryAffiliationOwner,
+			"organization-member": hosting.RepositoryAffiliationOrganizationMember,
+			"collaborator":        hosting.RepositoryAffiliationCollaborator,
+		}[r]; exists {
 			opts.OwnerAffiliations = append(opts.OwnerAffiliations, field)
 		} else {
 			return opts, fmt.Errorf("invalid relation %q", r)
 		}
 	}
 
-	// Set sort field
-	if field, exists := sortMap[strings.ToLower(f.Sort)]; exists {
-		opts.OrderBy.Field = field
-	} else {
+	if err := typ.Remap(&opts.OrderBy.Field, map[string]hosting.RepositoryOrderField{
+		"created-at": hosting.RepositoryOrderFieldCreatedAt,
+		"name":       hosting.RepositoryOrderFieldName,
+		"pushed-at":  hosting.RepositoryOrderFieldPushedAt,
+		"stargazers": hosting.RepositoryOrderFieldStargazers,
+		"updated-at": hosting.RepositoryOrderFieldUpdatedAt,
+	}, f.Sort); err != nil {
 		return opts, fmt.Errorf("invalid sort field %q", f.Sort)
 	}
 
-	// Set sort direction
-	if field, exists := orderMap[strings.ToLower(f.Order)]; exists {
-		opts.OrderBy.Direction = field
-	} else {
-		return opts, fmt.Errorf("invalid order field %q", f.Order)
+	if err := typ.Remap(&opts.OrderBy.Direction, map[string]hosting.OrderDirection{
+		"asc":        hosting.OrderDirectionAsc,
+		"ascending":  hosting.OrderDirectionAsc,
+		"desc":       hosting.OrderDirectionDesc,
+		"descending": hosting.OrderDirectionDesc,
+	}, f.Order); err != nil {
+		return opts, fmt.Errorf("invalid order direction %q", f.Order)
 	}
 
 	return opts, nil

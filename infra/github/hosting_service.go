@@ -220,16 +220,49 @@ func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRe
 					return
 				}
 
+				var privacy githubv4.RepositoryPrivacy
+				if err := typ.Remap(&privacy, map[hosting.RepositoryPrivacy]githubv4.RepositoryPrivacy{
+					hosting.RepositoryPrivacyPublic:  githubv4.RepositoryPrivacyPublic,
+					hosting.RepositoryPrivacyPrivate: githubv4.RepositoryPrivacyPrivate,
+				}, opts.Privacy); err != nil {
+					yield(nil, fmt.Errorf("invalid privacy option %q", opts.Privacy))
+					return
+				}
+				var orderField githubv4.RepositoryOrderField
+				if err := typ.Remap(&orderField, map[hosting.RepositoryOrderField]githubv4.RepositoryOrderField{
+					hosting.RepositoryOrderFieldCreatedAt:  githubv4.RepositoryOrderFieldCreatedAt,
+					hosting.RepositoryOrderFieldUpdatedAt:  githubv4.RepositoryOrderFieldUpdatedAt,
+					hosting.RepositoryOrderFieldPushedAt:   githubv4.RepositoryOrderFieldPushedAt,
+					hosting.RepositoryOrderFieldName:       githubv4.RepositoryOrderFieldName,
+					hosting.RepositoryOrderFieldStargazers: githubv4.RepositoryOrderFieldStargazers,
+				}, opts.OrderBy.Field); err != nil {
+					yield(nil, fmt.Errorf("invalid order field %q", opts.OrderBy.Field))
+					return
+				}
+				var orderDirection githubv4.OrderDirection
+				if err := typ.Remap(&orderDirection, map[hosting.OrderDirection]githubv4.OrderDirection{
+					hosting.OrderDirectionAsc:  githubv4.OrderDirectionAsc,
+					hosting.OrderDirectionDesc: githubv4.OrderDirectionDesc,
+				}, opts.OrderBy.Direction); err != nil {
+					yield(nil, fmt.Errorf("invalid order direction %q", opts.OrderBy.Direction))
+					return
+				}
+				affs, err := convertOwnerAffiliations(opts.OwnerAffiliations)
+				if err != nil {
+					yield(nil, fmt.Errorf("invalid owner affiliations %q: %w", opts.OwnerAffiliations, err))
+					return
+				}
+
 				repos, err := githubv4.ListRepos(
 					ctx,
 					conn.gqlClient,
 					limit,
 					after,
 					opts.IsFork.AsBoolPtr(),
-					convertPrivacy(opts.Privacy),
-					convertOwnerAffiliations(opts.OwnerAffiliations),
-					convertRepositoryOrder(opts.OrderBy),
-					convertBooleanFilter(opts.IsArchived),
+					privacy,
+					affs,
+					githubv4.RepositoryOrder{Field: orderField, Direction: orderDirection},
+					opts.IsArchived.AsBoolPtr(),
 				)
 				if err != nil {
 					yield(nil, err)
@@ -436,87 +469,22 @@ func convertRepositoryFragment(host string, f githubv4.RepositoryFragment) hosti
 
 // Helper functions to convert between types
 
-// convertPrivacy converts hosting.RepositoryPrivacy to githubv4.RepositoryPrivacy
-func convertPrivacy(privacy hosting.RepositoryPrivacy) githubv4.RepositoryPrivacy {
-	switch privacy {
-	case hosting.RepositoryPrivacyPublic:
-		return githubv4.RepositoryPrivacyPublic
-	case hosting.RepositoryPrivacyPrivate:
-		return githubv4.RepositoryPrivacyPrivate
-	default:
-		return githubv4.RepositoryPrivacy("")
-	}
-}
-
 // convertOwnerAffiliations converts []hosting.RepositoryAffiliation to []githubv4.RepositoryAffiliation
-func convertOwnerAffiliations(affiliations []hosting.RepositoryAffiliation) []githubv4.RepositoryAffiliation {
+func convertOwnerAffiliations(affiliations []hosting.RepositoryAffiliation) ([]githubv4.RepositoryAffiliation, error) {
 	if len(affiliations) == 0 {
-		return nil
+		return nil, nil
 	}
-
 	result := make([]githubv4.RepositoryAffiliation, len(affiliations))
 	for i, affiliation := range affiliations {
-		switch affiliation {
-		case hosting.RepositoryAffiliationOwner:
-			result[i] = githubv4.RepositoryAffiliationOwner
-		case hosting.RepositoryAffiliationCollaborator:
-			result[i] = githubv4.RepositoryAffiliationCollaborator
-		case hosting.RepositoryAffiliationOrganizationMember:
-			result[i] = githubv4.RepositoryAffiliationOrganizationMember
+		if err := typ.Remap(&(result[i]), map[hosting.RepositoryAffiliation]githubv4.RepositoryAffiliation{
+			hosting.RepositoryAffiliationOwner:              githubv4.RepositoryAffiliationOwner,
+			hosting.RepositoryAffiliationCollaborator:       githubv4.RepositoryAffiliationCollaborator,
+			hosting.RepositoryAffiliationOrganizationMember: githubv4.RepositoryAffiliationOrganizationMember,
+		}, affiliation); err != nil {
+			return nil, err
 		}
 	}
-	return result
-}
-
-// convertBooleanFilter converts hosting.BooleanFilter to *bool
-func convertBooleanFilter(filter hosting.BoolFilter) *bool {
-	switch filter {
-	case hosting.BoolFilterTrue:
-		value := true
-		return &value
-	case hosting.BoolFilterFalse:
-		value := false
-		return &value
-	default: // BoolFilterNone
-		return nil
-	}
-}
-
-func convertRepositoryOrder(order hosting.RepositoryOrder) githubv4.RepositoryOrder {
-	// Map the field
-	var field githubv4.RepositoryOrderField
-	switch order.Field {
-	case hosting.RepositoryOrderFieldCreatedAt:
-		field = githubv4.RepositoryOrderFieldCreatedAt
-	case hosting.RepositoryOrderFieldUpdatedAt:
-		field = githubv4.RepositoryOrderFieldUpdatedAt
-	case hosting.RepositoryOrderFieldPushedAt:
-		field = githubv4.RepositoryOrderFieldPushedAt
-	case hosting.RepositoryOrderFieldName:
-		field = githubv4.RepositoryOrderFieldName
-	case hosting.RepositoryOrderFieldStargazers:
-		field = githubv4.RepositoryOrderFieldStargazers
-	default:
-		// Default to created time if not recognized
-		field = githubv4.RepositoryOrderFieldCreatedAt
-	}
-
-	// Map the direction
-	var direction githubv4.OrderDirection
-	switch order.Direction {
-	case hosting.OrderDirectionAsc:
-		direction = githubv4.OrderDirectionAsc
-	case hosting.OrderDirectionDesc:
-		direction = githubv4.OrderDirectionDesc
-	default:
-		// Default to descending if not recognized
-		direction = githubv4.OrderDirectionDesc
-	}
-
-	return githubv4.RepositoryOrder{
-		Field:     field,
-		Direction: direction,
-	}
+	return result, nil
 }
 
 func convertSSHToHTTPS(sshURL string) string {

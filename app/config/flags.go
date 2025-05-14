@@ -61,18 +61,15 @@ type CwdFlags struct {
 }
 
 type ReposFlags struct {
-	Limit       int      `yaml:"limit,omitempty" toml:"limit,omitempty"`
-	Public      bool     `yaml:"public,omitempty" toml:"public,omitempty"`
-	Private     bool     `yaml:"private,omitempty" toml:"private,omitempty"`
-	Fork        bool     `yaml:"fork,omitempty" toml:"fork,omitempty"`
-	NotFork     bool     `yaml:"notFork,omitempty" toml:"notFork,omitempty"`
-	Archived    bool     `yaml:"archived,omitempty" toml:"archived,omitempty"`
-	NotArchived bool     `yaml:"notArchived,omitempty" toml:"notArchived,omitempty"`
-	Format      string   `yaml:"format,omitempty" toml:"format,omitempty"`
-	Color       string   `yaml:"color,omitempty" toml:"color,omitempty"`
-	Relation    []string `yaml:"relation,omitempty" toml:"relation,omitempty"`
-	Sort        string   `yaml:"sort,omitempty" toml:"sort,omitempty"`
-	Order       string   `yaml:"order,omitempty" toml:"order,omitempty"`
+	Limit    int      `yaml:"limit,omitempty" toml:"limit,omitempty"`
+	Privacy  string   `yaml:"privacy,omitempty" toml:"privacy,omitempty"`
+	Fork     string   `yaml:"fork,omitempty" toml:"fork,omitempty"`
+	Archive  string   `yaml:"archived,omitempty" toml:"archived,omitempty"`
+	Format   string   `yaml:"format,omitempty" toml:"format,omitempty"`
+	Color    string   `yaml:"color,omitempty" toml:"color,omitempty"`
+	Relation []string `yaml:"relation,omitempty" toml:"relation,omitempty"`
+	Sort     string   `yaml:"sort,omitempty" toml:"sort,omitempty"`
+	Order    string   `yaml:"order,omitempty" toml:"order,omitempty"`
 }
 
 type ListFlags struct {

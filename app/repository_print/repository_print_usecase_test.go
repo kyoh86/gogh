@@ -2,6 +2,7 @@ package repository_print_test
 
 import (
 	"bytes"
+	"context"
 	"iter"
 	"testing"
 	"time"
@@ -56,7 +57,7 @@ func TestRepositoryPrinter(t *testing.T) {
 		t.Run(testcase.title, func(t *testing.T) {
 			var buf bytes.Buffer
 			printer := testtarget.NewUseCase(&buf, testcase.format)
-			if err := printer.Execute(sliceToIter2([]*hosting.Repository{&repo})); err != nil {
+			if err := printer.Execute(context.Background(), sliceToIter2([]*hosting.Repository{&repo})); err != nil {
 				t.Fatal(err)
 			}
 			got := buf.String()

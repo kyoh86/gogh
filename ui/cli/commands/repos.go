@@ -24,6 +24,22 @@ func quoteEnums(values []string) string {
 	return strings.Join(quoted[:len(quoted)-1], ", ") + " or " + quoted[len(quoted)-1]
 }
 
+func enumFlag(cmd *cobra.Command, v *string, name string, defaultValue string, description string, accepts ...string) error {
+	cmd.Flags().StringVarP(
+		v,
+		name,
+		"",
+		defaultValue,
+		fmt.Sprintf("%s; it can accept %s", description, quoteEnums(accepts)),
+	)
+	return cmd.RegisterFlagCompletionFunc(
+		name,
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return accepts, cobra.ShellCompDirectiveDefault
+		},
+	)
+}
+
 func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var (
 		opts   config.ReposFlags
@@ -38,18 +54,15 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Comman
 			reposUseCase := repos.NewUseCase(svc.HostingService)
 			printUseCase := repository_print.NewUseCase(os.Stdout, format)
 			if err := printUseCase.Execute(ctx, reposUseCase.Execute(ctx, repos.Options{
-				Limit:       opts.Limit,
-				Public:      opts.Public,
-				Private:     opts.Private,
-				Fork:        opts.Fork,
-				NotFork:     opts.NotFork,
-				Archived:    opts.Archived,
-				NotArchived: opts.NotArchived,
-				Format:      opts.Format,
-				Color:       opts.Color,
-				Relation:    opts.Relation,
-				Sort:        opts.Sort,
-				Order:       opts.Order,
+				Limit:    opts.Limit,
+				Privacy:  opts.Privacy,
+				Fork:     opts.Fork,
+				Archive:  opts.Archive,
+				Format:   opts.Format,
+				Color:    opts.Color,
+				Relation: opts.Relation,
+				Sort:     opts.Sort,
+				Order:    opts.Order,
 			})); err != nil {
 				return fmt.Errorf("failed to list repositories: %w", err)
 			}
@@ -57,33 +70,13 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Comman
 		},
 	}
 
-	cmd.Flags().
-		IntVarP(&opts.Limit, "limit", "", svc.Flags.Repos.Limit, "Max number of repositories to list. -1 means unlimited")
+	defs := svc.Flags.Repos
 
 	cmd.Flags().
-		BoolVarP(&opts.Public, "public", "", svc.Flags.Repos.Public, "Show only public repositories")
-	cmd.Flags().
-		BoolVarP(&opts.Private, "private", "", svc.Flags.Repos.Private, "Show only private repositories")
+		IntVarP(&opts.Limit, "limit", "", defs.Limit, "Max number of repositories to list. -1 means unlimited")
 
-	cmd.Flags().
-		BoolVarP(&opts.Fork, "fork", "", svc.Flags.Repos.Fork, "Show only forks")
-	cmd.Flags().
-		BoolVarP(&opts.NotFork, "no-fork", "", svc.Flags.Repos.NotFork, "Omit forks")
-
-	cmd.Flags().
-		BoolVarP(&opts.Archived, "archived", "", svc.Flags.Repos.Archived, "Show only archived repositories")
-	cmd.Flags().
-		BoolVarP(&opts.NotArchived, "no-archived", "", svc.Flags.Repos.NotArchived, "Omit archived repositories")
-
-	if err := flags.RepositoryFormatFlag(cmd, &format, svc.Flags.Repos.Format); err != nil {
+	if err := flags.RepositoryFormatFlag(cmd, &format, defs.Format); err != nil {
 		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
-	}
-	cmd.Flags().
-		StringVarP(&opts.Color, "color", "", svc.Flags.Repos.Color, "Colorize the output; It can accept 'auto', 'always' or 'never'")
-	if err := cmd.RegisterFlagCompletionFunc("color", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"auto", "always", "never"}, cobra.ShellCompDirectiveDefault
-	}); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register completion function for color flag")
 	}
 
 	var relationAccepts = []string{
@@ -92,38 +85,36 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Comman
 		"collaborator",
 	}
 	cmd.Flags().
-		StringSliceVarP(&opts.Relation, "relation", "", svc.Flags.Repos.Relation, fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(relationAccepts)))
+		StringSliceVarP(&opts.Relation, "relation", "", defs.Relation, fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(relationAccepts)))
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return relationAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register completion function for relation flag")
+		log.FromContext(ctx).WithError(err).Error("failed to register relation flag")
 	}
 
-	var sortAccepts = []string{
-		"created-at",
-		"name",
-		"pushed-at",
-		"stargazers",
-		"updated-at",
-	}
-	cmd.Flags().
-		StringVarP(&opts.Sort, "sort", "", svc.Flags.Repos.Sort, fmt.Sprintf("Property by which repository be ordered; it can accept %s", quoteEnums(sortAccepts)))
-	if err := cmd.RegisterFlagCompletionFunc("sort", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return sortAccepts, cobra.ShellCompDirectiveDefault
-	}); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register completion function for sort flag")
+	if err := enumFlag(cmd, &opts.Privacy, "privacy", defs.Privacy, "Show only public/private repositories", "private", "public"); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to register privacy flag")
 	}
 
-	var orderAccept = []string{
-		"asc", "ascending",
-		"desc", "descending",
+	if err := enumFlag(cmd, &opts.Fork, "fork", defs.Fork, "Show only forked/not-forked repositories", "forked", "not-forked"); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to register fork flag")
 	}
-	cmd.Flags().
-		StringVarP(&opts.Order, "order", "", svc.Flags.Repos.Order, fmt.Sprintf("Directions in which to order a list of items when provided an `sort` flag; it can accept %s", quoteEnums(orderAccept)))
-	if err := cmd.RegisterFlagCompletionFunc("order", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return orderAccept, cobra.ShellCompDirectiveDefault
-	}); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register completion function for order flag")
+
+	if err := enumFlag(cmd, &opts.Archive, "archive", defs.Archive, "Show only archived/not-archived repositories", "archived", "not-archived"); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to register archive flag")
 	}
+
+	if err := enumFlag(cmd, &opts.Color, "color", defs.Color, "Colorize the output", "auto", "always", "never"); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to register color flag")
+	}
+
+	if err := enumFlag(cmd, &opts.Sort, "sort", defs.Sort, "Property by which repository be ordered", "created-at", "name", "pushed-at", "stargazers", "updated-at"); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to register sort flag")
+	}
+
+	if err := enumFlag(cmd, &opts.Order, "order", defs.Order, "Directions in which to order a list of items when provided an `sort` flag", "asc", "ascending", "desc", "descending"); err != nil {
+		log.FromContext(ctx).WithError(err).Error("failed to register order flag")
+	}
+
 	return cmd
 }
