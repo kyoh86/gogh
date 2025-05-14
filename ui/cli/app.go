@@ -19,7 +19,7 @@ func NewApp(
 		Short: "GO GitHub local repository manager",
 	}
 
-	bundleCommand := commands.NewBundleCommand()
+	bundleCommand := commands.NewBundleCommand(ctx, svc)
 	bundleCommand.AddCommand(
 		commands.NewBundleDumpCommand(ctx, svc),
 		commands.NewBundleRestoreCommand(ctx, svc),
@@ -50,7 +50,7 @@ func NewApp(
 
 	appCommand.AddCommand(
 		commands.NewMigrateCommand(ctx, svc),
-		commands.NewManCommand(),
+		commands.NewManCommand(ctx, svc),
 		commands.NewCwdCommand(ctx, svc),
 		commands.NewListCommand(ctx, svc),
 		commands.NewCloneCommand(ctx, svc),

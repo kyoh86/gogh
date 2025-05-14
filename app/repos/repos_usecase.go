@@ -19,6 +19,7 @@ func NewUseCase(hostingService hosting.HostingService) *UseCase {
 	}
 }
 
+// Options contains the options for listing repositories.
 type Options struct {
 	Limit    int
 	Privacy  string
@@ -98,6 +99,8 @@ func convertOpts(f Options) (hosting.ListRepositoryOptions, error) {
 	return opts, nil
 }
 
+// Execute lists repositories based on the provided options.
+// It returns an iterator that yields repositories and errors.
 func (uc *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*hosting.Repository, error] {
 	return func(yield func(*hosting.Repository, error) bool) {
 		listOpts, err := convertOpts(opts)

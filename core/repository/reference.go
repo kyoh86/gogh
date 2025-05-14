@@ -4,20 +4,21 @@ import (
 	"path"
 )
 
-// Reference is a interface for a repository Reference.
+// Reference is a struct that contains a host, owner and name of a repository.
+// It is used to identify a repository in a hosting service or a location in a root.
 type Reference struct {
 	host  string
 	owner string
 	name  string
 }
 
-// Host is a hostname (i.g.: "github.com")
+// Host is a hostname (e.g.: "github.com")
 func (r *Reference) Host() string { return r.host }
 
-// Owner is a owner name (i.g.: "kyoh86")
+// Owner is a owner name (e.g.: "kyoh86")
 func (r *Reference) Owner() string { return r.owner }
 
-// Name of the repository (i.g.: "gogh")
+// Name of the repository (e.g.: "gogh")
 func (r *Reference) Name() string { return r.name }
 
 func (r *Reference) String() string {
@@ -35,6 +36,8 @@ func NewReference(host, owner, name string) Reference {
 
 // ReferenceWithAlias is a struct that contains a Reference and an optional alias.
 type ReferenceWithAlias struct {
+	// Reference is the main reference.
 	Reference Reference
-	Alias     *Reference
+	// Alias is an optional alias for the reference if needed.
+	Alias *Reference
 }

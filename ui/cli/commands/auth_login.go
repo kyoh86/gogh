@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/charmbracelet/huh"
@@ -12,18 +13,6 @@ import (
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
 )
-
-type TokenResponse struct {
-	AccessToken string
-	Scope       string
-	TokenType   string
-}
-
-type ErrorResponse struct {
-	Error            string
-	ErrorDescription string
-	ErrorURI         string
-}
 
 func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 	var f struct {
@@ -49,11 +38,21 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comm
 				}
 			}
 
-			if err := useCase.Execute(cmd.Context(), f.Host, func(ctx context.Context, response auth_login.DeviceAuthResponse) error {
-				if errors.Is(browser.OpenURL(response.VerificationURI), exec.ErrNotFound) {
-					fmt.Printf("Visit %s and enter the code: %s\n", response.VerificationURI, response.UserCode)
+			if err := useCase.Execute(cmd.Context(), f.Host, func(ctx context.Context, res auth_login.DeviceAuthResponse) error {
+				if errors.Is(browser.OpenURL(res.VerificationURI), exec.ErrNotFound) {
+					fmt.Fprintf(
+						os.Stderr,
+						"Failed to open browser automatically. Please open this URL in your browser:\n%s\n\nThen enter the code: %s\n",
+						res.VerificationURI,
+						res.UserCode,
+					)
 				} else {
-					fmt.Printf("Opened %s, so enter the code: %s\n", response.VerificationURI, response.UserCode)
+					fmt.Fprintf(
+						os.Stderr,
+						"Your browser has been opened to: %s\nPlease enter this code in the browser: %s\n",
+						res.VerificationURI,
+						res.UserCode,
+					)
 				}
 				return nil
 			}); err != nil {

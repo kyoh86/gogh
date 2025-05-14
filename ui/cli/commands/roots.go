@@ -49,30 +49,36 @@ func NewRootsAddCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comma
 	return cmd
 }
 
+func selectRoot(svc *service.ServiceSet, title string, rootList []string) (string, error) {
+	if len(rootList) > 0 {
+		return rootList[0], nil
+	}
+	var selected string
+	opts := make([]huh.Option[string], 0, len(svc.WorkspaceService.GetRoots()))
+	for _, root := range svc.WorkspaceService.GetRoots() {
+		opts = append(opts, huh.Option[string]{Key: root, Value: root})
+	}
+	form := huh.NewForm(huh.NewGroup(
+		huh.NewSelect[string]().
+			Title(title).
+			Options(opts...).
+			Value(&selected),
+	))
+	if err := form.Run(); err != nil {
+		return "", err
+	}
+	return selected, nil
+}
+
 func NewRootsRemoveCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 	return &cobra.Command{
 		Use:   "remove",
 		Short: "Remove a directory from the roots",
 		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(_ *cobra.Command, rootList []string) error {
-			var selected string
-			if len(rootList) == 0 {
-				opts := make([]huh.Option[string], 0, len(svc.WorkspaceService.GetRoots()))
-				for _, root := range svc.WorkspaceService.GetRoots() {
-					opts = append(opts, huh.Option[string]{Key: root, Value: root})
-				}
-
-				form := huh.NewForm(huh.NewGroup(
-					huh.NewSelect[string]().
-						Title("Roots to remove").
-						Options(opts...).
-						Value(&selected),
-				))
-				if err := form.Run(); err != nil {
-					return err
-				}
-			} else {
-				selected = rootList[0]
+			selected, err := selectRoot(svc, "Roots to remove", rootList)
+			if err != nil {
+				return err
 			}
 			return svc.WorkspaceService.RemoveRoot(selected)
 		},
@@ -86,26 +92,10 @@ func NewRootsSetPrimaryCommand(_ context.Context, svc *service.ServiceSet) *cobr
 		Short:   "Set a directory as the primary in the roots",
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(_ *cobra.Command, rootList []string) error {
-			var selected string
-			if len(rootList) == 0 {
-				opts := make([]huh.Option[string], 0, len(svc.WorkspaceService.GetRoots()))
-				for _, root := range svc.WorkspaceService.GetRoots() {
-					opts = append(opts, huh.Option[string]{Key: root, Value: root})
-				}
-
-				form := huh.NewForm(huh.NewGroup(
-					huh.NewSelect[string]().
-						Title("A directory to set as primary root").
-						Options(opts...).
-						Value(&selected),
-				))
-				if err := form.Run(); err != nil {
-					return err
-				}
-			} else {
-				selected = rootList[0]
+			selected, err := selectRoot(svc, "A directory to set as primary root", rootList)
+			if err != nil {
+				return err
 			}
-
 			return svc.WorkspaceService.SetPrimaryRoot(selected)
 		},
 	}

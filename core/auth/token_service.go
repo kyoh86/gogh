@@ -39,12 +39,13 @@ type TokenEntry struct {
 }
 
 func (t TokenEntry) String() string {
-	return t.Token.AccessToken + "@" + t.Host + hostOwnerSeparator + t.Owner
+	return "*****" + "@" + t.Host + hostOwnerSeparator + t.Owner
 }
 
 // TokenStore is a service for saving and loading tokens
 type TokenStore store.Store[TokenService]
 
+// ErrTokenNotFound is returned when a token is not found
 var ErrTokenNotFound = errors.New("no token found")
 
 type tokenServiceImpl struct {

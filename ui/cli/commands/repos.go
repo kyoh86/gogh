@@ -17,6 +17,9 @@ import (
 )
 
 func quoteEnums(values []string) string {
+	if len(values) == 0 {
+		return ""
+	}
 	quoted := make([]string, 0, len(values))
 	for _, v := range values {
 		quoted = append(quoted, strconv.Quote(v))

@@ -10,8 +10,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type AuthenticateService struct {
-}
+type AuthenticateService struct{}
 
 func NewAuthenticateService() *AuthenticateService {
 	return &AuthenticateService{}
@@ -46,8 +45,10 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 	// Poll for token
 	var token *Token
 	eg.Go(func() error {
-		deviceCodeResp.Interval++ // Add a second for safety
-		resp, err := config.DeviceAccessToken(ctx, deviceCodeResp)
+		// copy deviceCodeResp to avoid conflict with the other goroutine
+		codeResp := *deviceCodeResp
+		codeResp.Interval++ // Add a second for safety; the server may not be ready yet
+		resp, err := config.DeviceAccessToken(ctx, &codeResp)
 		if err != nil {
 			return fmt.Errorf("failed to poll for token: %w", err)
 		}

@@ -11,12 +11,22 @@ func TestQuoteEnums(t *testing.T) {
 		source []string
 	}{
 		{
-			title:  "minimul",
+			title:  "empty",
+			source: []string{},
+			want:   "",
+		},
+		{
+			title:  "nil",
+			source: nil,
+			want:   "",
+		},
+		{
+			title:  "minimal",
 			source: []string{"a", "b"},
 			want:   `"a" or "b"`,
 		},
 		{
-			title:  "not minimul",
+			title:  "not minimal",
 			source: []string{"a", "b", "c"},
 			want:   `"a", "b" or "c"`,
 		},
@@ -24,7 +34,7 @@ func TestQuoteEnums(t *testing.T) {
 		t.Run(testcase.title, func(t *testing.T) {
 			got := quoteEnums(testcase.source)
 			if testcase.want != got {
-				t.Errorf("%s != %s", testcase.want, got)
+				t.Errorf("quoteEnums(%v) = %q, want %q", testcase.source, got, testcase.want)
 			}
 		})
 	}

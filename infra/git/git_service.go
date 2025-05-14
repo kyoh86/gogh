@@ -12,19 +12,7 @@ import (
 )
 
 type GitService struct {
-	// Dependencies
 	auth transport.AuthMethod
-}
-
-// NewService creates a new Service instance with the given username and password
-// for HTTP basic authentication.
-func NewAuthenticatedService(username string, password string) *GitService {
-	return &GitService{
-		auth: &http.BasicAuth{
-			Username: username,
-			Password: password,
-		},
-	}
 }
 
 // NewService creates a new Service instance without authentication.
@@ -34,11 +22,16 @@ func NewService() *GitService {
 
 // AuthenticateWithUsernamePassword implements git.GitService.
 func (s *GitService) AuthenticateWithUsernamePassword(_ context.Context, username string, password string) (coregit.GitService, error) {
-	return NewAuthenticatedService(username, password), nil
+	return &GitService{
+		auth: &http.BasicAuth{
+			Username: username,
+			Password: password,
+		},
+	}, nil
 }
 
 // Clone clones a remote repository to a local path.
-func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, opts coregit.CloneOptions) error {
+func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, _ coregit.CloneOptions) error {
 	_, err := git.PlainCloneContext(ctx, localPath, false, &git.CloneOptions{
 		URL:  remoteURL,
 		Auth: s.auth,
@@ -52,7 +45,8 @@ func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath stri
 	return err
 }
 
-func (s *GitService) Init(remoteURL, localPath string, isBare bool) error {
+// Init initializes a new git repository at the specified local path.
+func (s *GitService) Init(_ context.Context, remoteURL, localPath string, isBare bool, _ coregit.InitOptions) error {
 	repo, err := git.PlainInit(localPath, isBare)
 	if err != nil {
 		return err
@@ -91,6 +85,7 @@ func (s *GitService) SetRemotes(
 	return repo.SetConfig(cfg)
 }
 
+// SetDefaultRemotes sets the default remote repositories for a local git repository.
 func (s *GitService) SetDefaultRemotes(
 	ctx context.Context,
 	localPath string,
@@ -99,6 +94,7 @@ func (s *GitService) SetDefaultRemotes(
 	return s.SetRemotes(ctx, localPath, git.DefaultRemoteName, remotes)
 }
 
+// GetRemotes retrieves the remote repositories for a local git repository.
 func (s *GitService) GetRemotes(
 	ctx context.Context,
 	localPath string,
@@ -119,6 +115,7 @@ func (s *GitService) GetRemotes(
 	return remote.URLs, nil
 }
 
+// GetDefaultRemotes retrieves the default remote repositories for a local git repository.
 func (s *GitService) GetDefaultRemotes(
 	ctx context.Context,
 	localPath string,
@@ -126,5 +123,4 @@ func (s *GitService) GetDefaultRemotes(
 	return s.GetRemotes(ctx, localPath, git.DefaultRemoteName)
 }
 
-// Ensure GitService implements core.GitService
 var _ coregit.GitService = (*GitService)(nil)

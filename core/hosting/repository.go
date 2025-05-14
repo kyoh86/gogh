@@ -10,10 +10,10 @@ import (
 type Repository struct {
 	// Ref is a reference of the repository
 	Ref repository.Reference
-	// URL is a full URL for the repository (i.g.: "https://github.com/kyoh86/gogh")
+	// URL is a full URL for the repository (e.g.: "https://github.com/kyoh86/gogh")
 	URL string
 
-	// CloneURL is a clone URL for the repository (i.g.: "
+	// CloneURL is a clone URL for the repository (e.g.: "https://github.com/kyoh86/gogh.git")
 	CloneURL string
 
 	// UpdatedAt is the last updated time of the repository
@@ -21,11 +21,11 @@ type Repository struct {
 	// Parent is the parent repository if it is a fork
 	Parent *ParentRepository
 
-	// Description is a description of the repository (i.g.: "Gogh is a collection of themes for Gnome Terminal and Pantheon Terminal")
+	// Description is a description of the repository (e.g.: "Gogh is a collection of themes for Gnome Terminal and Pantheon Terminal")
 	Description string
-	// Homepage is a homepage of the repository (i.g.: "https://example.com")
+	// Homepage is a homepage of the repository (e.g.: "https://example.com")
 	Homepage string
-	// Language is a primary language of the repository (i.g.: "Go")
+	// Language is a primary language of the repository (e.g.: "Go")
 	Language string
 	// Archived is if the repository is archived
 	Archived bool

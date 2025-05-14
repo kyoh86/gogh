@@ -23,7 +23,7 @@ type yamlTokenHostEntryV0 struct {
 	Owners typ.Map[string, oauth2.Token] `yaml:"owners"`
 }
 
-// Load implements auth.TokenRepository.
+// Load implements store.Loader
 func (d *TokenStoreV0) Load(ctx context.Context, initial func() auth.TokenService) (auth.TokenService, error) {
 	var v yamlTokenServiceV0
 	source, err := d.Source()

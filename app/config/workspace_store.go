@@ -18,7 +18,7 @@ type tomlWorkspaceStore struct {
 	PrimaryRoot string           `toml:"primary_root,omitempty"`
 }
 
-// Load implements workspace.WorkspaceRepository.
+// Load implements store.Store.
 func (w *WorkspaceStore) Load(ctx context.Context, initial func() workspace.WorkspaceService) (workspace.WorkspaceService, error) {
 	var v tomlWorkspaceStore
 	source, err := w.Source()

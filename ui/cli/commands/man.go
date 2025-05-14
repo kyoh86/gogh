@@ -1,17 +1,23 @@
 package commands
 
 import (
+	"context"
 	"os"
 
+	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
 
-func NewManCommand() *cobra.Command {
+func NewManCommand(_ context.Context, _ *service.ServiceSet) *cobra.Command {
+	var (
+		manPagePath  string
+		usageDocPath string
+	)
 	cmd := &cobra.Command{
 		Use:    "man",
-		Short:  "Generate manual",
+		Short:  "Generate man pages and markdown usages",
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			facadeCommand := cmd.Parent()
@@ -29,21 +35,23 @@ func NewManCommand() *cobra.Command {
 				Title:   "GOGH",
 				Section: "1",
 			}
-			if err := os.MkdirAll("./doc/man", 0755); err != nil {
+			if err := os.MkdirAll(manPagePath, 0755); err != nil {
 				return err
 			}
-			if err := doc.GenManTree(facadeCommand, header, "./doc/man"); err != nil {
+			if err := doc.GenManTree(facadeCommand, header, manPagePath); err != nil {
 				return err
 			}
-			if err := os.MkdirAll("./doc/usage", 0755); err != nil {
+			if err := os.MkdirAll(usageDocPath, 0755); err != nil {
 				return err
 			}
 			facadeCommand.DisableAutoGenTag = true
-			if err := doc.GenMarkdownTree(facadeCommand, "./doc/usage"); err != nil {
+			if err := doc.GenMarkdownTree(facadeCommand, usageDocPath); err != nil {
 				return err
 			}
 			return nil
 		},
 	}
+	cmd.Flags().StringVarP(&manPagePath, "man", "", "./doc/man", "A path to save man pages")
+	cmd.Flags().StringVarP(&usageDocPath, "usage", "", "./doc/usage", "A path to save markdown usages")
 	return cmd
 }

@@ -44,7 +44,7 @@ func NewDefaultNameService() DefaultNameService {
 	}
 }
 
-// GetMap implements auth.DefaultsService
+// GetMap implements DefaultNameService
 func (d defaultNameServiceImpl) GetMap() map[string]string {
 	if d.hosts == nil {
 		return nil
@@ -52,7 +52,7 @@ func (d defaultNameServiceImpl) GetMap() map[string]string {
 	return d.hosts
 }
 
-// GetDefaultHost implements auth.DefaultsService
+// GetDefaultHost implements DefaultNameService
 func (d defaultNameServiceImpl) GetDefaultHost() string {
 	if d.defaultHost == "" {
 		return gogh.DefaultHost
@@ -60,20 +60,20 @@ func (d defaultNameServiceImpl) GetDefaultHost() string {
 	return d.defaultHost
 }
 
-// GetDefaultHostAndOwner implements auth.DefaultsService
+// GetDefaultHostAndOwner implements DefaultNameService
 func (d defaultNameServiceImpl) GetDefaultHostAndOwner() (host string, owner string) {
 	hostName := d.GetDefaultHost()
 	ownerName, _ := d.hosts.TryGet(hostName)
 	return hostName, ownerName
 }
 
-// GetDefaultOwnerFor implements auth.DefaultsService
+// GetDefaultOwnerFor implements DefaultNameService
 func (d defaultNameServiceImpl) GetDefaultOwnerFor(host string) (string, error) {
 	owner, _ := d.hosts.TryGet(host)
 	return owner, nil
 }
 
-// SetDefaultHost implements auth.DefaultsService
+// SetDefaultHost implements DefaultNameService
 func (d *defaultNameServiceImpl) SetDefaultHost(host string) error {
 	if err := ValidateHost(host); err != nil {
 		return err
@@ -83,7 +83,7 @@ func (d *defaultNameServiceImpl) SetDefaultHost(host string) error {
 	return nil
 }
 
-// SetDefaultOwnerFor implements auth.DefaultsService
+// SetDefaultOwnerFor implements DefaultNameService
 func (d *defaultNameServiceImpl) SetDefaultOwnerFor(host, owner string) error {
 	if err := ValidateHost(host); err != nil {
 		return err

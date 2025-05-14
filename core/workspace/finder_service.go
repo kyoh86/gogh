@@ -21,7 +21,7 @@ type FinderService interface {
 	// FindByReference retrieves a repository by its reference
 	FindByReference(ctx context.Context, ws WorkspaceService, reference repository.Reference) (*repository.Location, error)
 
-	// FindByPath retrieves a repository by its reference
+	// FindByPath retrieves a repository by its path
 	FindByPath(ctx context.Context, ws WorkspaceService, path string) (*repository.Location, error)
 
 	// ListAllRepository retrieves a list of repositories under all roots

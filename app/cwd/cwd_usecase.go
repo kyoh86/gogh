@@ -7,7 +7,7 @@ import (
 	"github.com/kyoh86/gogh/v3/core/workspace"
 )
 
-// UseCase defines the use case for listing repositories
+// UseCase defines the use case for listing repository locations
 type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
@@ -24,7 +24,7 @@ func NewUseCase(
 	}
 }
 
-// Execute retrieves a list of repositories under the specified workspace roots
+// Execute retrieves a list of repository locations under the specified workspace roots
 func (u *UseCase) Execute(ctx context.Context, path string) (*repository.Location, error) {
 	return u.finderService.FindByPath(ctx, u.workspaceService, path)
 }

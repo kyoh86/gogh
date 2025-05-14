@@ -13,8 +13,7 @@ import (
 	"github.com/kyoh86/gogh/v3/core/workspace"
 )
 
-type FinderService struct {
-}
+type FinderService struct{}
 
 func NewFinderService() *FinderService {
 	return &FinderService{}

@@ -12,15 +12,15 @@ var (
 	ErrTooManySlashes = errors.New("too many slashes")
 )
 
+// ReferenceParser will parse any string as a Reference.
+//
+// If it is clear that the string has host, user and name explicitly,
+// use "NewReference" instead to build Reference.
 type ReferenceParser interface {
 	ParseWithAlias(s string) (*ReferenceWithAlias, error)
 	Parse(s string) (*Reference, error)
 }
 
-// ReferenceParser will parse any string as a Reference.
-//
-// If it is clear that the string has host, user and name explicitly,
-// use "NewReference" instead to build Reference.
 type referenceParserImpl struct {
 	defaultHost  string
 	defaultOwner string
@@ -38,7 +38,7 @@ func (p *referenceParserImpl) ParseWithAlias(s string) (*ReferenceWithAlias, err
 		if err != nil {
 			return nil, err
 		}
-		return &ReferenceWithAlias{Reference: *ref}, err
+		return &ReferenceWithAlias{Reference: *ref}, nil
 	case 2:
 		ref, err := p.Parse(parts[0])
 		if err != nil {
@@ -49,7 +49,7 @@ func (p *referenceParserImpl) ParseWithAlias(s string) (*ReferenceWithAlias, err
 			return nil, err
 		}
 		if alias.String() == ref.String() {
-			return &ReferenceWithAlias{Reference: *ref}, err
+			return &ReferenceWithAlias{Reference: *ref}, nil
 		}
 		return &ReferenceWithAlias{Reference: *ref, Alias: alias}, nil
 	default:
@@ -81,8 +81,9 @@ func parseSiblingReference(base Reference, s string) (*Reference, error) {
 
 // Parse a string and build a Reference.
 //
-// If the string does not have a host or a user explicitly, they will be
-// replaced with a default host and default owner.
+// The string will be separated host/owner/name.
+// If it does not have a host or a user explicitly, they will be
+// replaced with a default-host and default-owner.
 func (p *referenceParserImpl) Parse(s string) (*Reference, error) {
 	parts := strings.Split(s, "/")
 	var host, owner, name string

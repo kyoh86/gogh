@@ -11,7 +11,7 @@ import (
 
 type FlagsStoreV0 struct{}
 
-// Load implements repository.DefaultNAmeRepositoryOld.
+// Load implements store.Loader
 func (d *FlagsStoreV0) Load(ctx context.Context, initial func() *Flags) (*Flags, error) {
 	v := initial()
 	source, err := d.Source()
@@ -33,6 +33,7 @@ func NewFlagsStoreV0() *FlagsStoreV0 {
 	return &FlagsStoreV0{}
 }
 
+// Source implements store.Loader
 func (d *FlagsStoreV0) Source() (string, error) {
 	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flag.yaml")
 	if err != nil {

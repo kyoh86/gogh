@@ -5,20 +5,25 @@ import (
 	"time"
 )
 
+// RepositoryFormat is an interface that defines a method to format a repository
 type RepositoryFormat interface {
 	Format(r Repository) (string, error)
 }
 
+// RepositoryFormatFunc is a function type that implements the RepositoryFormat interface
 type RepositoryFormatFunc func(Repository) (string, error)
 
+// Format calls the function itself to format the repository
 func (f RepositoryFormatFunc) Format(r Repository) (string, error) {
 	return f(r)
 }
 
+// RepositoryFormatRef formats the repository reference as a string
 var RepositoryFormatRef = RepositoryFormatFunc(func(r Repository) (string, error) {
 	return r.Ref.String(), nil
 })
 
+// RepositoryFormatURL formats the repository URL as a string
 var RepositoryFormatURL = RepositoryFormatFunc(func(r Repository) (string, error) {
 	return r.URL, nil
 })
@@ -30,10 +35,11 @@ type jsonRef struct {
 }
 
 type jsonParent struct {
-	Ref      jsonRef
-	CloneURL string `json:"cloneUrl,omitempty"`
+	Ref      jsonRef `json:"ref"`
+	CloneURL string  `json:"cloneUrl,omitempty"`
 }
 
+// RepositoryFormatJSON formats the repository as a JSON string in oneline
 var RepositoryFormatJSON = RepositoryFormatFunc(func(r Repository) (string, error) {
 	j := struct {
 		Ref         jsonRef     `json:"ref"`

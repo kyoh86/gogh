@@ -6,6 +6,10 @@ import (
 )
 
 // LocationFormat defines the interface for formatting local repository references
+// to a string representation.
+// It is used to convert a local repository reference to a formatted string.
+// This is useful for displaying the reference in a user-friendly way or for
+// logging purposes.
 type LocationFormat interface {
 	Format(ref Location) (string, error)
 }
@@ -18,25 +22,28 @@ func (f LocationFormatFunc) Format(ref Location) (string, error) {
 	return f(ref)
 }
 
-// LocalRepoFormatRelPath formats the local repository reference to its full path
+// LocationFormatFullPath formats the local repository reference to its full path
 var LocationFormatFullPath = LocationFormatFunc(func(ref Location) (string, error) {
 	return ref.FullPath(), nil
 })
 
-// LocalRepoFormatRelFilePath formats the local repository reference to its path
+// LocationFormatPath formats the local repository reference to its path
 var LocationFormatPath = LocationFormatFunc(func(ref Location) (string, error) {
 	return ref.Path(), nil
 })
 
 // LocationFormatJSON formats the local repository reference to a JSON string
 var LocationFormatJSON = LocationFormatFunc(func(ref Location) (string, error) {
-	buf, _ := json.Marshal(map[string]any{
+	buf, err := json.Marshal(map[string]any{
 		"fullPath": ref.FullPath(),
 		"path":     ref.Path(),
 		"host":     ref.Host(),
 		"owner":    ref.Owner(),
 		"name":     ref.Name(),
 	})
+	if err != nil {
+		return "", err
+	}
 	return string(buf), nil
 })
 

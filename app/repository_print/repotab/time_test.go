@@ -7,52 +7,76 @@ import (
 	testtarget "github.com/kyoh86/gogh/v3/app/repository_print/repotab"
 )
 
-func TestFuzzyAgoAbbr(t *testing.T) {
-	now, err := time.Parse(time.RFC3339, "2021-05-01T01:00:00.000Z")
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, testcase := range []struct {
-		title string
-		now   time.Time
-		at    time.Time
-		want  string
+func TestFormatTimeAgo(t *testing.T) {
+	now := time.Date(2023, 5, 1, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name     string
+		at       time.Time
+		expected string
 	}{
 		{
-			title: "now",
-			now:   now,
-			at:    now,
-			want:  "0m",
+			name:     "just now",
+			at:       now,
+			expected: "now",
 		},
 		{
-			title: "59m59.999s",
-			now:   now,
-			at:    now.Add(-59*time.Minute - 59*time.Second - 999*time.Millisecond),
-			want:  "59m",
+			name:     "10 minutes ago",
+			at:       now.Add(-10 * time.Minute),
+			expected: "10m",
 		},
 		{
-			title: "23h59m59.999s",
-			now:   now,
-			at:    now.Add(-23*time.Hour - 59*time.Minute - 59*time.Second - 999*time.Millisecond),
-			want:  "23h",
+			name:     "2 hours ago",
+			at:       now.Add(-2 * time.Hour),
+			expected: "2h",
 		},
 		{
-			title: "29d23h59m59.999s",
-			now:   now,
-			at:    now.Add(-29*24*time.Hour - 23*time.Hour - 59*time.Minute - 59*time.Second - 999*time.Millisecond),
-			want:  "29d",
+			name:     "5 days ago",
+			at:       now.Add(-5 * 24 * time.Hour),
+			expected: "5d",
 		},
 		{
-			title: "30d",
-			now:   now,
-			at:    now.Add(-30 * 24 * time.Hour),
-			want:  "2021-04-01",
+			name:     "45 days ago",
+			at:       now.Add(-45 * 24 * time.Hour),
+			expected: "2023-03-17",
 		},
-	} {
-		t.Run(testcase.title, func(t *testing.T) {
-			got := testtarget.FuzzyAgoAbbr(testcase.now, testcase.at)
-			if got != testcase.want {
-				t.Errorf("want: %s, got: %s", testcase.want, got)
+		{
+			name:     "10 minutes in future",
+			at:       now.Add(10 * time.Minute),
+			expected: "now",
+		},
+		{
+			name:     "exactly 1 hour ago",
+			at:       now.Add(-1 * time.Hour),
+			expected: "1h",
+		},
+		{
+			name:     "exactly 1 day ago",
+			at:       now.Add(-24 * time.Hour),
+			expected: "1d",
+		},
+		{
+			name:     "abount 30 days ago",
+			at:       now.Add(-30*24*time.Hour + 1),
+			expected: "30d",
+		},
+		{
+			name:     "exactly 30 days ago",
+			at:       now.Add(-30 * 24 * time.Hour),
+			expected: "2023-04-01",
+		},
+		{
+			name:     "zero time",
+			at:       time.Time{},
+			expected: "0001-01-01",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := testtarget.FuzzyAgoAbbr(now, tt.at)
+			if result != tt.expected {
+				t.Errorf("FuzzyAgoAbbr() = %v, want %v", result, tt.expected)
 			}
 		})
 	}

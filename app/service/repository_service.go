@@ -18,6 +18,7 @@ type RepositoryService struct {
 	gitService       git.GitService
 }
 
+// NewRepositoryService creates a new instance of RepositoryService.
 func NewRepositoryService(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
@@ -30,21 +31,26 @@ func NewRepositoryService(
 	}
 }
 
-type TryCloneProgress int
+// TryCloneStatus indicates the progress of the TryClone operation.
+type TryCloneStatus int
 
 const (
-	TryCloneProgressEmpty TryCloneProgress = iota
-	TryCloneProgressRetry
+	// TryCloneStatusEmpty indicates that the repository is empty.
+	TryCloneStatusEmpty TryCloneStatus = iota
+	// TryCloneStatusRetry indicates that the repository does not exist and a retry is needed.
+	TryCloneStatusRetry
 )
 
-type TryCloneNotify func(n TryCloneProgress) error
+// TryCloneNotify is a callback function that is called during the TryClone process.
+type TryCloneNotify func(n TryCloneStatus) error
 
+// RetryLimit is a decorator for TryCloneNotify that limits the number of retries.
 func RetryLimit(limit int, notify TryCloneNotify) TryCloneNotify {
 	if notify == nil {
-		notify = func(n TryCloneProgress) error { return nil }
+		notify = func(n TryCloneStatus) error { return nil }
 	}
-	return func(n TryCloneProgress) error {
-		if n == TryCloneProgressRetry {
+	return func(n TryCloneStatus) error {
+		if n == TryCloneStatusRetry {
 			limit--
 			if limit <= 0 {
 				return errors.New("retry limit reached")
@@ -54,6 +60,7 @@ func RetryLimit(limit int, notify TryCloneNotify) TryCloneNotify {
 	}
 }
 
+// TryClone attempts to clone a repository with retry logic.
 func (s *RepositoryService) TryClone(
 	ctx context.Context,
 	repo *hosting.Repository,
@@ -61,7 +68,6 @@ func (s *RepositoryService) TryClone(
 	alias *repository.Reference,
 	notify TryCloneNotify,
 ) error {
-	// TryClone attempts to clone a repository with retry logic.
 	// Determine local path based on layout
 	targetRef := ref
 	if alias != nil {
@@ -99,15 +105,22 @@ func (s *RepositoryService) TryClone(
 	return nil
 }
 
-func cloneWithRetry(ctx context.Context, gitService git.GitService, layout workspace.LayoutService, ref repository.Reference, cloneURL, localPath string, notify TryCloneNotify) (err error) {
+func cloneWithRetry(
+	ctx context.Context,
+	gitService git.GitService,
+	layout workspace.LayoutService,
+	ref repository.Reference,
+	cloneURL, localPath string,
+	notify TryCloneNotify,
+) (err error) {
 	if notify == nil {
-		notify = func(n TryCloneProgress) error { return nil }
+		notify = func(n TryCloneStatus) error { return nil }
 	}
 	for {
 		err = gitService.Clone(ctx, cloneURL, localPath, git.CloneOptions{})
 		switch {
 		case errors.Is(err, git.ErrRepositoryNotExists):
-			if err := notify(TryCloneProgressRetry); err != nil {
+			if err := notify(TryCloneStatusRetry); err != nil {
 				return err
 			}
 		case err == nil:
@@ -117,10 +130,10 @@ func cloneWithRetry(ctx context.Context, gitService git.GitService, layout works
 			if err != nil {
 				return err
 			}
-			if err := gitService.Init(cloneURL, path, false); err != nil {
+			if err := gitService.Init(ctx, cloneURL, path, false, git.InitOptions{}); err != nil {
 				return err
 			}
-			if err := notify(TryCloneProgressEmpty); err != nil {
+			if err := notify(TryCloneStatusEmpty); err != nil {
 				return err
 			}
 			return nil

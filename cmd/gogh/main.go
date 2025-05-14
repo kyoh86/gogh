@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -31,7 +32,7 @@ func main() {
 }
 
 func run() error {
-	ctx := logger.NewLogger()
+	ctx := logger.NewLogger(context.Background())
 
 	flagsStore := config.NewFlagsStore()
 	flags, err := config.LoadAlternative(

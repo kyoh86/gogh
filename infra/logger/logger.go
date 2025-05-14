@@ -16,6 +16,7 @@ type StdoutLogHandler struct {
 }
 
 // HandleLog implements log.Handler.
+// It filters out error logs.
 func (h *StdoutLogHandler) HandleLog(e *log.Entry) error {
 	if e.Level >= log.ErrorLevel {
 		return nil
@@ -25,14 +26,14 @@ func (h *StdoutLogHandler) HandleLog(e *log.Entry) error {
 }
 
 // NewLogger creates a new logger instance.
-func NewLogger() context.Context {
+func NewLogger(ctx context.Context) context.Context {
 	errLog := level.New(cli.New(os.Stderr), log.ErrorLevel)
 	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stdout)}
 	level := log.InfoLevel
 	if os.Getenv("GOGH_DEBUG") == "1" {
 		level = log.DebugLevel
 	}
-	return log.NewContext(context.Background(), &log.Logger{
+	return log.NewContext(ctx, &log.Logger{
 		Handler: multi.New(stdLog, errLog),
 		Level:   level,
 	})

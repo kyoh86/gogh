@@ -17,14 +17,14 @@ type TokenStore struct{}
 type tomlTokenStore map[string]map[string]oauth2.Token
 
 func (d *TokenStore) Source() (string, error) {
-	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.yaml")
+	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
 	}
 	return path, nil
 }
 
-// Load implements auth.TokenRepository.
+// Load implements store.Store.
 func (d *TokenStore) Load(ctx context.Context, initial func() auth.TokenService) (auth.TokenService, error) {
 	var v tomlTokenStore
 	source, err := d.Source()
@@ -54,7 +54,7 @@ func (d *TokenStore) Load(ctx context.Context, initial func() auth.TokenService)
 	return svc, nil
 }
 
-// Save implements auth.TokenRepository.
+// Save implements store.Store.
 func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService, force bool) error {
 	if !ds.HasChanges() && !force {
 		return nil

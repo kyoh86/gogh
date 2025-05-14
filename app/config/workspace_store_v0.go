@@ -17,7 +17,7 @@ type yamlWorkspaceStoreV0 struct {
 	Roots []workspace.Root `yaml:"roots,omitempty"`
 }
 
-// Load implements workspace.WorkspaceRepository.
+// Load implements store.Loader
 func (w *WorkspaceStoreV0) Load(ctx context.Context, initial func() workspace.WorkspaceService) (workspace.WorkspaceService, error) {
 	var v yamlWorkspaceStoreV0
 	source, err := w.Source()

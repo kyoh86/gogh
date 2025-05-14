@@ -11,11 +11,11 @@ func TryCloneNotify(
 	ctx context.Context,
 	notify service.TryCloneNotify,
 ) service.TryCloneNotify {
-	return func(n service.TryCloneProgress) error {
+	return func(n service.TryCloneStatus) error {
 		switch n {
-		case service.TryCloneProgressEmpty:
+		case service.TryCloneStatusEmpty:
 			log.FromContext(ctx).Info("created empty repository")
-		case service.TryCloneProgressRetry:
+		case service.TryCloneStatusRetry:
 			log.FromContext(ctx).Info("waiting the remote repository is ready")
 		}
 		if notify != nil {
