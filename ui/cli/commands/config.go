@@ -36,16 +36,32 @@ func NewConfigCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 				return nil
 			}
 			var w strings.Builder
+			defaultNameSource, err := svc.DefaultNameStore.Source()
+			if err != nil {
+				return err
+			}
+			tokenSource, err := svc.TokenStore.Source()
+			if err != nil {
+				return err
+			}
+			flagsSource, err := svc.FlagsStore.Source()
+			if err != nil {
+				return err
+			}
+			workspaceSource, err := svc.WorkspaceStore.Source()
+			if err != nil {
+				return err
+			}
 			if err := t.Execute(&w, map[string]any{
-				"defaultNameFilePath": svc.DefaultNameSource,
-				"tokensFilePath":      svc.TokenSource,
-				"flagsFilePath":       svc.FlagsSource,
-				"workspaceFilePath":   svc.WorkspaceSource,
-				"roots":               svc.WorkspaceService.GetRoots(),
-				"defaultHost":         svc.DefaultNameService.GetDefaultHost(),
-				"defaultNames":        svc.DefaultNameService.GetMap(),
-				"tokens":              svc.TokenService.Entries(),
-				"flags":               flags,
+				"defaultNameSource": defaultNameSource,
+				"tokenSource":       tokenSource,
+				"flagsSource":       flagsSource,
+				"workspaceSource":   workspaceSource,
+				"roots":             svc.WorkspaceService.GetRoots(),
+				"defaultHost":       svc.DefaultNameService.GetDefaultHost(),
+				"defaultNames":      svc.DefaultNameService.GetMap(),
+				"tokens":            svc.TokenService.Entries(),
+				"flags":             flags,
 			}); err != nil {
 				log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")
 				return nil
