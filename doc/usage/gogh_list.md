@@ -10,7 +10,7 @@ gogh list [flags]
 
 ```
   -f, --format string   
-                        Print each local repository in a given format, where [format] can be one of "path",
+                        Print local repository in a given format, where [format] can be one of "path",
                         "full-path", "fields" and "fields:[separator]".
                         
                         - path:
