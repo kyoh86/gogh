@@ -2,9 +2,28 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/kyoh86/gogh/v3/app/repos"
+	"github.com/kyoh86/gogh/v3/core/repository"
 )
+
+func LocationFormatter(v string) (repository.LocationFormat, error) {
+	switch v {
+	case "", "rel-path", "rel", "path", "rel-file-path":
+		return repository.LocationFormatPath, nil
+	case "full-file-path", "full":
+		return repository.LocationFormatFullPath, nil
+	case "json":
+		return repository.LocationFormatJSON, nil
+	case "fields":
+		return repository.LocationFormatFields("\t"), nil
+	}
+	if strings.HasPrefix(v, "fields:") {
+		return repository.LocationFormatFields(v[len("fields:"):]), nil
+	}
+	return nil, fmt.Errorf("invalid format: %q", v)
+}
 
 type BundleDumpFlags struct {
 	File Path `yaml:"file,omitempty" toml:"file,omitempty"`

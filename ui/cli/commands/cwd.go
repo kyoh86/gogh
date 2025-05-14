@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/cwd"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
@@ -20,7 +21,7 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command 
 		Short: "Print the local reposiotry in current working directory",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			formatter, err := format.Formatter()
+			formatter, err := config.LocationFormatter(format.String())
 			if err != nil {
 				return err
 			}

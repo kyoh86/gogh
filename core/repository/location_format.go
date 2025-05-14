@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-//TODO: move to app/location_format/location_format_usecase.go
-
 // LocationFormat defines the interface for formatting local repository references
 type LocationFormat interface {
 	Format(ref Location) (string, error)

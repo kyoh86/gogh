@@ -21,7 +21,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command
 		Short:   "List local repositories",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			formatter, err := format.Formatter()
+			formatter, err := config.LocationFormatter(format.String())
 			if err != nil {
 				return err
 			}

@@ -2,9 +2,8 @@ package flags
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -32,7 +31,7 @@ func (f LocationFormat) String() string {
 }
 
 func (f *LocationFormat) Set(v string) error {
-	_, err := formatter(v)
+	_, err := config.LocationFormatter(v)
 	if err != nil {
 		return fmt.Errorf("parse local repo format: %w", err)
 	}
@@ -42,27 +41,6 @@ func (f *LocationFormat) Set(v string) error {
 
 func (f LocationFormat) Type() string {
 	return "string"
-}
-
-func (f LocationFormat) Formatter() (repository.LocationFormat, error) {
-	return formatter(string(f))
-}
-
-func formatter(v string) (repository.LocationFormat, error) {
-	switch v {
-	case "", "rel-path", "rel", "path", "rel-file-path":
-		return repository.LocationFormatPath, nil
-	case "full-file-path", "full":
-		return repository.LocationFormatFullPath, nil
-	case "json":
-		return repository.LocationFormatJSON, nil
-	case "fields":
-		return repository.LocationFormatFields("\t"), nil
-	}
-	if strings.HasPrefix(v, "fields:") {
-		return repository.LocationFormatFields(v[len("fields:"):]), nil
-	}
-	return nil, fmt.Errorf("invalid format: %q", v)
 }
 
 const LocationFormatShortUsage = `Print local repository in a given format, where [format] can be one of "path", "full-path", "json", "fields" or "fields:[separator]".`

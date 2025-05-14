@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/repos"
+	"github.com/kyoh86/gogh/v3/app/repository_print"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/flags"
 	"github.com/spf13/cobra"
@@ -25,26 +26,17 @@ func quoteEnums(values []string) string {
 func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var (
 		opts   repos.Options
-		format flags.RepositoryFormat
+		format string
 	)
 	cmd := &cobra.Command{
 		Use:   "repos",
 		Short: "List remote repositories",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			// Setup output formatter
-			printer, err := format.Formatter(os.Stdout)
-			if err != nil {
-				return fmt.Errorf("failed to create output formatter: %w", err)
-			}
-			defer printer.Close()
-
-			useCase := repos.NewUseCase(svc.HostingService)
-			for repo, err := range useCase.Execute(cmd.Context(), opts) {
-				if err != nil {
-					return fmt.Errorf("failed to list repositories: %w", err)
-				}
-				printer.Print(*repo)
+			reposUseCase := repos.NewUseCase(svc.HostingService)
+			printUseCase := repository_print.NewUseCase(os.Stdout, format)
+			if err := printUseCase.Execute(reposUseCase.Execute(cmd.Context(), opts)); err != nil {
+				return fmt.Errorf("failed to list repositories: %w", err)
 			}
 			return nil
 		},
