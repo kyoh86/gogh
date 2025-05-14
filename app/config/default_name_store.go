@@ -10,8 +10,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-type DefaultNameStore struct {
-}
+type DefaultNameStore struct{}
 
 type tomlDefaultNameStore struct {
 	Hosts       map[string]string `toml:"hosts,omitempty"`
