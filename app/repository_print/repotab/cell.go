@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/ui/cli/view"
 	"github.com/morikuni/aec"
 )
 
@@ -64,5 +63,5 @@ var AttributesCell = CellBuildFunc(func(r hosting.Repository) (content string, s
 })
 
 var UpdatedAtCell = CellBuildFunc(func(r hosting.Repository) (content string, style aec.ANSI) {
-	return view.FuzzyAgoAbbr(time.Now(), r.UpdatedAt), aec.LightBlackF
+	return FuzzyAgoAbbr(time.Now(), r.UpdatedAt), aec.LightBlackF
 })

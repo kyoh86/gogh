@@ -1,10 +1,10 @@
-package view_test
+package repotab_test
 
 import (
 	"testing"
 	"time"
 
-	testtarget "github.com/kyoh86/gogh/v3/ui/cli/view"
+	testtarget "github.com/kyoh86/gogh/v3/app/repository_print/repotab"
 )
 
 func TestFuzzyAgoAbbr(t *testing.T) {
