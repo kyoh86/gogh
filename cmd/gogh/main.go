@@ -8,8 +8,8 @@ import (
 	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/gogh"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	infraconf "github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/kyoh86/gogh/v3/infra/filesystem"
 	"github.com/kyoh86/gogh/v3/infra/git"
 	"github.com/kyoh86/gogh/v3/infra/github"
@@ -47,7 +47,7 @@ func run() error {
 	defaultNameStore := config.NewDefaultNameStore()
 	defaultNameService, err := config.LoadAlternative(
 		ctx,
-		infraconf.NewDefaultNameService,
+		repository.NewDefaultNameService,
 		defaultNameStore,
 		config.NewDefaultNameStoreV0(),
 	)
@@ -96,11 +96,10 @@ func run() error {
 		AuthenticateService: github.NewAuthenticateService(),
 		GitService:          git.NewService(),
 	}
-	cmd, err := cli.NewApp(ctx, svc)
+	cmd, err := cli.NewApp(ctx, gogh.AppName, fmt.Sprintf("%s-%s (%s)", version, commit, date), svc)
 	if err != nil {
 		return fmt.Errorf("failed to create app: %w", err)
 	}
-	cmd.Version = fmt.Sprintf("%s-%s (%s)", version, commit, date)
 
 	return cmd.ExecuteContext(ctx)
 }

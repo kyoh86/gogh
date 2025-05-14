@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 	"github.com/spf13/cobra"
@@ -11,10 +10,12 @@ import (
 
 func NewApp(
 	ctx context.Context,
+	appName string,
+	version string,
 	svc *service.ServiceSet,
 ) (*cobra.Command, error) {
 	appCommand := &cobra.Command{
-		Use:   config.AppName,
+		Use:   appName,
 		Short: "GO GitHub local repository manager",
 	}
 

@@ -18,7 +18,7 @@ func TestReferenceParser(t *testing.T) {
 		name   = "gogh"
 	)
 	t.Run("Empty", func(t *testing.T) {
-		var parser testtarget.ReferenceParser
+		parser := testtarget.NewReferenceParser("", "")
 		for _, testcase := range []struct {
 			title  string
 			source string

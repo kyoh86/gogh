@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-)
 
-const AppName = "gogh"
+	"github.com/kyoh86/gogh/v3/core/gogh"
+)
 
 // appContextPath returns the path to the app's configuration file.
 //
@@ -23,5 +23,5 @@ func appContextPath(envar string, getDir func() (string, error), rel ...string) 
 	if err != nil {
 		return "", fmt.Errorf("search app file dir for %s: %w", rel, err)
 	}
-	return filepath.Join(append([]string{dir, AppName}, rel...)...), nil
+	return filepath.Join(append([]string{dir, gogh.AppName}, rel...)...), nil
 }

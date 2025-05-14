@@ -10,6 +10,7 @@ import (
 	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v3/app/auth_login"
 	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v3/core/gogh"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,7 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comm
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if f.Host == "" {
-				f.Host = "github.com"
+				f.Host = gogh.DefaultHost
 				if err := huh.NewForm(huh.NewGroup(
 					huh.NewInput().
 						Title("Host name").

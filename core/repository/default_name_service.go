@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"github.com/kyoh86/gogh/v3/core/gogh"
 	"github.com/kyoh86/gogh/v3/core/store"
+	"github.com/kyoh86/gogh/v3/core/typ"
 )
 
 // DefaultNameService provides access to default configuration settings
@@ -26,3 +28,82 @@ type DefaultNameService interface {
 
 	store.Content
 }
+
+// defaultNameServiceImpl implements the DefaultNameService interface
+type defaultNameServiceImpl struct {
+	hosts       typ.Map[string, string]
+	defaultHost string
+	changed     bool
+}
+
+// NewDefaultNameService creates a new DefaultNameService instance
+func NewDefaultNameService() DefaultNameService {
+	return &defaultNameServiceImpl{
+		hosts:       typ.Map[string, string]{},
+		defaultHost: gogh.DefaultHost,
+	}
+}
+
+// GetMap implements auth.DefaultsService
+func (d defaultNameServiceImpl) GetMap() map[string]string {
+	if d.hosts == nil {
+		return nil
+	}
+	return d.hosts
+}
+
+// GetDefaultHost implements auth.DefaultsService
+func (d defaultNameServiceImpl) GetDefaultHost() string {
+	if d.defaultHost == "" {
+		return gogh.DefaultHost
+	}
+	return d.defaultHost
+}
+
+// GetDefaultHostAndOwner implements auth.DefaultsService
+func (d defaultNameServiceImpl) GetDefaultHostAndOwner() (host string, owner string) {
+	hostName := d.GetDefaultHost()
+	ownerName, _ := d.hosts.TryGet(hostName)
+	return hostName, ownerName
+}
+
+// GetDefaultOwnerFor implements auth.DefaultsService
+func (d defaultNameServiceImpl) GetDefaultOwnerFor(host string) (string, error) {
+	owner, _ := d.hosts.TryGet(host)
+	return owner, nil
+}
+
+// SetDefaultHost implements auth.DefaultsService
+func (d *defaultNameServiceImpl) SetDefaultHost(host string) error {
+	if err := ValidateHost(host); err != nil {
+		return err
+	}
+	d.defaultHost = host
+	d.changed = true
+	return nil
+}
+
+// SetDefaultOwnerFor implements auth.DefaultsService
+func (d *defaultNameServiceImpl) SetDefaultOwnerFor(host, owner string) error {
+	if err := ValidateHost(host); err != nil {
+		return err
+	}
+	if err := ValidateOwner(owner); err != nil {
+		return err
+	}
+	d.hosts.Set(host, owner)
+	d.changed = true
+	return nil
+}
+
+// HasChanges implements DefaultNameService.
+func (d *defaultNameServiceImpl) HasChanges() bool {
+	return d.changed
+}
+
+// MarkSaved implements DefaultNameService.
+func (d *defaultNameServiceImpl) MarkSaved() {
+	d.changed = false
+}
+
+var _ DefaultNameService = (*defaultNameServiceImpl)(nil)
