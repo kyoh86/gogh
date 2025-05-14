@@ -46,26 +46,27 @@ type HostingService interface {
 	) (*Repository, error)
 }
 
-// BooleanFilter represents a filter state for boolean repository attributes
-type BooleanFilter int
+// BoolFilter represents a filter state for boolean repository attributes
+type BoolFilter int
 
 const (
-	// BooleanFilterNone indicates no filtering should be applied
-	BooleanFilterNone BooleanFilter = iota
-	// BooleanFilterTrue filters for repositories where the attribute is true
-	BooleanFilterTrue
-	// BooleanFilterFalse filters for repositories where the attribute is false
-	BooleanFilterFalse
+	// BoolFilterBoth indicates no filtering should be applied
+	BoolFilterBoth BoolFilter = iota
+
+	// BoolFilterTrue filters for repositories where the attribute is true
+	BoolFilterTrue
+	// BoolFilterFalse filters for repositories where the attribute is false
+	BoolFilterFalse
 )
 
 // AsBoolPtr converts the BooleanFilter to a pointer to a boolean value
-func (f BooleanFilter) AsBoolPtr() *bool {
+func (f BoolFilter) AsBoolPtr() *bool {
 	switch f {
-	case BooleanFilterNone:
+	case BoolFilterBoth:
 		return nil
-	case BooleanFilterTrue:
+	case BoolFilterTrue:
 		return typ.Ptr(true)
-	case BooleanFilterFalse:
+	case BoolFilterFalse:
 		return typ.Ptr(false)
 	default:
 		panic("invalid boolean filter")
@@ -83,9 +84,9 @@ type ListRepositoryOptions struct {
 	// Limit specifies the maximum number of repositories to return
 	Limit int
 	// IsFork filters for repositories that are forks
-	IsFork BooleanFilter
+	IsFork BoolFilter
 	// IsArchived filters for repositories that are archived
-	IsArchived BooleanFilter
+	IsArchived BoolFilter
 }
 
 // Ordering options for repository connections

@@ -43,6 +43,7 @@ type HostingOptions = hosting.ForkRepositoryOptions
 type Options struct {
 	TryCloneNotify service.TryCloneNotify
 	HostingOptions
+	Target string
 }
 
 func (uc *UseCase) parseRefs(source, target string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
@@ -73,8 +74,8 @@ func (uc *UseCase) parseRefs(source, target string) (*repository.Reference, *rep
 }
 
 // Execute forks a repository and clones it to the local machine
-func (uc *UseCase) Execute(ctx context.Context, source string, target string, opts Options) error {
-	ref, targetRef, err := uc.parseRefs(source, target)
+func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) error {
+	ref, targetRef, err := uc.parseRefs(source, opts.Target)
 	if err != nil {
 		return err
 	}

@@ -39,8 +39,8 @@ type Options struct {
 }
 
 // Execute performs the clone operation
-func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) error {
-	ref, err := uc.referenceParser.ParseWithAlias(refs)
+func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Options) error {
+	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
 	if err != nil {
 		return err
 	}

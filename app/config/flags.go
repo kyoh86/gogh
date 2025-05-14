@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/core/repository"
 )
 
@@ -61,6 +60,21 @@ type CwdFlags struct {
 	Format string `yaml:"format,omitempty" toml:"format,omitempty"`
 }
 
+type ReposFlags struct {
+	Limit       int      `yaml:"limit,omitempty" toml:"limit,omitempty"`
+	Public      bool     `yaml:"public,omitempty" toml:"public,omitempty"`
+	Private     bool     `yaml:"private,omitempty" toml:"private,omitempty"`
+	Fork        bool     `yaml:"fork,omitempty" toml:"fork,omitempty"`
+	NotFork     bool     `yaml:"notFork,omitempty" toml:"notFork,omitempty"`
+	Archived    bool     `yaml:"archived,omitempty" toml:"archived,omitempty"`
+	NotArchived bool     `yaml:"notArchived,omitempty" toml:"notArchived,omitempty"`
+	Format      string   `yaml:"format,omitempty" toml:"format,omitempty"`
+	Color       string   `yaml:"color,omitempty" toml:"color,omitempty"`
+	Relation    []string `yaml:"relation,omitempty" toml:"relation,omitempty"`
+	Sort        string   `yaml:"sort,omitempty" toml:"sort,omitempty"`
+	Order       string   `yaml:"order,omitempty" toml:"order,omitempty"`
+}
+
 type ListFlags struct {
 	Limit   int    `yaml:"limit,omitempty" toml:"limit,omitempty"`
 	Query   string `yaml:"-" toml:"-"`
@@ -80,7 +94,7 @@ type Flags struct {
 	List          ListFlags          `yaml:"list,omitempty" toml:"list,omitempty"`
 	Cwd           CwdFlags           `yaml:"cwd,omitempty" toml:"cwd,omitempty"`
 	Create        CreateFlags        `yaml:"create,omitempty" toml:"create,omitempty"`
-	Repos         repos.Options      `yaml:"repos,omitempty" toml:"repos,omitempty"`
+	Repos         ReposFlags         `yaml:"repos,omitempty" toml:"repos,omitempty"`
 	Fork          ForkFlags          `yaml:"fork,omitempty" toml:"fork,omitempty"`
 }
 

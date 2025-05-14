@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/app/repository_print"
 	"github.com/kyoh86/gogh/v3/app/service"
@@ -25,7 +26,7 @@ func quoteEnums(values []string) string {
 
 func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
 	var (
-		opts   repos.Options
+		opts   config.ReposFlags
 		format string
 	)
 	cmd := &cobra.Command{
@@ -33,9 +34,23 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Comman
 		Short: "List remote repositories",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			ctx := cmd.Context()
 			reposUseCase := repos.NewUseCase(svc.HostingService)
 			printUseCase := repository_print.NewUseCase(os.Stdout, format)
-			if err := printUseCase.Execute(reposUseCase.Execute(cmd.Context(), opts)); err != nil {
+			if err := printUseCase.Execute(ctx, reposUseCase.Execute(ctx, repos.Options{
+				Limit:       opts.Limit,
+				Public:      opts.Public,
+				Private:     opts.Private,
+				Fork:        opts.Fork,
+				NotFork:     opts.NotFork,
+				Archived:    opts.Archived,
+				NotArchived: opts.NotArchived,
+				Format:      opts.Format,
+				Color:       opts.Color,
+				Relation:    opts.Relation,
+				Sort:        opts.Sort,
+				Order:       opts.Order,
+			})); err != nil {
 				return fmt.Errorf("failed to list repositories: %w", err)
 			}
 			return nil

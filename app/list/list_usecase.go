@@ -25,14 +25,19 @@ func NewUseCase(
 	}
 }
 
-type Options = workspace.ListOptions
+type ListOptions = workspace.ListOptions
+
+type Options struct {
+	Primary bool
+	ListOptions
+}
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (u *UseCase) Execute(ctx context.Context, primary bool, opts Options) iter.Seq2[*repository.Location, error] {
+func (u *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*repository.Location, error] {
 	ws := u.workspaceService
-	if primary {
+	if opts.Primary {
 		layout := ws.GetLayoutFor(ws.GetPrimaryRoot())
-		return u.finderService.ListRepositoryInRoot(ctx, layout, opts)
+		return u.finderService.ListRepositoryInRoot(ctx, layout, opts.ListOptions)
 	}
-	return u.finderService.ListAllRepository(ctx, ws, opts)
+	return u.finderService.ListAllRepository(ctx, ws, opts.ListOptions)
 }

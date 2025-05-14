@@ -28,8 +28,9 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 				HostingOptions: fork.HostingOptions{
 					DefaultBranchOnly: f.DefaultBranchOnly,
 				},
+				Target: f.To,
 			}
-			if err := useCase.Execute(ctx, refs[0], f.To, opts); err != nil {
+			if err := useCase.Execute(ctx, refs[0], opts); err != nil {
 				log.FromContext(ctx).WithError(err).Error("failed to fork the repository")
 				return nil
 			}

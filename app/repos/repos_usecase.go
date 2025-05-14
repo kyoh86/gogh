@@ -20,31 +20,25 @@ func NewUseCase(hostingService hosting.HostingService) *UseCase {
 	}
 }
 
-// TODO: app/config/flags.go? こいつだけ場所が変
 type Options struct {
-	Limit       int      `yaml:"limit,omitempty" toml:"limit,omitempty"`
-	Public      bool     `yaml:"public,omitempty" toml:"public,omitempty"`
-	Private     bool     `yaml:"private,omitempty" toml:"private,omitempty"`
-	Fork        bool     `yaml:"fork,omitempty" toml:"fork,omitempty"`
-	NotFork     bool     `yaml:"notFork,omitempty" toml:"notFork,omitempty"`
-	Archived    bool     `yaml:"archived,omitempty" toml:"archived,omitempty"`
-	NotArchived bool     `yaml:"notArchived,omitempty" toml:"notArchived,omitempty"`
-	Format      string   `yaml:"format,omitempty" toml:"format,omitempty"`
-	Color       string   `yaml:"color,omitempty" toml:"color,omitempty"`
-	Relation    []string `yaml:"relation,omitempty" toml:"relation,omitempty"`
-	Sort        string   `yaml:"sort,omitempty" toml:"sort,omitempty"`
-	Order       string   `yaml:"order,omitempty" toml:"order,omitempty"`
+	Limit       int
+	Public      bool
+	Private     bool
+	Fork        bool
+	NotFork     bool
+	Archived    bool
+	NotArchived bool
+	Format      string
+	Color       string
+	Relation    []string
+	Sort        string
+	Order       string
 }
 
 var relationMap = map[string]hosting.RepositoryAffiliation{
 	"owner":               hosting.RepositoryAffiliationOwner,
 	"organization-member": hosting.RepositoryAffiliationOrganizationMember,
 	"collaborator":        hosting.RepositoryAffiliationCollaborator,
-}
-var RelationAccepts = []string{
-	"owner",
-	"organization-member",
-	"collaborator",
 }
 var sortMap = map[string]hosting.RepositoryOrderField{
 	"created-at": hosting.RepositoryOrderFieldCreatedAt,
@@ -93,16 +87,16 @@ func convertOpts(f Options) (hosting.ListRepositoryOptions, error) {
 
 	// Set fork and archive filters
 	if f.Fork {
-		opts.IsFork = hosting.BooleanFilterTrue
+		opts.IsFork = hosting.BoolFilterTrue
 	}
 	if f.NotFork {
-		opts.IsFork = hosting.BooleanFilterFalse
+		opts.IsFork = hosting.BoolFilterFalse
 	}
 	if f.Archived {
-		opts.IsArchived = hosting.BooleanFilterTrue
+		opts.IsArchived = hosting.BoolFilterTrue
 	}
 	if f.NotArchived {
-		opts.IsArchived = hosting.BooleanFilterFalse
+		opts.IsArchived = hosting.BoolFilterFalse
 	}
 
 	// Set relation filters

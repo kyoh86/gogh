@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Khan/genqlient/graphql"
-	github "github.com/google/go-github/v69/github"
+	"github.com/google/go-github/v69/github"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
@@ -32,9 +32,9 @@ type Connection struct {
 const (
 	GlobalHost    = "github.com"
 	GlobalAPIHost = "api.github.com"
-)
 
-const ClientID = "Ov23li6aEWIxek6F8P5L"
+	ClientID = "Ov23li6aEWIxek6F8P5L"
+)
 
 func getClient(ctx context.Context, host string, token *auth.Token) *Connection {
 	var source oauth2.TokenSource
@@ -469,15 +469,15 @@ func convertOwnerAffiliations(affiliations []hosting.RepositoryAffiliation) []gi
 }
 
 // convertBooleanFilter converts hosting.BooleanFilter to *bool
-func convertBooleanFilter(filter hosting.BooleanFilter) *bool {
+func convertBooleanFilter(filter hosting.BoolFilter) *bool {
 	switch filter {
-	case hosting.BooleanFilterTrue:
+	case hosting.BoolFilterTrue:
 		value := true
 		return &value
-	case hosting.BooleanFilterFalse:
+	case hosting.BoolFilterFalse:
 		value := false
 		return &value
-	default: // BooleanFilterNone
+	default: // BoolFilterNone
 		return nil
 	}
 }

@@ -28,10 +28,13 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command
 
 			ctx := cmd.Context()
 			opts := list.Options{
-				Query: f.Query,
-				Limit: f.Limit,
+				Primary: f.Primary,
+				ListOptions: list.ListOptions{
+					Query: f.Query,
+					Limit: f.Limit,
+				},
 			}
-			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, f.Primary, opts) {
+			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, opts) {
 				if err != nil {
 					log.FromContext(ctx).WithFields(log.Fields{
 						"error": err,

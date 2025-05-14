@@ -65,6 +65,7 @@ func NewAuthLogoutCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 		Aliases: []string{"signout", "remove"},
 		Short:   "Logout from the host and owner",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
 			indices, err := checkFlags(cmd, args)
 			if err != nil {
 				return err
@@ -74,7 +75,7 @@ func NewAuthLogoutCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 
 			for _, target := range owners {
 				log.FromContext(cmd.Context()).WithField("target", target).Info("logout from")
-				if err := logoutUseCase.Execute(target[0], target[1]); err != nil {
+				if err := logoutUseCase.Execute(ctx, target[0], target[1]); err != nil {
 					log.FromContext(cmd.Context()).WithField("target", target).Errorf("failed to delete token: %s", err)
 					continue
 				}

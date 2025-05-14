@@ -1,6 +1,7 @@
 package repository_print
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"iter"
@@ -35,7 +36,7 @@ func NewUseCase(w io.Writer, format string) *UseCase {
 	}
 }
 
-func (u *UseCase) Execute(r iter.Seq2[*hosting.Repository, error]) error {
+func (u *UseCase) Execute(_ context.Context, r iter.Seq2[*hosting.Repository, error]) error {
 	printer, err := repositoryFormatter(u.format, u.w)
 	if err != nil {
 		return err
