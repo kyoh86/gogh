@@ -9,6 +9,9 @@ import (
 const DefaultHost = github.GlobalHost
 
 //TODO: move to core
+//TODO: type DefaultNameService interface {
+//TODO: type defaultNameServiceImpl struct {
+//TODO: func NewDefaultNameService() DefaultNameService {
 
 // DefaultNameService implements the repository.DefaultNameService interface
 type DefaultNameService struct {

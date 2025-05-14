@@ -35,10 +35,14 @@ func (d *DefaultNameStoreV0) Load(ctx context.Context, initial func() repository
 		return nil, err
 	}
 	svc := initial()
-	svc.SetDefaultHost(v.DefaultHost)
+	if err := svc.SetDefaultHost(v.DefaultHost); err != nil {
+		return nil, err
+	}
 	for k, v := range v.Hosts {
 		if v.DefaultOwner != "" {
-			svc.SetDefaultOwnerFor(k, v.DefaultOwner)
+			if err := svc.SetDefaultOwnerFor(k, v.DefaultOwner); err != nil {
+				return nil, err
+			}
 		}
 	}
 	svc.MarkSaved()

@@ -1,5 +1,8 @@
 version: 1
 dependenciesRules:
+  - package: "cmd.**"
+    shouldNotDependsOn:
+      internal: []
   - package: "core.**"
     shouldNotDependsOn:
       internal:

@@ -14,6 +14,10 @@ var (
 	ErrTooManySlashes = errors.New("too many slashes")
 )
 
+//TODO: type ReferenceParser interface {
+//TODO: type referenceParserImpl struct {
+//TODO: func NewReferenceParser(defaultHost, defaultOwner string) ReferenceParser {
+
 // ReferenceParser will parse any string as a Reference.
 //
 // If it is clear that the string has host, user and name explicitly,
