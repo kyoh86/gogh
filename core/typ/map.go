@@ -1,4 +1,4 @@
-package config
+package typ
 
 type Map[TKey comparable, TVal any] map[TKey]TVal
 

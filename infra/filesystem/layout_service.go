@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/typ"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/util"
 )
 
 // LayoutService is a filesystem-based standard repository layout implementation
@@ -40,7 +40,7 @@ func (l *LayoutService) Match(path string) (*repository.Reference, error) {
 	}
 
 	// host/owner/nameの形式でリファレンスを作成
-	return util.Ptr(repository.NewReference(parts[0], parts[1], parts[2])), nil
+	return typ.Ptr(repository.NewReference(parts[0], parts[1], parts[2])), nil
 }
 
 func (l *LayoutService) PathFor(ref repository.Reference) string {

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/service"
@@ -10,59 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewApp(ctx context.Context) (*cobra.Command, error) {
-	flags, flagsSource, err := config.LoadAlternative(
-		ctx,
-		config.DefaultFlags,
-		config.NewFlagsStore(),
-		config.NewFlagsStoreV0(),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load flags: %w", err)
-	}
-
-	defaultNameStore := config.NewDefaultNameStore()
-	defaultNameService, defaultNameSource, err := config.LoadAlternative(
-		ctx,
-		config.DefaultName,
-		defaultNameStore,
-		config.NewDefaultNameStoreV0(),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load default names: %w", err)
-	}
-	tokenStore := config.NewTokenStore()
-	tokenService, tokenSource, err := config.LoadAlternative(
-		ctx,
-		config.DefaultTokenService,
-		tokenStore,
-		config.NewTokenStoreV0(),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load tokens: %w", err)
-	}
-
-	workspaceStore := config.NewWorkspaceStore()
-	workspaceService, workspaceSource, err := config.LoadAlternative(
-		ctx,
-		config.DefaultWorkspaceService,
-		workspaceStore,
-		config.NewWorkspaceStoreV0(),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load workspace: %w", err)
-	}
-
-	svc := service.NewServiceSet(
-		defaultNameSource,
-		defaultNameService,
-		tokenSource,
-		tokenService,
-		workspaceSource,
-		workspaceService,
-		flagsSource,
-		flags,
-	)
+func NewApp(
+	ctx context.Context,
+	svc *service.ServiceSet,
+) (*cobra.Command, error) {
 	appCommand := &cobra.Command{
 		Use:   config.AppName,
 		Short: "GO GitHub local repository manager",
@@ -98,7 +48,7 @@ func NewApp(ctx context.Context) (*cobra.Command, error) {
 	)
 
 	appCommand.AddCommand(
-		commands.NewMigrateCommand(ctx, svc, defaultNameStore, tokenStore, workspaceStore),
+		commands.NewMigrateCommand(ctx, svc),
 		commands.NewManCommand(),
 		commands.NewCwdCommand(ctx, svc),
 		commands.NewListCommand(ctx, svc),
@@ -114,13 +64,14 @@ func NewApp(ctx context.Context) (*cobra.Command, error) {
 	)
 
 	appCommand.PostRunE = func(cmd *cobra.Command, args []string) error {
-		if err := defaultNameStore.Save(ctx, defaultNameService, false); err != nil {
+		ctx := cmd.Context()
+		if err := svc.DefaultNameStore.Save(ctx, svc.DefaultNameService, false); err != nil {
 			return err
 		}
-		if err := tokenStore.Save(ctx, tokenService, false); err != nil {
+		if err := svc.TokenStore.Save(ctx, svc.TokenService, false); err != nil {
 			return err
 		}
-		if err := workspaceStore.Save(ctx, workspaceService, false); err != nil {
+		if err := svc.WorkspaceStore.Save(ctx, svc.WorkspaceService, false); err != nil {
 			return err
 		}
 		return nil

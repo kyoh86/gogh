@@ -16,8 +16,16 @@ type TokenStore struct{}
 
 type tomlTokenStore map[string]map[string]oauth2.Token
 
+func (d *TokenStore) Source() (string, error) {
+	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.yaml")
+	if err != nil {
+		return "", fmt.Errorf("search config path: %w", err)
+	}
+	return path, nil
+}
+
 // Load implements auth.TokenRepository.
-func (d *TokenStore) Load(ctx context.Context) (auth.TokenService, error) {
+func (d *TokenStore) Load(ctx context.Context, initial func() auth.TokenService) (auth.TokenService, error) {
 	var v tomlTokenStore
 	source, err := d.Source()
 	if err != nil {
@@ -31,7 +39,7 @@ func (d *TokenStore) Load(ctx context.Context) (auth.TokenService, error) {
 	if err := toml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	svc := auth.NewTokenService()
+	svc := initial()
 	for host, entry := range v {
 		for owner, token := range entry {
 			if token.AccessToken == "" {
@@ -75,23 +83,12 @@ func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService, force bool)
 	if err := toml.NewEncoder(file).Encode(v); err != nil {
 		return err
 	}
+	ds.MarkSaved()
 	return nil
-}
-
-func DefaultTokenService() auth.TokenService {
-	return auth.NewTokenService()
 }
 
 func NewTokenStore() *TokenStore {
 	return &TokenStore{}
-}
-
-func (d *TokenStore) Source() (string, error) {
-	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.yaml")
-	if err != nil {
-		return "", fmt.Errorf("search config path: %w", err)
-	}
-	return path, nil
 }
 
 var _ store.Store[auth.TokenService] = (*TokenStore)(nil)

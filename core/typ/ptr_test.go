@@ -1,9 +1,9 @@
-package util_test
+package typ_test
 
 import (
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3/util"
+	testtarget "github.com/kyoh86/gogh/v3/core/typ"
 )
 
 func TestPtr(t *testing.T) {

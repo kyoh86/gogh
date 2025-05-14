@@ -7,7 +7,6 @@ import (
 
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/infra/config"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -20,7 +19,7 @@ type tomlDefaultNameStore struct {
 }
 
 // Load implements repository.DefaultNameRepository.
-func (d *DefaultNameStore) Load(ctx context.Context) (repository.DefaultNameService, error) {
+func (d *DefaultNameStore) Load(ctx context.Context, initial func() repository.DefaultNameService) (repository.DefaultNameService, error) {
 	var v tomlDefaultNameStore
 	source, err := d.Source()
 	if err != nil {
@@ -34,7 +33,7 @@ func (d *DefaultNameStore) Load(ctx context.Context) (repository.DefaultNameServ
 	if err := toml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	svc := config.NewDefaultNameService()
+	svc := initial()
 	if err := svc.SetDefaultHost(v.DefaultHost); err != nil {
 		return nil, err
 	}
@@ -80,12 +79,6 @@ func (*DefaultNameStore) Source() (string, error) {
 		return "", fmt.Errorf("search default names path: %w", err)
 	}
 	return path, nil
-}
-
-func DefaultName() repository.DefaultNameService {
-	svc := config.NewDefaultNameService()
-	svc.SetDefaultHost("github.com")
-	return svc
 }
 
 func NewDefaultNameStore() *DefaultNameStore {

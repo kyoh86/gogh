@@ -8,7 +8,7 @@ import (
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/core/typ"
 	"golang.org/x/oauth2"
 )
 
@@ -16,15 +16,15 @@ import (
 type TokenStoreV0 struct{}
 
 type yamlTokenServiceV0 struct {
-	Hosts config.Map[string, *yamlTokenHostEntryV0] `yaml:"hosts,omitempty"`
+	Hosts typ.Map[string, *yamlTokenHostEntryV0] `yaml:"hosts,omitempty"`
 }
 
 type yamlTokenHostEntryV0 struct {
-	Owners config.Map[string, oauth2.Token] `yaml:"owners"`
+	Owners typ.Map[string, oauth2.Token] `yaml:"owners"`
 }
 
 // Load implements auth.TokenRepository.
-func (d *TokenStoreV0) Load(ctx context.Context) (auth.TokenService, error) {
+func (d *TokenStoreV0) Load(ctx context.Context, initial func() auth.TokenService) (auth.TokenService, error) {
 	var v yamlTokenServiceV0
 	source, err := d.Source()
 	if err != nil {
@@ -38,7 +38,7 @@ func (d *TokenStoreV0) Load(ctx context.Context) (auth.TokenService, error) {
 	if err := yaml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	svc := auth.NewTokenService()
+	svc := initial()
 	for host, entry := range v.Hosts {
 		if entry.Owners == nil {
 			continue

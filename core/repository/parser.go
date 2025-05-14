@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/util"
+	"github.com/kyoh86/gogh/v3/core/typ"
 )
 
 var (
@@ -73,7 +73,7 @@ func ParseSiblingReference(base Reference, s string) (*Reference, error) {
 	if err := ValidateName(name); err != nil {
 		return nil, err
 	}
-	return util.Ptr(NewReference(base.Host(), owner, name)), nil
+	return typ.Ptr(NewReference(base.Host(), owner, name)), nil
 }
 
 // Parse a string and build a Reference.
@@ -103,7 +103,7 @@ func (p ReferenceParser) Parse(s string) (*Reference, error) {
 	if err := ValidateHost(host); err != nil {
 		return nil, err
 	}
-	return util.Ptr(NewReference(host, owner, name)), nil
+	return typ.Ptr(NewReference(host, owner, name)), nil
 }
 
 // NewReferenceParser will build Reference with a default host and default owner.

@@ -12,8 +12,8 @@ import (
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/typ"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
-	"github.com/kyoh86/gogh/v3/util"
 	"golang.org/x/oauth2"
 )
 
@@ -100,7 +100,7 @@ func (s *HostingService) ParseURL(u *url.URL) (*repository.Reference, error) {
 	if len(words) < 2 {
 		return nil, fmt.Errorf("invalid path: %q", u.Path)
 	}
-	return util.Ptr(repository.NewReference(u.Host, words[0], strings.TrimSuffix(words[1], ".git"))), nil
+	return typ.Ptr(repository.NewReference(u.Host, words[0], strings.TrimSuffix(words[1], ".git"))), nil
 }
 
 // GetTokenFor cache requested token for the host and owner
@@ -131,7 +131,7 @@ func (s *HostingService) getTokenForCore(ctx context.Context, host, owner string
 		if entry.Owner == owner {
 			return entry.Owner, entry.Token, nil
 		}
-		adaptor, err := NewAdaptor(ctx, entry.Host, util.Ptr(entry.Token))
+		adaptor, err := NewAdaptor(ctx, entry.Host, typ.Ptr(entry.Token))
 		if err != nil {
 			continue // Try next token if this one fails
 		}
@@ -242,7 +242,7 @@ func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRe
 						yield(nil, err)
 						return
 					}
-					if !yield(util.Ptr(convertRepositoryFragment(entry.Host, edge.Node.RepositoryFragment)), nil) {
+					if !yield(typ.Ptr(convertRepositoryFragment(entry.Host, edge.Node.RepositoryFragment)), nil) {
 						return
 					}
 
@@ -281,23 +281,23 @@ func (s *HostingService) CreateRepository(
 		org = ref.Owner()
 	}
 	repo, _, err := conn.restClient.Repositories.Create(ctx, org, &github.Repository{
-		Name:                util.NilablePtr(ref.Name()),
-		Description:         util.NilablePtr(opts.Description),
-		Homepage:            util.NilablePtr(opts.Homepage),
-		Private:             util.NilablePtr(opts.Private),
-		HasIssues:           util.FalsePtr(opts.DisableIssues),
-		HasProjects:         util.FalsePtr(opts.DisableProjects),
-		HasWiki:             util.FalsePtr(opts.DisableWiki),
-		HasDownloads:        util.FalsePtr(opts.DisableDownloads),
-		IsTemplate:          util.NilablePtr(opts.IsTemplate),
-		TeamID:              util.NilablePtr(opts.TeamID),
-		AutoInit:            util.NilablePtr(opts.AutoInit),
-		GitignoreTemplate:   util.NilablePtr(opts.GitignoreTemplate),
-		LicenseTemplate:     util.NilablePtr(opts.LicenseTemplate),
-		AllowSquashMerge:    util.FalsePtr(opts.PreventSquashMerge),
-		AllowMergeCommit:    util.FalsePtr(opts.PreventMergeCommit),
-		AllowRebaseMerge:    util.FalsePtr(opts.PreventRebaseMerge),
-		DeleteBranchOnMerge: util.NilablePtr(opts.DeleteBranchOnMerge),
+		Name:                typ.NilablePtr(ref.Name()),
+		Description:         typ.NilablePtr(opts.Description),
+		Homepage:            typ.NilablePtr(opts.Homepage),
+		Private:             typ.NilablePtr(opts.Private),
+		HasIssues:           typ.FalsePtr(opts.DisableIssues),
+		HasProjects:         typ.FalsePtr(opts.DisableProjects),
+		HasWiki:             typ.FalsePtr(opts.DisableWiki),
+		HasDownloads:        typ.FalsePtr(opts.DisableDownloads),
+		IsTemplate:          typ.NilablePtr(opts.IsTemplate),
+		TeamID:              typ.NilablePtr(opts.TeamID),
+		AutoInit:            typ.NilablePtr(opts.AutoInit),
+		GitignoreTemplate:   typ.NilablePtr(opts.GitignoreTemplate),
+		LicenseTemplate:     typ.NilablePtr(opts.LicenseTemplate),
+		AllowSquashMerge:    typ.FalsePtr(opts.PreventSquashMerge),
+		AllowMergeCommit:    typ.FalsePtr(opts.PreventMergeCommit),
+		AllowRebaseMerge:    typ.FalsePtr(opts.PreventRebaseMerge),
+		DeleteBranchOnMerge: typ.NilablePtr(opts.DeleteBranchOnMerge),
 	})
 	if err != nil {
 		return nil, err
@@ -317,13 +317,13 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	}
 	conn := getClient(ctx, ref.Host(), &token)
 	req := github.TemplateRepoRequest{
-		Name:               util.Ptr(ref.Name()),
+		Name:               typ.Ptr(ref.Name()),
 		Description:        &opts.Description,
 		IncludeAllBranches: &opts.IncludeAllBranches,
 		Private:            &opts.Private,
 	}
 	if user != ref.Owner() {
-		req.Owner = util.Ptr(ref.Owner())
+		req.Owner = typ.Ptr(ref.Owner())
 	}
 	repo, _, err := conn.restClient.Repositories.CreateFromTemplate(
 		ctx,

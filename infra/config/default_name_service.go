@@ -2,22 +2,25 @@ package config
 
 import (
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/typ"
 	"github.com/kyoh86/gogh/v3/infra/github"
 )
 
 const DefaultHost = github.GlobalHost
 
+//TODO: move to core
+
 // DefaultNameService implements the repository.DefaultNameService interface
 type DefaultNameService struct {
-	hosts       Map[string, string]
+	hosts       typ.Map[string, string]
 	defaultHost string
 	changed     bool
 }
 
 // NewDefaultNameService creates a new DefaultNameService instance
-func NewDefaultNameService() *DefaultNameService {
+func NewDefaultNameService() repository.DefaultNameService {
 	return &DefaultNameService{
-		hosts:       Map[string, string]{},
+		hosts:       typ.Map[string, string]{},
 		defaultHost: DefaultHost,
 	}
 }

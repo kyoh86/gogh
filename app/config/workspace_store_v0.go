@@ -7,7 +7,6 @@ import (
 
 	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/filesystem"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,7 +18,7 @@ type yamlWorkspaceStoreV0 struct {
 }
 
 // Load implements workspace.WorkspaceRepository.
-func (w *WorkspaceStoreV0) Load(ctx context.Context) (workspace.WorkspaceService, error) {
+func (w *WorkspaceStoreV0) Load(ctx context.Context, initial func() workspace.WorkspaceService) (workspace.WorkspaceService, error) {
 	var v yamlWorkspaceStoreV0
 	source, err := w.Source()
 	if err != nil {
@@ -33,14 +32,14 @@ func (w *WorkspaceStoreV0) Load(ctx context.Context) (workspace.WorkspaceService
 	if err := yaml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	svc := filesystem.WorkspaceService{}
+	svc := initial()
 	for i, root := range v.Roots {
 		if err := svc.AddRoot(root, i == 0); err != nil {
 			return nil, err
 		}
 	}
 	svc.MarkSaved()
-	return &svc, nil
+	return svc, nil
 }
 
 func (*WorkspaceStoreV0) Source() (string, error) {

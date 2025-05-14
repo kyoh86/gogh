@@ -10,9 +10,9 @@ import (
 	"github.com/kyoh86/gogh/v3/core/store"
 )
 
-func LoadAlternative[T store.Content](ctx context.Context, getDefault func() T, loaders ...store.Loader[T]) (T, string, error) {
+func LoadAlternative[T store.Content](ctx context.Context, initial func() T, loaders ...store.Loader[T]) (T, error) {
 	for i, loader := range loaders {
-		svc, err := loader.Load(ctx)
+		svc, err := loader.Load(ctx, initial)
 		if os.IsNotExist(err) {
 			continue
 		}
@@ -21,10 +21,9 @@ func LoadAlternative[T store.Content](ctx context.Context, getDefault func() T, 
 		}
 		if err != nil {
 			var empty T
-			return empty, "", fmt.Errorf("faield to load at %dth loader: %w", i+1, err)
+			return empty, fmt.Errorf("faield to load at %dth loader: %w", i+1, err)
 		}
-		source, err := loader.Source()
-		return svc, source, err
+		return svc, nil
 	}
-	return getDefault(), "default", nil
+	return initial(), nil
 }

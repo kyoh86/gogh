@@ -19,7 +19,7 @@ type WorkspaceService struct {
 }
 
 // NewWorkspaceService creates a new instance of RootService
-func NewWorkspaceService() *WorkspaceService {
+func NewWorkspaceService() workspace.WorkspaceService {
 	return &WorkspaceService{
 		roots: []workspace.Root{},
 	}

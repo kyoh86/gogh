@@ -13,8 +13,8 @@ import (
 type FlagsStore struct{}
 
 // Load implements repository.DefaultNameRepositoryOld.
-func (s *FlagsStore) Load(ctx context.Context) (*Flags, error) {
-	v := DefaultFlags()
+func (s *FlagsStore) Load(ctx context.Context, initial func() *Flags) (*Flags, error) {
+	v := initial()
 	source, err := s.Source()
 	if err != nil {
 		return nil, err

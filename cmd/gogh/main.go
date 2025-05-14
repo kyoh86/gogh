@@ -5,6 +5,14 @@ import (
 	"os"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v3/app/config"
+	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v3/core/auth"
+	"github.com/kyoh86/gogh/v3/core/repository"
+	infraconf "github.com/kyoh86/gogh/v3/infra/config"
+	"github.com/kyoh86/gogh/v3/infra/filesystem"
+	"github.com/kyoh86/gogh/v3/infra/git"
+	"github.com/kyoh86/gogh/v3/infra/github"
 	"github.com/kyoh86/gogh/v3/infra/logger"
 	"github.com/kyoh86/gogh/v3/ui/cli"
 )
@@ -25,7 +33,70 @@ func main() {
 func run() error {
 	ctx := logger.NewLogger()
 
-	cmd, err := cli.NewApp(ctx)
+	flagsStore := config.NewFlagsStore()
+	flags, err := config.LoadAlternative(
+		ctx,
+		config.DefaultFlags,
+		flagsStore,
+		config.NewFlagsStoreV0(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load flags: %w", err)
+	}
+
+	defaultNameStore := config.NewDefaultNameStore()
+	defaultNameService, err := config.LoadAlternative(
+		ctx,
+		infraconf.NewDefaultNameService,
+		defaultNameStore,
+		config.NewDefaultNameStoreV0(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load default names: %w", err)
+	}
+
+	tokenStore := config.NewTokenStore()
+	tokenService, err := config.LoadAlternative(
+		ctx,
+		auth.NewTokenService,
+		tokenStore,
+		config.NewTokenStoreV0(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load tokens: %w", err)
+	}
+
+	workspaceStore := config.NewWorkspaceStore()
+	workspaceService, err := config.LoadAlternative(
+		ctx,
+		filesystem.NewWorkspaceService,
+		workspaceStore,
+		config.NewWorkspaceStoreV0(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to load workspace: %w", err)
+	}
+
+	svc := &service.ServiceSet{
+		DefaultNameStore:   defaultNameStore,
+		DefaultNameService: defaultNameService,
+
+		TokenStore:   tokenStore,
+		TokenService: tokenService,
+
+		WorkspaceStore:   workspaceStore,
+		WorkspaceService: workspaceService,
+
+		FlagsStore: flagsStore,
+		Flags:      flags,
+
+		ReferenceParser:     repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner()),
+		HostingService:      github.NewHostingService(tokenService),
+		FinderService:       filesystem.NewFinderService(),
+		AuthenticateService: github.NewAuthenticateService(),
+		GitService:          git.NewService(),
+	}
+	cmd, err := cli.NewApp(ctx, svc)
 	if err != nil {
 		return fmt.Errorf("failed to create app: %w", err)
 	}

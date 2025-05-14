@@ -8,7 +8,6 @@ import (
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v3/core/repository"
 	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/infra/config"
 )
 
 type DefaultNameStoreV0 struct{}
@@ -21,7 +20,7 @@ type v0YAMLDefaultNameStore struct {
 }
 
 // Load implements repository.DefaultNAmeRepositoryOld.
-func (d *DefaultNameStoreV0) Load(ctx context.Context) (repository.DefaultNameService, error) {
+func (d *DefaultNameStoreV0) Load(ctx context.Context, initial func() repository.DefaultNameService) (repository.DefaultNameService, error) {
 	var v v0YAMLDefaultNameStore
 	source, err := d.Source()
 	if err != nil {
@@ -35,7 +34,7 @@ func (d *DefaultNameStoreV0) Load(ctx context.Context) (repository.DefaultNameSe
 	if err := yaml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	svc := config.NewDefaultNameService()
+	svc := initial()
 	svc.SetDefaultHost(v.DefaultHost)
 	for k, v := range v.Hosts {
 		if v.DefaultOwner != "" {

@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v3/core/typ"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/util"
 )
 
 type FinderService struct {
@@ -46,7 +46,7 @@ func (f *FinderService) FindByReference(ctx context.Context, ws workspace.Worksp
 				return nil, err
 			}
 			if isDir {
-				return util.Ptr(repository.NewLocation(
+				return typ.Ptr(repository.NewLocation(
 					abs,
 					ref.Host(),
 					ref.Owner(),
@@ -87,7 +87,7 @@ func (f *FinderService) FindByPath(ctx context.Context, ws workspace.WorkspaceSe
 				return nil, err
 			}
 			if isDir {
-				return util.Ptr(repository.NewLocation(
+				return typ.Ptr(repository.NewLocation(
 					abs,
 					ref.Host(),
 					ref.Owner(),
@@ -145,7 +145,7 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 			case errors.Is(err, workspace.ErrNotMatched):
 				// Ignore directories that do not match the layout
 			case err == nil:
-				if !yield(util.Ptr(repository.NewLocation(
+				if !yield(typ.Ptr(repository.NewLocation(
 					p,
 					ref.Host(),
 					ref.Owner(),

@@ -13,10 +13,15 @@ type Content interface {
 
 type Loader[T any] interface {
 	Source() (string, error)
-	Load(ctx context.Context) (T, error)
+	Load(ctx context.Context, initial func() T) (T, error)
+}
+
+type Saver[T Content] interface {
+	Source() (string, error)
+	Save(ctx context.Context, v T, force bool) error
 }
 
 type Store[T Content] interface {
 	Loader[T]
-	Save(ctx context.Context, v T, force bool) error
+	Saver[T]
 }

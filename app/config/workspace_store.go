@@ -7,7 +7,6 @@ import (
 
 	"github.com/kyoh86/gogh/v3/core/store"
 	"github.com/kyoh86/gogh/v3/core/workspace"
-	"github.com/kyoh86/gogh/v3/infra/filesystem"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -20,7 +19,7 @@ type tomlWorkspaceStore struct {
 }
 
 // Load implements workspace.WorkspaceRepository.
-func (w *WorkspaceStore) Load(ctx context.Context) (workspace.WorkspaceService, error) {
+func (w *WorkspaceStore) Load(ctx context.Context, initial func() workspace.WorkspaceService) (workspace.WorkspaceService, error) {
 	var v tomlWorkspaceStore
 	source, err := w.Source()
 	if err != nil {
@@ -34,7 +33,7 @@ func (w *WorkspaceStore) Load(ctx context.Context) (workspace.WorkspaceService, 
 	if err := toml.NewDecoder(file).Decode(&v); err != nil {
 		return nil, err
 	}
-	svc := filesystem.NewWorkspaceService()
+	svc := initial()
 	for _, root := range v.Roots {
 		if err := svc.AddRoot(root, root == v.PrimaryRoot); err != nil {
 			return nil, err
@@ -67,6 +66,7 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 	if err := toml.NewEncoder(file).Encode(v); err != nil {
 		return err
 	}
+	ws.MarkSaved()
 	return nil
 }
 
@@ -76,10 +76,6 @@ func (*WorkspaceStore) Source() (string, error) {
 		return "", fmt.Errorf("search workspace path: %w", err)
 	}
 	return path, nil
-}
-
-func DefaultWorkspaceService() workspace.WorkspaceService {
-	return filesystem.NewWorkspaceService()
 }
 
 // NewWorkspaceStore creates a new WorkspaceStore instance.

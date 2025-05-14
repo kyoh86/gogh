@@ -7,7 +7,7 @@ import (
 
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/util"
+	"github.com/kyoh86/gogh/v3/core/typ"
 )
 
 // HostingService provides access to remote repositories
@@ -64,9 +64,9 @@ func (f BooleanFilter) AsBoolPtr() *bool {
 	case BooleanFilterNone:
 		return nil
 	case BooleanFilterTrue:
-		return util.Ptr(true)
+		return typ.Ptr(true)
 	case BooleanFilterFalse:
-		return util.Ptr(false)
+		return typ.Ptr(false)
 	default:
 		panic("invalid boolean filter")
 	}
