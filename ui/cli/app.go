@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newCmdWithSubs(
+func cmdWithSubs(
 	ctx context.Context,
 	svc *service.ServiceSet,
 	main func(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error),
@@ -79,7 +79,7 @@ func NewApp(
 		},
 	)
 
-	bundleCommand, err := newCmdWithSubs(
+	bundleCommand, err := cmdWithSubs(
 		ctx, svc,
 		commands.NewBundleCommand,
 		nil,
@@ -90,7 +90,7 @@ func NewApp(
 		return nil, err
 	}
 
-	authCommand, err := newCmdWithSubs(
+	authCommand, err := cmdWithSubs(
 		ctx, svc,
 		commands.NewAuthCommand,
 		nil,
@@ -103,7 +103,7 @@ func NewApp(
 	}
 	authCommand.GroupID = groupConfig
 
-	rootsCommand, err := newCmdWithSubs(
+	rootsCommand, err := cmdWithSubs(
 		ctx, svc,
 		commands.NewRootsCommand,
 		nil,
@@ -121,7 +121,7 @@ func NewApp(
 	configAuthCommand.GroupID = ""
 	configRootsCommand := typ.Ptr(*rootsCommand)
 	configRootsCommand.GroupID = ""
-	configCommand, err := newCmdWithSubs(
+	configCommand, err := cmdWithSubs(
 		ctx, svc,
 		commands.NewConfigCommand,
 		[]*cobra.Command{configAuthCommand, configRootsCommand},
