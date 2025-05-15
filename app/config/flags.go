@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
 func LocationFormatter(v string) (repository.LocationFormat, error) {

@@ -9,8 +9,8 @@ gogh roots add [flags]
 ### Options
 
 ```
-      --as-primary   Set as primary root
-  -h, --help         help for add
+      --as-primary[=false]   Set as primary root
+  -h, --help                 help for add
 ```
 
 ### SEE ALSO

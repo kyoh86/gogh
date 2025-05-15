@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3/app/config"
-	"github.com/kyoh86/gogh/v3/app/cwd"
-	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/ui/cli/flags"
+	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/cwd"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 

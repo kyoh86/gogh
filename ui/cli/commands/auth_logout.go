@@ -8,9 +8,9 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/app/auth_list"
-	"github.com/kyoh86/gogh/v3/app/auth_logout"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/auth_list"
+	"github.com/kyoh86/gogh/v4/app/auth_logout"
+	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 

@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 type FinderService struct{}
@@ -124,8 +124,7 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 	var i int
 	return func(yield func(*repository.Location, error) bool) {
 		if err := filepath.Walk(l.GetRoot(), func(p string, info os.FileInfo, err error) error {
-			switch {
-			case os.IsNotExist(err):
+			if os.IsNotExist(err) {
 				return nil
 			}
 			if err != nil {

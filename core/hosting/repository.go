@@ -3,7 +3,7 @@ package hosting
 import (
 	"time"
 
-	"github.com/kyoh86/gogh/v3/core/repository"
+	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
 // Repository represents a repository on a remote source

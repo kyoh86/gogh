@@ -6,16 +6,16 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3/app/config"
-	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/gogh"
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/infra/filesystem"
-	"github.com/kyoh86/gogh/v3/infra/git"
-	"github.com/kyoh86/gogh/v3/infra/github"
-	"github.com/kyoh86/gogh/v3/infra/logger"
-	"github.com/kyoh86/gogh/v3/ui/cli"
+	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/core/auth"
+	"github.com/kyoh86/gogh/v4/core/gogh"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/infra/filesystem"
+	"github.com/kyoh86/gogh/v4/infra/git"
+	"github.com/kyoh86/gogh/v4/infra/github"
+	"github.com/kyoh86/gogh/v4/infra/logger"
+	"github.com/kyoh86/gogh/v4/ui/cli"
 )
 
 var (

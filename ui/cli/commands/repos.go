@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/app/config"
-	"github.com/kyoh86/gogh/v3/app/repos"
-	"github.com/kyoh86/gogh/v3/app/repository_print"
-	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/ui/cli/flags"
+	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/repos"
+	"github.com/kyoh86/gogh/v4/app/repository_print"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
@@ -78,8 +78,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 
 	defs := svc.Flags.Repos
 
-	cmd.Flags().
-		IntVarP(&opts.Limit, "limit", "", defs.Limit, "Max number of repositories to list. -1 means unlimited")
+	cmd.Flags().IntVarP(&opts.Limit, "limit", "", defs.Limit, "Max number of repositories to list. -1 means unlimited")
 
 	if err := flags.RepositoryFormatFlag(cmd, &format, defs.Format); err != nil {
 		return nil, fmt.Errorf("initializing format flag: %w", err)
@@ -90,8 +89,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 		"organization-member",
 		"collaborator",
 	}
-	cmd.Flags().
-		StringSliceVarP(&opts.Relation, "relation", "", defs.Relation, fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(relationAccepts)))
+	cmd.Flags().StringSliceVarP(&opts.Relation, "relation", "", defs.Relation, fmt.Sprintf("The relation of user to each repository; it can accept %s", quoteEnums(relationAccepts)))
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return relationAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {

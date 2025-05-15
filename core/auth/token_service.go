@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/core/store"
+	"github.com/kyoh86/gogh/v4/core/store"
 	"golang.org/x/oauth2"
 )
 

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/store"
+	"github.com/kyoh86/gogh/v4/core/workspace"
 	"github.com/pelletier/go-toml/v2"
 )
 

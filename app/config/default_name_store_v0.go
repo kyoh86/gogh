@@ -6,8 +6,8 @@ import (
 	"os"
 
 	yaml "github.com/goccy/go-yaml"
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/store"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/store"
 )
 
 type DefaultNameStoreV0 struct{}

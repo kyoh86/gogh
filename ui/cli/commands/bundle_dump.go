@@ -6,14 +6,14 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3/app/bundle_dump"
-	"github.com/kyoh86/gogh/v3/app/config"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/bundle_dump"
+	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 
 func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	var flags config.BundleDumpFlags
+	var f config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",
 		Aliases: []string{"export"},
@@ -21,9 +21,9 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
-			if flags.File != "" {
+			if f.File != "" {
 				file, err := os.OpenFile(
-					flags.File,
+					f.File,
 					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
 					0644,
 				)
@@ -49,6 +49,6 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		},
 	}
 
-	cmd.Flags().StringVarP(&flags.File, "file", "f", svc.Flags.BundleDump.File, "A file to output; if not specified, output to stdout")
+	cmd.Flags().StringVarP(&f.File, "file", "f", svc.Flags.BundleDump.File, "A file to output; if not specified, output to stdout")
 	return cmd, nil
 }

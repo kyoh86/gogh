@@ -5,9 +5,9 @@ import (
 	"iter"
 	"net/url"
 
-	"github.com/kyoh86/gogh/v3/core/git"
-	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/git"
+	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // UseCase defines the use case for listing repositories

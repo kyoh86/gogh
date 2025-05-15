@@ -10,11 +10,11 @@ import (
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/google/go-github/v69/github"
-	"github.com/kyoh86/gogh/v3/core/auth"
-	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/infra/githubv4"
-	"github.com/kyoh86/gogh/v3/typ"
+	"github.com/kyoh86/gogh/v4/core/auth"
+	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/infra/githubv4"
+	"github.com/kyoh86/gogh/v4/typ"
 	"golang.org/x/oauth2"
 )
 

@@ -3,7 +3,7 @@ package auth_test
 import (
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3/core/auth"
+	testtarget "github.com/kyoh86/gogh/v4/core/auth"
 )
 
 func TestTokenServiceDeleteNonExistentToken(t *testing.T) {

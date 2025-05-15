@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/store"
+	"github.com/kyoh86/gogh/v4/core/workspace"
 	"gopkg.in/yaml.v2"
 )
 

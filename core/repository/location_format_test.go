@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	testtarget "github.com/kyoh86/gogh/v3/core/repository"
+	testtarget "github.com/kyoh86/gogh/v4/core/repository"
 )
 
 func TestLocationFormat(t *testing.T) {

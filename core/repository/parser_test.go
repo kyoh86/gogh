@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3/core/repository"
+	testtarget "github.com/kyoh86/gogh/v4/core/repository"
 )
 
 func TestReferenceParser(t *testing.T) {

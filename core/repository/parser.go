@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kyoh86/gogh/v3/typ"
+	"github.com/kyoh86/gogh/v4/typ"
 )
 
 var (

@@ -7,7 +7,7 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/kyoh86/gogh/v3/core/store"
+	"github.com/kyoh86/gogh/v4/core/store"
 )
 
 // LoadAlternative loads a value of type T using the provided loaders.

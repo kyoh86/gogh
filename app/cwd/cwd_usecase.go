@@ -3,8 +3,8 @@ package cwd
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // UseCase defines the use case for listing repository locations

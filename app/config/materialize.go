@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kyoh86/gogh/v3/core/gogh"
+	"github.com/kyoh86/gogh/v4/core/gogh"
 )
 
 // appContextPath returns the path to the app's configuration file.

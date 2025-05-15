@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/typ"
-	"github.com/kyoh86/gogh/v3/ui/cli/commands"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/typ"
+	"github.com/kyoh86/gogh/v4/ui/cli/commands"
 	"github.com/spf13/cobra"
 )
 

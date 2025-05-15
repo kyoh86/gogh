@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/service"
 )
 
 // TryCloneNotify is a wrapper for the TryCloneNotify function to log the status.

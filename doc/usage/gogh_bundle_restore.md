@@ -10,7 +10,7 @@ gogh bundle restore [flags]
 
 ```
       --clone-retry-limit int       (default 3)
-      --dryrun                     Displays the operations that would be performed using the specified command without actually running them
+      --dryrun[=false]             Displays the operations that would be performed using the specified command without actually running them
   -f, --file string                Read the file as input; if not specified, read from stdin (default "/home/kyoh86/.config/gogh/bundle.txt")
   -h, --help                       help for restore
       --request-timeout duration   Read the file as input; if not specified, read from stdin (default 5s)

@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"github.com/kyoh86/gogh/v3/core/gogh"
-	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/typ"
+	"github.com/kyoh86/gogh/v4/core/gogh"
+	"github.com/kyoh86/gogh/v4/core/store"
+	"github.com/kyoh86/gogh/v4/typ"
 )
 
 // DefaultNameService provides access to default configuration settings

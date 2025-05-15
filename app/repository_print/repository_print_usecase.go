@@ -6,8 +6,8 @@ import (
 	"io"
 	"iter"
 
-	"github.com/kyoh86/gogh/v3/app/repository_print/repotab"
-	"github.com/kyoh86/gogh/v3/core/hosting"
+	"github.com/kyoh86/gogh/v4/app/repository_print/repotab"
+	"github.com/kyoh86/gogh/v4/core/hosting"
 )
 
 type UseCase struct {

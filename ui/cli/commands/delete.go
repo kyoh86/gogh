@@ -6,9 +6,10 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/app/delete"
-	"github.com/kyoh86/gogh/v3/app/repos"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/delete"
+	"github.com/kyoh86/gogh/v4/app/repos"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
@@ -126,13 +127,12 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			return nil
 		},
 	}
-	//TODO: --no-local?
-	cmd.Flags().BoolVarP(&f.local, "local", "", true, "Delete local repository.")
-	cmd.Flags().
-		BoolVarP(&f.remote, "remote", "", false, "Delete remote repository.")
-	cmd.Flags().
-		BoolVarP(&f.force, "force", "", false, "Do NOT confirm to delete.")
-	cmd.Flags().
-		BoolVarP(&f.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	flags.BoolVarP(cmd, &f.local, "local", "", true, "Delete local repository.")
+	cmd.Flags().Lookup("local").NoOptDefVal = "false"
+	flags.BoolVarP(cmd, &f.remote, "remote", "", false, "Delete remote repository.")
+	cmd.Flags().Lookup("remote").NoOptDefVal = "false"
+	flags.BoolVarP(cmd, &f.force, "force", "", false, "Do NOT confirm to delete.")
+	cmd.Flags().Lookup("force").NoOptDefVal = "false"
+	flags.BoolVarP(cmd, &f.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	return cmd, nil
 }

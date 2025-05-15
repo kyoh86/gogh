@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"iter"
 
-	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/typ"
+	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/typ"
 )
 
 type UseCase struct {

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v3/app/auth_list"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/auth_list"
+	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 

@@ -1,8 +1,6 @@
-module github.com/kyoh86/gogh/v3
+module github.com/kyoh86/gogh/v4
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.24.1
 
 require (
 	github.com/Khan/genqlient v0.8.0

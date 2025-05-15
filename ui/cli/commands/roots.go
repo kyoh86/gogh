@@ -7,7 +7,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
@@ -57,7 +58,7 @@ func NewRootsAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 			return nil
 		},
 	}
-	cmd.Flags().BoolVarP(&asPrimary, "as-primary", "", false, "Set as primary root")
+	flags.BoolVarP(cmd, &asPrimary, "as-primary", "", false, "Set as primary root")
 	return cmd, nil
 }
 

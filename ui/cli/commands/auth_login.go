@@ -10,8 +10,8 @@ import (
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
-	"github.com/kyoh86/gogh/v3/app/auth_login"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/auth_login"
+	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 

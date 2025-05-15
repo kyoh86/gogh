@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kyoh86/gogh/v3/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/morikuni/aec"
 )
 

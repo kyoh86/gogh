@@ -7,10 +7,11 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v3/app/clone"
-	"github.com/kyoh86/gogh/v3/app/config"
-	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/ui/cli/view"
+	"github.com/kyoh86/gogh/v4/app/clone"
+	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
+	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
@@ -54,13 +55,9 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			return runFunc(cmd.Context())
 		},
 	}
-	cmd.Flags().
-		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	cmd.Flags().
-		StringVarP(&f.File, "file", "f", svc.Flags.BundleRestore.File, "Read the file as input; if not specified, read from stdin")
-	cmd.Flags().
-		DurationVarP(&f.RequestTimeout, "request-timeout", "", svc.Flags.BundleRestore.RequestTimeout, "Read the file as input; if not specified, read from stdin")
-	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
+	flags.BoolVarP(cmd, &f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cmd.Flags().StringVarP(&f.File, "file", "f", svc.Flags.BundleRestore.File, "Read the file as input; if not specified, read from stdin")
+	cmd.Flags().DurationVarP(&f.RequestTimeout, "request-timeout", "", svc.Flags.BundleRestore.RequestTimeout, "Read the file as input; if not specified, read from stdin")
+	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
 	return cmd, nil
 }

@@ -6,7 +6,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // WorkspaceService manages workspace roots stored in the filesystem

@@ -3,7 +3,7 @@ package flags
 import (
 	"fmt"
 
-	"github.com/kyoh86/gogh/v3/app/config"
+	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

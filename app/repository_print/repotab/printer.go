@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/kyoh86/gogh/v3/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/mattn/go-runewidth"
 	"github.com/morikuni/aec"
 	"golang.org/x/term"

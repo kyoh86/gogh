@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	testtarget "github.com/kyoh86/gogh/v3/app/repository_print"
-	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/core/repository"
+	testtarget "github.com/kyoh86/gogh/v4/app/repository_print"
+	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
 func sliceToIter2[T any](slices []T) iter.Seq2[T, error] {

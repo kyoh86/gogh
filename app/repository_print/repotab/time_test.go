@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	testtarget "github.com/kyoh86/gogh/v3/app/repository_print/repotab"
+	testtarget "github.com/kyoh86/gogh/v4/app/repository_print/repotab"
 )
 
 func TestFormatTimeAgo(t *testing.T) {

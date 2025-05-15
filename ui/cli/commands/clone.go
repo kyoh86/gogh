@@ -7,16 +7,17 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v3/app/clone"
-	"github.com/kyoh86/gogh/v3/app/config"
-	"github.com/kyoh86/gogh/v3/app/repos"
-	"github.com/kyoh86/gogh/v3/app/service"
+	"github.com/kyoh86/gogh/v4/app/clone"
+	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/repos"
+	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	var flags config.CloneFlags
+	var f config.CloneFlags
 
 	reposUseCase := repos.NewUseCase(svc.HostingService)
 	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService)
@@ -47,7 +48,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	runFunc := func(ctx context.Context, refs []string) error {
-		if flags.Dryrun {
+		if f.Dryrun {
 			for _, ref := range refs {
 				log.FromContext(ctx).Infof("Clone %q", ref)
 			}
@@ -66,7 +67,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		return eg.Wait()
 	}
 
-	c := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "clone [flags] [[OWNER/]NAME[=ALIAS]]...",
 		Aliases: []string{"get"},
 		Short:   "Clone remote repositories to local",
@@ -103,9 +104,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		},
 	}
 
-	c.Flags().
-		BoolVarP(&flags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	c.Flags().
-		DurationVarP(&flags.RequestTimeout, "timeout", "t", svc.Flags.Clone.RequestTimeout, "Timeout for the request")
-	return c, nil
+	flags.BoolVarP(cmd, &f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cmd.Flags().DurationVarP(&f.RequestTimeout, "timeout", "t", svc.Flags.Clone.RequestTimeout, "Timeout for the request")
+	return cmd, nil
 }

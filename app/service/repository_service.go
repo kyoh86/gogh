@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kyoh86/gogh/v3/core/git"
-	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/git"
+	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // RepositoryService provides common operations for repository manipulation
