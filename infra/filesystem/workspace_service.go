@@ -115,12 +115,10 @@ func (s *WorkspaceService) RemoveRoot(path workspace.Root) error {
 					s.primaryRoot = ""
 				}
 			}
-
+			s.changed = true
 			return nil // You would typically persist this change
 		}
 	}
-
-	s.changed = true
 
 	return errors.New("root not found")
 }

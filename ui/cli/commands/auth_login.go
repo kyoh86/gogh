@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
 	"github.com/kyoh86/gogh/v3/app/auth_login"
@@ -27,6 +28,7 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 		Short:   "Login for the host and owner",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			ctx := cmd.Context()
 			if f.Host == "" {
 				f.Host = svc.DefaultNameService.GetDefaultHost()
 				if err := huh.NewForm(huh.NewGroup(
@@ -58,7 +60,7 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 			}); err != nil {
 				return err
 			}
-			fmt.Println("Login successful!")
+			log.FromContext(ctx).Info("Login successful!")
 			return nil
 		},
 	}

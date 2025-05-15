@@ -14,5 +14,5 @@ gogh config show [flags]
 
 ### SEE ALSO
 
-* [gogh config](gogh_config.md)	 - Show configurations
+* [gogh config](gogh_config.md)	 - Show/change configurations
 

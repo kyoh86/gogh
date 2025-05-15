@@ -1,6 +1,6 @@
 ## gogh config
 
-Show configurations
+Show/change configurations
 
 ### Options
 

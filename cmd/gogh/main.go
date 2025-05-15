@@ -25,15 +25,14 @@ var (
 )
 
 func main() {
-	if err := run(); err != nil {
-		log.Error(err.Error())
+	ctx := logger.NewLogger(context.Background())
+	if err := run(ctx); err != nil {
+		log.FromContext(ctx).Error(err.Error())
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	ctx := logger.NewLogger(context.Background())
-
+func run(ctx context.Context) error {
 	flagsStore := config.NewFlagsStore()
 	flags, err := config.LoadAlternative(
 		ctx,

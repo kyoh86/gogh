@@ -44,7 +44,7 @@ func NewApp(
 		Use:          appName,
 		Short:        "GO GitHub local repository manager",
 		SilenceUsage: true, // Do not show usage when error occurs; it is handled manually.
-		PostRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			if err := svc.DefaultNameStore.Save(ctx, svc.DefaultNameService, false); err != nil {
 				return fmt.Errorf("saving default names: %w", err)

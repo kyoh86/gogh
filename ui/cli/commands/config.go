@@ -11,7 +11,7 @@ import (
 func NewConfigCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
 		Use:     "config",
-		Short:   "Show configurations",
+		Short:   "Show/change configurations",
 		Aliases: []string{"conf", "setting", "context"},
 	}, nil
 }

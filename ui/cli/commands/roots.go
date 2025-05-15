@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
@@ -41,8 +42,13 @@ func NewRootsAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		Use:   "add",
 		Short: "Add directories into the roots",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(_ *cobra.Command, rootList []string) error {
-			return svc.WorkspaceService.AddRoot(rootList[0], asPrimary)
+		RunE: func(cmd *cobra.Command, rootList []string) error {
+			ctx := cmd.Context()
+			if err := svc.WorkspaceService.AddRoot(rootList[0], asPrimary); err != nil {
+				return err
+			}
+			log.FromContext(ctx).Infof("Added root: %q", rootList[0])
+			return nil
 		},
 	}
 	cmd.Flags().BoolVarP(&asPrimary, "as-primary", "", false, "Set as primary root")
@@ -70,7 +76,7 @@ func selectRoot(svc *service.ServiceSet, title string, rootList []string) (strin
 	return selected, nil
 }
 
-func NewRootsRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+func NewRootsRemoveCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
 		Use:   "remove",
 		Short: "Remove a directory from the roots",
@@ -80,6 +86,7 @@ func NewRootsRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			if err != nil {
 				return err
 			}
+			log.FromContext(ctx).Infof("Removing root: %q", selected)
 			return svc.WorkspaceService.RemoveRoot(selected)
 		},
 	}, nil
@@ -91,12 +98,16 @@ func NewRootsSetPrimaryCommand(_ context.Context, svc *service.ServiceSet) (*cob
 		Aliases: []string{"set-default"},
 		Short:   "Set a directory as the primary in the roots",
 		Args:    cobra.RangeArgs(0, 1),
-		RunE: func(_ *cobra.Command, rootList []string) error {
+		RunE: func(cmd *cobra.Command, rootList []string) error {
 			selected, err := selectRoot(svc, "A directory to set as primary root", rootList)
 			if err != nil {
 				return err
 			}
-			return svc.WorkspaceService.SetPrimaryRoot(selected)
+			if err := svc.WorkspaceService.SetPrimaryRoot(selected); err != nil {
+				return err
+			}
+			log.FromContext(cmd.Context()).Infof("Set %q as primary root", selected)
+			return nil
 		},
 	}, nil
 }

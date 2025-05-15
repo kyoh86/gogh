@@ -14,7 +14,7 @@ GO GitHub local repository manager
 * [gogh bundle](gogh_bundle.md)	 - Manage bundle
 * [gogh clone](gogh_clone.md)	 - Clone remote repositories to local
 * [gogh completion](gogh_completion.md)	 - Generate the autocompletion script for the specified shell
-* [gogh config](gogh_config.md)	 - Show configurations
+* [gogh config](gogh_config.md)	 - Show/change configurations
 * [gogh create](gogh_create.md)	 - Create a new local and remote repository
 * [gogh cwd](gogh_cwd.md)	 - Print the local repository which the current working directory belongs to
 * [gogh delete](gogh_delete.md)	 - Delete local and remote repository
