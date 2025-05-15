@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewMigrateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewMigrateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "migrate",
 		Short: "Migrate configurations",
@@ -27,5 +27,5 @@ func NewMigrateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comman
 			return nil
 		},
 	}
-	return cmd
+	return cmd, nil
 }

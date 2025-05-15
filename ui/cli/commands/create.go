@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCreateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	createUseCase := create.NewUseCase(
 		svc.HostingService,
 		svc.WorkspaceService,
@@ -159,5 +159,5 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 		BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
 	cmd.Flags().
 		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
-	return cmd
+	return cmd, nil
 }

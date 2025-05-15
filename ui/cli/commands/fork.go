@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewForkCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.ForkFlags
 
 	useCase := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.DefaultNameService, svc.ReferenceParser, svc.GitService)
@@ -53,5 +53,5 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
 	cmd.Flags().
 		BoolVarP(&f.DefaultBranchOnly, "default-branch-only", "", false, "Only fork the default branch")
-	return cmd
+	return cmd, nil
 }

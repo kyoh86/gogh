@@ -256,16 +256,26 @@ func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRe
 					return
 				}
 
+				isFork, err := opts.IsFork.AsBoolPtr()
+				if err != nil {
+					yield(nil, fmt.Errorf("invalid isFork option %q: %w", opts.IsFork, err))
+					return
+				}
+				isArchived, err := opts.IsArchived.AsBoolPtr()
+				if err != nil {
+					yield(nil, fmt.Errorf("invalid isArchived option %q: %w", opts.IsArchived, err))
+					return
+				}
 				repos, err := githubv4.ListRepos(
 					ctx,
 					conn.gqlClient,
 					limit,
 					after,
-					opts.IsFork.AsBoolPtr(),
+					isFork,
 					privacy,
 					affs,
 					githubv4.RepositoryOrder{Field: orderField, Direction: orderDirection},
-					opts.IsArchived.AsBoolPtr(),
+					isArchived,
 				)
 				if err != nil {
 					yield(nil, err)

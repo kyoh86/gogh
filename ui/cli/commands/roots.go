@@ -9,22 +9,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewRootsCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewRootsCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
 		Use:     "roots",
 		Short:   "Manage roots",
 		Aliases: []string{"root"},
 		Run:     RootsListRun(svc),
-	}
+	}, nil
 }
 
-func NewRootsListCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewRootsListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all of the roots",
 		Args:  cobra.NoArgs,
 		Run:   RootsListRun(svc),
-	}
+	}, nil
 }
 
 func RootsListRun(svc *service.ServiceSet) func(*cobra.Command, []string) {
@@ -35,7 +35,7 @@ func RootsListRun(svc *service.ServiceSet) func(*cobra.Command, []string) {
 	}
 }
 
-func NewRootsAddCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewRootsAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var asPrimary bool
 	cmd := &cobra.Command{
 		Use:   "add",
@@ -46,7 +46,7 @@ func NewRootsAddCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comma
 		},
 	}
 	cmd.Flags().BoolVarP(&asPrimary, "as-primary", "", false, "Set as primary root")
-	return cmd
+	return cmd, nil
 }
 
 func selectRoot(svc *service.ServiceSet, title string, rootList []string) (string, error) {
@@ -70,7 +70,7 @@ func selectRoot(svc *service.ServiceSet, title string, rootList []string) (strin
 	return selected, nil
 }
 
-func NewRootsRemoveCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewRootsRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
 		Use:   "remove",
 		Short: "Remove a directory from the roots",
@@ -82,10 +82,10 @@ func NewRootsRemoveCommand(_ context.Context, svc *service.ServiceSet) *cobra.Co
 			}
 			return svc.WorkspaceService.RemoveRoot(selected)
 		},
-	}
+	}, nil
 }
 
-func NewRootsSetPrimaryCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewRootsSetPrimaryCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
 		Use:     "set-primary",
 		Aliases: []string{"set-default"},
@@ -98,5 +98,5 @@ func NewRootsSetPrimaryCommand(_ context.Context, svc *service.ServiceSet) *cobr
 			}
 			return svc.WorkspaceService.SetPrimaryRoot(selected)
 		},
-	}
+	}, nil
 }

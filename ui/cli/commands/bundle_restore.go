@@ -15,7 +15,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.BundleRestoreFlags
 	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService)
 
@@ -61,5 +61,5 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) *cobra.
 		VarP(&f.File, "file", "f", "Read the file as input; if not specified, read from stdin")
 	cmd.Flags().
 		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
-	return cmd
+	return cmd, nil
 }

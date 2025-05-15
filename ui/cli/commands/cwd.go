@@ -14,7 +14,7 @@ import (
 )
 
 // NewCwdCommand creates a new command to print the local repository which the current working directory belongs to.
-func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var format flags.LocationFormat
 
 	cmd := &cobra.Command{
@@ -51,7 +51,7 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command 
 	}
 
 	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.Cwd.Format); err != nil {
-		panic(fmt.Sprintf("failed to init format flag: %s", err))
+		return nil, fmt.Errorf("failed to add location format flag: %w", err)
 	}
-	return cmd
+	return cmd, nil
 }

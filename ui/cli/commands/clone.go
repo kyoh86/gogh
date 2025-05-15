@@ -14,7 +14,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var flags struct {
 		dryrun bool
 	}
@@ -106,5 +106,5 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command 
 
 	c.Flags().
 		BoolVarP(&flags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	return c
+	return c, nil
 }

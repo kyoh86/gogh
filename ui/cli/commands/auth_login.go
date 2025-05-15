@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		Host string
 	}
@@ -63,5 +63,5 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comm
 		},
 	}
 	cmd.Flags().StringVarP(&f.Host, "host", "", "", "Host name to login")
-	return cmd
+	return cmd, nil
 }

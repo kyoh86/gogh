@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewSetDefaultHostCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewSetDefaultHostCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "set-default-host",
 		Short: "Set the default host for the repository",
@@ -22,5 +22,5 @@ func NewSetDefaultHostCommand(_ context.Context, svc *service.ServiceSet) *cobra
 			return nil
 		},
 	}
-	return cmd
+	return cmd, nil
 }

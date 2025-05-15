@@ -17,7 +17,7 @@ import (
 //go:embed config_template.txt
 var configTemplate string
 
-func NewConfigCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewConfigCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
 		Use:     "config",
 		Short:   "Show configurations",
@@ -67,7 +67,7 @@ func NewConfigCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 			fmt.Println(w.String())
 			return nil
 		},
-	}
+	}, nil
 }
 
 func encodeYAML(v any) (string, error) {

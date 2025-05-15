@@ -9,6 +9,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func newCmdWithSubs(
+	ctx context.Context,
+	svc *service.ServiceSet,
+	main func(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error),
+	fixedSubs []*cobra.Command,
+	subs ...func(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error),
+) (*cobra.Command, error) {
+	cmd, err := main(ctx, svc)
+	if err != nil {
+		return nil, err
+	}
+	for _, sub := range fixedSubs {
+		cmd.AddCommand(sub)
+	}
+	for _, subFn := range subs {
+		subCmd, err := subFn(ctx, svc)
+		if err != nil {
+			return nil, err
+		}
+		cmd.AddCommand(subCmd)
+	}
+	return cmd, nil
+}
+
 func NewApp(
 	ctx context.Context,
 	appName string,
@@ -16,34 +40,52 @@ func NewApp(
 	svc *service.ServiceSet,
 ) (*cobra.Command, error) {
 
-	bundleCommand := commands.NewBundleCommand(ctx, svc)
-	bundleCommand.AddCommand(
-		commands.NewBundleDumpCommand(ctx, svc),
-		commands.NewBundleRestoreCommand(ctx, svc),
+	bundleCommand, err := newCmdWithSubs(
+		ctx, svc,
+		commands.NewBundleCommand,
+		nil,
+		commands.NewBundleDumpCommand,
+		commands.NewBundleRestoreCommand,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	authCommand := commands.NewAuthCommand(ctx, svc)
-	authCommand.AddCommand(
-		commands.NewAuthListCommand(ctx, svc),
-		commands.NewAuthLoginCommand(ctx, svc),
-		commands.NewAuthLogoutCommand(ctx, svc),
+	authCommand, err := newCmdWithSubs(
+		ctx, svc,
+		commands.NewAuthCommand,
+		nil,
+		commands.NewAuthListCommand,
+		commands.NewAuthLoginCommand,
+		commands.NewAuthLogoutCommand,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	rootsCommand := commands.NewRootsCommand(ctx, svc)
-	rootsCommand.AddCommand(
-		commands.NewRootsSetPrimaryCommand(ctx, svc),
-		commands.NewRootsRemoveCommand(ctx, svc),
-		commands.NewRootsAddCommand(ctx, svc),
-		commands.NewRootsListCommand(ctx, svc),
+	rootsCommand, err := newCmdWithSubs(
+		ctx, svc,
+		commands.NewRootsCommand,
+		nil,
+		commands.NewRootsSetPrimaryCommand,
+		commands.NewRootsRemoveCommand,
+		commands.NewRootsAddCommand,
+		commands.NewRootsListCommand,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	configCommand := commands.NewConfigCommand(ctx, svc)
-	configCommand.AddCommand(
-		authCommand,
-		rootsCommand,
-		commands.NewSetDefaultHostCommand(ctx, svc),
-		commands.NewSetDefaultOwnerCommand(ctx, svc),
+	configCommand, err := newCmdWithSubs(
+		ctx, svc,
+		commands.NewConfigCommand,
+		[]*cobra.Command{authCommand, rootsCommand},
+		commands.NewSetDefaultHostCommand,
+		commands.NewSetDefaultOwnerCommand,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	appCommand := &cobra.Command{
 		Use:          appName,
@@ -63,21 +105,30 @@ func NewApp(
 			return nil
 		},
 	}
-	appCommand.AddCommand(
-		commands.NewMigrateCommand(ctx, svc),
-		commands.NewManCommand(ctx, svc),
-		commands.NewCwdCommand(ctx, svc),
-		commands.NewListCommand(ctx, svc),
-		commands.NewCloneCommand(ctx, svc),
-		commands.NewCreateCommand(ctx, svc),
-		commands.NewReposCommand(ctx, svc),
-		commands.NewDeleteCommand(ctx, svc),
-		commands.NewForkCommand(ctx, svc),
+	cmds := []*cobra.Command{
 		configCommand,
 		authCommand,
 		bundleCommand,
 		rootsCommand,
-	)
+	}
+	for _, fn := range []func(context.Context, *service.ServiceSet) (*cobra.Command, error){
+		commands.NewMigrateCommand,
+		commands.NewManCommand,
+		commands.NewCwdCommand,
+		commands.NewListCommand,
+		commands.NewCloneCommand,
+		commands.NewCreateCommand,
+		commands.NewReposCommand,
+		commands.NewDeleteCommand,
+		commands.NewForkCommand,
+	} {
+		c, err := fn(ctx, svc)
+		if err != nil {
+			return nil, err
+		}
+		cmds = append(cmds, c)
+	}
+	appCommand.AddCommand(cmds...)
 
 	return appCommand, nil
 }

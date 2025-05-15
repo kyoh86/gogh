@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		local  bool
 		remote bool
@@ -128,5 +128,5 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 		BoolVarP(&f.force, "force", "", false, "Do NOT confirm to delete.")
 	cmd.Flags().
 		BoolVarP(&f.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	return cmd
+	return cmd, nil
 }

@@ -2,6 +2,7 @@ package hosting
 
 import (
 	"context"
+	"fmt"
 	"iter"
 	"net/url"
 
@@ -60,16 +61,16 @@ const (
 )
 
 // AsBoolPtr converts the BooleanFilter to a pointer to a boolean value
-func (f Tristate) AsBoolPtr() *bool {
+func (f Tristate) AsBoolPtr() (*bool, error) {
 	var r *bool
 	if err := typ.Remap(&r, map[Tristate]*bool{
 		TristateZero:  nil,
 		TristateTrue:  typ.Ptr(true),
 		TristateFalse: typ.Ptr(false),
 	}, f); err != nil {
-		panic("invalid Tristate")
+		return nil, fmt.Errorf("invalid Tristate: %w", err)
 	}
-	return r
+	return r, nil
 }
 
 // ListRepositoryOptions represents options for listing repositories

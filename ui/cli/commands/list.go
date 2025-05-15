@@ -13,7 +13,7 @@ import (
 )
 
 // NewListCommand creates a new command to list local repositories.
-func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.ListFlags
 	var format flags.LocationFormat
 	cmd := &cobra.Command{
@@ -58,8 +58,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.Flags.List.Primary, "List up repositories in just a primary root")
 	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.List.Format); err != nil {
-		panic(fmt.Sprintf("[Bug] failed to init format flag: %s", err))
+		return nil, fmt.Errorf("failed to init format flag: %s", err)
 	}
-
-	return cmd
+	return cmd, nil
 }

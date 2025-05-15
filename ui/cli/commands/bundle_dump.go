@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var flags config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",
@@ -51,5 +51,5 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 
 	flags.File = svc.Flags.BundleDump.File
 	cmd.Flags().VarP(&flags.File, "file", "f", "A file to output; if not specified, output to stdout")
-	return cmd
+	return cmd, nil
 }

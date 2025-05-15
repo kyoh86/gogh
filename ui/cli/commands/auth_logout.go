@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthLogoutCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	listUseCase := auth_list.NewUseCase(svc.TokenService)
 	logoutUseCase := auth_logout.NewUseCase(svc.TokenService)
 
@@ -82,5 +82,5 @@ func NewAuthLogoutCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 			}
 			return nil
 		},
-	}
+	}, nil
 }

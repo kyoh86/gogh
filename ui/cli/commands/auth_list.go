@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	useCase := auth_list.NewUseCase(svc.TokenService)
 	return &cobra.Command{
 		Use:   "list",
@@ -30,5 +30,5 @@ func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comma
 			}
 			return nil
 		},
-	}
+	}, nil
 }

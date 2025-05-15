@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
-func NewManCommand(_ context.Context, _ *service.ServiceSet) *cobra.Command {
+func NewManCommand(_ context.Context, _ *service.ServiceSet) (*cobra.Command, error) {
 	var (
 		manPagePath  string
 		usageDocPath string
@@ -54,5 +54,5 @@ func NewManCommand(_ context.Context, _ *service.ServiceSet) *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&manPagePath, "man", "", "./doc/man", "A path to save man pages")
 	cmd.Flags().StringVarP(&usageDocPath, "usage", "", "./doc/usage", "A path to save markdown usages")
-	return cmd
+	return cmd, nil
 }
