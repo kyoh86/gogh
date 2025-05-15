@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/app/repository_print"
@@ -83,7 +82,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Comman
 		IntVarP(&opts.Limit, "limit", "", defs.Limit, "Max number of repositories to list. -1 means unlimited")
 
 	if err := flags.RepositoryFormatFlag(cmd, &format, defs.Format); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
+		panic(fmt.Sprintf("failed to init format flag: %s", err))
 	}
 
 	var relationAccepts = []string{
@@ -96,31 +95,31 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Comman
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return relationAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register relation flag")
+		panic(fmt.Sprintf("failed to register relation flag: %s", err))
 	}
 
 	if err := enumFlag(cmd, &opts.Privacy, "privacy", defs.Privacy, "Show only public/private repositories", "private", "public"); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register privacy flag")
+		panic(fmt.Sprintf("failed to register privacy flag: %s", err))
 	}
 
 	if err := enumFlag(cmd, &opts.Fork, "fork", defs.Fork, "Show only forked/not-forked repositories", "forked", "not-forked"); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register fork flag")
+		panic(fmt.Sprintf("failed to register fork flag: %s", err))
 	}
 
 	if err := enumFlag(cmd, &opts.Archive, "archive", defs.Archive, "Show only archived/not-archived repositories", "archived", "not-archived"); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register archive flag")
+		panic(fmt.Sprintf("failed to register archive flag: %s", err))
 	}
 
 	if err := enumFlag(cmd, &opts.Color, "color", defs.Color, "Colorize the output", "auto", "always", "never"); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register color flag")
+		panic(fmt.Sprintf("failed to register color flag: %s", err))
 	}
 
 	if err := enumFlag(cmd, &opts.Sort, "sort", defs.Sort, "Property by which repository be ordered", "created-at", "name", "pushed-at", "stargazers", "updated-at"); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register sort flag")
+		panic(fmt.Sprintf("failed to register sort flag: %s", err))
 	}
 
 	if err := enumFlag(cmd, &opts.Order, "order", defs.Order, "Directions in which to order a list of items when provided a `sort` flag", "asc", "ascending", "desc", "descending"); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to register order flag")
+		panic(fmt.Sprintf("failed to register order flag: %s", err))
 	}
 
 	return cmd

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
@@ -14,10 +15,6 @@ func NewApp(
 	version string,
 	svc *service.ServiceSet,
 ) (*cobra.Command, error) {
-	appCommand := &cobra.Command{
-		Use:   appName,
-		Short: "GO GitHub local repository manager",
-	}
 
 	bundleCommand := commands.NewBundleCommand(ctx, svc)
 	bundleCommand.AddCommand(
@@ -48,6 +45,24 @@ func NewApp(
 		commands.NewSetDefaultOwnerCommand(ctx, svc),
 	)
 
+	appCommand := &cobra.Command{
+		Use:          appName,
+		Short:        "GO GitHub local repository manager",
+		SilenceUsage: true, // Do not show usage when error occurs; it is handled manually.
+		PostRunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := svc.DefaultNameStore.Save(ctx, svc.DefaultNameService, false); err != nil {
+				return fmt.Errorf("saving default names: %w", err)
+			}
+			if err := svc.TokenStore.Save(ctx, svc.TokenService, false); err != nil {
+				return fmt.Errorf("saving tokens: %w", err)
+			}
+			if err := svc.WorkspaceStore.Save(ctx, svc.WorkspaceService, false); err != nil {
+				return fmt.Errorf("saving workspaces: %w", err)
+			}
+			return nil
+		},
+	}
 	appCommand.AddCommand(
 		commands.NewMigrateCommand(ctx, svc),
 		commands.NewManCommand(ctx, svc),
@@ -64,18 +79,5 @@ func NewApp(
 		rootsCommand,
 	)
 
-	appCommand.PostRunE = func(cmd *cobra.Command, args []string) error {
-		ctx := cmd.Context()
-		if err := svc.DefaultNameStore.Save(ctx, svc.DefaultNameService, false); err != nil {
-			return err
-		}
-		if err := svc.TokenStore.Save(ctx, svc.TokenService, false); err != nil {
-			return err
-		}
-		if err := svc.WorkspaceStore.Save(ctx, svc.WorkspaceService, false); err != nil {
-			return err
-		}
-		return nil
-	}
 	return appCommand, nil
 }

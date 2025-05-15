@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/kyoh86/gogh/v3/app/service"
@@ -23,11 +24,11 @@ func NewManCommand(_ context.Context, _ *service.ServiceSet) *cobra.Command {
 			facadeCommand := cmd.Parent()
 			list, _, err := facadeCommand.Traverse([]string{"list"})
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to find 'list' command': %w", err)
 			}
 			cwd, _, err := facadeCommand.Traverse([]string{"cwd"})
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to find 'cwd' command: %w", err)
 			}
 			list.Flag("format").Usage = flags.LocationFormatLongUsage
 			cwd.Flag("format").Usage = flags.LocationFormatLongUsage
@@ -36,17 +37,17 @@ func NewManCommand(_ context.Context, _ *service.ServiceSet) *cobra.Command {
 				Section: "1",
 			}
 			if err := os.MkdirAll(manPagePath, 0755); err != nil {
-				return err
+				return fmt.Errorf("failed to make man page directory: %w", err)
 			}
 			if err := doc.GenManTree(facadeCommand, header, manPagePath); err != nil {
-				return err
+				return fmt.Errorf("failed to generate man pages: %w", err)
 			}
 			if err := os.MkdirAll(usageDocPath, 0755); err != nil {
-				return err
+				return fmt.Errorf("failed to make usage doc directory: %w", err)
 			}
 			facadeCommand.DisableAutoGenTag = true
 			if err := doc.GenMarkdownTree(facadeCommand, usageDocPath); err != nil {
-				return err
+				return fmt.Errorf("failed to generate usage documents: %w", err)
 			}
 			return nil
 		},

@@ -74,10 +74,10 @@ func NewAuthLogoutCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 			owners := preprocessFlags(cmd, indices)
 
 			for _, target := range owners {
-				log.FromContext(cmd.Context()).WithField("target", target).Info("logout from")
+				targetStr := fmt.Sprintf("%s/%s", target[0], target[1])
+				log.FromContext(cmd.Context()).WithField("target", targetStr).Info("logout from")
 				if err := logoutUseCase.Execute(ctx, target[0], target[1]); err != nil {
-					log.FromContext(cmd.Context()).WithField("target", target).Errorf("failed to delete token: %s", err)
-					continue
+					return fmt.Errorf("failed to delete token %q: %w", targetStr, err)
 				}
 			}
 			return nil

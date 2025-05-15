@@ -2,9 +2,9 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/auth_list"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
@@ -20,12 +20,10 @@ func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comma
 			ctx := cmd.Context()
 			entries, err := useCase.Execute(ctx)
 			if err != nil {
-				log.FromContext(ctx).WithError(err).Error("failed to list tokens")
-				return nil
+				return fmt.Errorf("failed to list tokens: %w", err)
 			}
 			if len(entries) == 0 {
-				log.FromContext(ctx).Warn("No valid token found: you need to set token by `gogh auth login`")
-				return nil
+				return errors.New("no valid token found: you need to set token by `gogh auth login`")
 			}
 			for _, entry := range entries {
 				fmt.Printf("  %s/%s\n", entry.Host, entry.Owner)

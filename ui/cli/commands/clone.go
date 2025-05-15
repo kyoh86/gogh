@@ -2,6 +2,8 @@ package commands
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
@@ -27,7 +29,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command 
 		var opts []huh.Option[string]
 		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to list repositories: %w", err)
 			}
 			opts = append(opts, huh.Option[string]{
 				Key:   repo.Ref.String(),
@@ -92,11 +94,10 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command 
 				return err
 			}
 			if len(args) == 0 {
-				log.FromContext(ctx).Warn("No repositories to clone")
-				return nil
+				return errors.New("no repository specified")
 			}
 			if err := runFunc(ctx, args); err != nil {
-				log.FromContext(ctx).Errorf("failed to clone repositories: %v", err)
+				return fmt.Errorf("failed to clone repositories: %v", err)
 			}
 			log.FromContext(ctx).Infof("Cloning %d repositories completed", len(args))
 			return nil

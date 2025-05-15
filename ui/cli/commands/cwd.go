@@ -24,17 +24,17 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command 
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			formatter, err := config.LocationFormatter(format.String())
 			if err != nil {
-				return err
+				return fmt.Errorf("invalid format: %w", err)
 			}
 
 			ctx := cmd.Context()
 			wd, err := os.Getwd()
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to get working directory: %w", err)
 			}
 			repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, wd)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to find a repository contains %s: %w", wd, err)
 			}
 			str, err := formatter.Format(*repo)
 			if err != nil {
@@ -43,6 +43,7 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command 
 					"format": format.String(),
 					"path":   repo.FullPath(),
 				}).Info("failed to format")
+				return nil
 			}
 			fmt.Println(str)
 			return nil
@@ -50,7 +51,7 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command 
 	}
 
 	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.Cwd.Format); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
+		panic(fmt.Sprintf("failed to init format flag: %s", err))
 	}
 	return cmd
 }

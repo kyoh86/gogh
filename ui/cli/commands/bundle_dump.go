@@ -28,7 +28,7 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 					0644,
 				)
 				if err != nil {
-					return err
+					return fmt.Errorf("failed to open file: %w", err)
 				}
 				defer file.Close()
 				out = file

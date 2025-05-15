@@ -3,6 +3,7 @@ package commands
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/apex/log"
@@ -23,7 +24,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) *cobra.
 		if f.File.Expand() != "" {
 			f, err := os.Open(f.File.Expand())
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to open file: %w", err)
 			}
 			defer f.Close()
 			in = f

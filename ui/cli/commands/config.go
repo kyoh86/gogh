@@ -26,13 +26,12 @@ func NewConfigCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 			logger := log.FromContext(cmd.Context())
 			t, err := template.New("gogh context").Parse(configTemplate)
 			if err != nil {
-				logger.WithError(err).Error("[Bug] Failed to parse template string")
-				return nil
+				return fmt.Errorf("[Bug] invalid template string: %w", err)
 			}
 
 			flags, err := encodeYAML(svc.Flags)
 			if err != nil {
-				logger.Error("[Bug] Failed to load flags")
+				logger.Error("[Bug] failed to load flags")
 				return nil
 			}
 			var w strings.Builder
@@ -63,8 +62,7 @@ func NewConfigCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 				"tokens":            svc.TokenService.Entries(),
 				"flags":             flags,
 			}); err != nil {
-				log.FromContext(cmd.Context()).Error("[Bug] Failed to execute template string")
-				return nil
+				return fmt.Errorf("[Bug] failed to execute template: %w", err)
 			}
 			fmt.Println(w.String())
 			return nil

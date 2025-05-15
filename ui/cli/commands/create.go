@@ -2,9 +2,9 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
-	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/create"
@@ -73,12 +73,12 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 				},
 			}
 			if err := createUseCase.Execute(ctx, refWithAlias, ropt); err != nil {
-				return err
+				return fmt.Errorf("failed to create the repository: %w", err)
 			}
 		} else {
 			template, err := svc.ReferenceParser.Parse(f.Template)
 			if err != nil {
-				return err
+				return fmt.Errorf("invalid template: %w", err)
 			}
 			if err := createFromTemplateUseCase.Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
 				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
@@ -88,7 +88,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 					Private:            f.Private,
 				},
 			}); err != nil {
-				return err
+				return fmt.Errorf("failed to create the repository from template: %w", err)
 			}
 		}
 		return nil
@@ -106,7 +106,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 				return err
 			}
 			if err := runFunc(ctx, ref); err != nil {
-				log.FromContext(ctx).Errorf("failed to create repository: %v", err)
+				return err
 			}
 			return nil
 		},

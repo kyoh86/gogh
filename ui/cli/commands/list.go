@@ -24,7 +24,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			formatter, err := config.LocationFormatter(format.String())
 			if err != nil {
-				return err
+				return fmt.Errorf("invalid format flag: %w", err)
 			}
 
 			ctx := cmd.Context()
@@ -37,10 +37,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command
 			}
 			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, opts) {
 				if err != nil {
-					log.FromContext(ctx).WithFields(log.Fields{
-						"error": err,
-					}).Error("failed to list repositories")
-					return nil
+					return fmt.Errorf("failed to list repositories: %w", err)
 				}
 				str, err := formatter.Format(*repo)
 				if err != nil {
@@ -61,7 +58,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) *cobra.Command
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.Flags.List.Primary, "List up repositories in just a primary root")
 	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.List.Format); err != nil {
-		log.FromContext(ctx).WithError(err).Error("failed to init format flag")
+		panic(fmt.Sprintf("[Bug] failed to init format flag: %s", err))
 	}
 
 	return cmd

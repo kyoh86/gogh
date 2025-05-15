@@ -75,7 +75,7 @@ func TestReferenceParser(t *testing.T) {
 				t.Run(testcase.title, func(t *testing.T) {
 					ref, err := parser.Parse(testcase.source)
 					if err != nil {
-						t.Fatalf("failed to parse %q: %s", testcase.source, err)
+						t.Fatalf("invalid %q: %s", testcase.source, err)
 					}
 					if testcase.expectHost != ref.Host() {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, ref.Host())
@@ -266,7 +266,7 @@ func TestReferenceParser(t *testing.T) {
 				t.Run(testcase.title, func(t *testing.T) {
 					ref, err := parser.Parse(testcase.source)
 					if err != nil {
-						t.Fatalf("failed to parse %q: %s", testcase.source, err)
+						t.Fatalf("invalid %q: %s", testcase.source, err)
 					}
 					if testcase.expectHost != ref.Host() {
 						t.Errorf("expect host %q but %q gotten", testcase.expectHost, ref.Host())
@@ -297,7 +297,7 @@ func TestReferenceParser(t *testing.T) {
 			}} {
 				res, err := parser.ParseWithAlias(testcase.source)
 				if err != nil {
-					t.Fatalf("failed to parse %q: %s", testcase.source, err)
+					t.Fatalf("invalid %q: %s", testcase.source, err)
 				}
 				if res.Alias != nil {
 					t.Errorf("want alias is nil but %#v gotten", res.Alias)
@@ -343,7 +343,7 @@ func TestReferenceParser(t *testing.T) {
 				t.Run(testcase.title, func(t *testing.T) {
 					res, err := parser.ParseWithAlias(testcase.source)
 					if err != nil {
-						t.Fatalf("failed to parse %q: %s", testcase.source, err)
+						t.Fatalf("invalid %q: %s", testcase.source, err)
 					}
 					if res.Alias == nil {
 						t.Fatal("want valid alias but got nil")

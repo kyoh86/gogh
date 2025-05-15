@@ -2,9 +2,9 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
-	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/fork"
 	"github.com/kyoh86/gogh/v3/app/service"
@@ -31,8 +31,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
 				Target: f.To,
 			}
 			if err := useCase.Execute(ctx, refs[0], opts); err != nil {
-				log.FromContext(ctx).WithError(err).Error("failed to fork the repository")
-				return nil
+				return fmt.Errorf("failed to fork the repository: %w", err)
 			}
 			return nil
 		},

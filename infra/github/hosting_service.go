@@ -180,7 +180,7 @@ func (s *HostingService) GetRepository(ctx context.Context, reference repository
 	if parent := ghRepo.GetParent(); parent != nil {
 		u, err := url.Parse(parent.GetHTMLURL())
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse parent HTML URL: %w", err)
+			return nil, fmt.Errorf("invalid parent HTML URL: %w", err)
 		}
 		parentRepo := &hosting.ParentRepository{
 			Ref:      repository.NewReference(u.Host, parent.GetOwner().GetLogin(), parent.GetName()),
