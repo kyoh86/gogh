@@ -128,6 +128,7 @@ func NewApp(
 		commands.NewConfigShowCommand,
 		commands.NewSetDefaultHostCommand,
 		commands.NewSetDefaultOwnerCommand,
+		commands.NewMigrateCommand,
 	)
 	if err != nil {
 		return nil, err
@@ -144,7 +145,6 @@ func NewApp(
 		fn    func(context.Context, *service.ServiceSet) (*cobra.Command, error)
 		group string
 	}{
-		{fn: commands.NewMigrateCommand, group: groupConfig},
 		{fn: commands.NewManCommand},
 		{fn: commands.NewCwdCommand, group: groupShow},
 		{fn: commands.NewListCommand, group: groupShow},
