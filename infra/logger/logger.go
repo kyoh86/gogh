@@ -30,7 +30,7 @@ func NewLogger(ctx context.Context) context.Context {
 	errLog := level.New(cli.New(os.Stderr), log.ErrorLevel)
 	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stdout)}
 	level := log.InfoLevel
-	if os.Getenv("GOGH_DEBUG") == "1" {
+	if os.Getenv("GOGH_DEBUG") != "" {
 		level = log.DebugLevel
 	}
 	return log.NewContext(ctx, &log.Logger{

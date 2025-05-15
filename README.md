@@ -23,23 +23,23 @@ github.com/nvim-telescope/telescope.nvim
 ...
 ```
 
-`gogh` provides a way to organize remote repository clones, like `go get` does.  When you clone a
-remote repository by `gogh get`, `gogh` makes a directory under a specific root directory (by default
+`gogh` provides a way to organize remote repository clones, like `go clone` does.  When you clone a
+remote repository by `gogh clone`, `gogh` makes a directory under a specific root directory (by default
 `~/go/src`) using the remote repository URL's host and path.  And creating new one by `gogh create`,
-`gogh` make both of a local project and a remote repository.
+`gogh` make both of a local repositories and a remote repository.
 
 ```console
-$ gogh get https://github.com/kyoh86/gogh
+$ gogh clone https://github.com/kyoh86/gogh
 # Runs `git clone https://github.com/kyoh86/gogh ~/go/src/github.com/kyoh86/gogh`
 ```
 
 You can also do:
 
-- List projects (local repositories) (`gogh list`).
-- Create a new project (`gogh create`).
+- List repositories (local repositories) (`gogh list`).
+- Create a new repository (`gogh create`).
 - Fork a repository (`gogh fork`).
 - Clone a repository (`gogh clone`).
-- Delete a project (`gogh delete`).
+- Delete a repository (`gogh delete`).
 - List remote repositories (`gogh repos`).
 
 See [#Available commands](#available-commands) for more information.
@@ -78,59 +78,87 @@ To login in new server or logout, you should use `auth login`.
 
 See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 
-### Show projects
+### Show repositories
 
-| Command        | Description                                    |
-| --             | --                                             |
-| `gogh list`    | List local projects                            |
-| `gogh repos`   | List remote repositories                       |
-| `gogh cwd`     | Print the project in current working directory |
+| Command | Description                                                               |
+| --      | --                                                                        |
+| `cwd`   | Print the local repository which the current working directory belongs to |
+| `list`  | List local repositories                                                   |
+| `repos` | List remote repositories                                                  |
 
-### Manipulate projects
+### Manipulate repositories
 
-| Command       | Description                                   |
-| --            | --                                            |
-| `gogh create` | Create a new project with a remote repository |
-| `gogh delete` | Delete a repository with a remote repository  |
-| `gogh fork`   | Fork a repository                             |
-| `gogh clone`  | Clone a repository to local                   |
+| Command  | Description                              |
+| --       | --                                       |
+| `clone`  | Clone remote repositories to local       |
+| `create` | Create a new local and remote repository |
+| `delete` | Delete local and remote repository       |
+| `fork`   | Fork a repository                        |
+
+### Configurations
+
+| Command   | Description            |
+| --        | --                     |
+| `auth`    | Manage tokens          |
+| `config`  | Show configurations    |
+| `migrate` | Migrate configurations |
+| `roots`   | Manage roots           |
 
 ### Others
 
-| Command       | Description            |
-| --            | --                     |
-| `gogh roots`  | Manage roots           |
-| `gogh auth`   | Manage Authentications |
-| `gogh bundle` | Manage bundle          |
-| `gogh help`   | Help about any command |
+| Command      | Description                                                |
+| --           | --                                                         |
+| `bundle`     | Manage bundle                                              |
+| `completion` | Generate the autocompletion script for the specified shell |
+| `help`       | Help about any command                                     |
 
 Use `gogh [command] --help` for more information about a command.
 Or see the manual in [doc/usage/gogh.md](./doc/usage/gogh.md).
 
 ## Environment variables
 
-- `GOGH_CONFIG_PATH`: The path to the configuration file. Default: `${XDG_CONFIG_HOME}/gogh/config.yaml`.
+- `GOGH_CONFIG_PATH`:  
 - `GOGH_FLAG_PATH`: The path to the configuration file. Default: `${XDG_CONFIG_HOME}/gogh/flag.yaml`.
 - `GOGH_TOKENS_PATH`: The path to the configuration file. Default: `${XDG_CACHE_HOME}/gogh/tokens.yaml`.
+
+- `GOGH_CONFIG_PATH`
+    - **(DEPRECATED)** The path to the configuration file.
+    - Default: `${XDG_CONFIG_HOME}/gogh/config.yaml`.
+- `GOGH_DEBUG`
+    - Enable debug mode.
+    - Default: ``.
+    - Set to `1` to enable debug mode.
+- `GOGH_DEFAULT_NAMES_PATH`
+    - The path for the default names.
+    - Default: `${XDG_CONFIG_HOME}/gogh/default_names.v4.toml`
+- `GOGH_FLAG_PATH`
+    - The path for values for each `gogh` flags.
+    - Default: `${XDG_CONFIG_HOME}/gogh/flags.v4.toml`
+- `GOGH_TOKENS_PATH`
+    - The path for the tokens.
+    - Default: `${XDG_CACHE_HOME}/gogh/tokens.v4.toml`
+- `GOGH_WORKSPACE_PATH`
+    - The path for the workspaces.
+    - Default: `${XDG_CONFIG_HOME}/gogh/workspace.v4.toml`
 
 ## Configurations
 
 ### Roots
 
-`gogh` manages projects under the `roots` directories.
+`gogh` manages repositories under the `roots` directories.
 
 See also: [Directory structures](#Directory+structures)
 
 You can change the roots with `roots add <path>` or `roots remove <path>` and see all of them by
-`roots list`.  `gogh` uses the first one as the default one, `create`, `fork` or `clone` will put a
-local project under it. If you want to change the default, use `roots set-default <path>`.
+`roots list`.  `gogh` uses the primary one to `create`, `fork` or `clone` to put a local repository
+under it. If you want to change the primary, use `roots set-primary <path>`.
 
 Default: `~/Projects`.
 
 ### Default Host and Owner
 
 When you specify a repository with ambiguous user or host, it will be interpolated with a default
-value. You may set them with `auth set-default`.
+value. You may set them with `config set-default-host <host>` and `config set-default-owner <host> <owner>`.
 
 If you set them like below:
 
@@ -148,9 +176,22 @@ ambiguous repository names will be interpolated:
 
 NOTE: default host will be "github.com" if you don't set it.
 
+### Flags
+
+You can set flags for each command in the configuration file.  The flags are used to set the default
+values for each command.  You can set the flags in the configuration file like this:
+
+```toml
+[repos]
+    limit = 7
+    archive = "not-archived"
+[create]
+    license-template = "mit"
+```
+
 ## Directory structures
 
-Local projects are placed under `gogh.roots` with named `*host*/*user*/*repo*.
+Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo*.
 
 ```
 ~/Projects
