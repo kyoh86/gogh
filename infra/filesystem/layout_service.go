@@ -27,19 +27,19 @@ func (l *LayoutService) GetRoot() string {
 
 // Match returns the reference corresponding to the given path
 func (l *LayoutService) Match(path string) (*repository.Reference, error) {
-	// ルートからの相対パスを取得
+	// Get the relative path from the root
 	relPath, err := filepath.Rel(l.root, path)
 	if err != nil {
 		return nil, workspace.ErrNotMatched
 	}
 
-	// パスコンポーネントを分解
+	// Split the path components
 	parts := strings.Split(filepath.ToSlash(relPath), "/")
 	if len(parts) < 3 {
 		return nil, workspace.ErrNotMatched
 	}
 
-	// host/owner/nameの形式でリファレンスを作成
+	// Create a reference in the format host/owner/name
 	return typ.Ptr(repository.NewReference(parts[0], parts[1], parts[2])), nil
 }
 

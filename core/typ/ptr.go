@@ -1,12 +1,12 @@
 package typ
 
-// FalsePtr converts bool (default: false) to *bool (default: nil as true)
+// FalsePtr returns nil if b is true, or pointer to false if b is false.
 func FalsePtr(b bool) *bool {
 	if b {
 		f := false
 		return &f
 	}
-	return nil // == &true
+	return nil // true returns nil
 }
 
 // NilablePtr converts a value of any type to a pointer, returning nil if the value is the zero value.

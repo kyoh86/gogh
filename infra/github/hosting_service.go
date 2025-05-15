@@ -50,17 +50,17 @@ func getClient(ctx context.Context, host string, token *auth.Token) *Connection 
 		}
 	}
 	baseRESTURL := &url.URL{
-		Scheme: "https://",
+		Scheme: "https",
 		Host:   host,
 		Path:   "/api/v3",
 	}
 	uploadRESTURL := &url.URL{
-		Scheme: "https://",
+		Scheme: "https",
 		Host:   host,
 		Path:   "/api/uploads",
 	}
 	baseGQLURL := &url.URL{
-		Scheme: "https://",
+		Scheme: "https",
 		Host:   host,
 		Path:   "/api/graphql",
 	}
@@ -159,6 +159,9 @@ func (s *HostingService) GetRepository(ctx context.Context, reference repository
 	}
 	conn := getClient(ctx, reference.Host(), &token)
 	ghRepo, _, err := conn.restClient.Repositories.Get(ctx, reference.Owner(), reference.Name())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repository: %w", err)
+	}
 	// Convert github.Repository to hosting.Repository
 	repo := &hosting.Repository{
 		Ref:         reference,
@@ -429,7 +432,7 @@ func convertRepository(ref repository.Reference, repo *github.Repository) (*host
 	}
 	return &hosting.Repository{
 		Ref:         ref,
-		URL:         *repo.HTMLURL,
+		URL:         repo.GetHTMLURL(),
 		Parent:      parent,
 		Description: repo.GetDescription(),
 		Homepage:    repo.GetHomepage(),

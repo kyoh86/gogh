@@ -45,12 +45,12 @@ func (f *FinderService) FindByReference(ctx context.Context, ws workspace.Worksp
 				return nil, err
 			}
 			if isDir {
-				return typ.Ptr(repository.NewLocation(
+				return repository.NewLocation(
 					abs,
 					ref.Host(),
 					ref.Owner(),
 					ref.Name(),
-				)), nil
+				), nil
 			}
 		case errors.Is(err, workspace.ErrNotMatched):
 			// Ignore directories that do not match the layout
@@ -86,12 +86,12 @@ func (f *FinderService) FindByPath(ctx context.Context, ws workspace.WorkspaceSe
 				return nil, err
 			}
 			if isDir {
-				return typ.Ptr(repository.NewLocation(
+				return repository.NewLocation(
 					abs,
 					ref.Host(),
 					ref.Owner(),
 					ref.Name(),
-				)), nil
+				), nil
 			}
 		case errors.Is(err, workspace.ErrNotMatched):
 			// Ignore directories that do not match the layout
@@ -144,12 +144,12 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 			case errors.Is(err, workspace.ErrNotMatched):
 				// Ignore directories that do not match the layout
 			case err == nil:
-				if !yield(typ.Ptr(repository.NewLocation(
+				if !yield(repository.NewLocation(
 					p,
 					ref.Host(),
 					ref.Owner(),
 					ref.Name(),
-				)), nil) {
+				), nil) {
 					return filepath.SkipAll
 				}
 			default:

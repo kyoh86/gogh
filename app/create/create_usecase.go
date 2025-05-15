@@ -34,11 +34,13 @@ func NewUseCase(
 
 type RepositoryOptions = hosting.CreateRepositoryOptions
 
+// Options contains options for the create operation
 type Options struct {
 	TryCloneNotify service.TryCloneNotify
 	RepositoryOptions
 }
 
+// Execute performs the create operation
 func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Options) error {
 	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
 	if err != nil {

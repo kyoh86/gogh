@@ -2,6 +2,7 @@ package delete
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/kyoh86/gogh/v3/core/hosting"
@@ -45,10 +46,10 @@ func (u *UseCase) Execute(ctx context.Context, refs string, opts Options) error 
 		return err
 	}
 	if err := u.deleteLocal(ctx, *ref, opts); err != nil {
-		return err
+		return fmt.Errorf("failed to delete local: %w", err)
 	}
 	if err := u.deleteRemote(ctx, *ref, opts); err != nil {
-		return err
+		return fmt.Errorf("failed to delete remote: %w", err)
 	}
 	return nil
 }
@@ -59,7 +60,7 @@ func (u *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, opt
 	}
 	match, err := u.finderService.FindByReference(ctx, u.workspaceService, ref)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to find local repository: %w", err)
 	}
 	if match == nil {
 		return nil

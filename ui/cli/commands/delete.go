@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/delete"
 	"github.com/kyoh86/gogh/v3/app/repos"
@@ -110,10 +111,14 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 				svc.HostingService,
 				svc.ReferenceParser,
 			)
-			return useCase.Execute(ctx, selected, delete.Options{
+			if err := useCase.Execute(ctx, selected, delete.Options{
 				Local:  f.local,
 				Remote: f.remote,
-			})
+			}); err != nil {
+				return err
+			}
+			log.FromContext(ctx).Infof("deleted %s", selected)
+			return nil
 		},
 	}
 	cmd.Flags().BoolVarP(&f.local, "local", "", true, "Delete local repository.")

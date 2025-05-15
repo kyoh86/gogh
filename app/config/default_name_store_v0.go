@@ -19,7 +19,7 @@ type v0YAMLDefaultNameStore struct {
 	DefaultHost string `yaml:"default_host,omitempty"`
 }
 
-// Load implements repository.DefaultNAmeRepositoryOld.
+// Load implements store.Loader.
 func (d *DefaultNameStoreV0) Load(ctx context.Context, initial func() repository.DefaultNameService) (repository.DefaultNameService, error) {
 	var v v0YAMLDefaultNameStore
 	source, err := d.Source()
@@ -32,7 +32,7 @@ func (d *DefaultNameStoreV0) Load(ctx context.Context, initial func() repository
 	}
 	defer file.Close()
 	if err := yaml.NewDecoder(file).Decode(&v); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decode yaml: %w", err)
 	}
 	svc := initial()
 	if err := svc.SetDefaultHost(v.DefaultHost); err != nil {

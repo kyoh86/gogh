@@ -28,7 +28,7 @@ func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) *cobra.Comma
 				return nil
 			}
 			for _, entry := range entries {
-				fmt.Printf("  %s%s\n", entry.Host, entry.Owner)
+				fmt.Printf("  %s/%s\n", entry.Host, entry.Owner)
 			}
 			return nil
 		},

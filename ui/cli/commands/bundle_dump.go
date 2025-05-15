@@ -13,7 +13,7 @@ import (
 )
 
 func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
-	var f config.BundleDumpFlags
+	var flags config.BundleDumpFlags
 	cmd := &cobra.Command{
 		Use:     "dump",
 		Aliases: []string{"export"},
@@ -21,17 +21,17 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
-			if f.File.Expand() != "" {
-				f, err := os.OpenFile(
-					f.File.Expand(),
+			if flags.File.Expand() != "" {
+				file, err := os.OpenFile(
+					flags.File.Expand(),
 					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
 					0644,
 				)
 				if err != nil {
 					return err
 				}
-				defer f.Close()
-				out = f
+				defer file.Close()
+				out = file
 			}
 			useCase := bundle_dump.NewUseCase(svc.WorkspaceService, svc.FinderService, svc.GitService)
 			for entry, err := range useCase.Execute(cmd.Context(), bundle_dump.Options{}) {
@@ -49,7 +49,7 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) *cobra.Com
 		},
 	}
 
-	f.File = svc.Flags.BundleDump.File
-	cmd.Flags().VarP(&f.File, "file", "", "A file to output; if not specified, output to stdout")
+	flags.File = svc.Flags.BundleDump.File
+	cmd.Flags().VarP(&flags.File, "file", "f", "A file to output; if not specified, output to stdout")
 	return cmd
 }

@@ -13,7 +13,7 @@ import (
 )
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
-	var f struct {
+	var flags struct {
 		dryrun bool
 	}
 
@@ -46,7 +46,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command 
 	}
 
 	runFunc := func(ctx context.Context, refs []string) error {
-		if f.dryrun {
+		if flags.dryrun {
 			for _, ref := range refs {
 				log.FromContext(ctx).Infof("git clone %q", ref)
 			}
@@ -54,6 +54,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command 
 		}
 
 		eg, ctx := errgroup.WithContext(ctx)
+		eg.SetLimit(5)
 		for _, ref := range refs {
 			eg.Go(func() error {
 				return cloneUseCase.Execute(ctx, ref, clone.Options{
@@ -90,14 +91,19 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command 
 			if err != nil {
 				return err
 			}
+			if len(args) == 0 {
+				log.FromContext(ctx).Warn("No repositories to clone")
+				return nil
+			}
 			if err := runFunc(ctx, args); err != nil {
 				log.FromContext(ctx).Errorf("failed to clone repositories: %v", err)
 			}
+			log.FromContext(ctx).Infof("Cloning %d repositories completed", len(args))
 			return nil
 		},
 	}
 
 	c.Flags().
-		BoolVarP(&f.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+		BoolVarP(&flags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	return c
 }

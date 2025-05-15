@@ -18,7 +18,7 @@ func NewSetDefaultOwnerCommand(_ context.Context, svc *service.ServiceSet) *cobr
 			if err := svc.DefaultNameService.SetDefaultOwnerFor(host, owner); err != nil {
 				return fmt.Errorf("failed to set default host: %w", err)
 			}
-			fmt.Printf("Default host set to %s\n", host)
+			fmt.Printf("Default owner for %s host set to %s\n", host, owner)
 			return nil
 		},
 	}

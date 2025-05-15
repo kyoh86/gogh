@@ -7,6 +7,7 @@ import (
 	"github.com/kyoh86/gogh/v3/app/service"
 )
 
+// TryCloneNotify is a wrapper for the TryCloneNotify function to log the status.
 func TryCloneNotify(
 	ctx context.Context,
 	notify service.TryCloneNotify,

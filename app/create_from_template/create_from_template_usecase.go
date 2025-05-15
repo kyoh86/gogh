@@ -2,6 +2,7 @@ package create_from_template
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/git"
@@ -10,7 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v3/core/workspace"
 )
 
-// UseCase represents the create use case
+// UseCase represents the use case for creating a repository from a template.
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
@@ -47,12 +48,12 @@ func (uc *UseCase) Execute(
 ) error {
 	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid reference: %w", err)
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref.Reference, template, opts.RepositoryOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create repository from template: %w", err)
 	}
 	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.TryCloneNotify)
 }

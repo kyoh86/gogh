@@ -58,7 +58,7 @@ func TestLocationFormat(t *testing.T) {
 		},
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
-			actual, err := testcase.format.Format(loc)
+			actual, err := testcase.format.Format(*loc)
 			if err != nil {
 				t.Fatalf("failed to format: %s", err)
 			}
@@ -69,7 +69,7 @@ func TestLocationFormat(t *testing.T) {
 	}
 
 	t.Run("JSON", func(t *testing.T) {
-		formatted, err := testtarget.LocationFormatJSON(loc)
+		formatted, err := testtarget.LocationFormatJSON(*loc)
 		if err != nil {
 			t.Fatalf("failed to format: %s", err)
 		}

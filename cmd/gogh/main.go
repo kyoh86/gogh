@@ -102,5 +102,8 @@ func run() error {
 		return fmt.Errorf("failed to create app: %w", err)
 	}
 
+	//TODO: エラーハンドリングを用意する?
+	//Usageを表示するケースと、表示せずにコマンドとしてのエラーコードを反映するケースがある。
+	//nilの場合は成功
 	return cmd.ExecuteContext(ctx)
 }

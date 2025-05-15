@@ -209,7 +209,7 @@ func TestReferenceParser(t *testing.T) {
 					}
 					if reflect.TypeOf(testcase.expect) != reflect.TypeOf(err) {
 						t.Fatalf(
-							"expect error %t to parse %q but %t gotten",
+							"expect error %T to parse %q but %T gotten",
 							testcase.expect,
 							testcase.input,
 							err,
@@ -346,16 +346,16 @@ func TestReferenceParser(t *testing.T) {
 						t.Fatalf("failed to parse %q: %s", testcase.source, err)
 					}
 					if res.Alias == nil {
-						t.Fatal("want valid alisa but got nil")
+						t.Fatal("want valid alias but got nil")
 					}
 					if testcase.wantHost != res.Alias.Host() {
 						t.Errorf("want host %q but %q gotten", testcase.wantHost, res.Alias.Host())
 					}
 					if testcase.wantRepoUser != res.Reference.Owner() {
-						t.Errorf("want repo owner %q but %q gotten", testcase.wantRepoUser, res.Alias.Owner())
+						t.Errorf("want repo owner %q but %q gotten", testcase.wantRepoUser, res.Reference.Owner())
 					}
 					if testcase.wantRepoName != res.Reference.Name() {
-						t.Errorf("want repo name %q but %q gotten", testcase.wantRepoName, res.Alias.Name())
+						t.Errorf("want repo name %q but %q gotten", testcase.wantRepoName, res.Reference.Name())
 					}
 					if testcase.wantAliasUser != res.Alias.Owner() {
 						t.Errorf("want res.Alias owner %q but %q gotten", testcase.wantAliasUser, res.Alias.Owner())

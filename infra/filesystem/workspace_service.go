@@ -134,8 +134,8 @@ func (s *WorkspaceService) HasChanges() bool {
 
 // MarkSaved implements workspace.WorkspaceService.
 func (s *WorkspaceService) MarkSaved() {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.changed = false
 }
 

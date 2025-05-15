@@ -72,7 +72,7 @@ func NewConfigCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command
 	}
 }
 
-func encodeYAML(v interface{}) (string, error) {
+func encodeYAML(v any) (string, error) {
 	var w strings.Builder
 	if err := yaml.NewEncoder(&w).Encode(v); err != nil {
 		return "", err
