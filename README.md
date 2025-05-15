@@ -117,10 +117,6 @@ Or see the manual in [doc/usage/gogh.md](./doc/usage/gogh.md).
 
 ## Environment variables
 
-- `GOGH_CONFIG_PATH`:  
-- `GOGH_FLAG_PATH`: The path to the configuration file. Default: `${XDG_CONFIG_HOME}/gogh/flag.yaml`.
-- `GOGH_TOKENS_PATH`: The path to the configuration file. Default: `${XDG_CACHE_HOME}/gogh/tokens.yaml`.
-
 - `GOGH_CONFIG_PATH`
     - **(DEPRECATED)** The path to the configuration file.
     - Default: `${XDG_CONFIG_HOME}/gogh/config.yaml`.
@@ -194,7 +190,7 @@ values for each command.  You can set the flags in the configuration file like t
 Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo*.
 
 ```
-~/Projects
+~/Projects             -- primary root
 +-- github.com/
     |-- google/
     |   +-- go-github/
@@ -202,6 +198,12 @@ Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo
     |   +-- gogh/
     +-- alecthomas/
         +-- kingpin/
+/path/to/another/root
++-- github.com/
+    |-- kyoh86/
+    |   +-- xxx/
+    +-- anybody/
+        +-- yyy/
 ```
 
 # LICENSE
