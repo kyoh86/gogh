@@ -29,7 +29,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		var opts []huh.Option[string]
 		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
-				return "", fmt.Errorf("failed to list repositories: %w", err)
+				return "", fmt.Errorf("listing up repositories: %w", err)
 			}
 			opts = append(opts, huh.Option[string]{
 				Key:   repo.Ref.String(),
@@ -115,7 +115,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				Local:  f.local,
 				Remote: f.remote,
 			}); err != nil {
-				return fmt.Errorf("failed to delete the repository: %w", err)
+				return fmt.Errorf("deleting the repository: %w", err)
 			}
 			if f.local {
 				log.FromContext(ctx).Infof("deleted local %s", selected)

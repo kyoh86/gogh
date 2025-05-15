@@ -24,7 +24,7 @@ func LoadAlternative[T store.Content](ctx context.Context, initial func() T, loa
 		}
 		if err != nil {
 			var empty T
-			return empty, fmt.Errorf("failed to load at %dth loader: %w", i+1, err)
+			return empty, fmt.Errorf("loading at %dth loader: %w", i+1, err)
 		}
 		return svc, nil
 	}

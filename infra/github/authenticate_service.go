@@ -29,7 +29,7 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 	// Request device code
 	deviceCodeResp, err := config.DeviceAuth(ctx)
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to request device code: %w", err)
+		return "", nil, fmt.Errorf("requesting device code: %w", err)
 	}
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
@@ -37,7 +37,7 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 			VerificationURI: deviceCodeResp.VerificationURI,
 			UserCode:        deviceCodeResp.UserCode,
 		}); err != nil {
-			return fmt.Errorf("failed to verify device code: %w", err)
+			return fmt.Errorf("verifying device code: %w", err)
 		}
 		return nil
 	})
@@ -50,7 +50,7 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 		codeResp.Interval++ // Add a second for safety; the server may not be ready yet
 		resp, err := config.DeviceAccessToken(ctx, &codeResp)
 		if err != nil {
-			return fmt.Errorf("failed to poll for token: %w", err)
+			return fmt.Errorf("polling for token: %w", err)
 		}
 		token = resp
 		return nil
@@ -68,7 +68,7 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 	conn := getClient(ctx, host, token)
 	user, _, err := conn.restClient.Users.Get(ctx, "")
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to get authenticated user: %w", err)
+		return "", nil, fmt.Errorf("getting authenticated user: %w", err)
 	}
 	return user.GetLogin(), token, nil
 }

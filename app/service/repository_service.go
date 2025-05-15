@@ -67,6 +67,7 @@ func (s *RepositoryService) TryClone(
 	repo *hosting.Repository,
 	ref repository.Reference,
 	alias *repository.Reference,
+	requestTimeout time.Duration,
 	notify TryCloneNotify,
 ) error {
 	// Determine local path based on layout
@@ -88,19 +89,19 @@ func (s *RepositoryService) TryClone(
 	}
 
 	// Perform git clone operation
-	if err := cloneWithRetry(ctx, gitService, layout, ref, repo.CloneURL, localPath, notify); err != nil {
-		return fmt.Errorf("failed to clone: %w", err)
+	if err := cloneWithRetry(ctx, gitService, layout, ref, repo.CloneURL, localPath, requestTimeout, notify); err != nil {
+		return fmt.Errorf("cloning: %w", err)
 	}
 
 	// Set up remotes
 	if err := gitService.SetDefaultRemotes(ctx, localPath, []string{repo.CloneURL}); err != nil {
-		return fmt.Errorf("failed to set default remote: %w", err)
+		return fmt.Errorf("setting default remote: %w", err)
 	}
 
 	// Set up additional remotes if needed
 	if repo.Parent != nil {
 		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{repo.Parent.CloneURL}); err != nil {
-			return fmt.Errorf("failed to set upstream remote: %w", err)
+			return fmt.Errorf("setting upstream remote: %w", err)
 		}
 	}
 	return nil
@@ -112,15 +113,21 @@ func cloneWithRetry(
 	layout workspace.LayoutService,
 	ref repository.Reference,
 	cloneURL, localPath string,
+	timeout time.Duration,
 	notify TryCloneNotify,
 ) (err error) {
 	if notify == nil {
 		notify = func(n TryCloneStatus) error { return nil }
 	}
 	for {
-		err = gitService.Clone(ctx, cloneURL, localPath, git.CloneOptions{})
+		if timeout == 0 {
+			timeout = 5 * time.Second
+		}
+		toctx, tocancel := context.WithTimeout(ctx, timeout)
+		err = gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{})
+		tocancel()
 		switch {
-		case errors.Is(err, git.ErrRepositoryNotExists):
+		case errors.Is(err, git.ErrRepositoryNotExists), errors.Is(err, context.DeadlineExceeded):
 			if err := notify(TryCloneStatusRetry); err != nil {
 				return err
 			}

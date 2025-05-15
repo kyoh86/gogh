@@ -2,6 +2,7 @@ package clone
 
 import (
 	"context"
+	"time"
 
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/git"
@@ -35,6 +36,7 @@ func NewUseCase(
 
 // Options contains options for the clone operation
 type Options struct {
+	RequestTimeout time.Duration
 	TryCloneNotify service.TryCloneNotify
 }
 
@@ -50,5 +52,5 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 		return err
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
-	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.TryCloneNotify)
+	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
 }

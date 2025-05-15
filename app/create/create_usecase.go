@@ -3,6 +3,7 @@ package create
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/git"
@@ -37,6 +38,7 @@ type RepositoryOptions = hosting.CreateRepositoryOptions
 
 // Options contains options for the create operation
 type Options struct {
+	RequestTimeout time.Duration
 	TryCloneNotify service.TryCloneNotify
 	RepositoryOptions
 }
@@ -50,7 +52,7 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepository(ctx, ref.Reference, opts.RepositoryOptions)
 	if err != nil {
-		return fmt.Errorf("failed to create: %w", err)
+		return fmt.Errorf("creating: %w", err)
 	}
-	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.TryCloneNotify)
+	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
 }

@@ -181,8 +181,8 @@ values for each command.  You can set the flags in the configuration file like t
 [repos]
     limit = 7
     archive = "not-archived"
-[create]
-    license-template = "mit"
+[bundle-restore]
+    request-timeout = 5
 ```
 
 ## Directory structures

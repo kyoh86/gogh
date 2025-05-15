@@ -8,6 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/clone"
+	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/repos"
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/spf13/cobra"
@@ -15,9 +16,7 @@ import (
 )
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	var flags struct {
-		dryrun bool
-	}
+	var flags config.CloneFlags
 
 	reposUseCase := repos.NewUseCase(svc.HostingService)
 	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService)
@@ -29,7 +28,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		var opts []huh.Option[string]
 		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
-				return nil, fmt.Errorf("failed to list repositories: %w", err)
+				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}
 			opts = append(opts, huh.Option[string]{
 				Key:   repo.Ref.String(),
@@ -48,7 +47,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	runFunc := func(ctx context.Context, refs []string) error {
-		if flags.dryrun {
+		if flags.Dryrun {
 			for _, ref := range refs {
 				log.FromContext(ctx).Infof("git clone %q", ref)
 			}
@@ -97,7 +96,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 				return errors.New("no repository specified")
 			}
 			if err := runFunc(ctx, args); err != nil {
-				return fmt.Errorf("failed to clone repositories: %v", err)
+				return fmt.Errorf("cloning repositories: %v", err)
 			}
 			log.FromContext(ctx).Infof("Cloning %d repositories completed", len(args))
 			return nil
@@ -105,6 +104,8 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	c.Flags().
-		BoolVarP(&flags.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+		BoolVarP(&flags.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	c.Flags().
+		DurationVarP(&flags.RequestTimeout, "timeout", "t", svc.Flags.Clone.RequestTimeout, "Timeout for the request")
 	return c, nil
 }

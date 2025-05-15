@@ -38,13 +38,13 @@ type Verify = auth.Verify
 func (uc *UseCase) Execute(ctx context.Context, host string, verify Verify) error {
 	user, token, err := uc.authService.Authenticate(ctx, host, verify)
 	if err != nil {
-		return fmt.Errorf("failed to authenticate: %w", err)
+		return fmt.Errorf("authenticating: %w", err)
 	}
 	if token == nil {
 		return fmt.Errorf("token is nil")
 	}
 	if err := uc.tokenService.Set(host, user, *token); err != nil {
-		return fmt.Errorf("failed to set token: %w", err)
+		return fmt.Errorf("setting token: %w", err)
 	}
 	return nil
 }

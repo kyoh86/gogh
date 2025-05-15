@@ -73,7 +73,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				},
 			}
 			if err := createUseCase.Execute(ctx, refWithAlias, ropt); err != nil {
-				return fmt.Errorf("failed to create the repository: %w", err)
+				return fmt.Errorf("creating the repository: %w", err)
 			}
 		} else {
 			template, err := svc.ReferenceParser.Parse(f.Template)
@@ -81,6 +81,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("invalid template: %w", err)
 			}
 			if err := createFromTemplateUseCase.Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
+				RequestTimeout: f.RequestTimeout,
 				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				RepositoryOptions: create_from_template.RepositoryOptions{
 					Description:        f.Description,
@@ -88,7 +89,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 					Private:            f.Private,
 				},
 			}); err != nil {
-				return fmt.Errorf("failed to create the repository from template: %w", err)
+				return fmt.Errorf("creating the repository from template: %w", err)
 			}
 		}
 		return nil
@@ -157,6 +158,8 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		BoolVarP(&f.PreventRebaseMerge, "prevent-rebase-merge", "", svc.Flags.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
 	cmd.Flags().
 		BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
+	cmd.Flags().
+		DurationVarP(&f.RequestTimeout, "timeout", "t", svc.Flags.Create.RequestTimeout, "Timeout for the request")
 	cmd.Flags().
 		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
 	return cmd, nil

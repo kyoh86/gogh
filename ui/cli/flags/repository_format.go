@@ -11,7 +11,7 @@ func RepositoryFormatFlag(cmd *cobra.Command, format *string, defaultValue strin
 	// UNDONE: opt ...Options Accepts NameOption, ShortUsageOption, ShorthandOption
 	cmd.Flags().StringVarP(format, "format", "f", defaultValue, RepositoryFormatShortUsage)
 	if err := cmd.RegisterFlagCompletionFunc("format", CompleteRepositoryFormat); err != nil {
-		return fmt.Errorf("failed to register completion function for format flag: %w", err)
+		return fmt.Errorf("registering completion function for format flag: %w", err)
 	}
 	return nil
 }

@@ -46,10 +46,10 @@ func (u *UseCase) Execute(ctx context.Context, refs string, opts Options) error 
 		return err
 	}
 	if err := u.deleteLocal(ctx, *ref, opts); err != nil {
-		return fmt.Errorf("failed to delete local: %w", err)
+		return fmt.Errorf("deleting local: %w", err)
 	}
 	if err := u.deleteRemote(ctx, *ref, opts); err != nil {
-		return fmt.Errorf("failed to delete remote: %w", err)
+		return fmt.Errorf("deleting remote: %w", err)
 	}
 	return nil
 }
@@ -60,7 +60,7 @@ func (u *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, opt
 	}
 	match, err := u.finderService.FindByReference(ctx, u.workspaceService, ref)
 	if err != nil {
-		return fmt.Errorf("failed to find local repository: %w", err)
+		return fmt.Errorf("finding local repository: %w", err)
 	}
 	if match == nil {
 		return nil

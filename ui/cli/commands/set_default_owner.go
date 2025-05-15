@@ -16,7 +16,7 @@ func NewSetDefaultOwnerCommand(_ context.Context, svc *service.ServiceSet) (*cob
 		RunE: func(cmd *cobra.Command, args []string) error {
 			host, owner := args[0], args[1]
 			if err := svc.DefaultNameService.SetDefaultOwnerFor(host, owner); err != nil {
-				return fmt.Errorf("failed to set default host: %w", err)
+				return fmt.Errorf("setting default host: %w", err)
 			}
 			fmt.Printf("Default owner for %s host set to %s\n", host, owner)
 			return nil

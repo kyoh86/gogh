@@ -24,6 +24,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
 			opts := fork.Options{
+				RequestTimeout: f.RequestTimeout,
 				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				HostingOptions: fork.HostingOptions{
 					DefaultBranchOnly: f.DefaultBranchOnly,
@@ -31,7 +32,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 				Target: f.To,
 			}
 			if err := useCase.Execute(ctx, refs[0], opts); err != nil {
-				return fmt.Errorf("failed to fork the repository: %w", err)
+				return fmt.Errorf("forking the repository: %w", err)
 			}
 			return nil
 		},
@@ -50,8 +51,10 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 			}, " "),
 		)
 	cmd.Flags().
-		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
+		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Fork.CloneRetryLimit, "")
 	cmd.Flags().
-		BoolVarP(&f.DefaultBranchOnly, "default-branch-only", "", false, "Only fork the default branch")
+		BoolVarP(&f.DefaultBranchOnly, "default-branch-only", "", svc.Flags.Fork.DefaultBranchOnly, "Only fork the default branch")
+	cmd.Flags().
+		DurationVarP(&f.RequestTimeout, "timeout", "t", svc.Flags.Fork.RequestTimeout, "Timeout for the request")
 	return cmd, nil
 }

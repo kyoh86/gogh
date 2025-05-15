@@ -24,11 +24,11 @@ func NewManCommand(_ context.Context, _ *service.ServiceSet) (*cobra.Command, er
 			facadeCommand := cmd.Parent()
 			list, _, err := facadeCommand.Traverse([]string{"list"})
 			if err != nil {
-				return fmt.Errorf("failed to find 'list' command': %w", err)
+				return fmt.Errorf("finding 'list' command': %w", err)
 			}
 			cwd, _, err := facadeCommand.Traverse([]string{"cwd"})
 			if err != nil {
-				return fmt.Errorf("failed to find 'cwd' command: %w", err)
+				return fmt.Errorf("finding 'cwd' command: %w", err)
 			}
 			list.Flag("format").Usage = flags.LocationFormatLongUsage
 			cwd.Flag("format").Usage = flags.LocationFormatLongUsage
@@ -37,17 +37,17 @@ func NewManCommand(_ context.Context, _ *service.ServiceSet) (*cobra.Command, er
 				Section: "1",
 			}
 			if err := os.MkdirAll(manPagePath, 0755); err != nil {
-				return fmt.Errorf("failed to make man page directory: %w", err)
+				return fmt.Errorf("making man page directory: %w", err)
 			}
 			if err := doc.GenManTree(facadeCommand, header, manPagePath); err != nil {
-				return fmt.Errorf("failed to generate man pages: %w", err)
+				return fmt.Errorf("generating man pages: %w", err)
 			}
 			if err := os.MkdirAll(usageDocPath, 0755); err != nil {
-				return fmt.Errorf("failed to make usage doc directory: %w", err)
+				return fmt.Errorf("making usage doc directory: %w", err)
 			}
 			facadeCommand.DisableAutoGenTag = true
 			if err := doc.GenMarkdownTree(facadeCommand, usageDocPath); err != nil {
-				return fmt.Errorf("failed to generate usage documents: %w", err)
+				return fmt.Errorf("generating usage documents: %w", err)
 			}
 			return nil
 		},

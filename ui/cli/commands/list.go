@@ -37,7 +37,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 			}
 			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, opts) {
 				if err != nil {
-					return fmt.Errorf("failed to list repositories: %w", err)
+					return fmt.Errorf("listing up repositories: %w", err)
 				}
 				str, err := formatter.Format(*repo)
 				if err != nil {
@@ -58,7 +58,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.Flags.List.Primary, "List up repositories in just a primary root")
 	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.List.Format); err != nil {
-		return nil, fmt.Errorf("failed to init format flag: %s", err)
+		return nil, fmt.Errorf("initializing format flag: %s", err)
 	}
 	return cmd, nil
 }

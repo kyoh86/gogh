@@ -24,7 +24,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		if f.File != "" {
 			f, err := os.Open(f.File)
 			if err != nil {
-				return fmt.Errorf("failed to open file: %w", err)
+				return fmt.Errorf("opening file: %w", err)
 			}
 			defer f.Close()
 			in = f
@@ -58,6 +58,8 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		BoolVarP(&f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().
 		StringVarP(&f.File, "file", "f", svc.Flags.BundleRestore.File, "Read the file as input; if not specified, read from stdin")
+	cmd.Flags().
+		DurationVarP(&f.RequestTimeout, "request-timeout", "", svc.Flags.BundleRestore.RequestTimeout, "Read the file as input; if not specified, read from stdin")
 	cmd.Flags().
 		IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
 	return cmd, nil

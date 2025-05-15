@@ -20,7 +20,7 @@ func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 			ctx := cmd.Context()
 			entries, err := useCase.Execute(ctx)
 			if err != nil {
-				return fmt.Errorf("failed to list tokens: %w", err)
+				return fmt.Errorf("listing up tokens: %w", err)
 			}
 			if len(entries) == 0 {
 				return errors.New("no valid token found: you need to set token by `gogh auth login`")

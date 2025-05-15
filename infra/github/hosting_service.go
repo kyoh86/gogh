@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"iter"
 	"net/url"
@@ -155,12 +156,12 @@ func (s *HostingService) getTokenForCore(ctx context.Context, host, owner string
 func (s *HostingService) GetRepository(ctx context.Context, reference repository.Reference) (*hosting.Repository, error) {
 	_, token, err := s.GetTokenFor(ctx, reference)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get token for %s/%s: %w", reference.Host(), reference.Owner(), err)
+		return nil, fmt.Errorf("getting token for %s/%s: %w", reference.Host(), reference.Owner(), err)
 	}
 	conn := getClient(ctx, reference.Host(), &token)
 	ghRepo, _, err := conn.restClient.Repositories.Get(ctx, reference.Owner(), reference.Name())
 	if err != nil {
-		return nil, fmt.Errorf("failed to get repository: %w", err)
+		return nil, fmt.Errorf("requesting repository: %w", err)
 	}
 	// Convert github.Repository to hosting.Repository
 	repo := &hosting.Repository{
@@ -319,7 +320,7 @@ func (s *HostingService) CreateRepository(
 ) (*hosting.Repository, error) {
 	user, token, err := s.GetTokenFor(ctx, ref)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
 	conn := getClient(ctx, ref.Host(), &token)
 	org := ""
@@ -346,7 +347,7 @@ func (s *HostingService) CreateRepository(
 		DeleteBranchOnMerge: typ.NilablePtr(opts.DeleteBranchOnMerge),
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("requesting new repository: %w", err)
 	}
 	return convertRepository(ref, repo)
 }
@@ -359,7 +360,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 ) (*hosting.Repository, error) {
 	user, token, err := s.GetTokenFor(ctx, ref)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
 	conn := getClient(ctx, ref.Host(), &token)
 	req := github.TemplateRepoRequest{
@@ -378,7 +379,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 		&req,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("requesting new repository from template: %w", err)
 	}
 	return convertRepository(ref, repo)
 }
@@ -387,12 +388,11 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 func (s *HostingService) DeleteRepository(ctx context.Context, reference repository.Reference) error {
 	_, token, err := s.GetTokenFor(ctx, reference)
 	if err != nil {
-		return fmt.Errorf("failed to get token for %s/%s: %w", reference.Host(), reference.Owner(), err)
+		return fmt.Errorf("getting token for %s/%s: %w", reference.Host(), reference.Owner(), err)
 	}
 	conn := getClient(ctx, reference.Host(), &token)
-	_, err = conn.restClient.Repositories.Delete(ctx, reference.Owner(), reference.Name())
-	if err != nil {
-		return fmt.Errorf("failed to delete repository: %w", err)
+	if _, err = conn.restClient.Repositories.Delete(ctx, reference.Owner(), reference.Name()); err != nil {
+		return fmt.Errorf("requesting to delete repository: %w", err)
 	}
 	return nil
 }
@@ -406,7 +406,7 @@ func (s *HostingService) ForkRepository(
 ) (*hosting.Repository, error) {
 	user, token, err := s.GetTokenFor(ctx, target)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get token for %s/%s: %w", ref.Host(), ref.Owner(), err)
+		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
 	conn := getClient(ctx, ref.Host(), &token)
 	ghOpts := &github.RepositoryCreateForkOptions{
@@ -418,7 +418,16 @@ func (s *HostingService) ForkRepository(
 	}
 	fork, _, err := conn.restClient.Repositories.CreateFork(ctx, ref.Owner(), ref.Name(), ghOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create fork: %w", err)
+		var acc *github.AcceptedError
+		if errors.As(err, &acc) {
+			got, _, err := conn.restClient.Repositories.Get(ctx, target.Owner(), ref.Name())
+			if err != nil {
+				return nil, fmt.Errorf("requesting forked repository: %w", err)
+			}
+			fork = got
+		} else {
+			return nil, fmt.Errorf("requesting fork: %w", err)
+		}
 	}
 	return convertRepository(ref, fork)
 }

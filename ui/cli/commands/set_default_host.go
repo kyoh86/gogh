@@ -16,7 +16,7 @@ func NewSetDefaultHostCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		RunE: func(cmd *cobra.Command, args []string) error {
 			host := args[0]
 			if err := svc.DefaultNameService.SetDefaultHost(host); err != nil {
-				return fmt.Errorf("failed to set default host: %w", err)
+				return fmt.Errorf("setting default host: %w", err)
 			}
 			fmt.Printf("Default host set to %s\n", host)
 			return nil

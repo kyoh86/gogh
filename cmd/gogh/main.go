@@ -42,7 +42,7 @@ func run() error {
 		config.NewFlagsStoreV0(),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to load flags: %w", err)
+		return fmt.Errorf("loading flags: %w", err)
 	}
 
 	defaultNameStore := config.NewDefaultNameStore()
@@ -53,7 +53,7 @@ func run() error {
 		config.NewDefaultNameStoreV0(),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to load default names: %w", err)
+		return fmt.Errorf("loading default names: %w", err)
 	}
 
 	tokenStore := config.NewTokenStore()
@@ -64,7 +64,7 @@ func run() error {
 		config.NewTokenStoreV0(),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to load tokens: %w", err)
+		return fmt.Errorf("loading tokens: %w", err)
 	}
 
 	workspaceStore := config.NewWorkspaceStore()
@@ -75,7 +75,7 @@ func run() error {
 		config.NewWorkspaceStoreV0(),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to load workspace: %w", err)
+		return fmt.Errorf("loading workspace: %w", err)
 	}
 
 	svc := &service.ServiceSet{
@@ -99,7 +99,7 @@ func run() error {
 	}
 	cmd, err := cli.NewApp(ctx, gogh.AppName, fmt.Sprintf("%s-%s (%s)", version, commit, date), svc)
 	if err != nil {
-		return fmt.Errorf("failed to create app: %w", err)
+		return fmt.Errorf("creating app: %w", err)
 	}
 
 	return cmd.ExecuteContext(ctx)

@@ -24,7 +24,7 @@ func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.
 		}
 		entries, err := listUseCase.Execute(cmd.Context())
 		if err != nil {
-			return nil, fmt.Errorf("failed to list tokens: %w", err)
+			return nil, fmt.Errorf("listing up tokens: %w", err)
 		}
 		if len(entries) == 0 {
 			return nil, errors.New("no valid token found")
@@ -77,7 +77,7 @@ func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.
 				targetStr := fmt.Sprintf("%s/%s", target[0], target[1])
 				log.FromContext(cmd.Context()).WithField("target", targetStr).Info("logout from")
 				if err := logoutUseCase.Execute(ctx, target[0], target[1]); err != nil {
-					return fmt.Errorf("failed to delete token %q: %w", targetStr, err)
+					return fmt.Errorf("deleting token %q: %w", targetStr, err)
 				}
 			}
 			return nil

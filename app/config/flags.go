@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/kyoh86/gogh/v3/core/repository"
 )
@@ -33,32 +34,40 @@ type BundleDumpFlags struct {
 
 // BundleRestoreFlags is a struct that contains flags for restoring a bundle.
 type BundleRestoreFlags struct {
-	File            string `yaml:"file,omitempty" toml:"file,omitempty"`
-	CloneRetryLimit int    `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
-	Dryrun          bool   `yaml:"-" toml:"-"`
+	RequestTimeout  time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
+	File            string        `yaml:"file,omitempty" toml:"file,omitempty"`
+	CloneRetryLimit int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	Dryrun          bool          `yaml:"-" toml:"-"`
+}
+
+// CloneFlags is a struct that contains flags for cloning a repository.
+type CloneFlags struct {
+	RequestTimeout time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
+	Dryrun         bool          `yaml:"-" toml:"-"`
 }
 
 // CreateFlags is a struct that contains flags for creating a repository.
 type CreateFlags struct {
-	Template            string `yaml:"template,omitempty" toml:"template,omitempty"`
-	Description         string `yaml:"-" toml:"-"`
-	Homepage            string `yaml:"-" toml:"-"`
-	LicenseTemplate     string `yaml:"licenseTemplate,omitempty" toml:"license-template,omitempty"`
-	GitignoreTemplate   string `yaml:"gitignoreTemplate,omitempty" toml:"gitignore-template,omitempty"`
-	CloneRetryLimit     int    `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
-	DisableWiki         bool   `yaml:"disableWiki,omitempty" toml:"disable-wiki,omitempty"`
-	DisableDownloads    bool   `yaml:"disableDownloads,omitempty" toml:"disable-downloads,omitempty"`
-	IsTemplate          bool   `yaml:"-" toml:"-"`
-	AutoInit            bool   `yaml:"autoInit,omitempty" toml:"auto-init,omitempty"`
-	DisableProjects     bool   `yaml:"disableProjects,omitempty" toml:"disable-projects,omitempty"`
-	DisableIssues       bool   `yaml:"disableIssues,omitempty" toml:"disable-issues,omitempty"`
-	PreventSquashMerge  bool   `yaml:"preventSquashMerge,omitempty" toml:"prevent-squash-merge,omitempty"`
-	PreventMergeCommit  bool   `yaml:"preventMergeCommit,omitempty" toml:"prevent-merge-commit,omitempty"`
-	PreventRebaseMerge  bool   `yaml:"preventRebaseMerge,omitempty" toml:"prevent-rebase-merge,omitempty"`
-	DeleteBranchOnMerge bool   `yaml:"deleteBranchOnMerge,omitempty" toml:"delete-branch-on-merge,omitempty"`
-	Private             bool   `yaml:"private,omitempty" toml:"private,omitempty"`
-	IncludeAllBranches  bool   `yaml:"includeAllBranches,omitempty" toml:"include-all-branches,omitempty"`
-	Dryrun              bool   `yaml:"-" toml:"-"`
+	Template            string        `yaml:"template,omitempty" toml:"template,omitempty"`
+	Description         string        `yaml:"-" toml:"-"`
+	Homepage            string        `yaml:"-" toml:"-"`
+	LicenseTemplate     string        `yaml:"licenseTemplate,omitempty" toml:"license-template,omitempty"`
+	GitignoreTemplate   string        `yaml:"gitignoreTemplate,omitempty" toml:"gitignore-template,omitempty"`
+	RequestTimeout      time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
+	CloneRetryLimit     int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	DisableWiki         bool          `yaml:"disableWiki,omitempty" toml:"disable-wiki,omitempty"`
+	DisableDownloads    bool          `yaml:"disableDownloads,omitempty" toml:"disable-downloads,omitempty"`
+	IsTemplate          bool          `yaml:"-" toml:"-"`
+	AutoInit            bool          `yaml:"autoInit,omitempty" toml:"auto-init,omitempty"`
+	DisableProjects     bool          `yaml:"disableProjects,omitempty" toml:"disable-projects,omitempty"`
+	DisableIssues       bool          `yaml:"disableIssues,omitempty" toml:"disable-issues,omitempty"`
+	PreventSquashMerge  bool          `yaml:"preventSquashMerge,omitempty" toml:"prevent-squash-merge,omitempty"`
+	PreventMergeCommit  bool          `yaml:"preventMergeCommit,omitempty" toml:"prevent-merge-commit,omitempty"`
+	PreventRebaseMerge  bool          `yaml:"preventRebaseMerge,omitempty" toml:"prevent-rebase-merge,omitempty"`
+	DeleteBranchOnMerge bool          `yaml:"deleteBranchOnMerge,omitempty" toml:"delete-branch-on-merge,omitempty"`
+	Private             bool          `yaml:"private,omitempty" toml:"private,omitempty"`
+	IncludeAllBranches  bool          `yaml:"includeAllBranches,omitempty" toml:"include-all-branches,omitempty"`
+	Dryrun              bool          `yaml:"-" toml:"-"`
 }
 
 // CwdFlags is a struct that contains flags for the cwd command.
@@ -89,15 +98,17 @@ type ListFlags struct {
 
 // ForkFlags is a struct that contains flags for forking a repository.
 type ForkFlags struct {
-	To                string `yaml:"-" toml:"-"`
-	DefaultBranchOnly bool   `yaml:"defaultBranchOnly,omitempty" toml:"default-branch-only,omitempty"`
-	CloneRetryLimit   int    `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	To                string        `yaml:"-" toml:"-"`
+	DefaultBranchOnly bool          `yaml:"defaultBranchOnly,omitempty" toml:"default-branch-only,omitempty"`
+	RequestTimeout    time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
+	CloneRetryLimit   int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
 }
 
 // Flags is a struct that contains all the flags for the application.
 type Flags struct {
 	BundleDump    BundleDumpFlags    `yaml:"bundleDump,omitempty" toml:"bundle-dump,omitempty"`
 	BundleRestore BundleRestoreFlags `yaml:"bundleRestore,omitempty" toml:"bundle-restore,omitempty"`
+	Clone         CloneFlags         `yaml:"clone,omitempty" toml:"clone"`
 	List          ListFlags          `yaml:"list,omitempty" toml:"list,omitempty"`
 	Cwd           CwdFlags           `yaml:"cwd,omitempty" toml:"cwd,omitempty"`
 	Create        CreateFlags        `yaml:"create,omitempty" toml:"create,omitempty"`

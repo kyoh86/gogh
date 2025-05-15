@@ -29,6 +29,7 @@ gogh create [flags] [[OWNER/]NAME[=ALIAS]]
       --prevent-squash-merge        Prevent squash-merging pull requests
       --private                     Whether the repository is private
       --template string             Create new repository from the template
+  -t, --timeout duration            Timeout for the request
 ```
 
 ### SEE ALSO

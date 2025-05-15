@@ -12,12 +12,12 @@ func LocationFormatFlag(cmd *cobra.Command, format *LocationFormat, defaultValue
 	// UNDONE: opt ...Options Accepts NameOption, ShortUsageOption, ShorthandOption
 	if defaultValue != "" {
 		if err := format.Set(defaultValue); err != nil {
-			return fmt.Errorf("failed to set default format: %w", err)
+			return fmt.Errorf("setting default format: %w", err)
 		}
 	}
 	cmd.Flags().VarP(format, "format", "f", LocationFormatShortUsage)
 	if err := cmd.RegisterFlagCompletionFunc("format", CompleteLocationFormat); err != nil {
-		return fmt.Errorf("failed to register completion function for format flag: %w", err)
+		return fmt.Errorf("registering completion function for format flag: %w", err)
 	}
 	return nil
 }

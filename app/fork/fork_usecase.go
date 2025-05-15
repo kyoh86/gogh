@@ -3,6 +3,7 @@ package fork
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/git"
@@ -41,6 +42,7 @@ type HostingOptions = hosting.ForkRepositoryOptions
 
 // Options represents the options for the fork use case
 type Options struct {
+	RequestTimeout time.Duration
 	TryCloneNotify service.TryCloneNotify
 	HostingOptions
 	Target string
@@ -49,12 +51,12 @@ type Options struct {
 func (uc *UseCase) parseRefs(source, target string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
 	srcRef, err := uc.referenceParser.Parse(source)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("invalid source: %w", err)
 	}
 	if target == "" {
 		owner, err := uc.defaultNameService.GetDefaultOwnerFor(srcRef.Host())
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("getting default owner for %q: %w", srcRef.Host(), err)
 		}
 		return srcRef, &repository.ReferenceWithAlias{
 			Reference: repository.NewReference(srcRef.Host(), owner, srcRef.Name()),
@@ -62,7 +64,7 @@ func (uc *UseCase) parseRefs(source, target string) (*repository.Reference, *rep
 	}
 	toRef, err := uc.referenceParser.ParseWithAlias(target)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("invalid target: %w", err)
 	}
 	if toRef.Reference.Host() != srcRef.Host() {
 		return nil, nil, fmt.Errorf("the host of the forked repository must be the same as the original repository")
@@ -81,9 +83,12 @@ func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) err
 	}
 	fork, err := uc.hostingService.ForkRepository(ctx, *ref, targetRef.Reference, opts.HostingOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("requesting fork: %w", err)
 	}
 
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
-	return repositoryService.TryClone(ctx, fork, targetRef.Reference, targetRef.Alias, opts.TryCloneNotify)
+	if err := repositoryService.TryClone(ctx, fork, targetRef.Reference, targetRef.Alias, opts.RequestTimeout, opts.TryCloneNotify); err != nil {
+		return fmt.Errorf("cloning forked repository: %w", err)
+	}
+	return nil
 }

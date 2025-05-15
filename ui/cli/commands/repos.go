@@ -70,7 +70,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 				Sort:     opts.Sort,
 				Order:    opts.Order,
 			})); err != nil {
-				return fmt.Errorf("failed to list repositories: %w", err)
+				return fmt.Errorf("listing up repositories: %w", err)
 			}
 			return nil
 		},
@@ -82,7 +82,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 		IntVarP(&opts.Limit, "limit", "", defs.Limit, "Max number of repositories to list. -1 means unlimited")
 
 	if err := flags.RepositoryFormatFlag(cmd, &format, defs.Format); err != nil {
-		return nil, fmt.Errorf("failed to init format flag: %w", err)
+		return nil, fmt.Errorf("initializing format flag: %w", err)
 	}
 
 	var relationAccepts = []string{
@@ -95,31 +95,31 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 	if err := cmd.RegisterFlagCompletionFunc("relation", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return relationAccepts, cobra.ShellCompDirectiveDefault
 	}); err != nil {
-		return nil, fmt.Errorf("failed to register relation flag: %w", err)
+		return nil, fmt.Errorf("registering relation flag: %w", err)
 	}
 
 	if err := enumFlag(cmd, &opts.Privacy, "privacy", defs.Privacy, "Show only public/private repositories", "private", "public"); err != nil {
-		return nil, fmt.Errorf("failed to register privacy flag: %w", err)
+		return nil, fmt.Errorf("registering privacy flag: %w", err)
 	}
 
 	if err := enumFlag(cmd, &opts.Fork, "fork", defs.Fork, "Show only forked/not-forked repositories", "forked", "not-forked"); err != nil {
-		return nil, fmt.Errorf("failed to register fork flag: %w", err)
+		return nil, fmt.Errorf("registering fork flag: %w", err)
 	}
 
 	if err := enumFlag(cmd, &opts.Archive, "archive", defs.Archive, "Show only archived/not-archived repositories", "archived", "not-archived"); err != nil {
-		return nil, fmt.Errorf("failed to register archive flag: %w", err)
+		return nil, fmt.Errorf("registering archive flag: %w", err)
 	}
 
 	if err := enumFlag(cmd, &opts.Color, "color", defs.Color, "Colorize the output", "auto", "always", "never"); err != nil {
-		return nil, fmt.Errorf("failed to register color flag: %w", err)
+		return nil, fmt.Errorf("registering color flag: %w", err)
 	}
 
 	if err := enumFlag(cmd, &opts.Sort, "sort", defs.Sort, "Property by which repository be ordered", "created-at", "name", "pushed-at", "stargazers", "updated-at"); err != nil {
-		return nil, fmt.Errorf("failed to register sort flag: %w", err)
+		return nil, fmt.Errorf("registering sort flag: %w", err)
 	}
 
 	if err := enumFlag(cmd, &opts.Order, "order", defs.Order, "Directions in which to order a list of items when provided a `sort` flag", "asc", "ascending", "desc", "descending"); err != nil {
-		return nil, fmt.Errorf("failed to register order flag: %w", err)
+		return nil, fmt.Errorf("registering order flag: %w", err)
 	}
 
 	return cmd, nil
