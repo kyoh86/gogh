@@ -4,9 +4,9 @@ import (
 	"context"
 	"iter"
 	"net/url"
-	"strings"
 
 	"github.com/kyoh86/gogh/v3/core/git"
+	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/workspace"
 )
 
@@ -14,6 +14,7 @@ import (
 type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
+	hostingService   hosting.HostingService
 	gitService       git.GitService
 }
 
@@ -21,11 +22,13 @@ type UseCase struct {
 func NewUseCase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
+	hostingService hosting.HostingService,
 	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
+		hostingService:   hostingService,
 		gitService:       gitService,
 	}
 }
@@ -65,7 +68,12 @@ func (u *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*BundleEn
 				if uobj.Host != repo.Host() {
 					continue
 				}
-				remoteName := strings.Join([]string{uobj.Host, strings.TrimPrefix(strings.TrimSuffix(uobj.Path, ".git"), "/")}, "/")
+				ref, err := u.hostingService.ParseURL(uobj)
+				if err != nil {
+					yield(nil, err)
+					return
+				}
+				remoteName := ref.String()
 				entry := &BundleEntry{
 					Name: name,
 				}

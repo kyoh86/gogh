@@ -96,7 +96,7 @@ func (s *HostingService) GetURLOf(ref repository.Reference) (*url.URL, error) {
 
 // ParseURL implements hosting.HostingService.
 func (s *HostingService) ParseURL(u *url.URL) (*repository.Reference, error) {
-	words := strings.SplitN(u.Path, "/", 2)
+	words := strings.SplitN(strings.TrimPrefix(strings.TrimSuffix(u.Path, ".git"), "/"), "/", 2)
 	if len(words) < 2 {
 		return nil, fmt.Errorf("invalid path: %q", u.Path)
 	}
