@@ -2,6 +2,7 @@ package create
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kyoh86/gogh/v3/app/service"
 	"github.com/kyoh86/gogh/v3/core/git"
@@ -44,12 +45,12 @@ type Options struct {
 func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Options) error {
 	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid ref: %w", err)
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepository(ctx, ref.Reference, opts.RepositoryOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create: %w", err)
 	}
 	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.TryCloneNotify)
 }

@@ -60,7 +60,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 					return err
 				}
 				if !confirmed {
-					return context.Canceled
+					f.local = false
 				}
 			}
 			if f.remote {
@@ -73,7 +73,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 					return err
 				}
 				if !confirmed {
-					return context.Canceled
+					f.remote = false
 				}
 			}
 		}
@@ -96,13 +96,13 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return err
 			}
 
+			if f.local {
+				fmt.Printf("deleting local %s\n", selected)
+			}
+			if f.remote {
+				fmt.Printf("deleting remote %s\n", selected)
+			}
 			if f.dryrun {
-				if f.local {
-					fmt.Printf("deleting local %s\n", selected)
-				}
-				if f.remote {
-					fmt.Printf("deleting remote %s\n", selected)
-				}
 				return nil
 			}
 			useCase := delete.NewUseCase(
@@ -117,10 +117,16 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			}); err != nil {
 				return fmt.Errorf("failed to delete the repository: %w", err)
 			}
-			log.FromContext(ctx).Infof("deleted %s", selected)
+			if f.local {
+				log.FromContext(ctx).Infof("deleted local %s", selected)
+			}
+			if f.remote {
+				log.FromContext(ctx).Infof("deleted remote %s", selected)
+			}
 			return nil
 		},
 	}
+	//TODO: --no-local?
 	cmd.Flags().BoolVarP(&f.local, "local", "", true, "Delete local repository.")
 	cmd.Flags().
 		BoolVarP(&f.remote, "remote", "", false, "Delete remote repository.")

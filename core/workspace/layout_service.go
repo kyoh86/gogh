@@ -6,7 +6,7 @@ import (
 	"github.com/kyoh86/gogh/v3/core/repository"
 )
 
-var ErrNotMatched = errors.New("repository layout not matched")
+var ErrNotMatched = errors.New("repository not matched for a layout")
 
 // LayoutService defines the layout structure of a repository under a root
 type LayoutService interface {

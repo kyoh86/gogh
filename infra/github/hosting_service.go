@@ -108,7 +108,7 @@ func (s *HostingService) GetTokenFor(ctx context.Context, reference repository.R
 	key := strings.Join([]string{reference.Host(), reference.Owner()}, "/")
 	tokenOwner, ok := s.knownOwners[key]
 	if ok {
-		_, token, err := s.getTokenForCore(ctx, tokenOwner, reference.Name())
+		_, token, err := s.getTokenForCore(ctx, reference.Host(), tokenOwner)
 		return tokenOwner, token, err
 	}
 	tokenOwner, token, err := s.getTokenForCore(ctx, reference.Host(), reference.Owner())
@@ -428,7 +428,7 @@ func convertRepository(ref repository.Reference, repo *github.Repository) (*host
 	if raw := repo.GetParent(); raw != nil {
 		u, err := url.Parse(raw.GetHTMLURL())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("invalid HTML URL: %w", err)
 		}
 		ref := repository.NewReference(
 			u.Host,
@@ -444,6 +444,7 @@ func convertRepository(ref repository.Reference, repo *github.Repository) (*host
 		Ref:         ref,
 		URL:         repo.GetHTMLURL(),
 		Parent:      parent,
+		CloneURL:    repo.GetCloneURL(),
 		Description: repo.GetDescription(),
 		Homepage:    repo.GetHomepage(),
 		Language:    repo.GetLanguage(),
@@ -451,6 +452,7 @@ func convertRepository(ref repository.Reference, repo *github.Repository) (*host
 		Private:     repo.GetPrivate(),
 		IsTemplate:  repo.GetIsTemplate(),
 		Fork:        repo.GetFork(),
+		UpdatedAt:   repo.GetUpdatedAt().Time,
 	}, nil
 }
 func convertRepositoryFragment(host string, f githubv4.RepositoryFragment) hosting.Repository {

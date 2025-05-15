@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/kyoh86/gogh/v3/core/git"
@@ -88,18 +89,18 @@ func (s *RepositoryService) TryClone(
 
 	// Perform git clone operation
 	if err := cloneWithRetry(ctx, gitService, layout, ref, repo.CloneURL, localPath, notify); err != nil {
-		return err
+		return fmt.Errorf("failed to clone: %w", err)
 	}
 
 	// Set up remotes
 	if err := gitService.SetDefaultRemotes(ctx, localPath, []string{repo.CloneURL}); err != nil {
-		return err
+		return fmt.Errorf("failed to set default remote: %w", err)
 	}
 
 	// Set up additional remotes if needed
 	if repo.Parent != nil {
 		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{repo.Parent.CloneURL}); err != nil {
-			return err
+			return fmt.Errorf("failed to set upstream remote: %w", err)
 		}
 	}
 	return nil
