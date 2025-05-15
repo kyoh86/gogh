@@ -1,5 +1,8 @@
 version: 1
 dependenciesRules:
+  - package: "typ.**"
+    shouldNotDependsOn:
+      internal: []
   - package: "cmd.**"
     shouldNotDependsOn:
       internal: []

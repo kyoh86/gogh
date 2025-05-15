@@ -6,7 +6,7 @@ import (
 	"iter"
 
 	"github.com/kyoh86/gogh/v3/core/hosting"
-	"github.com/kyoh86/gogh/v3/core/typ"
+	"github.com/kyoh86/gogh/v3/typ"
 )
 
 type UseCase struct {

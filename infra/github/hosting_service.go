@@ -12,8 +12,8 @@ import (
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/hosting"
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/typ"
 	"github.com/kyoh86/gogh/v3/infra/githubv4"
+	"github.com/kyoh86/gogh/v3/typ"
 	"golang.org/x/oauth2"
 )
 

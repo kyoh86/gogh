@@ -3,7 +3,7 @@ package typ_test
 import (
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v3/core/typ"
+	testtarget "github.com/kyoh86/gogh/v3/typ"
 )
 
 func TestPtr(t *testing.T) {

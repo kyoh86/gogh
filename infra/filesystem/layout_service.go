@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/v3/core/repository"
-	"github.com/kyoh86/gogh/v3/core/typ"
 	"github.com/kyoh86/gogh/v3/core/workspace"
+	"github.com/kyoh86/gogh/v3/typ"
 )
 
 // LayoutService is a filesystem-based standard repository layout implementation

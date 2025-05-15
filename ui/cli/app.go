@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/kyoh86/gogh/v3/app/service"
-	"github.com/kyoh86/gogh/v3/core/typ"
+	"github.com/kyoh86/gogh/v3/typ"
 	"github.com/kyoh86/gogh/v3/ui/cli/commands"
 	"github.com/spf13/cobra"
 )

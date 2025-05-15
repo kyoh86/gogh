@@ -3,7 +3,7 @@ package repository
 import (
 	"github.com/kyoh86/gogh/v3/core/gogh"
 	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/core/typ"
+	"github.com/kyoh86/gogh/v3/typ"
 )
 
 // DefaultNameService provides access to default configuration settings

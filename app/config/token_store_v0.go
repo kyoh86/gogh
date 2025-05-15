@@ -8,7 +8,7 @@ import (
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v3/core/auth"
 	"github.com/kyoh86/gogh/v3/core/store"
-	"github.com/kyoh86/gogh/v3/core/typ"
+	"github.com/kyoh86/gogh/v3/typ"
 	"golang.org/x/oauth2"
 )
 
