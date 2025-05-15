@@ -26,7 +26,7 @@ func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 				return errors.New("no valid token found: you need to set token by `gogh auth login`")
 			}
 			for _, entry := range entries {
-				fmt.Printf("  %s/%s\n", entry.Host, entry.Owner)
+				fmt.Printf("%s/%s\n", entry.Host, entry.Owner)
 			}
 			return nil
 		},

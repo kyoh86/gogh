@@ -97,10 +97,10 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			}
 
 			if f.local {
-				fmt.Printf("deleting local %s\n", selected)
+				log.FromContext(ctx).Infof("Delete local %s\n", selected)
 			}
 			if f.remote {
-				fmt.Printf("deleting remote %s\n", selected)
+				log.FromContext(ctx).Infof("Deleting remote %s\n", selected)
 			}
 			if f.dryrun {
 				return nil
@@ -118,10 +118,10 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("deleting the repository: %w", err)
 			}
 			if f.local {
-				log.FromContext(ctx).Infof("deleted local %s", selected)
+				log.FromContext(ctx).Infof("Deleted local %s", selected)
 			}
 			if f.remote {
-				log.FromContext(ctx).Infof("deleted remote %s", selected)
+				log.FromContext(ctx).Infof("Deleted remote %s", selected)
 			}
 			return nil
 		},

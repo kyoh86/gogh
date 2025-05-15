@@ -42,7 +42,7 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command
 					"error":  err,
 					"format": format.String(),
 					"path":   repo.FullPath(),
-				}).Info("failed to format")
+				}).Info("Failed to format")
 				return nil
 			}
 			fmt.Println(str)

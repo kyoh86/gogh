@@ -49,7 +49,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	runFunc := func(ctx context.Context, refs []string) error {
 		if flags.Dryrun {
 			for _, ref := range refs {
-				log.FromContext(ctx).Infof("git clone %q", ref)
+				log.FromContext(ctx).Infof("Clone %q", ref)
 			}
 			return nil
 		}

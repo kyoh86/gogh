@@ -45,7 +45,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 						"error":  err,
 						"format": format.String(),
 						"path":   repo.FullPath(),
-					}).Info("failed to format")
+					}).Info("Failed to format")
 				} else {
 					fmt.Println(str)
 				}

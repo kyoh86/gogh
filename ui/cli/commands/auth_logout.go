@@ -52,7 +52,7 @@ func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.
 		for _, target := range args {
 			words := strings.SplitN(target, "/", 2)
 			if len(words) != 2 {
-				log.FromContext(cmd.Context()).WithField("target", target).Error("invalid target (must be host/owner)")
+				log.FromContext(cmd.Context()).Errorf("Invalid target (must be host/owner): %q", target)
 				continue
 			}
 			rets = append(rets, [2]string{words[0], words[1]})
@@ -75,10 +75,10 @@ func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.
 
 			for _, target := range owners {
 				targetStr := fmt.Sprintf("%s/%s", target[0], target[1])
-				log.FromContext(cmd.Context()).WithField("target", targetStr).Info("logout from")
 				if err := logoutUseCase.Execute(ctx, target[0], target[1]); err != nil {
 					return fmt.Errorf("deleting token %q: %w", targetStr, err)
 				}
+				log.FromContext(cmd.Context()).Infof("Logged out from %q", targetStr)
 			}
 			return nil
 		},

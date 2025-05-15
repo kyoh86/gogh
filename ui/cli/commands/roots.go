@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/apex/log"
@@ -15,7 +16,7 @@ func NewRootsCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		Use:     "roots",
 		Short:   "Manage roots",
 		Aliases: []string{"root"},
-		Run:     RootsListRun(svc),
+		RunE:    RootsListRunE(svc),
 	}, nil
 }
 
@@ -24,15 +25,20 @@ func NewRootsListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 		Use:   "list",
 		Short: "List all of the roots",
 		Args:  cobra.NoArgs,
-		Run:   RootsListRun(svc),
+		RunE:  RootsListRunE(svc),
 	}, nil
 }
 
-func RootsListRun(svc *service.ServiceSet) func(*cobra.Command, []string) {
-	return func(*cobra.Command, []string) {
-		for _, root := range svc.WorkspaceService.GetRoots() {
+func RootsListRunE(svc *service.ServiceSet) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, _ []string) error {
+		roots := svc.WorkspaceService.GetRoots()
+		if len(roots) == 0 {
+			return errors.New("no roots found: you need to set root by `gogh roots add`")
+		}
+		for _, root := range roots {
 			fmt.Println(root)
 		}
+		return nil
 	}
 }
 
@@ -86,8 +92,11 @@ func NewRootsRemoveCommand(ctx context.Context, svc *service.ServiceSet) (*cobra
 			if err != nil {
 				return err
 			}
-			log.FromContext(ctx).Infof("Removing root: %q", selected)
-			return svc.WorkspaceService.RemoveRoot(selected)
+			if err := svc.WorkspaceService.RemoveRoot(selected); err != nil {
+				return err
+			}
+			log.FromContext(ctx).Infof("Removed root: %q", selected)
+			return nil
 		},
 	}, nil
 }

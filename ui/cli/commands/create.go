@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v3/app/config"
 	"github.com/kyoh86/gogh/v3/app/create"
@@ -106,9 +107,11 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err != nil {
 				return err
 			}
+			log.FromContext(ctx).Infof("Creating %q", ref)
 			if err := runFunc(ctx, ref); err != nil {
 				return err
 			}
+			log.FromContext(ctx).Infof("Created %q", ref)
 			return nil
 		},
 	}
