@@ -39,7 +39,6 @@ func NewApp(
 	version string,
 	svc *service.ServiceSet,
 ) (*cobra.Command, error) {
-
 	bundleCommand, err := newCmdWithSubs(
 		ctx, svc,
 		commands.NewBundleCommand,
