@@ -13,7 +13,7 @@ gogh bundle restore [flags]
       --dryrun                     Displays the operations that would be performed using the specified command without actually running them
   -f, --file string                Read the file as input; if not specified, read from stdin (default "/home/kyoh86/.config/gogh/bundle.txt")
   -h, --help                       help for restore
-      --request-timeout duration   Read the file as input; if not specified, read from stdin
+      --request-timeout duration   Read the file as input; if not specified, read from stdin (default 5s)
 ```
 
 ### SEE ALSO

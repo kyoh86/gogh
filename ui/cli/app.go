@@ -125,6 +125,7 @@ func NewApp(
 		ctx, svc,
 		commands.NewConfigCommand,
 		[]*cobra.Command{configAuthCommand, configRootsCommand},
+		commands.NewConfigShowCommand,
 		commands.NewSetDefaultHostCommand,
 		commands.NewSetDefaultOwnerCommand,
 	)

@@ -31,7 +31,7 @@ gogh clone [flags] [[OWNER/]NAME[=ALIAS]]...
 ```
       --dryrun             Displays the operations that would be performed using the specified command without actually running them
   -h, --help               help for clone
-  -t, --timeout duration   Timeout for the request
+  -t, --timeout duration   Timeout for the request (default 5s)
 ```
 
 ### SEE ALSO

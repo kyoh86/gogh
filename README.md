@@ -97,12 +97,12 @@ See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 
 ### Configurations
 
-| Command   | Description            |
-| --        | --                     |
-| `auth`    | Manage tokens          |
-| `config`  | Show configurations    |
-| `migrate` | Migrate configurations |
-| `roots`   | Manage roots           |
+| Command   | Description                  |
+| --        | --                           |
+| `auth`    | Manage tokens                |
+| `config`  | Show / Change configurations |
+| `migrate` | Migrate configurations       |
+| `roots`   | Manage roots                 |
 
 ### Others
 

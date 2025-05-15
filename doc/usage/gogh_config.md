@@ -2,10 +2,6 @@
 
 Show configurations
 
-```
-gogh config [flags]
-```
-
 ### Options
 
 ```
@@ -19,4 +15,5 @@ gogh config [flags]
 * [gogh config roots](gogh_config_roots.md)	 - Manage roots
 * [gogh config set-default-host](gogh_config_set-default-host.md)	 - Set the default host for the repository
 * [gogh config set-default-owner](gogh_config_set-default-owner.md)	 - Set the default owner for a host for the repository
+* [gogh config show](gogh_config_show.md)	 - Show configurations
 
