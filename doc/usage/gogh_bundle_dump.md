@@ -9,7 +9,7 @@ gogh bundle dump [flags]
 ### Options
 
 ```
-      --file string   A file to output; if not specified, output to stdout (default "~/.config/gogh/bundle.txt")
+  -f, --file string   A file to output; if not specified, output to stdout (default "~/.config/gogh/bundle.txt")
   -h, --help          help for dump
 ```
 

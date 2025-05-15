@@ -33,7 +33,7 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				defer file.Close()
 				out = file
 			}
-			useCase := bundle_dump.NewUseCase(svc.WorkspaceService, svc.FinderService, svc.GitService)
+			useCase := bundle_dump.NewUseCase(svc.WorkspaceService, svc.FinderService, svc.HostingService, svc.GitService)
 			for entry, err := range useCase.Execute(cmd.Context(), bundle_dump.Options{}) {
 				if err != nil {
 					log.FromContext(cmd.Context()).Error(err.Error())
