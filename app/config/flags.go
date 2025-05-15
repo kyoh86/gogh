@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/kyoh86/gogh/v3/core/repository"
@@ -26,14 +28,14 @@ func LocationFormatter(v string) (repository.LocationFormat, error) {
 
 // BundleDumpFlags is a struct that contains flags for dumping a bundle.
 type BundleDumpFlags struct {
-	File Path `yaml:"file,omitempty" toml:"file,omitempty"`
+	File string `yaml:"file,omitempty" toml:"file,omitempty"`
 }
 
 // BundleRestoreFlags is a struct that contains flags for restoring a bundle.
 type BundleRestoreFlags struct {
-	File            Path `yaml:"file,omitempty" toml:"file,omitempty"`
-	CloneRetryLimit int  `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
-	Dryrun          bool `yaml:"-" toml:"-"`
+	File            string `yaml:"file,omitempty" toml:"file,omitempty"`
+	CloneRetryLimit int    `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	Dryrun          bool   `yaml:"-" toml:"-"`
 }
 
 // CreateFlags is a struct that contains flags for creating a repository.
@@ -115,17 +117,16 @@ func (f *Flags) MarkSaved() {
 
 func DefaultFlags() *Flags {
 	f := new(Flags)
-	if err := f.BundleDump.File.Set("~/.config/gogh/bundle.txt"); err != nil {
-		panic(fmt.Errorf("failed to set default bundle file source: %w", err))
-	}
-	if err := f.BundleRestore.File.Set("~/.config/gogh/bundle.txt"); err != nil {
-		panic(fmt.Errorf("failed to set default bundle file source: %w", err))
+	homeDir, err := os.UserHomeDir()
+	if err == nil && homeDir != "" {
+		f.BundleDump.File = filepath.Join(homeDir, "./.config/gogh/bundle.txt")
+		f.BundleRestore.File = filepath.Join(homeDir, "./.config/gogh/bundle.txt")
 	}
 	f.BundleRestore.CloneRetryLimit = 3
 
 	f.Repos.Limit = 30
 	f.Repos.Color = "auto"
-	f.Repos.Relation = []string{"owner", "organizationMember"}
+	f.Repos.Relation = []string{"owner", "organization-member"}
 
 	f.Create.CloneRetryLimit = 3
 

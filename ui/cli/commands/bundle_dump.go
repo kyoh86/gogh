@@ -21,9 +21,9 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
-			if flags.File.Expand() != "" {
+			if flags.File != "" {
 				file, err := os.OpenFile(
-					flags.File.Expand(),
+					flags.File,
 					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
 					0644,
 				)
@@ -49,7 +49,6 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		},
 	}
 
-	flags.File = svc.Flags.BundleDump.File
-	cmd.Flags().VarP(&flags.File, "file", "f", "A file to output; if not specified, output to stdout")
+	cmd.Flags().StringVarP(&flags.File, "file", "f", svc.Flags.BundleDump.File, "A file to output; if not specified, output to stdout")
 	return cmd, nil
 }

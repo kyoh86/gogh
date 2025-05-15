@@ -20,7 +20,7 @@ gogh repos [flags]
       --limit int          Max number of repositories to list. -1 means unlimited (default 30)
       --order sort         Directions in which to order a list of items when provided a sort flag; it can accept "asc", "ascending", "desc" or "descending"
       --privacy string     Show only public/private repositories; it can accept "private" or "public"
-      --relation strings   The relation of user to each repository; it can accept "owner", "organization-member" or "collaborator" (default [owner,organizationMember])
+      --relation strings   The relation of user to each repository; it can accept "owner", "organization-member" or "collaborator" (default [owner,organization-member])
       --sort string        Property by which repository be ordered; it can accept "created-at", "name", "pushed-at", "stargazers" or "updated-at"
 ```
 

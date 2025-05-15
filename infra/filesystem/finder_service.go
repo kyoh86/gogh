@@ -132,13 +132,17 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 	var i int
 	return func(yield func(*repository.Location, error) bool) {
 		if err := filepath.Walk(l.GetRoot(), func(p string, info os.FileInfo, err error) error {
+			switch {
+			case os.IsNotExist(err):
+				return nil
+			}
 			if err != nil {
 				return err
 			}
 			if !info.IsDir() {
 				return nil
 			}
-			ref, err := l.Match(p)
+			ref, err := l.ExactMatch(p)
 			switch {
 			case errors.Is(err, workspace.ErrNotMatched):
 				// Ignore directories that do not match the layout
@@ -151,6 +155,7 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 				), nil) {
 					return filepath.SkipAll
 				}
+				return filepath.SkipDir
 			default:
 				return err
 			}

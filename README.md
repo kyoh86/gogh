@@ -149,7 +149,7 @@ You can change the roots with `roots add <path>` or `roots remove <path>` and se
 `roots list`.  `gogh` uses the primary one to `create`, `fork` or `clone` to put a local repository
 under it. If you want to change the primary, use `roots set-primary <path>`.
 
-Default: `~/Projects`.
+Default: `${HOME}/Projects`.
 
 ### Default Host and Owner
 
@@ -191,19 +191,24 @@ Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo
 
 ```
 ~/Projects             -- primary root
-+-- github.com/
-    |-- google/
-    |   +-- go-github/
-    |-- kyoh86/
-    |   +-- gogh/
-    +-- alecthomas/
-        +-- kingpin/
-/path/to/another/root
-+-- github.com/
-    |-- kyoh86/
-    |   +-- xxx/
-    +-- anybody/
-        +-- yyy/
+    +-- github.com/
+        |-- google/
+        |   +-- go-github/
+        |-- kyoh86/
+        |   +-- gogh/
+        +-- alecthomas/
+            +-- kingpin/
+/path/to/another/root  -- another root
+    +-- github.com/
+        |-- kyoh86/
+        |   +-- gogh/
+        |   +-- git-branches/
+        |   +-- vim-wipeout/
+        |   +-- bare/
+        |   +-- tryouts/
+        |-- anybody/
+            +-- yyy/
+/...
 ```
 
 # LICENSE

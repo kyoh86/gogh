@@ -13,9 +13,19 @@ type LayoutService interface {
 	// GetRoot returns the root of the layout
 	GetRoot() string
 
-	// Match returns the repository reference corresponding to the given path
+	// Match returns the repository reference corresponding the given path
 	// If the path does not match the layout, it returns the error `repository.ErrNotMatched`
+	// Example:
+	// Match("github.com/owner/repo") returns "github.com/owner/repo"
+	// Match("github.com/owner/repo/foo") returns "github.com/owner/repo"
 	Match(path string) (*repository.Reference, error)
+
+	// ExactMatch returns the repository reference corresponding exactly to the given path
+	// If the path does not match the layout, it returns the error `repository.ErrNotMatched`
+	// Example:
+	// ExactMatch("github.com/owner/repo") returns "github.com/owner/repo"
+	// ExactMatch("github.com/owner/repo/foo") returns `repository.ErrNotMatched`
+	ExactMatch(path string) (*repository.Reference, error)
 
 	// PathFor returns the path corresponding to the given reference
 	PathFor(ref repository.Reference) string

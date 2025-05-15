@@ -231,7 +231,7 @@ func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRe
 					yield(nil, fmt.Errorf("invalid privacy option %q", opts.Privacy))
 					return
 				}
-				var orderField githubv4.RepositoryOrderField
+				orderField := githubv4.RepositoryOrderFieldUpdatedAt
 				if err := typ.Remap(&orderField, map[hosting.RepositoryOrderField]githubv4.RepositoryOrderField{
 					hosting.RepositoryOrderFieldCreatedAt:  githubv4.RepositoryOrderFieldCreatedAt,
 					hosting.RepositoryOrderFieldUpdatedAt:  githubv4.RepositoryOrderFieldUpdatedAt,
@@ -242,7 +242,7 @@ func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRe
 					yield(nil, fmt.Errorf("invalid order field %q", opts.OrderBy.Field))
 					return
 				}
-				var orderDirection githubv4.OrderDirection
+				orderDirection := githubv4.OrderDirectionDesc
 				if err := typ.Remap(&orderDirection, map[hosting.OrderDirection]githubv4.OrderDirection{
 					hosting.OrderDirectionAsc:  githubv4.OrderDirectionAsc,
 					hosting.OrderDirectionDesc: githubv4.OrderDirectionDesc,
@@ -454,12 +454,13 @@ func convertRepository(ref repository.Reference, repo *github.Repository) (*host
 	}, nil
 }
 func convertRepositoryFragment(host string, f githubv4.RepositoryFragment) hosting.Repository {
-	parentOwner := f.GetParent().Owner.GetLogin()
+	parentOwner := f.GetParent().Owner
 	parentName := f.GetParent().Name
 	var parentRepo *hosting.ParentRepository
-	if parentOwner != "" && parentName != "" {
+	if parentOwner != nil && parentName != "" {
+		parentOwnerLogin := parentOwner.GetLogin()
 		parentRepo = &hosting.ParentRepository{
-			Ref:      repository.NewReference(host, parentOwner, parentName),
+			Ref:      repository.NewReference(host, parentOwnerLogin, parentName),
 			CloneURL: convertSSHToHTTPS(f.GetParent().SshUrl),
 		}
 	}
