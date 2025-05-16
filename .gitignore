@@ -1,8 +1,6 @@
 # for goreleaser output with .goreleaser.yml
 /dist
-
-# for man file
-/gogh*.1
+/doc/man
 
 # Binaries for programs and plugins
 *.exe

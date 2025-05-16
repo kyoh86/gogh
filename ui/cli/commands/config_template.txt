@@ -1,0 +1,23 @@
+Now gogh is executed in the following context.
+
+## Default names
+  (from {{.defaultNameSource}})
+
+  Host: {{if ne .defaultHost ""}}{{.defaultHost}}{{else}}github.com{{end}}
+  Owners:
+  {{range $host, $owner := .defaultNames}}  {{$host}}: {{$owner}}
+  {{end}}
+## Workspaces
+  (from {{.workspaceSource}})
+
+{{range .roots}}  {{.}}
+{{end}}
+## Tokens
+  (from {{.tokenSource}})
+
+{{range .tokens}}  {{.}}
+{{end}}
+## Flags
+  (from {{.flagsSource}})
+
+{{.flags}}

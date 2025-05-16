@@ -1,0 +1,29 @@
+version: 1
+dependenciesRules:
+  - package: "typ.**"
+    shouldNotDependsOn:
+      internal: []
+  - package: "cmd.**"
+    shouldNotDependsOn:
+      internal: []
+  - package: "core.**"
+    shouldNotDependsOn:
+      internal:
+        - "app.**"
+        - "infra.**"
+        - "ui.**"
+  - package: "app.**"
+    shouldNotDependsOn:
+      internal:
+        - "infra.**"
+        - "ui.**"
+  - package: "infra.**"
+    shouldNotDependsOn:
+      internal:
+        - "app.**"
+        - "ui.**"
+  - package: "ui.**"
+    shouldNotDependsOn:
+      internal:
+        - "core.**"
+        - "infra.**"

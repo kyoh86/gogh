@@ -17,31 +17,35 @@ gen: gen-clear
 .PHONY: gen
 
 clear-sdl:
-	rm -f ./internal/githubv4/schema.graphql
+	rm -f ./infra/githubv4/schema.graphql
 .PHONY: clear-sdl
 
 get-sdl:
-	curl -Lo ./internal/githubv4/schema.graphql https://docs.github.com/public/fpt/schema.docs.graphql
+	curl -Lo ./infra/githubv4/schema.graphql https://docs.github.com/public/fpt/schema.docs.graphql
 .PHONY: get-sdl
 
 gen-gql: clear-sdl get-sdl
-	go generate -tags gengraphql -x ./internal/githubv4
+	go generate -tags gengraphql -x ./infra/githubv4
 .PHONY: gen-gql
 
 lint: gen
-	golangci-lint run
+	go tool golangci-lint run
+	go tool arch-go
 .PHONY: lint
 
 test: gen
-	go test -tags man -v --race ./...
+	go test -v --race ./...
 .PHONY: test
 
 man: gen
-	rm -rf ./usage/**.md
-	go run -tags man -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
+	rm -rf ./doc/usage/**.md
+	rm -rf ./doc/man/*
+	GOGH_FLAG_PATH=./dummy.yaml go run -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh man
 .PHONY: man
 
 install: test
 	go install -a -ldflags "-X=main.version=$(VERSION) -X=main.commit=$(COMMIT) -X=main.date=$(DATE)" ./cmd/gogh/...
-
 .PHONY: install
+
+default: lint test
+.DEFAULT_GOAL := default
