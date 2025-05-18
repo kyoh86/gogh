@@ -30,7 +30,7 @@ brews:
     description: GO GitHub project manager
     license: MIT
 nfpms:
-  - builds:
+  - ids:
       - default
     maintainer: kyoh86 <me@kyoh86.dev>
     homepage: https://github.com/kyoh86/gogh
@@ -42,10 +42,10 @@ nfpms:
       - rpm
 archives:
   - id: gzip
-    format: tar.gz
+    formats: ['tar.gz']
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ['zip']
     files:
       - licence*
       - LICENCE*
