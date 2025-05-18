@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Release binary to the GitHub Release on specific tag
+on:
+  workflow_dispatch:
+    inputs:
+      next-version:
+        description: |
+          Which number to increment in the semantic versioning.
+        required: true
+        type: string
+jobs:
+  release-binary:
+    name: Release Binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Actor
+        if: github.actor != 'kyoh86'
+        run: exit 1
+      - name: Check Branch
+        if: github.ref != 'refs/heads/main'
+        run: exit 1
+      - name: Wait commit status
+        uses: cloudposse/github-action-wait-commit-status@main
+        with:
+          repository: ${{ github.repository }}
+          sha: ${{ github.sha }}
+          status: releasable
+          token: ${{ github.token }}
+          check-retry-count: 5
+          check-retry-interval: 20
+      - name: Checkout Sources
+        uses: actions/checkout@v4
+      - name: Set git tag
+        run: |
+          git tag -a "${{ github.event.inputs.next-version }}" -m "Release version ${{ github.event.inputs.next-version }}"
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+        with:
+          version: ~> v2
+          args: release --clean
+
