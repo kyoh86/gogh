@@ -3,7 +3,7 @@ module github.com/kyoh86/gogh/v4
 go 1.24.1
 
 require (
-	github.com/Khan/genqlient v0.8.0
+	github.com/Khan/genqlient v0.8.1
 	github.com/apex/log v1.9.0
 	github.com/charmbracelet/huh v0.7.0
 	github.com/cli/browser v1.3.0
