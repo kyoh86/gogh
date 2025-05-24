@@ -3,7 +3,6 @@ package repotab
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/mattn/go-runewidth"
@@ -31,8 +30,9 @@ const (
 type Option func(*Printer)
 
 // Styled sets the printer to use styled output if the terminal supports it.
-func Styled(force bool) Option {
-	if force || term.IsTerminal(int(os.Stdout.Fd())) {
+func Styled(force bool, writer io.Writer) Option {
+	out, ok := writer.(interface{ Fd() uintptr })
+	if force || ok && term.IsTerminal(int(out.Fd())) {
 		return func(p *Printer) {
 			p.styled = true
 		}
@@ -41,8 +41,12 @@ func Styled(force bool) Option {
 }
 
 // TermWidth sets the terminal width to the printer if it is available.
-func TermWidth() Option {
-	if width, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
+func TermWidth(writer io.Writer) Option {
+	out, ok := writer.(interface{ Fd() uintptr })
+	if !ok {
+		return func(*Printer) {}
+	}
+	if width, _, err := term.GetSize(int(out.Fd())); err == nil {
 		return func(p *Printer) {
 			p.width = width
 		}

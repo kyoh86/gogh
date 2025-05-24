@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"io"
 	"os"
 
 	"github.com/apex/log"
@@ -26,15 +27,15 @@ func (h *StdoutLogHandler) HandleLog(e *log.Entry) error {
 }
 
 // NewLogger creates a new logger instance.
-func NewLogger(ctx context.Context) context.Context {
-	errLog := level.New(cli.New(os.Stderr), log.ErrorLevel)
-	stdLog := &StdoutLogHandler{Handler: cli.New(os.Stdout)}
+func NewLogger(ctx context.Context, outWriter io.Writer, errWriter io.Writer) context.Context {
+	errLog := level.New(cli.New(errWriter), log.WarnLevel)
+	outLog := &StdoutLogHandler{Handler: cli.New(outWriter)}
 	level := log.InfoLevel
 	if os.Getenv("GOGH_DEBUG") != "" {
 		level = log.DebugLevel
 	}
 	return log.NewContext(ctx, &log.Logger{
-		Handler: multi.New(stdLog, errLog),
+		Handler: multi.New(outLog, errLog),
 		Level:   level,
 	})
 }

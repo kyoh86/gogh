@@ -18,7 +18,7 @@ type UseCase struct {
 func repositoryFormatter(v string, w io.Writer) (RepositoryPrinter, error) {
 	switch v {
 	case "", "table":
-		return repotab.NewPrinter(w, repotab.TermWidth(), repotab.Styled(false)), nil
+		return repotab.NewPrinter(w, repotab.TermWidth(w), repotab.Styled(false, w)), nil
 	case "ref":
 		return NewRepositoryPrinterRef(w), nil
 	case "url":

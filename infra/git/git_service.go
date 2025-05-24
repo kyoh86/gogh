@@ -3,6 +3,7 @@ package git
 import (
 	"context"
 	"errors"
+	"io"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -12,12 +13,27 @@ import (
 )
 
 type GitService struct {
-	auth transport.AuthMethod
+	auth                transport.AuthMethod
+	cloneProgressWriter io.Writer
 }
 
+type Option func(*GitService)
+
+var (
+	CloneProgressWriter = func(w io.Writer) Option {
+		return func(s *GitService) {
+			s.cloneProgressWriter = w
+		}
+	}
+)
+
 // NewService creates a new Service instance without authentication.
-func NewService() *GitService {
-	return &GitService{}
+func NewService(options ...Option) *GitService {
+	s := &GitService{}
+	for _, opt := range options {
+		opt(s)
+	}
+	return s
 }
 
 // AuthenticateWithUsernamePassword implements git.GitService.
@@ -31,10 +47,11 @@ func (s *GitService) AuthenticateWithUsernamePassword(_ context.Context, usernam
 }
 
 // Clone clones a remote repository to a local path.
-func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, _ coregit.CloneOptions) error {
+func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, opts coregit.CloneOptions) error {
 	_, err := git.PlainCloneContext(ctx, localPath, false, &git.CloneOptions{
-		URL:  remoteURL,
-		Auth: s.auth,
+		URL:      remoteURL,
+		Auth:     s.auth,
+		Progress: s.cloneProgressWriter,
 	})
 	switch {
 	case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):

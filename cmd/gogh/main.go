@@ -25,7 +25,7 @@ var (
 )
 
 func main() {
-	ctx := logger.NewLogger(context.Background())
+	ctx := logger.NewLogger(context.Background(), os.Stdout, os.Stderr)
 	if err := run(ctx); err != nil {
 		log.FromContext(ctx).Error(err.Error())
 		os.Exit(1)
@@ -94,7 +94,7 @@ func run(ctx context.Context) error {
 		HostingService:      github.NewHostingService(tokenService),
 		FinderService:       filesystem.NewFinderService(),
 		AuthenticateService: github.NewAuthenticateService(),
-		GitService:          git.NewService(),
+		GitService:          git.NewService(git.CloneProgressWriter(os.Stdout)),
 	}
 	cmd, err := cli.NewApp(ctx, gogh.AppName, fmt.Sprintf("%s-%s (%s)", version, commit, date), svc)
 	if err != nil {
