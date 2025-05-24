@@ -3,7 +3,7 @@ module github.com/kyoh86/gogh/v4
 go 1.24.1
 
 require (
-	github.com/Khan/genqlient v0.8.0
+	github.com/Khan/genqlient v0.8.1
 	github.com/apex/log v1.9.0
 	github.com/charmbracelet/huh v0.7.0
 	github.com/cli/browser v1.3.0
@@ -74,7 +74,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/OpenPeeDeeP/depguard/v2 v2.2.1 // indirect
-	github.com/ProtonMail/go-crypto v1.2.0 // indirect
+	github.com/ProtonMail/go-crypto v1.3.0 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/alecthomas/chroma/v2 v2.16.0 // indirect
 	github.com/alecthomas/go-check-sumtype v0.3.1 // indirect
@@ -156,7 +156,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.9.2 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
 	github.com/charmbracelet/x/exp/ordered v0.1.0 // indirect
-	github.com/charmbracelet/x/exp/strings v0.0.0-20250514204301-7f4ee4d0d5fe // indirect
+	github.com/charmbracelet/x/exp/strings v0.0.0-20250520193441-8304e91a28cb // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/chavacava/garif v0.1.0 // indirect
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589 // indirect
