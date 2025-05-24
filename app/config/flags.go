@@ -134,20 +134,20 @@ func DefaultFlags() *Flags {
 		f.BundleRestore.File = filepath.Join(homeDir, "./.config/gogh/bundle.txt")
 	}
 	f.BundleRestore.CloneRetryLimit = 3
-	f.BundleRestore.RequestTimeout = 5 * time.Second
+	f.BundleRestore.RequestTimeout = 5 * time.Minute
 
-	f.Clone.RequestTimeout = 5 * time.Second
+	f.Clone.RequestTimeout = 5 * time.Minute
 
 	f.Repos.Limit = 30
 	f.Repos.Color = "auto"
 	f.Repos.Relation = []string{"owner", "organization-member"}
 
-	f.Create.RequestTimeout = 5 * time.Second
+	f.Create.RequestTimeout = 5 * time.Minute
 	f.Create.CloneRetryLimit = 3
 
 	f.List.Limit = 100
 
-	f.Fork.RequestTimeout = 5 * time.Second
+	f.Fork.RequestTimeout = 5 * time.Minute
 	f.Fork.CloneRetryLimit = 3
 	return f
 }

@@ -121,7 +121,7 @@ func cloneWithRetry(
 	}
 	for {
 		if timeout == 0 {
-			timeout = 5 * time.Second
+			timeout = 30 * time.Second
 		}
 		toctx, tocancel := context.WithTimeout(ctx, timeout)
 		err = gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{})
