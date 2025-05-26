@@ -30,16 +30,16 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			defer f.Close()
 			in = f
 		}
-		eg, ctx := errgroup.WithContext(ctx)
+		eg, egCtx := errgroup.WithContext(ctx)
 		scan := bufio.NewScanner(in)
 		for scan.Scan() {
 			ref := scan.Text()
 			if f.Dryrun {
-				log.FromContext(ctx).Infof("git clone %q", ref)
+				log.FromContext(egCtx).Infof("git clone %q", ref)
 			} else {
 				eg.Go(func() error {
-					return cloneUseCase.Execute(ctx, ref, clone.Options{
-						TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					return cloneUseCase.Execute(egCtx, ref, clone.Options{
+						TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(egCtx, nil)),
 					})
 				})
 			}

@@ -31,9 +31,9 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 	if err != nil {
 		return "", nil, fmt.Errorf("requesting device code: %w", err)
 	}
-	eg, ctx := errgroup.WithContext(ctx)
+	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		if err := verify(ctx, auth.DeviceAuthResponse{
+		if err := verify(egCtx, auth.DeviceAuthResponse{
 			VerificationURI: deviceCodeResp.VerificationURI,
 			UserCode:        deviceCodeResp.UserCode,
 		}); err != nil {
@@ -48,7 +48,7 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 		// copy deviceCodeResp to avoid conflict with the other goroutine
 		codeResp := *deviceCodeResp
 		codeResp.Interval++ // Add a second for safety; the server may not be ready yet
-		resp, err := config.DeviceAccessToken(ctx, &codeResp)
+		resp, err := config.DeviceAccessToken(egCtx, &codeResp)
 		if err != nil {
 			return fmt.Errorf("polling for token: %w", err)
 		}
