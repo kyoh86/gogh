@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/store"
@@ -61,6 +62,9 @@ func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService, force bool)
 	}
 	source, err := d.Source()
 	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
 		return err
 	}
 	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)

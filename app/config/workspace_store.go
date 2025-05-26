@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -50,6 +51,9 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 	}
 	source, err := w.Source()
 	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
 		return err
 	}
 	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
