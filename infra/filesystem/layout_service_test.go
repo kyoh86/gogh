@@ -16,7 +16,7 @@ func TestLayoutServiceGetRoot(t *testing.T) {
 	layout := testtarget.NewLayoutService(root)
 
 	// Test
-	if layout.GetRoot() != string(root) {
+	if layout.GetRoot() != root {
 		t.Errorf("Expected root %s, got %s", root, layout.GetRoot())
 	}
 }
