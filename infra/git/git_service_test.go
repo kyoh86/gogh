@@ -3,8 +3,10 @@ package git_test
 import (
 	"context"
 	"errors"
+	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	git "github.com/go-git/go-git/v5"
@@ -12,6 +14,22 @@ import (
 	coregit "github.com/kyoh86/gogh/v4/core/git"
 	testtarget "github.com/kyoh86/gogh/v4/infra/git"
 )
+
+func pathToFileURL(path string) string {
+	normalized := filepath.ToSlash(path)
+
+	u := &url.URL{
+		Scheme: "file",
+	}
+
+	if runtime.GOOS == "windows" {
+		u.Path = "/" + normalized
+	} else {
+		u.Path = normalized
+	}
+
+	return u.String()
+}
 
 // setupTempDir creates a temporary directory for testing and returns its path.
 // The caller is responsible for cleaning it up.
@@ -88,7 +106,8 @@ func TestClone(t *testing.T) {
 
 	// Test cloning from a local path (this might fail in some environments,
 	// but serves as a basic test)
-	err = service.Clone(ctx, "file://"+sourceDir, destDir, coregit.CloneOptions{})
+	localURL := pathToFileURL(sourceDir)
+	err = service.Clone(ctx, localURL, destDir, coregit.CloneOptions{})
 	// Only check for specific errors to make the test more robust
 	if err != nil && !errors.Is(err, coregit.ErrRepositoryEmpty) {
 		t.Errorf("Failed to clone from local path: %v", err)
@@ -368,7 +387,10 @@ func TestErrorHandling(t *testing.T) {
 					return "", err
 				}
 				_, err := git.PlainInit(emptyRepoPath, true)
-				return "file://" + emptyRepoPath, err
+				if err != nil {
+					return "", err
+				}
+				return pathToFileURL(emptyRepoPath), nil
 			},
 			expectedErr: coregit.ErrRepositoryEmpty,
 		},
