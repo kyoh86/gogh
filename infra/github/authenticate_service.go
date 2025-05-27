@@ -10,6 +10,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+type Token = oauth2.Token
+
 type AuthenticateService struct{}
 
 func NewAuthenticateService() *AuthenticateService {
@@ -65,7 +67,7 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 	}
 
 	// Get user info
-	conn := getClient(ctx, host, token)
+	conn := getConnection(ctx, host, token)
 	user, _, err := conn.restClient.Users.Get(ctx, "")
 	if err != nil {
 		return "", nil, fmt.Errorf("getting authenticated user: %w", err)

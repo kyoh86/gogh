@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"iter"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -25,9 +26,8 @@ type HostingService struct {
 }
 
 type Connection struct {
-	tokenSource oauth2.TokenSource
-	restClient  *github.Client
-	gqlClient   graphql.Client
+	restClient *github.Client
+	gqlClient  graphql.Client
 }
 
 const (
@@ -37,19 +37,54 @@ const (
 	ClientID = "Ov23li6aEWIxek6F8P5L"
 )
 
-func getClient(ctx context.Context, host string, token *auth.Token) *Connection {
-	var source oauth2.TokenSource
-	if token != nil {
-		source = oauth2.ReuseTokenSource(token, &tokenSource{ctx: ctx, host: host, token: token})
+func OAuth2Config(host string) *oauth2.Config {
+	return &oauth2.Config{
+		ClientID: ClientID,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:       fmt.Sprintf("https://%s/login/oauth/authorize", host),
+			TokenURL:      fmt.Sprintf("https://%s/login/oauth/access_token", host),
+			DeviceAuthURL: fmt.Sprintf("https://%s/login/device/code", host),
+		},
+		Scopes: []string{string(github.ScopeRepo), string(github.ScopeDeleteRepo)},
 	}
-	httpClient := oauth2.NewClient(ctx, source)
-	if host == GlobalHost || host == GlobalAPIHost {
-		return &Connection{
-			tokenSource: source,
-			restClient:  github.NewClient(httpClient),
-			gqlClient:   graphql.NewClient("https://"+GlobalAPIHost+"/graphql", httpClient),
-		}
+}
+
+type tokenSource struct {
+	ctx   context.Context
+	host  string
+	token *oauth2.Token
+}
+
+func (s *tokenSource) Token() (*oauth2.Token, error) {
+	if s.token.Valid() {
+		return s.token, nil
 	}
+	newToken, err := refreshAccessToken(s.ctx, s.host, s.token)
+	if err != nil {
+		return nil, err
+	}
+	s.token = newToken
+	return newToken, nil
+}
+
+func refreshAccessToken(ctx context.Context, host string, token *oauth2.Token) (*oauth2.Token, error) {
+	oauthConfig := OAuth2Config(host)
+	tokenSource := oauthConfig.TokenSource(ctx, &oauth2.Token{RefreshToken: token.RefreshToken})
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		return nil, err
+	}
+	return newToken, nil
+}
+
+func getSource(ctx context.Context, host string, token *auth.Token) oauth2.TokenSource {
+	if token == nil {
+		return nil
+	}
+	return oauth2.ReuseTokenSource(token, &tokenSource{ctx: ctx, host: host, token: token})
+}
+
+func getEnterpriseConnection(host string, httpClient *http.Client) *Connection {
 	baseRESTURL := &url.URL{
 		Scheme: "https",
 		Host:   host,
@@ -71,11 +106,19 @@ func getClient(ctx context.Context, host string, token *auth.Token) *Connection 
 		// We assume that the URLs are valid.
 		panic(err)
 	}
-	return &Connection{
-		tokenSource: source,
-		restClient:  restClient,
-		gqlClient:   graphql.NewClient(baseGQLURL.String(), httpClient),
+	return &Connection{restClient: restClient, gqlClient: graphql.NewClient(baseGQLURL.String(), httpClient)}
+}
+
+func getConnection(ctx context.Context, host string, token *auth.Token) *Connection {
+	source := getSource(ctx, host, token)
+	httpClient := oauth2.NewClient(ctx, source)
+	if host == GlobalHost || host == GlobalAPIHost {
+		return &Connection{
+			restClient: github.NewClient(httpClient),
+			gqlClient:  graphql.NewClient("https://"+GlobalAPIHost+"/graphql", httpClient),
+		}
 	}
+	return getEnterpriseConnection(host, httpClient)
 }
 
 // NewHostingService creates a new HostingService instance
@@ -119,6 +162,20 @@ func (s *HostingService) GetTokenFor(ctx context.Context, reference repository.R
 	return tokenOwner, token, err
 }
 
+func memberOf(ctx context.Context, owner string, entry auth.TokenEntry) (bool, error) {
+	connection := getConnection(ctx, entry.Host, &entry.Token)
+	orgs, _, err := connection.restClient.Organizations.List(ctx, "", &github.ListOptions{PerPage: 100})
+	if err != nil {
+		return false, err
+	}
+	for _, o := range orgs {
+		if *o.Login == owner {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func (s *HostingService) getTokenForCore(ctx context.Context, host, owner string) (string, auth.Token, error) {
 	if s.tokenService.Has(host, owner) {
 		token, err := s.tokenService.Get(host, owner)
@@ -132,13 +189,9 @@ func (s *HostingService) getTokenForCore(ctx context.Context, host, owner string
 		if entry.Owner == owner {
 			return entry.Owner, entry.Token, nil
 		}
-		adaptor, err := NewAdaptor(ctx, entry.Host, typ.Ptr(entry.Token))
-		if err != nil {
-			continue // Try next token if this one fails
-		}
 
 		// Check if this user is a member of the target organization
-		ok, err := adaptor.MemberOf(ctx, owner)
+		ok, err := memberOf(ctx, owner, entry)
 		if err != nil {
 			continue // Try next token if membership check fails
 		}
@@ -158,7 +211,7 @@ func (s *HostingService) GetRepository(ctx context.Context, reference repository
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", reference.Host(), reference.Owner(), err)
 	}
-	conn := getClient(ctx, reference.Host(), &token)
+	conn := getConnection(ctx, reference.Host(), &token)
 	ghRepo, _, err := conn.restClient.Repositories.Get(ctx, reference.Owner(), reference.Name())
 	if err != nil {
 		return nil, fmt.Errorf("requesting repository: %w", err)
@@ -215,7 +268,7 @@ func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRe
 				return
 			}
 
-			conn := getClient(ctx, entry.Host, &entry.Token)
+			conn := getConnection(ctx, entry.Host, &entry.Token)
 			var after string
 
 			for {
@@ -322,7 +375,7 @@ func (s *HostingService) CreateRepository(
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
-	conn := getClient(ctx, ref.Host(), &token)
+	conn := getConnection(ctx, ref.Host(), &token)
 	org := ""
 	if user != ref.Owner() {
 		org = ref.Owner()
@@ -362,7 +415,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
-	conn := getClient(ctx, ref.Host(), &token)
+	conn := getConnection(ctx, ref.Host(), &token)
 	req := github.TemplateRepoRequest{
 		Name:               typ.Ptr(ref.Name()),
 		Description:        &opts.Description,
@@ -390,7 +443,7 @@ func (s *HostingService) DeleteRepository(ctx context.Context, reference reposit
 	if err != nil {
 		return fmt.Errorf("getting token for %s/%s: %w", reference.Host(), reference.Owner(), err)
 	}
-	conn := getClient(ctx, reference.Host(), &token)
+	conn := getConnection(ctx, reference.Host(), &token)
 	if _, err = conn.restClient.Repositories.Delete(ctx, reference.Owner(), reference.Name()); err != nil {
 		return fmt.Errorf("requesting to delete repository: %w", err)
 	}
@@ -408,7 +461,7 @@ func (s *HostingService) ForkRepository(
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
-	conn := getClient(ctx, ref.Host(), &token)
+	conn := getConnection(ctx, ref.Host(), &token)
 	ghOpts := &github.RepositoryCreateForkOptions{
 		Name:              target.Name(),
 		DefaultBranchOnly: opts.DefaultBranchOnly,
