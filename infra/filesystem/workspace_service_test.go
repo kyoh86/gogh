@@ -1,6 +1,7 @@
 package filesystem_test
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -29,9 +30,21 @@ func TestNewWorkspaceService(t *testing.T) {
 func TestAddRoot(t *testing.T) {
 	service := testtarget.NewWorkspaceService()
 
-	// Test adding first root (should become primary)
-	err := service.AddRoot("/test/path1", false)
+	root1, err := filepath.Abs("/test/path1")
 	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+	root2, err := filepath.Abs("/test/path2")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+	root3, err := filepath.Abs("/test/path3")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+
+	// Test adding first root (should become primary)
+	if err := service.AddRoot(root1, false); err != nil {
 		t.Errorf("Error adding root: %v", err)
 	}
 
@@ -39,8 +52,8 @@ func TestAddRoot(t *testing.T) {
 		t.Errorf("Expected 1 root, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root("/test/path1") {
-		t.Errorf("Expected primary root %s, got %s", "/test/path1", service.GetPrimaryRoot())
+	if service.GetPrimaryRoot() != workspace.Root(root1) {
+		t.Errorf("Expected primary root %s, got %s", root1, service.GetPrimaryRoot())
 	}
 
 	if !service.HasChanges() {
@@ -54,8 +67,7 @@ func TestAddRoot(t *testing.T) {
 	}
 
 	// Test adding second root (should not change primary)
-	err = service.AddRoot("/test/path2", false)
-	if err != nil {
+	if err := service.AddRoot(root2, false); err != nil {
 		t.Errorf("Error adding root: %v", err)
 	}
 
@@ -63,8 +75,8 @@ func TestAddRoot(t *testing.T) {
 		t.Errorf("Expected 2 roots, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root("/test/path1") {
-		t.Errorf("Expected primary root to remain %s, got %s", "/test/path1", service.GetPrimaryRoot())
+	if service.GetPrimaryRoot() != workspace.Root(root1) {
+		t.Errorf("Expected primary root to remain %s, got %s", root1, service.GetPrimaryRoot())
 	}
 
 	if !service.HasChanges() {
@@ -72,8 +84,7 @@ func TestAddRoot(t *testing.T) {
 	}
 
 	// Test adding third root as primary
-	err = service.AddRoot("/test/path3", true)
-	if err != nil {
+	if err := service.AddRoot(root3, true); err != nil {
 		t.Errorf("Error adding root: %v", err)
 	}
 
@@ -81,13 +92,12 @@ func TestAddRoot(t *testing.T) {
 		t.Errorf("Expected 3 roots, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root("/test/path3") {
-		t.Errorf("Expected primary root %s, got %s", "/test/path3", service.GetPrimaryRoot())
+	if service.GetPrimaryRoot() != workspace.Root(root3) {
+		t.Errorf("Expected primary root %s, got %s", root3, service.GetPrimaryRoot())
 	}
 
 	// Test adding duplicate root
-	err = service.AddRoot("/test/path1", false)
-	if err == nil {
+	if err := service.AddRoot(root1, false); err == nil {
 		t.Error("Expected error when adding duplicate root, got nil")
 	}
 
@@ -99,19 +109,27 @@ func TestAddRoot(t *testing.T) {
 func TestSetPrimaryRoot(t *testing.T) {
 	service := testtarget.NewWorkspaceService()
 
+	root1, err := filepath.Abs("/test/path1")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+	root2, err := filepath.Abs("/test/path2")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+
 	// Add two roots
-	_ = service.AddRoot("/test/path1", false)
-	_ = service.AddRoot("/test/path2", false)
+	_ = service.AddRoot(root1, false)
+	_ = service.AddRoot(root2, false)
 	service.MarkSaved()
 
 	// Set second root as primary
-	err := service.SetPrimaryRoot("/test/path2")
-	if err != nil {
+	if err := service.SetPrimaryRoot(root2); err != nil {
 		t.Errorf("Error setting primary root: %v", err)
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root("/test/path2") {
-		t.Errorf("Expected primary root %s, got %s", "/test/path2", service.GetPrimaryRoot())
+	if service.GetPrimaryRoot() != workspace.Root(root2) {
+		t.Errorf("Expected primary root %s, got %s", root2, service.GetPrimaryRoot())
 	}
 
 	if !service.HasChanges() {
@@ -119,31 +137,42 @@ func TestSetPrimaryRoot(t *testing.T) {
 	}
 
 	// Try to set non-existent root as primary
-	err = service.SetPrimaryRoot("/test/nonexistent")
-	if err == nil {
+	if err := service.SetPrimaryRoot("/test/nonexistent"); err == nil {
 		t.Error("Expected error when setting non-existent root as primary, got nil")
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root("/test/path2") {
-		t.Errorf("Expected primary root to remain %s, got %s", "/test/path2", service.GetPrimaryRoot())
+	if service.GetPrimaryRoot() != workspace.Root(root2) {
+		t.Errorf("Expected primary root to remain %s, got %s", root2, service.GetPrimaryRoot())
 	}
 }
 
 func TestRemoveRoot(t *testing.T) {
 	service := testtarget.NewWorkspaceService()
 
+	root1, err := filepath.Abs("/test/path1")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+	root2, err := filepath.Abs("/test/path2")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+	root3, err := filepath.Abs("/test/path3")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+
 	// Add three roots
-	_ = service.AddRoot("/test/path1", false)
-	_ = service.AddRoot("/test/path2", false)
-	_ = service.AddRoot("/test/path3", false)
+	_ = service.AddRoot(root1, false)
+	_ = service.AddRoot(root2, false)
+	_ = service.AddRoot(root3, false)
 
 	// Set second root as primary
-	_ = service.SetPrimaryRoot("/test/path2")
+	_ = service.SetPrimaryRoot(root2)
 	service.MarkSaved()
 
 	// Remove a non-primary root
-	err := service.RemoveRoot("/test/path3")
-	if err != nil {
+	if err := service.RemoveRoot(root3); err != nil {
 		t.Errorf("Error removing root: %v", err)
 	}
 
@@ -151,8 +180,8 @@ func TestRemoveRoot(t *testing.T) {
 		t.Errorf("Expected 2 roots, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root("/test/path2") {
-		t.Errorf("Expected primary root to remain %s, got %s", "/test/path2", service.GetPrimaryRoot())
+	if service.GetPrimaryRoot() != workspace.Root(root2) {
+		t.Errorf("Expected primary root to remain %s, got %s", root2, service.GetPrimaryRoot())
 	}
 
 	if !service.HasChanges() {
@@ -161,8 +190,7 @@ func TestRemoveRoot(t *testing.T) {
 
 	// Remove primary root
 	service.MarkSaved()
-	err = service.RemoveRoot("/test/path2")
-	if err != nil {
+	if err := service.RemoveRoot(root2); err != nil {
 		t.Errorf("Error removing primary root: %v", err)
 	}
 
@@ -170,8 +198,8 @@ func TestRemoveRoot(t *testing.T) {
 		t.Errorf("Expected 1 root, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root("/test/path1") {
-		t.Errorf("Expected new primary root %s, got %s", "/test/path1", service.GetPrimaryRoot())
+	if service.GetPrimaryRoot() != workspace.Root(root1) {
+		t.Errorf("Expected new primary root %s, got %s", root1, service.GetPrimaryRoot())
 	}
 
 	if !service.HasChanges() {
@@ -180,8 +208,7 @@ func TestRemoveRoot(t *testing.T) {
 
 	// Remove last root
 	service.MarkSaved()
-	err = service.RemoveRoot("/test/path1")
-	if err != nil {
+	if err := service.RemoveRoot(root1); err != nil {
 		t.Errorf("Error removing last root: %v", err)
 	}
 
@@ -199,8 +226,7 @@ func TestRemoveRoot(t *testing.T) {
 
 	// Try to remove non-existent root
 	service.MarkSaved()
-	err = service.RemoveRoot("/test/nonexistent")
-	if err == nil {
+	if err := service.RemoveRoot("/test/nonexistent"); err == nil {
 		t.Error("Expected error when removing non-existent root, got nil")
 	}
 
@@ -211,9 +237,13 @@ func TestRemoveRoot(t *testing.T) {
 
 func TestGetLayoutFor(t *testing.T) {
 	service := testtarget.NewWorkspaceService()
-	_ = service.AddRoot("/test/path1", false)
+	root1, err := filepath.Abs("/test/path1")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+	_ = service.AddRoot(root1, false)
 
-	layout := service.GetLayoutFor("/test/path1")
+	layout := service.GetLayoutFor(root1)
 	if layout == nil {
 		t.Error("Expected non-nil layout")
 	}
@@ -221,7 +251,11 @@ func TestGetLayoutFor(t *testing.T) {
 
 func TestGetPrimaryLayout(t *testing.T) {
 	service := testtarget.NewWorkspaceService()
-	_ = service.AddRoot("/test/path1", false)
+	root1, err := filepath.Abs("/test/path1")
+	if err != nil {
+		t.Fatalf("Error getting absolute path: %v", err)
+	}
+	_ = service.AddRoot(root1, false)
 
 	layout := service.GetPrimaryLayout()
 	if layout == nil {
