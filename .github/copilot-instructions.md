@@ -1,8 +1,49 @@
-# Architecture of the Project
+# Copilot Instruction for gogh Project
 
-## 1. Four Main Concerns (Layers)
+This document serves as a guide to understand the design and structure of the gogh project, focusing on the architecture and dependency rules of the program.
 
-### Core Functionality Layer (core)
+## Stance of Copilot
+
+It is expected that you write appropriate code as a Go professional.
+
+## Output Language
+
+Describe mainly in Japanese.
+Write comments in the code in English.
+
+### Project Location
+
+gogh is managed under the repository `github.com/kyoh86/gogh`.
+The Go package name may have a version suffix, so please check the `module` line in `go.mod`.
+
+### How to Write Tests
+
+When writing tests for private functions or methods, write private tests.
+Private tests should be placed in the same package with a file name ending in `_private_test.go`.
+
+When writing tests for exported functions or methods, place them in a file named `*_test.go` with the package name suffixed with `_test` in the same directory.
+When importing the exported test package, use the name `testtarget`; for example:
+
+```go
+import (
+    testtarget "github.com/kyoh86/gogh/vx/core/foo"
+)
+```
+
+When writing tests for exported functions or methods, use the standard `testing` package and do not use `testify/assert` or `testify/require`.
+
+## Purpose of the Project
+
+gogh is a repository management tool primarily targeting GitHub, providing functionalities such as cloning, creating, deleting, and listing repositories.
+It is designed to structure and place repository references locally, process them in a consistent manner, and allow users to operate easily.
+
+## Architecture of the Project
+
+### 1. Four Main Concerns (Layers)
+
+#### Core Functionality Layer (core)
+
+- Location: `core/`
 
 - Role
     - Defines the essential operations and concepts that the program performs.
@@ -17,7 +58,9 @@
     - Domain entities and pure logic.
     - Pure functionality that does not depend on external systems or UI.
 
-### Application Layer (app)
+#### Application Layer (app)
+
+- Location: `app/`
 
 - Role
     - Realizes use cases and coordinates core functionality.
@@ -30,7 +73,9 @@
     - Implements the entire flow of use cases (e.g., `CloneService`).
     - Service objects, use case handlers.
 
-### External System Integration Layer (infra)
+#### External System Integration Layer (infra)
+
+- Location: `infra/`
 
 - Role
     - Integration with external systems and technical implementations.
@@ -42,7 +87,9 @@
     - API clients, data base connections, file operations.
     - Implements the interface defined in the core layer.
 
-### UI Layer (ui)
+#### UI Layer (ui)
+
+- Location: `ui/`
 
 - Role
     - The method of interaction with the user.
@@ -56,7 +103,7 @@
     - Command line interface, output formats.
     - User interaction methods (e.g., `cli` commands).
 
-## 2. Practical Dependency Rules
+### 2. Practical Dependency Rules
 
 1. Core Functionality Layer Dependency Rule
    - Core functionality layer does not import any other layers.
@@ -77,13 +124,13 @@
     - Can import the application layer.
     - Reason: UI calls and executes use cases.
 
-## 3. Interface-Based Integration
+### 3. Interface-Based Integration
 
 - Core layer defines interfaces.
 - External system integration layer implements the interfaces.
 - Application layer uses the interfaces to call the external system.
 
-### Example of Interface Definition in Core Layer
+#### Example of Interface Definition in Core Layer
 
 ```go
 // core/repository/service.go
@@ -94,7 +141,7 @@ type RepositoryService interface {
 }
 ```
 
-### Example of usecase in Application Layer
+#### Example of usecase in Application Layer
 
 ```go
 // app/clone/service.go
@@ -111,7 +158,7 @@ func (s *CloneService) CloneRepository(name string) error {
 }
 ```
 
-### Example of Implementation in External Integration Layer
+#### Example of Implementation in External Integration Layer
 
 ```go
 // infra/github/client.go
@@ -123,7 +170,7 @@ func (c *githubClient) Get(name string) (core.Repository, error) {
 }
 ```
 
-### Main Function (or Dependency Injection Container) for Dependency Injection
+#### Main Function (or Dependency Injection Container) for Dependency Injection
 
 ```go
 // main.go
@@ -144,7 +191,7 @@ func main() {
 }
 ```
 
-### Factory for Dependency Injection
+#### Factory for Dependency Injection
 
 ```go
 // app/clone/factory.go
@@ -154,7 +201,7 @@ func NewCloneServiceWithGitHub(tokenStore core.TokenStore) *Service {
 }
 ```
 
-### Example of Dependency Injection
+#### Example of Dependency Injection
 
 | Layer             | Depends on                 | Implementation Injected | Injection Method                        |
 |-------------------|----------------------------|-------------------------|-----------------------------------------|
@@ -163,7 +210,7 @@ func NewCloneServiceWithGitHub(tokenStore core.TokenStore) *Service {
 | External System   | Core Layer Interfaces      | - (itself)              | -                                       |
 | Core Layer        | -                          | -                       | -                                       |
 
-## 4. Recommended Directory Structure
+### 4. Recommended Directory Structure
 
 ```
 gogh/
@@ -183,7 +230,7 @@ gogh/
 │   └── cli/           # CLI command implementations
 ```
 
-## 5. Case Study
+### 5. Case Study
 
 Example of Clone Operation
 
@@ -192,23 +239,23 @@ Example of Clone Operation
 3. External System Integration Layer: The `githubClient` implements the `RepositoryService` interface to fetch repository details from GitHub.
 4. Core Layer: The core layer defines the `RepositoryService` interface and the `Repository` struct.
 
-## 6. Two Types of Core Layer Elements
+### 6. Two Types of Core Layer Elements
 
 To clarify the core layer, we can categorize its elements into two types:
 
-### 6-1. Interfaces
+#### 6-1. Interfaces
 
 - Interfaces that are implemented by the external system layer.
 - Example: `RepositoryService`, `RemoteService`, etc.
 - If the operation is dependent on the technical implementation (GitHub API, file system, etc.), it should be defined in the core layer.
 
-### 6-2. Comcrete Implementations
+#### 6-2. Comcrete Implementations
 
 - Concrete implementations of the interfaces.
 - Example: `githubClient`, `fileSystemClient`, etc.
 - Domain logics that are not dependent on external systems should be defined in the core layer.
 
-### 6-3. Example
+#### 6-3. Example
 
 ```go
 // core/repository/repository.go
@@ -233,7 +280,7 @@ type RepositoryService interface { // Interface only
 }
 ```
 
-### 6.4. Criteria for Determining
+#### 6.4. Criteria for Determining
 
 Whether to implement in the core layer or just define the interface:
 
@@ -243,3 +290,29 @@ Whether to implement in the core layer or just define the interface:
 2. Whether the operation is pure domain logic:
     - Yes → Implement in the core layer.
     - No → Define only the interface (implementation in the external system layer).
+
+## Design of a Core of gogh
+
+Core rules of gogh are as follows
+
+### 1. Conceptual Model of Repository
+
+- Definition of repository reference: Interpretation rules in the format `github.com/owner/repo`
+- Components of a repository: Basic attributes such as name, owner, and URL format
+- Relationships between repositories: Fork and origin, parent-child relationships, etc.
+
+### 2. Structuring and Organizing Rules
+
+- Grouping of repositories: How to manage multiple repositories
+- Structure under the root: Path structure `<root>/<host>/<owner>/<name>`
+- Namespace management: Rules to avoid name collisions
+
+### 3. Basic Concept of Operations
+
+- Definition of clone: What does it mean to duplicate from remote to local
+- Abstract concept of search: How to search for repositories
+
+### 4. Relationship between User and Repository
+
+- User ownership and access rights: Relationship between user and repository
+- Permission model: Concept of read/write permissions
