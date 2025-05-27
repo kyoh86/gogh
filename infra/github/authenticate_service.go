@@ -68,7 +68,7 @@ func (s *AuthenticateService) Authenticate(ctx context.Context, host string, ver
 
 	// Get user info
 	conn := getConnection(ctx, host, token)
-	user, _, err := conn.restClient.Users.Get(ctx, "")
+	user, _, err := conn.rest.Users.Get(ctx, "")
 	if err != nil {
 		return "", nil, fmt.Errorf("getting authenticated user: %w", err)
 	}
