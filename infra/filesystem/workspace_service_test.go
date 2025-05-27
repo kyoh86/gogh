@@ -52,7 +52,7 @@ func TestAddRoot(t *testing.T) {
 		t.Errorf("Expected 1 root, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root(root1) {
+	if service.GetPrimaryRoot() != root1 {
 		t.Errorf("Expected primary root %s, got %s", root1, service.GetPrimaryRoot())
 	}
 
@@ -75,7 +75,7 @@ func TestAddRoot(t *testing.T) {
 		t.Errorf("Expected 2 roots, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root(root1) {
+	if service.GetPrimaryRoot() != root1 {
 		t.Errorf("Expected primary root to remain %s, got %s", root1, service.GetPrimaryRoot())
 	}
 
@@ -92,7 +92,7 @@ func TestAddRoot(t *testing.T) {
 		t.Errorf("Expected 3 roots, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root(root3) {
+	if service.GetPrimaryRoot() != root3 {
 		t.Errorf("Expected primary root %s, got %s", root3, service.GetPrimaryRoot())
 	}
 
@@ -128,7 +128,7 @@ func TestSetPrimaryRoot(t *testing.T) {
 		t.Errorf("Error setting primary root: %v", err)
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root(root2) {
+	if service.GetPrimaryRoot() != root2 {
 		t.Errorf("Expected primary root %s, got %s", root2, service.GetPrimaryRoot())
 	}
 
@@ -141,7 +141,7 @@ func TestSetPrimaryRoot(t *testing.T) {
 		t.Error("Expected error when setting non-existent root as primary, got nil")
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root(root2) {
+	if service.GetPrimaryRoot() != root2 {
 		t.Errorf("Expected primary root to remain %s, got %s", root2, service.GetPrimaryRoot())
 	}
 }
@@ -180,7 +180,7 @@ func TestRemoveRoot(t *testing.T) {
 		t.Errorf("Expected 2 roots, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root(root2) {
+	if service.GetPrimaryRoot() != root2 {
 		t.Errorf("Expected primary root to remain %s, got %s", root2, service.GetPrimaryRoot())
 	}
 
@@ -198,7 +198,7 @@ func TestRemoveRoot(t *testing.T) {
 		t.Errorf("Expected 1 root, got %d", len(service.GetRoots()))
 	}
 
-	if service.GetPrimaryRoot() != workspace.Root(root1) {
+	if service.GetPrimaryRoot() != root1 {
 		t.Errorf("Expected new primary root %s, got %s", root1, service.GetPrimaryRoot())
 	}
 

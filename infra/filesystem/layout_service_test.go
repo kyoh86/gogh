@@ -12,7 +12,7 @@ import (
 
 func TestLayoutServiceGetRoot(t *testing.T) {
 	// Setup
-	root := workspace.Root("/test/root")
+	root := "/test/root"
 	layout := testtarget.NewLayoutService(root)
 
 	// Test
@@ -23,7 +23,7 @@ func TestLayoutServiceGetRoot(t *testing.T) {
 
 func TestLayoutServiceMatch(t *testing.T) {
 	// Setup
-	root := workspace.Root("/test/root")
+	root := "/test/root"
 	layout := testtarget.NewLayoutService(root)
 
 	testCases := []struct {
@@ -91,7 +91,7 @@ func TestLayoutServiceMatch(t *testing.T) {
 
 func TestLayoutServiceExactMatch(t *testing.T) {
 	// Setup
-	root := workspace.Root("/test/root")
+	root := "/test/root"
 	layout := testtarget.NewLayoutService(root)
 
 	testCases := []struct {
@@ -156,7 +156,7 @@ func TestLayoutServiceExactMatch(t *testing.T) {
 
 func TestLayoutServicePathFor(t *testing.T) {
 	// Setup
-	root := workspace.Root("/test/root")
+	root := "/test/root"
 	layout := testtarget.NewLayoutService(root)
 
 	// Create a reference
@@ -180,7 +180,7 @@ func TestLayoutServiceCreateAndDeleteRepository(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Setup
-	root := workspace.Root(tmpDir)
+	root := tmpDir
 	layout := testtarget.NewLayoutService(root)
 
 	// Create a reference
