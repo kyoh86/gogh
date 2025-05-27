@@ -38,6 +38,9 @@ func (l *LayoutService) Match(path string) (*repository.Reference, error) {
 	if len(parts) < 3 {
 		return nil, workspace.ErrNotMatched
 	}
+	if parts[0] == ".." || parts[0] == "." {
+		return nil, workspace.ErrNotMatched
+	}
 
 	// Create a reference in the format host/owner/name
 	return typ.Ptr(repository.NewReference(parts[0], parts[1], parts[2])), nil
