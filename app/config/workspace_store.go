@@ -75,7 +75,7 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 }
 
 func (*WorkspaceStore) Source() (string, error) {
-	path, err := appContextPath("GOGH_WORKSPACE_PATH", os.UserConfigDir, "workspace.v4.toml")
+	path, err := AppContextPathFunc("GOGH_WORKSPACE_PATH", os.UserConfigDir, "workspace.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search workspace path: %w", err)
 	}

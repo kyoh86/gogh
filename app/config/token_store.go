@@ -18,7 +18,7 @@ type TokenStore struct{}
 type tomlTokenStore map[string]map[string]oauth2.Token
 
 func (d *TokenStore) Source() (string, error) {
-	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.toml")
+	path, err := AppContextPathFunc("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
 	}

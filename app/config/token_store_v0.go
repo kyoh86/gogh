@@ -61,7 +61,7 @@ func NewTokenStoreV0() *TokenStoreV0 {
 }
 
 func (*TokenStoreV0) Source() (string, error) {
-	path, err := appContextPath("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.yaml")
+	path, err := AppContextPathFunc("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
 	}

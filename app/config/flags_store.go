@@ -36,7 +36,7 @@ func NewFlagsStore() *FlagsStore {
 }
 
 func (s *FlagsStore) Source() (string, error) {
-	path, err := appContextPath("GOGH_FLAG_PATH", os.UserConfigDir, "flags.v4.toml")
+	path, err := AppContextPathFunc("GOGH_FLAG_PATH", os.UserConfigDir, "flags.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)
 	}
