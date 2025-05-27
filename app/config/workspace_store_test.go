@@ -10,6 +10,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
+	"github.com/pelletier/go-toml/v2"
 	"go.uber.org/mock/gomock"
 )
 
@@ -64,16 +65,19 @@ func setupWorkspaceStoreTestEnvironment(t *testing.T) (
 func createWorkspaceStoreTestTOMLFile(t *testing.T, path string, roots []workspace.Root, primaryRoot workspace.Root) {
 	t.Helper()
 
-	content := "roots = [\n"
-	for _, root := range roots {
-		content += `  "` + root + `",` + "\n"
+	raw := map[string]any{
+		"roots":        roots,
+		"primary_root": primaryRoot,
 	}
-	content += "]\n"
-	content += `primary_root = "` + primaryRoot + `"`
-
-	err := os.WriteFile(path, []byte(content), 0644)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		t.Fatalf("Failed to create directory for TOML file: %v", err)
+	}
+	encoded, err := toml.Marshal(raw)
 	if err != nil {
-		t.Fatalf("Failed to write test TOML file: %v", err)
+		t.Fatalf("Failed to encode TOML: %v", err)
+	}
+	if err := os.WriteFile(path, encoded, 0644); err != nil {
+		t.Fatalf("Failed to write TOML file: %v", err)
 	}
 }
 
