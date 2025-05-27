@@ -18,7 +18,7 @@ type yamlWorkspaceStoreV0 struct {
 	Roots []workspace.Root `yaml:"roots,omitempty"`
 }
 
-func expandPath(p string) (string, error) {
+func ExpandPath(p string) (string, error) {
 	p = os.ExpandEnv(p)
 	runes := []rune(p)
 	switch len(runes) {
@@ -61,7 +61,7 @@ func (w *WorkspaceStoreV0) Load(ctx context.Context, initial func() workspace.Wo
 	}
 	svc := initial()
 	for i, root := range v.Roots {
-		path, err := expandPath(root)
+		path, err := ExpandPath(root)
 		if err != nil {
 			return nil, fmt.Errorf("expand path: %w", err)
 		}
