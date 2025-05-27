@@ -360,6 +360,15 @@ func (s *HostingService) ListRepository(ctx context.Context, opts hosting.ListRe
 	}
 }
 
+// invertPtr returns nil if b is true, or pointer to false if b is false.
+func invertPtr(b bool) *bool {
+	if b {
+		f := false
+		return &f
+	}
+	return nil // true returns nil
+}
+
 func (s *HostingService) CreateRepository(
 	ctx context.Context,
 	ref repository.Reference,
@@ -379,18 +388,18 @@ func (s *HostingService) CreateRepository(
 		Description:         typ.NilablePtr(opts.Description),
 		Homepage:            typ.NilablePtr(opts.Homepage),
 		Private:             typ.NilablePtr(opts.Private),
-		HasIssues:           typ.FalsePtr(opts.DisableIssues),
-		HasProjects:         typ.FalsePtr(opts.DisableProjects),
-		HasWiki:             typ.FalsePtr(opts.DisableWiki),
-		HasDownloads:        typ.FalsePtr(opts.DisableDownloads),
+		HasIssues:           invertPtr(opts.DisableIssues),
+		HasProjects:         invertPtr(opts.DisableProjects),
+		HasWiki:             invertPtr(opts.DisableWiki),
+		HasDownloads:        invertPtr(opts.DisableDownloads),
 		IsTemplate:          typ.NilablePtr(opts.IsTemplate),
 		TeamID:              typ.NilablePtr(opts.TeamID),
 		AutoInit:            typ.NilablePtr(opts.AutoInit),
 		GitignoreTemplate:   typ.NilablePtr(opts.GitignoreTemplate),
 		LicenseTemplate:     typ.NilablePtr(opts.LicenseTemplate),
-		AllowSquashMerge:    typ.FalsePtr(opts.PreventSquashMerge),
-		AllowMergeCommit:    typ.FalsePtr(opts.PreventMergeCommit),
-		AllowRebaseMerge:    typ.FalsePtr(opts.PreventRebaseMerge),
+		AllowSquashMerge:    invertPtr(opts.PreventSquashMerge),
+		AllowMergeCommit:    invertPtr(opts.PreventMergeCommit),
+		AllowRebaseMerge:    invertPtr(opts.PreventRebaseMerge),
 		DeleteBranchOnMerge: typ.NilablePtr(opts.DeleteBranchOnMerge),
 	})
 	if err != nil {
