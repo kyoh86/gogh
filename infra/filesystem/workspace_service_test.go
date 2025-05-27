@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kyoh86/gogh/v4/core/workspace"
 	testtarget "github.com/kyoh86/gogh/v4/infra/filesystem"
 )
 
