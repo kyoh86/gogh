@@ -376,19 +376,22 @@ func TestReferenceParser(t *testing.T) {
 				source: ".=",
 			}, {
 				title:  "empty-alias",
-				source: name + "=",
+				source: name + "xxx=",
 			}, {
 				title:  "space-alias",
-				source: name + "= ",
+				source: name + "xxx= ",
 			}, {
 				title:  "space-in-the-alias",
-				source: name + "=splitted name",
+				source: name + "xxx=splitted name",
 			}, {
 				title:  "double-alias",
-				source: name + "=alias1=alias2",
+				source: name + "xxx=alias1=alias2",
 			}, {
 				title:  "too-many-shashes",
-				source: name + "=example.com/baz/many",
+				source: name + "xxx=example.com/baz/many",
+			}, {
+				title:  "invalid owner starts with hyphen",
+				source: name + "xxx=-baz/many",
 			}} {
 				t.Run(testcase.title, func(t *testing.T) {
 					_, err := parser.ParseWithAlias(testcase.source)
