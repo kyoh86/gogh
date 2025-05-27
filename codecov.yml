@@ -1,0 +1,5 @@
+ignore:
+  - **/*_mock/
+  - **/*_mock.go
+  - **/gen.go
+  - **/generated.go
