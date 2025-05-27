@@ -1,5 +1,5 @@
 ignore:
-  - **/*_mock/
-  - **/*_mock.go
-  - **/gen.go
-  - **/generated.go
+  - "**/*_mock/"
+  - "**/*_mock.go"
+  - "**/gen.go"
+  - "**/generated.go"
