@@ -54,7 +54,7 @@ func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath stri
 		Progress: s.cloneProgressWriter,
 	})
 	switch {
-	case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrRepositoryNotFound):
+	case errors.Is(err, git.ErrRepositoryNotExists) || errors.Is(err, transport.ErrAuthenticationRequired) || errors.Is(err, transport.ErrAuthorizationFailed) || errors.Is(err, transport.ErrRepositoryNotFound):
 		return coregit.ErrRepositoryNotExists
 	case errors.Is(err, transport.ErrEmptyRemoteRepository):
 		return coregit.ErrRepositoryEmpty
