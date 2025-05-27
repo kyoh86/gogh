@@ -32,7 +32,6 @@ func setupTempDirV0(t *testing.T) (string, func()) {
 // setupEnvironmentV0 sets up a test environment with temporary directory
 // and mocked DefaultNameService for V0 store
 func setupEnvironmentV0(t *testing.T) (
-	*gomock.Controller,
 	string,
 	func(),
 	*repository_mock.MockDefaultNameService,
@@ -57,7 +56,7 @@ func setupEnvironmentV0(t *testing.T) (
 
 	store := config.NewDefaultNameStoreV0()
 
-	return ctrl, tempDir, cleanup, mockService, store
+	return tempDir, cleanup, mockService, store
 }
 
 // createTestYAMLFile creates a test YAML file with default values
@@ -86,7 +85,7 @@ func TestNewDefaultNameStoreV0(t *testing.T) {
 }
 
 func TestSourceV0(t *testing.T) {
-	_, tempDir, cleanup, _, store := setupEnvironmentV0(t)
+	tempDir, cleanup, _, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	path, err := store.Source()
@@ -101,7 +100,7 @@ func TestSourceV0(t *testing.T) {
 }
 
 func TestLoadV0_FileExists(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
+	tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	// Create a test YAML file
@@ -131,7 +130,7 @@ func TestLoadV0_FileExists(t *testing.T) {
 }
 
 func TestLoadV0_FileDoesNotExist(t *testing.T) {
-	_, _, cleanup, mockService, store := setupEnvironmentV0(t)
+	_, cleanup, mockService, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	// No file created
@@ -149,7 +148,7 @@ func TestLoadV0_FileDoesNotExist(t *testing.T) {
 }
 
 func TestLoadV0_InvalidYAML(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
+	tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	// Create an invalid YAML file
@@ -172,7 +171,7 @@ func TestLoadV0_InvalidYAML(t *testing.T) {
 }
 
 func TestLoadV0_SetDefaultHostError(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
+	tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	// Create a test YAML file
@@ -195,7 +194,7 @@ func TestLoadV0_SetDefaultHostError(t *testing.T) {
 }
 
 func TestLoadV0_SetDefaultOwnerError(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
+	tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	// Create a test YAML file
@@ -221,7 +220,7 @@ func TestLoadV0_SetDefaultOwnerError(t *testing.T) {
 }
 
 func TestLoadV0_EmptyOwner(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
+	tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	// Create a YAML file with an entry that has an empty default_owner
@@ -261,7 +260,7 @@ hosts:
 }
 
 func TestLoadV0_ComplexYAML(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
+	tempDir, cleanup, mockService, store := setupEnvironmentV0(t)
 	defer cleanup()
 
 	// Create a more complex YAML file with additional fields

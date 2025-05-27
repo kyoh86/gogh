@@ -32,7 +32,6 @@ func setupTempDir(t *testing.T) (string, func()) {
 // setupEnvironment sets up a test environment with temporary directory
 // and mocked DefaultNameService
 func setupEnvironment(t *testing.T) (
-	*gomock.Controller,
 	string,
 	func(),
 	*repository_mock.MockDefaultNameService,
@@ -57,7 +56,7 @@ func setupEnvironment(t *testing.T) (
 
 	store := config.NewDefaultNameStore()
 
-	return ctrl, tempDir, cleanup, mockService, store
+	return tempDir, cleanup, mockService, store
 }
 
 // createTestTOMLFile creates a test TOML file with default values
@@ -85,7 +84,7 @@ func TestNewDefaultNameStore(t *testing.T) {
 }
 
 func TestSource(t *testing.T) {
-	_, tempDir, cleanup, _, store := setupEnvironment(t)
+	tempDir, cleanup, _, store := setupEnvironment(t)
 	defer cleanup()
 
 	path, err := store.Source()
@@ -100,7 +99,7 @@ func TestSource(t *testing.T) {
 }
 
 func TestLoad_FileExists(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironment(t)
+	tempDir, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Create a test TOML file
@@ -130,7 +129,7 @@ func TestLoad_FileExists(t *testing.T) {
 }
 
 func TestLoad_FileDoesNotExist(t *testing.T) {
-	_, _, cleanup, mockService, store := setupEnvironment(t)
+	_, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// No file created
@@ -152,7 +151,7 @@ func TestLoad_FileDoesNotExist(t *testing.T) {
 }
 
 func TestLoad_InvalidTOML(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironment(t)
+	tempDir, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Create an invalid TOML file
@@ -175,7 +174,7 @@ func TestLoad_InvalidTOML(t *testing.T) {
 }
 
 func TestLoad_SetDefaultHostError(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironment(t)
+	tempDir, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Create a test TOML file
@@ -199,7 +198,7 @@ func TestLoad_SetDefaultHostError(t *testing.T) {
 }
 
 func TestLoad_SetDefaultOwnerError(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironment(t)
+	tempDir, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Create a test TOML file
@@ -225,7 +224,7 @@ func TestLoad_SetDefaultOwnerError(t *testing.T) {
 }
 
 func TestSave_NoChanges(t *testing.T) {
-	_, _, cleanup, mockService, store := setupEnvironment(t)
+	_, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Setup mock expectations
@@ -240,7 +239,7 @@ func TestSave_NoChanges(t *testing.T) {
 }
 
 func TestSave_WithChanges(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironment(t)
+	tempDir, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Setup mock expectations
@@ -273,7 +272,7 @@ func TestSave_WithChanges(t *testing.T) {
 }
 
 func TestSave_ForceWithoutChanges(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironment(t)
+	tempDir, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Setup mock expectations
@@ -305,7 +304,7 @@ func TestSave_ForceWithoutChanges(t *testing.T) {
 }
 
 func TestSave_CreateDirectory(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupEnvironment(t)
+	tempDir, cleanup, mockService, store := setupEnvironment(t)
 	defer cleanup()
 
 	// Setup a nested config path

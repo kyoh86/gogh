@@ -16,7 +16,6 @@ import (
 
 // setupTokenStoreTest creates a temporary directory for testing and returns the necessary test components.
 func setupTokenStoreTest(t *testing.T) (
-	*gomock.Controller,
 	string,
 	func(),
 	*auth_mock.MockTokenService,
@@ -43,7 +42,7 @@ func setupTokenStoreTest(t *testing.T) (
 		config.AppContextPathFunc = origAppContextPath
 	}
 
-	return ctrl, tempDir, cleanup, mockService, store
+	return tempDir, cleanup, mockService, store
 }
 
 // createTestTokenTOML creates a test TOML file with token data.
@@ -71,7 +70,7 @@ AccessToken = "gitlab-access-token"
 }
 
 func TestTokenStoreSource(t *testing.T) {
-	_, tempDir, cleanup, _, store := setupTokenStoreTest(t)
+	tempDir, cleanup, _, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	path, err := store.Source()
@@ -86,7 +85,7 @@ func TestTokenStoreSource(t *testing.T) {
 }
 
 func TestTokenStoreLoad_FileExists(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
+	tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Create a test TOML file
@@ -143,7 +142,7 @@ func TestTokenStoreLoad_FileExists(t *testing.T) {
 }
 
 func TestTokenStoreLoad_FileDoesNotExist(t *testing.T) {
-	_, _, cleanup, mockService, store := setupTokenStoreTest(t)
+	_, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Call Load with no file
@@ -158,7 +157,7 @@ func TestTokenStoreLoad_FileDoesNotExist(t *testing.T) {
 }
 
 func TestTokenStoreLoad_InvalidTOML(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
+	tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Create an invalid TOML file
@@ -181,7 +180,7 @@ func TestTokenStoreLoad_InvalidTOML(t *testing.T) {
 }
 
 func TestTokenStoreLoad_EmptyAccessToken(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
+	tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Create a TOML file with an empty access token
@@ -217,7 +216,7 @@ TokenType = "Bearer"
 }
 
 func TestTokenStoreLoad_SetError(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
+	tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Create a test TOML file
@@ -225,9 +224,10 @@ func TestTokenStoreLoad_SetError(t *testing.T) {
 	createTestTokenTOML(t, configPath)
 
 	// Setup mock expectations - second Set call will return an error
-	mockService.EXPECT().Set("github.com", "testuser", gomock.Any()).Return(nil)
 	expectedErr := errors.New("test error")
-	mockService.EXPECT().Set("github.com", "otheruser", gomock.Any()).Return(expectedErr)
+	mockService.EXPECT().Set("github.com", "testuser", gomock.Any()).Return(expectedErr).AnyTimes()
+	mockService.EXPECT().Set("github.com", "otheruser", gomock.Any()).Return(expectedErr).AnyTimes()
+	mockService.EXPECT().Set("gitlab.com", "testuser", gomock.Any()).Return(expectedErr).AnyTimes()
 
 	// Call Load
 	ctx := context.Background()
@@ -242,7 +242,7 @@ func TestTokenStoreLoad_SetError(t *testing.T) {
 }
 
 func TestTokenStoreSave_NoChanges(t *testing.T) {
-	_, _, cleanup, mockService, store := setupTokenStoreTest(t)
+	_, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Setup mock expectations
@@ -257,7 +257,7 @@ func TestTokenStoreSave_NoChanges(t *testing.T) {
 }
 
 func TestTokenStoreSave_WithChanges(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
+	tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Setup mock token entries
@@ -301,7 +301,7 @@ func TestTokenStoreSave_WithChanges(t *testing.T) {
 }
 
 func TestTokenStoreSave_ForceWithoutChanges(t *testing.T) {
-	_, tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
+	tempDir, cleanup, mockService, store := setupTokenStoreTest(t)
 	defer cleanup()
 
 	// Setup mock token entries
