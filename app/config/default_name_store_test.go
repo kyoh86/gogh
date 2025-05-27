@@ -209,7 +209,8 @@ func TestLoad_SetDefaultOwnerError(t *testing.T) {
 	// Setup mock expectations
 	mockService.EXPECT().SetDefaultHost("github.com").Return(nil)
 	expectedErr := errors.New("test error")
-	mockService.EXPECT().SetDefaultOwnerFor("github.com", "testuser").Return(expectedErr)
+	mockService.EXPECT().SetDefaultOwnerFor("github.com", "testuser").Return(expectedErr).AnyTimes()
+	mockService.EXPECT().SetDefaultOwnerFor("gitlab.com", "otheruser").Return(expectedErr).AnyTimes()
 
 	// Call Load
 	ctx := context.Background()
