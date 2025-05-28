@@ -73,9 +73,7 @@ fork = "exclude"
 	t.Run("successful load", func(t *testing.T) {
 		os.Setenv("GOGH_FLAG_PATH", flagsPath)
 		store := config.NewFlagsStore()
-		initial := func() *config.Flags {
-			return config.DefaultFlags()
-		}
+		initial := config.DefaultFlags
 
 		flags, err := store.Load(context.Background(), initial)
 		if err != nil {
@@ -110,9 +108,7 @@ fork = "exclude"
 		os.Setenv("GOGH_FLAG_PATH", nonExistentPath)
 
 		store := config.NewFlagsStore()
-		initial := func() *config.Flags {
-			return config.DefaultFlags()
-		}
+		initial := config.DefaultFlags
 
 		_, err := store.Load(context.Background(), initial)
 		if err == nil {
@@ -129,9 +125,7 @@ fork = "exclude"
 
 		os.Setenv("GOGH_FLAG_PATH", invalidPath)
 		store := config.NewFlagsStore()
-		initial := func() *config.Flags {
-			return config.DefaultFlags()
-		}
+		initial config.DefaultFlags
 
 		_, err := store.Load(context.Background(), initial)
 		if err == nil {
