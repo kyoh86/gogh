@@ -34,6 +34,32 @@ import (
 
 テストにおいてはtestify/assertやtestify/requireは使用せず、標準の`testing`パッケージを使用してください。
 
+### Mockの置き方
+
+Mockは基本的にmockgenでI/F定義したパッケージと同じ階層の別パッケージに生成してください。
+gen.goを置いて、`go:generate`でmockgenを実行するようにしてください。
+
+例(ディレクトリ構造):
+
+```
+gogh/
+├── core/                # コア機能 - プログラムの本質
+│   ├── gen.go           # Mock生成用のファイル
+│   ├── repository/      # リポジトリ関連の定義
+│   ├── repository_mock/ # リポジトリ関連の定義
+│   └── ...
+...
+```
+
+例(gen.go):
+
+```go
+package core
+
+//go:generate go tool mockgen -source ./repository/default_name_service.go -destination ./repository_mock/gen_default_name_service_mock.go -package repository_mock
+//go:generate go tool mockgen -source ./repository/location_format.go      -destination ./repository_mock/gen_location_format_mock.go      -package repository_mock
+```
+
 ## プロジェクトの目的
 
 主にGitHubを対象としたリポジトリ管理ツールであり、リポジトリのクローン、作成、削除、リスト表示などの機能を提供します。
@@ -212,20 +238,23 @@ func NewCloneServiceWithGitHub(tokenStore core.TokenStore) *Service {
 
 ```
 gogh/
-├── core/              # コア機能 - プログラムの本質
-│   ├── repository/    # リポジトリ関連の定義
-│   └── auth/          # 認証関連の定義
+├── core/                # コア機能 - プログラムの本質
+│   ├── repository/      # リポジトリ関連の定義
+│   ├── repository_mock/ # リポジトリ関連の定義
+│   ├── ...
+│   ├── auth_mock/       # 認証関連のMock
+│   └── auth/            # 認証関連の定義
 │
-├── app/               # アプリケーション - ユースケース
-│   ├── clone/         # クローン機能のユースケース
-│   └── list/          # リスト機能のユースケース
+├── app/                 # アプリケーション - ユースケース
+│   ├── clone/           # クローン機能のユースケース
+│   └── list/            # リスト機能のユースケース
 │
-├── infra/             # 外部システム連携 - 外の世界との接続
-│   ├── github/        # GitHub API実装
-│   └── storage/       # データ保存実装
+├── infra/               # 外部システム連携 - 外の世界との接続
+│   ├── github/          # GitHub API実装
+│   └── filesystem/      # ファイルシステムに依存する実装
 │
-└── ui/                # ユーザーインターフェース - 使い方
-    └── cli/           # コマンドライン実装
+└── ui/                  # ユーザーインターフェース - 使い方
+    └── cli/             # コマンドライン実装
 ```
 
 ### 5. 実際のケーススタディ
