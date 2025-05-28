@@ -6,30 +6,30 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kyoh86/gogh/v4/app/config"
+	testtarget "github.com/kyoh86/gogh/v4/app/config"
 )
 
-func TestFlagsStore_Source(t *testing.T) {
+func TestFlagsStoreV0_Source(t *testing.T) {
 	// Save and restore environment variable
 	oldFlagPath := os.Getenv("GOGH_FLAG_PATH")
 	defer os.Setenv("GOGH_FLAG_PATH", oldFlagPath)
 
 	t.Run("default path", func(t *testing.T) {
 		os.Unsetenv("GOGH_FLAG_PATH")
-		store := config.NewFlagsStore()
+		store := testtarget.NewFlagsStoreV0()
 		path, err := store.Source()
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if filepath.Base(path) != "flags.v4.toml" {
-			t.Errorf("expected path to contain flags.v4.toml, got %s", path)
+		if filepath.Base(path) != "flag.yaml" {
+			t.Errorf("expected path to contain flag.yaml, got %s", path)
 		}
 	})
 
 	t.Run("custom path from env", func(t *testing.T) {
-		customPath := "/custom/path/flags.toml"
+		customPath := "/custom/path/flag.yaml"
 		os.Setenv("GOGH_FLAG_PATH", customPath)
-		store := config.NewFlagsStore()
+		store := testtarget.NewFlagsStoreV0()
 		path, err := store.Source()
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -40,7 +40,7 @@ func TestFlagsStore_Source(t *testing.T) {
 	})
 }
 
-func TestFlagsStore_Load(t *testing.T) {
+func TestFlagsStoreV0_Load(t *testing.T) {
 	// Create temporary directory for testing
 	tempDir, err := os.MkdirTemp("", "flags_test")
 	if err != nil {
@@ -50,17 +50,16 @@ func TestFlagsStore_Load(t *testing.T) {
 
 	// Create test flags file
 	flagsContent := `
-[list]
-limit = 200
-format = "json"
-primary = true
-
-[repos]
-limit = 50
-privacy = "public"
-fork = "exclude"
+list:
+  limit: 200
+  format: "json"
+  primary: true
+repos:
+  limit: 50
+  privacy: "public"
+  fork: "exclude"
 `
-	flagsPath := filepath.Join(tempDir, "flags.v4.toml")
+	flagsPath := filepath.Join(tempDir, "flag.yaml")
 	err = os.WriteFile(flagsPath, []byte(flagsContent), 0644)
 	if err != nil {
 		t.Fatalf("failed to write test file: %v", err)
@@ -72,15 +71,16 @@ fork = "exclude"
 
 	t.Run("successful load", func(t *testing.T) {
 		os.Setenv("GOGH_FLAG_PATH", flagsPath)
-		store := config.NewFlagsStore()
-		initial := config.DefaultFlags
+		store := testtarget.NewFlagsStoreV0()
+		initial := func() *testtarget.Flags {
+			return testtarget.DefaultFlags()
+		}
 
 		flags, err := store.Load(context.Background(), initial)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		// Check List flags
 		if flags.List.Limit != 200 {
 			t.Errorf("expected List.Limit to be 200, got %d", flags.List.Limit)
 		}
@@ -91,7 +91,6 @@ fork = "exclude"
 			t.Errorf("expected List.Primary to be true")
 		}
 
-		// Check Repos flags
 		if flags.Repos.Limit != 50 {
 			t.Errorf("expected Repos.Limit to be 50, got %d", flags.Repos.Limit)
 		}
@@ -104,11 +103,13 @@ fork = "exclude"
 	})
 
 	t.Run("file not found", func(t *testing.T) {
-		nonExistentPath := filepath.Join(tempDir, "nonexistent.toml")
+		nonExistentPath := filepath.Join(tempDir, "nonexistent.yaml")
 		os.Setenv("GOGH_FLAG_PATH", nonExistentPath)
 
-		store := config.NewFlagsStore()
-		initial := config.DefaultFlags
+		store := testtarget.NewFlagsStoreV0()
+		initial := func() *testtarget.Flags {
+			return testtarget.DefaultFlags()
+		}
 
 		_, err := store.Load(context.Background(), initial)
 		if err == nil {
@@ -116,20 +117,22 @@ fork = "exclude"
 		}
 	})
 
-	t.Run("invalid toml", func(t *testing.T) {
-		invalidPath := filepath.Join(tempDir, "invalid.toml")
-		err = os.WriteFile(invalidPath, []byte("invalid toml content"), 0644)
+	t.Run("invalid yaml", func(t *testing.T) {
+		invalidPath := filepath.Join(tempDir, "invalid.yaml")
+		err = os.WriteFile(invalidPath, []byte("invalid: yaml: content: - :\n"), 0644)
 		if err != nil {
 			t.Fatalf("failed to write invalid test file: %v", err)
 		}
 
 		os.Setenv("GOGH_FLAG_PATH", invalidPath)
-		store := config.NewFlagsStore()
-		initial := config.DefaultFlags
+		store := testtarget.NewFlagsStoreV0()
+		initial := func() *testtarget.Flags {
+			return testtarget.DefaultFlags()
+		}
 
 		_, err := store.Load(context.Background(), initial)
 		if err == nil {
-			t.Error("expected error with invalid TOML, got nil")
+			t.Error("expected error with invalid YAML, got nil")
 		}
 	})
 }
