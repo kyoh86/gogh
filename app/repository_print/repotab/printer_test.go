@@ -227,23 +227,187 @@ func TestPrinter_Print(t *testing.T) {
 	})
 }
 
-func TestReferenceWithAlias(t *testing.T) {
-	var buf bytes.Buffer
-	p := repotab.NewPrinter(&buf)
-
-	// Create a repository with an alias
-	mainRef := repository.NewReference("github.com", "testuser", "main-repo")
+// Each cell type test
+func TestIndividualCellTypes(t *testing.T) {
+	// Create a repository with all attributes set for testing cells
+	ref := repository.NewReference("github.com", "testuser", "test-repo")
+	parentRef := repository.NewReference("github.com", "original-owner", "original-repo")
 
 	testRepo := hosting.Repository{
-		Ref:         mainRef,
-		Description: "Repository with alias",
+		Ref:         ref,
+		Description: "Test repository description",
+		Private:     true,
+		Archived:    true,
+		Fork:        true,
+		Parent: &hosting.ParentRepository{
+			Ref:      parentRef,
+			CloneURL: "https://github.com/original-owner/original-repo.git",
+		},
+		UpdatedAt:  time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+		Language:   "Go",
+		Homepage:   "https://example.com",
+		IsTemplate: true,
+	}
+
+	// Test each cell type individually
+	t.Run("RepoRefCell", func(t *testing.T) {
+		var buf bytes.Buffer
+		p := repotab.NewPrinter(&buf, repotab.Columns(repotab.Column{
+			Priority:    0,
+			CellBuilder: repotab.RepoRefCell,
+		}))
+
+		if err := p.Print(testRepo); err != nil {
+			t.Fatalf("failed to print: %v", err)
+		}
+
+		if err := p.Close(); err != nil {
+			t.Fatalf("failed to close: %v", err)
+		}
+
+		output := buf.String()
+		if !strings.Contains(output, "testuser/test-repo") {
+			t.Errorf("RepoRefCell should show repository full name, got: %s", output)
+		}
+	})
+
+	t.Run("DescriptionCell", func(t *testing.T) {
+		var buf bytes.Buffer
+		p := repotab.NewPrinter(&buf, repotab.Columns(repotab.Column{
+			Priority:    0,
+			CellBuilder: repotab.DescriptionCell,
+		}))
+
+		if err := p.Print(testRepo); err != nil {
+			t.Fatalf("failed to print: %v", err)
+		}
+
+		if err := p.Close(); err != nil {
+			t.Fatalf("failed to close: %v", err)
+		}
+
+		output := buf.String()
+		if !strings.Contains(output, "Test repository description") {
+			t.Errorf("DescriptionCell should show repository description, got: %s", output)
+		}
+	})
+
+	t.Run("EmojiAttributesCell", func(t *testing.T) {
+		var buf bytes.Buffer
+		p := repotab.NewPrinter(&buf, repotab.Columns(repotab.Column{
+			Priority:    0,
+			CellBuilder: repotab.EmojiAttributesCell,
+		}))
+
+		if err := p.Print(testRepo); err != nil {
+			t.Fatalf("failed to print: %v", err)
+		}
+
+		if err := p.Close(); err != nil {
+			t.Fatalf("failed to close: %v", err)
+		}
+
+		output := buf.String()
+		// Check for emojis present in the output
+		if !strings.Contains(output, "🔒") {
+			t.Errorf("EmojiAttributesCell should show private emoji, got: %s", output)
+		}
+		if !strings.Contains(output, "🔀") {
+			t.Errorf("EmojiAttributesCell should show fork emoji, got: %s", output)
+		}
+		if !strings.Contains(output, "🗃️") {
+			t.Errorf("EmojiAttributesCell should show archived emoji, got: %s", output)
+		}
+	})
+
+	t.Run("AttributesCell", func(t *testing.T) {
+		var buf bytes.Buffer
+		p := repotab.NewPrinter(&buf, repotab.Columns(repotab.Column{
+			Priority:    0,
+			CellBuilder: repotab.AttributesCell,
+		}))
+
+		if err := p.Print(testRepo); err != nil {
+			t.Fatalf("failed to print: %v", err)
+		}
+
+		if err := p.Close(); err != nil {
+			t.Fatalf("failed to close: %v", err)
+		}
+
+		output := buf.String()
+		// Check for attributes text in the output
+		if !strings.Contains(strings.ToLower(output), "private") {
+			t.Errorf("AttributesCell should show private status, got: %s", output)
+		}
+		if !strings.Contains(strings.ToLower(output), "fork") {
+			t.Errorf("AttributesCell should show fork status, got: %s", output)
+		}
+		if !strings.Contains(strings.ToLower(output), "archived") {
+			t.Errorf("AttributesCell should show archived status, got: %s", output)
+		}
+	})
+
+	t.Run("UpdatedAtCell", func(t *testing.T) {
+		var buf bytes.Buffer
+		p := repotab.NewPrinter(&buf, repotab.Columns(repotab.Column{
+			Priority:    0,
+			CellBuilder: repotab.UpdatedAtCell,
+		}))
+
+		// Create a repository with a specific update time
+		recentRepo := hosting.Repository{
+			Ref:       repository.NewReference("github.com", "testuser", "test-repo"),
+			UpdatedAt: time.Now().Add(-24 * time.Hour), // 1 day ago
+		}
+
+		if err := p.Print(recentRepo); err != nil {
+			t.Fatalf("failed to print: %v", err)
+		}
+
+		if err := p.Close(); err != nil {
+			t.Fatalf("failed to close: %v", err)
+		}
+
+		output := buf.String()
+		// The exact format depends on the FuzzyAgoAbbr function, but should indicate "ago"
+		if !strings.Contains(output, "d") { // Looking for "1d" (1 day)
+			t.Errorf("UpdatedAtCell should show relative time, got: %s", output)
+		}
+	})
+}
+
+func TestMultipleCellsCombined(t *testing.T) {
+	var buf bytes.Buffer
+
+	// Test combining multiple cell types
+	p := repotab.NewPrinter(&buf, repotab.Columns(
+		repotab.Column{
+			Priority:    0,
+			CellBuilder: repotab.RepoRefCell,
+		},
+		repotab.Column{
+			Priority:    1,
+			CellBuilder: repotab.EmojiAttributesCell,
+		},
+		repotab.Column{
+			Priority:    2,
+			CellBuilder: repotab.DescriptionCell,
+		},
+	))
+
+	// Create a repository with mixed attributes
+	ref := repository.NewReference("github.com", "testuser", "test-repo")
+	testRepo := hosting.Repository{
+		Ref:         ref,
+		Description: "This is a test repository",
+		Private:     true,
+		Fork:        true,
 		UpdatedAt:   time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	// This test depends on how the printer handles ReferenceWithAlias
-	// This is a placeholder for testing alias-related functionality
 	if err := p.Print(testRepo); err != nil {
-		t.Fatalf("failed to print repository with alias: %v", err)
+		t.Fatalf("failed to print: %v", err)
 	}
 
 	if err := p.Close(); err != nil {
@@ -251,7 +415,17 @@ func TestReferenceWithAlias(t *testing.T) {
 	}
 
 	output := buf.String()
-	if !strings.Contains(output, "main-repo") {
-		t.Errorf("output should contain main repository name, got: %s", output)
+
+	// Check that all cell types are represented
+	if !strings.Contains(output, "testuser/test-repo") {
+		t.Errorf("Output should contain repository name, got: %s", output)
+	}
+
+	if !strings.Contains(output, "🔒") || !strings.Contains(output, "🔀") {
+		t.Errorf("Output should contain emoji attributes, got: %s", output)
+	}
+
+	if !strings.Contains(output, "This is a test repository") {
+		t.Errorf("Output should contain description, got: %s", output)
 	}
 }
