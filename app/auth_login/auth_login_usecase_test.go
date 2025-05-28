@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	testtarget "github.com/kyoh86/gogh/v4/app/auth_login"
 	"github.com/kyoh86/gogh/v4/core/auth_mock"
