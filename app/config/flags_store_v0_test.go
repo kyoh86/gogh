@@ -72,9 +72,7 @@ repos:
 	t.Run("successful load", func(t *testing.T) {
 		os.Setenv("GOGH_FLAG_PATH", flagsPath)
 		store := testtarget.NewFlagsStoreV0()
-		initial := func() *testtarget.Flags {
-			return testtarget.DefaultFlags()
-		}
+		initial := testtarget.DefaultFlags
 
 		flags, err := store.Load(context.Background(), initial)
 		if err != nil {
@@ -107,9 +105,7 @@ repos:
 		os.Setenv("GOGH_FLAG_PATH", nonExistentPath)
 
 		store := testtarget.NewFlagsStoreV0()
-		initial := func() *testtarget.Flags {
-			return testtarget.DefaultFlags()
-		}
+		initial := testtarget.DefaultFlags
 
 		_, err := store.Load(context.Background(), initial)
 		if err == nil {
@@ -126,9 +122,7 @@ repos:
 
 		os.Setenv("GOGH_FLAG_PATH", invalidPath)
 		store := testtarget.NewFlagsStoreV0()
-		initial := func() *testtarget.Flags {
-			return testtarget.DefaultFlags()
-		}
+		initial := testtarget.DefaultFlags
 
 		_, err := store.Load(context.Background(), initial)
 		if err == nil {
