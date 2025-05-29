@@ -53,7 +53,7 @@ func RetryLimit(limit int, notify TryCloneNotify) TryCloneNotify {
 	return func(n TryCloneStatus) error {
 		if n == TryCloneStatusRetry {
 			limit--
-			if limit <= 0 {
+			if limit < 0 {
 				return errors.New("retry limit reached")
 			}
 		}
