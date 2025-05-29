@@ -4,18 +4,19 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/ui/cli/commands"
 )
 
-func TestNewReposCommand(t *testing.T) {
+func TestNewAuthCommand(t *testing.T) {
 	// Setup
 	ctx := context.Background()
-	serviceSet := &service.ServiceSet{Flags: &config.Flags{}}
+	serviceSet := &service.ServiceSet{}
 
-	// Execute and verify no error occurs
-	_, err := commands.NewReposCommand(ctx, serviceSet)
+	// Execute
+	_, err := commands.NewAuthCommand(ctx, serviceSet)
+
+	// Verify no error occurs
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
