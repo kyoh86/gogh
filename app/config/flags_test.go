@@ -44,11 +44,11 @@ func TestDefaultFlags(t *testing.T) {
 	if f.BundleRestore.CloneRetryLimit != 3 {
 		t.Errorf("expected BundleRestore.CloneRetryLimit to be 3, got %d", f.BundleRestore.CloneRetryLimit)
 	}
-	if f.BundleRestore.RequestTimeout != 5*time.Minute {
-		t.Errorf("expected BundleRestore.RequestTimeout to be 5m, got %v", f.BundleRestore.RequestTimeout)
+	if f.BundleRestore.CloneRetryTimeout != 5*time.Minute {
+		t.Errorf("expected BundleRestore.CloneRetryTimeout to be 5m, got %v", f.BundleRestore.CloneRetryTimeout)
 	}
-	if f.Clone.RequestTimeout != 5*time.Minute {
-		t.Errorf("expected Clone.RequestTimeout to be 5m, got %v", f.Clone.RequestTimeout)
+	if f.Clone.CloneRetryTimeout != 5*time.Minute {
+		t.Errorf("expected Clone.CloneRetryTimeout to be 5m, got %v", f.Clone.CloneRetryTimeout)
 	}
 	if f.Repos.Limit != 30 {
 		t.Errorf("expected Repos.Limit to be 30, got %d", f.Repos.Limit)
@@ -59,8 +59,8 @@ func TestDefaultFlags(t *testing.T) {
 	if !reflect.DeepEqual(f.Repos.Relation, []string{"owner", "organization-member"}) {
 		t.Errorf("expected Repos.Relation to be ['owner', 'organization-member'], got %v", f.Repos.Relation)
 	}
-	if f.Create.RequestTimeout != 5*time.Minute {
-		t.Errorf("expected Create.RequestTimeout to be 5m, got %v", f.Create.RequestTimeout)
+	if f.Create.CloneRetryTimeout != 5*time.Minute {
+		t.Errorf("expected Create.CloneRetryTimeout to be 5m, got %v", f.Create.CloneRetryTimeout)
 	}
 	if f.Create.CloneRetryLimit != 3 {
 		t.Errorf("expected Create.CloneRetryLimit to be 3, got %d", f.Create.CloneRetryLimit)
@@ -68,8 +68,8 @@ func TestDefaultFlags(t *testing.T) {
 	if f.List.Limit != 100 {
 		t.Errorf("expected List.Limit to be 100, got %d", f.List.Limit)
 	}
-	if f.Fork.RequestTimeout != 5*time.Minute {
-		t.Errorf("expected Fork.RequestTimeout to be 5m, got %v", f.Fork.RequestTimeout)
+	if f.Fork.CloneRetryTimeout != 5*time.Minute {
+		t.Errorf("expected Fork.CloneRetryTimeout to be 5m, got %v", f.Fork.CloneRetryTimeout)
 	}
 	if f.Fork.CloneRetryLimit != 3 {
 		t.Errorf("expected Fork.CloneRetryLimit to be 3, got %d", f.Fork.CloneRetryLimit)
@@ -101,8 +101,8 @@ func TestFlagStructsInitialization(t *testing.T) {
 	}
 
 	bundleRestore := testtarget.BundleRestoreFlags{}
-	if bundleRestore.RequestTimeout != 0 {
-		t.Errorf("expected zero RequestTimeout, got %v", bundleRestore.RequestTimeout)
+	if bundleRestore.CloneRetryTimeout != 0 {
+		t.Errorf("expected zero CloneRetryTimeout, got %v", bundleRestore.CloneRetryTimeout)
 	}
 	if bundleRestore.File != "" {
 		t.Errorf("expected empty File, got %q", bundleRestore.File)
@@ -115,8 +115,8 @@ func TestFlagStructsInitialization(t *testing.T) {
 	}
 
 	clone := testtarget.CloneFlags{}
-	if clone.RequestTimeout != 0 {
-		t.Errorf("expected zero RequestTimeout, got %v", clone.RequestTimeout)
+	if clone.CloneRetryTimeout != 0 {
+		t.Errorf("expected zero CloneRetryTimeout, got %v", clone.CloneRetryTimeout)
 	}
 	if clone.Dryrun {
 		t.Errorf("expected false Dryrun")
@@ -155,7 +155,7 @@ func TestFlagStructsInitialization(t *testing.T) {
 	if fork.To != "" {
 		t.Errorf("expected empty To, got %q", fork.To)
 	}
-	if fork.RequestTimeout != 0 {
-		t.Errorf("expected zero RequestTimeout, got %v", fork.RequestTimeout)
+	if fork.CloneRetryTimeout != 0 {
+		t.Errorf("expected zero CloneRetryTimeout, got %v", fork.CloneRetryTimeout)
 	}
 }

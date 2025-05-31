@@ -34,16 +34,16 @@ type BundleDumpFlags struct {
 
 // BundleRestoreFlags is a struct that contains flags for restoring a bundle.
 type BundleRestoreFlags struct {
-	RequestTimeout  time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
-	File            string        `yaml:"file,omitempty" toml:"file,omitempty"`
-	CloneRetryLimit int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
-	Dryrun          bool          `yaml:"-" toml:"-"`
+	File              string        `yaml:"file,omitempty" toml:"file,omitempty"`
+	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
+	CloneRetryLimit   int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	Dryrun            bool          `yaml:"-" toml:"-"`
 }
 
 // CloneFlags is a struct that contains flags for cloning a repository.
 type CloneFlags struct {
-	RequestTimeout time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
-	Dryrun         bool          `yaml:"-" toml:"-"`
+	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
+	Dryrun            bool          `yaml:"-" toml:"-"`
 }
 
 // CreateFlags is a struct that contains flags for creating a repository.
@@ -53,7 +53,7 @@ type CreateFlags struct {
 	Homepage            string        `yaml:"-" toml:"-"`
 	LicenseTemplate     string        `yaml:"licenseTemplate,omitempty" toml:"license-template,omitempty"`
 	GitignoreTemplate   string        `yaml:"gitignoreTemplate,omitempty" toml:"gitignore-template,omitempty"`
-	RequestTimeout      time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
+	CloneRetryTimeout   time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
 	CloneRetryLimit     int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
 	DisableWiki         bool          `yaml:"disableWiki,omitempty" toml:"disable-wiki,omitempty"`
 	DisableDownloads    bool          `yaml:"disableDownloads,omitempty" toml:"disable-downloads,omitempty"`
@@ -100,7 +100,7 @@ type ListFlags struct {
 type ForkFlags struct {
 	To                string        `yaml:"-" toml:"-"`
 	DefaultBranchOnly bool          `yaml:"defaultBranchOnly,omitempty" toml:"default-branch-only,omitempty"`
-	RequestTimeout    time.Duration `yaml:"requestTimeout,omitempty" toml:"request-timeout,omitempty"`
+	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
 	CloneRetryLimit   int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
 }
 
@@ -134,20 +134,20 @@ func DefaultFlags() *Flags {
 		f.BundleRestore.File = filepath.Join(homeDir, "./.config/gogh/bundle.txt")
 	}
 	f.BundleRestore.CloneRetryLimit = 3
-	f.BundleRestore.RequestTimeout = 5 * time.Minute
+	f.BundleRestore.CloneRetryTimeout = 5 * time.Minute
 
-	f.Clone.RequestTimeout = 5 * time.Minute
+	f.Clone.CloneRetryTimeout = 5 * time.Minute
 
 	f.Repos.Limit = 30
 	f.Repos.Color = "auto"
 	f.Repos.Relation = []string{"owner", "organization-member"}
 
-	f.Create.RequestTimeout = 5 * time.Minute
+	f.Create.CloneRetryTimeout = 5 * time.Minute
 	f.Create.CloneRetryLimit = 3
 
 	f.List.Limit = 100
 
-	f.Fork.RequestTimeout = 5 * time.Minute
+	f.Fork.CloneRetryTimeout = 5 * time.Minute
 	f.Fork.CloneRetryLimit = 3
 	return f
 }

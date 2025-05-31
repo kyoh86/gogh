@@ -87,7 +87,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			}
 			if err := createFromTemplateUseCase.Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
 				TryCloneOptions: try_clone.Options{
-					Timeout: f.RequestTimeout,
+					Timeout: f.CloneRetryTimeout,
 					Notify:  try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				RepositoryOptions: create_from_template.RepositoryOptions{
@@ -156,7 +156,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	flags.BoolVarP(cmd, &f.PreventMergeCommit, "prevent-merge-commit", "", svc.Flags.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
 	flags.BoolVarP(cmd, &f.PreventRebaseMerge, "prevent-rebase-merge", "", svc.Flags.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
 	flags.BoolVarP(cmd, &f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
-	cmd.Flags().DurationVarP(&f.RequestTimeout, "timeout", "t", svc.Flags.Create.RequestTimeout, "Timeout for the request")
+	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Create.CloneRetryTimeout, "Timeout for each clone attempt")
 	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
 	return cmd, nil
 }

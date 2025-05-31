@@ -60,7 +60,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 	}
 	flags.BoolVarP(cmd, &f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().StringVarP(&f.File, "file", "f", svc.Flags.BundleRestore.File, "Read the file as input; if not specified, read from stdin")
-	cmd.Flags().DurationVarP(&f.RequestTimeout, "request-timeout", "", svc.Flags.BundleRestore.RequestTimeout, "Read the file as input; if not specified, read from stdin")
-	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "")
+	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "", svc.Flags.BundleRestore.CloneRetryTimeout, "Timeout for each clone attempt.")
+	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
 	return cmd, nil
 }

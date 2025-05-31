@@ -62,7 +62,8 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			eg.Go(func() error {
 				return cloneUseCase.Execute(egCtx, ref, clone.Options{
 					TryCloneOptions: try_clone.Options{
-						Notify: try_clone.RetryLimit(1, nil),
+						Notify:  try_clone.RetryLimit(1, nil),
+						Timeout: f.CloneRetryTimeout,
 					},
 				})
 			})
@@ -108,6 +109,6 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	flags.BoolVarP(cmd, &f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	cmd.Flags().DurationVarP(&f.RequestTimeout, "timeout", "t", svc.Flags.Clone.RequestTimeout, "Timeout for the request")
+	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Clone.CloneRetryTimeout, "Timeout for the request")
 	return cmd, nil
 }

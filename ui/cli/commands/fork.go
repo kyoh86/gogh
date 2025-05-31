@@ -27,7 +27,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 			ctx := cmd.Context()
 			opts := fork.Options{
 				TryCloneOptions: try_clone.Options{
-					Timeout: f.RequestTimeout,
+					Timeout: f.CloneRetryTimeout,
 					Notify:  try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				HostingOptions: fork.HostingOptions{
@@ -55,6 +55,6 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 	)
 	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Fork.CloneRetryLimit, "")
 	flags.BoolVarP(cmd, &f.DefaultBranchOnly, "default-branch-only", "", svc.Flags.Fork.DefaultBranchOnly, "Only fork the default branch")
-	cmd.Flags().DurationVarP(&f.RequestTimeout, "timeout", "t", svc.Flags.Fork.RequestTimeout, "Timeout for the request")
+	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Fork.CloneRetryTimeout, "Timeout for each clone attempt")
 	return cmd, nil
 }
