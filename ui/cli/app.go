@@ -56,9 +56,6 @@ func NewApp(
 			if err := svc.WorkspaceStore.Save(ctx, svc.WorkspaceService, false); err != nil {
 				return fmt.Errorf("saving workspaces: %w", err)
 			}
-			if err := svc.OverlayStore.Save(ctx, svc.OverlayService, false); err != nil {
-				return fmt.Errorf("saving overlays: %w", err)
-			}
 			return nil
 		},
 	}
@@ -107,19 +104,6 @@ func NewApp(
 	}
 	authCommand.GroupID = groupConfig
 
-	overlayCommand, err := cmdWithSubs(
-		ctx, svc,
-		commands.NewOverlayCommand,
-		nil,
-		commands.NewOverlayListCommand,
-		commands.NewOverlayAddCommand,
-		commands.NewOverlayRemoveCommand,
-	)
-	if err != nil {
-		return nil, err
-	}
-	overlayCommand.GroupID = groupConfig
-
 	rootsCommand, err := cmdWithSubs(
 		ctx, svc,
 		commands.NewRootsCommand,
@@ -155,7 +139,6 @@ func NewApp(
 	cmds := []*cobra.Command{
 		configCommand,
 		authCommand,
-		overlayCommand,
 		bundleCommand,
 		rootsCommand,
 	}

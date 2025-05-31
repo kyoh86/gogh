@@ -17,7 +17,7 @@ import (
 func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.ForkFlags
 
-	useCase := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.DefaultNameService, svc.ReferenceParser, svc.GitService, svc.OverlayService)
+	useCase := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.DefaultNameService, svc.ReferenceParser, svc.GitService)
 
 	cmd := &cobra.Command{
 		Use:   "fork [flags] OWNER/NAME",

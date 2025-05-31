@@ -21,7 +21,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	var f config.CloneFlags
 
 	reposUseCase := repos.NewUseCase(svc.HostingService)
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService, svc.OverlayService)
+	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService)
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {

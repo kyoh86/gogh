@@ -18,7 +18,6 @@ type UseCase struct {
 	defaultNameService repository.DefaultNameService
 	referenceParser    repository.ReferenceParser
 	gitService         git.GitService
-	overlayService     workspace.OverlayService
 }
 
 // NewUseCase creates a new fork use case
@@ -28,7 +27,6 @@ func NewUseCase(
 	defaultNameService repository.DefaultNameService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
-	overlayService workspace.OverlayService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:     hostingService,
@@ -36,7 +34,6 @@ func NewUseCase(
 		defaultNameService: defaultNameService,
 		referenceParser:    referenceParser,
 		gitService:         gitService,
-		overlayService:     overlayService,
 	}
 }
 
@@ -89,12 +86,7 @@ func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) err
 		return fmt.Errorf("requesting fork: %w", err)
 	}
 
-	repositoryService := try_clone.NewUseCase(
-		uc.hostingService,
-		uc.workspaceService,
-		uc.gitService,
-		uc.overlayService,
-	)
+	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.gitService)
 	if err := repositoryService.Execute(ctx, fork, targetRef.Alias, opts.TryCloneOptions); err != nil {
 		return fmt.Errorf("cloning forked repository: %w", err)
 	}

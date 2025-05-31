@@ -12,4 +12,3 @@ package core
 //go:generate go tool mockgen -source ./workspace/finder_service.go        -destination ./workspace_mock/gen_finder_service_mock.go        -package workspace_mock
 //go:generate go tool mockgen -source ./workspace/layout_service.go        -destination ./workspace_mock/gen_layout_service_mock.go        -package workspace_mock
 //go:generate go tool mockgen -source ./workspace/workspace_service.go     -destination ./workspace_mock/gen_workspace_service_mock.go     -package workspace_mock
-//go:generate go tool mockgen -source ./workspace/overlay_service.go       -destination ./workspace_mock/gen_overlay_service_mock.go       -package workspace_mock

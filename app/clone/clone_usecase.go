@@ -2,7 +2,6 @@ package clone
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
@@ -17,7 +16,6 @@ type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	referenceParser  repository.ReferenceParser
 	gitService       git.GitService
-	overlayService   workspace.OverlayService
 }
 
 // NewUseCase creates a new clone use case
@@ -26,14 +24,12 @@ func NewUseCase(
 	workspaceService workspace.WorkspaceService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
-	overlayService workspace.OverlayService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
 		referenceParser:  referenceParser,
 		gitService:       gitService,
-		overlayService:   overlayService,
 	}
 }
 
@@ -55,14 +51,6 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	if err != nil {
 		return err
 	}
-	repositoryService := try_clone.NewUseCase(
-		uc.hostingService,
-		uc.workspaceService,
-		uc.gitService,
-		uc.overlayService,
-	)
-	if err := repositoryService.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
-		return fmt.Errorf("clone repository: %w", err)
-	}
-	return nil
+	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.gitService)
+	return repositoryService.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions)
 }

@@ -19,7 +19,7 @@ import (
 
 func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService, svc.OverlayService)
+	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.ReferenceParser, svc.GitService)
 
 	runFunc := func(ctx context.Context) error {
 		in := os.Stdin

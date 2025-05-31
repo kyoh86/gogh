@@ -17,7 +17,6 @@ type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	referenceParser  repository.ReferenceParser
 	gitService       git.GitService
-	overlayService   workspace.OverlayService
 }
 
 func NewUseCase(
@@ -25,14 +24,12 @@ func NewUseCase(
 	workspaceService workspace.WorkspaceService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
-	overlayService workspace.OverlayService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
 		referenceParser:  referenceParser,
 		gitService:       gitService,
-		overlayService:   overlayService,
 	}
 }
 
@@ -52,12 +49,7 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	if err != nil {
 		return fmt.Errorf("invalid ref: %w", err)
 	}
-	repositoryService := try_clone.NewUseCase(
-		uc.hostingService,
-		uc.workspaceService,
-		uc.gitService,
-		uc.overlayService,
-	)
+	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepository(ctx, ref.Reference, opts.RepositoryOptions)
 	if err != nil {
 		return fmt.Errorf("creating: %w", err)

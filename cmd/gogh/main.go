@@ -76,15 +76,6 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("loading workspace: %w", err)
 	}
-	overlayStore := config.NewOverlayStore()
-	overlayService, err := config.LoadAlternative(
-		ctx,
-		filesystem.NewOverlayService,
-		overlayStore,
-	)
-	if err != nil {
-		return fmt.Errorf("loading overlay service: %w", err)
-	}
 
 	svc := &service.ServiceSet{
 		DefaultNameStore:   defaultNameStore,
@@ -98,9 +89,6 @@ func run(ctx context.Context) error {
 
 		FlagsStore: flagsStore,
 		Flags:      flags,
-
-		OverlayStore:   overlayStore,
-		OverlayService: overlayService,
 
 		ReferenceParser:     repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner()),
 		HostingService:      github.NewHostingService(tokenService, defaultNameService),
