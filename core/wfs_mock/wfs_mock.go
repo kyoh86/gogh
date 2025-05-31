@@ -318,7 +318,7 @@ func (fi *MockFileInfo) ModTime() time.Time { return time.Now() }
 func (fi *MockFileInfo) IsDir() bool { return fi.isDir }
 
 // Sys implements fs.FileInfo
-func (fi *MockFileInfo) Sys() interface{} { return nil }
+func (fi *MockFileInfo) Sys() any { return nil }
 
 // MockDirEntry implements fs.DirEntry interface
 type MockDirEntry struct {
