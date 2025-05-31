@@ -109,20 +109,6 @@ func (mr *MockOverlayServiceMockRecorder) MarkSaved() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkSaved", reflect.TypeOf((*MockOverlayService)(nil).MarkSaved))
 }
 
-// MatchRepository mocks base method.
-func (m *MockOverlayService) MatchRepository(repo string) []workspace.OverlayFile {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MatchRepository", repo)
-	ret0, _ := ret[0].([]workspace.OverlayFile)
-	return ret0
-}
-
-// MatchRepository indicates an expected call of MatchRepository.
-func (mr *MockOverlayServiceMockRecorder) MatchRepository(repo any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MatchRepository", reflect.TypeOf((*MockOverlayService)(nil).MatchRepository), repo)
-}
-
 // RemovePattern mocks base method.
 func (m *MockOverlayService) RemovePattern(pattern string) error {
 	m.ctrl.T.Helper()

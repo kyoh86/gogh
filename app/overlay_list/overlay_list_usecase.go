@@ -2,7 +2,7 @@ package overlay_list
 
 import (
 	"context"
-	"fmt"
+
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
