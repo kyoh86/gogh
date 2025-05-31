@@ -310,8 +310,8 @@ func TestTryClone(t *testing.T) {
 
 			svc := service.NewRepositoryService(mhs, mws, mgs)
 
-			ref := repository.NewReference("github.com", "user", "repo")
 			repo := &hosting.Repository{
+				Ref:      repository.NewReference("github.com", "user", "repo"),
 				CloneURL: "https://github.com/user/repo.git",
 			}
 
@@ -331,7 +331,6 @@ func TestTryClone(t *testing.T) {
 			err := svc.TryClone(
 				context.Background(),
 				repo,
-				ref,
 				nil, // no alias
 				30*time.Second,
 				notify,

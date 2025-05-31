@@ -52,5 +52,5 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 		return err
 	}
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
-	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
+	return repositoryService.TryClone(ctx, repo, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
 }

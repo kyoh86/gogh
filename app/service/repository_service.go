@@ -65,13 +65,12 @@ func RetryLimit(limit int, notify TryCloneNotify) TryCloneNotify {
 func (s *RepositoryService) TryClone(
 	ctx context.Context,
 	repo *hosting.Repository,
-	ref repository.Reference,
 	alias *repository.Reference,
 	requestTimeout time.Duration,
 	notify TryCloneNotify,
 ) error {
 	// Determine local path based on layout
-	targetRef := ref
+	targetRef := repo.Ref
 	if alias != nil {
 		targetRef = *alias
 	}
@@ -79,7 +78,7 @@ func (s *RepositoryService) TryClone(
 	localPath := layout.PathFor(targetRef)
 
 	// Get the user and token for authentication
-	user, token, err := s.hostingService.GetTokenFor(ctx, ref)
+	user, token, err := s.hostingService.GetTokenFor(ctx, repo.Ref)
 	if err != nil {
 		return err
 	}
@@ -89,7 +88,7 @@ func (s *RepositoryService) TryClone(
 	}
 
 	// Perform git clone operation
-	if err := cloneWithRetry(ctx, gitService, layout, ref, repo.CloneURL, localPath, requestTimeout, notify); err != nil {
+	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, requestTimeout, notify); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
 

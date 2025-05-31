@@ -54,5 +54,5 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	if err != nil {
 		return fmt.Errorf("creating: %w", err)
 	}
-	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
+	return repositoryService.TryClone(ctx, repo, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
 }

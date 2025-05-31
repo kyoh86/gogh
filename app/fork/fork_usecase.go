@@ -87,7 +87,7 @@ func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) err
 	}
 
 	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
-	if err := repositoryService.TryClone(ctx, fork, targetRef.Reference, targetRef.Alias, opts.RequestTimeout, opts.TryCloneNotify); err != nil {
+	if err := repositoryService.TryClone(ctx, fork, targetRef.Alias, opts.RequestTimeout, opts.TryCloneNotify); err != nil {
 		return fmt.Errorf("cloning forked repository: %w", err)
 	}
 	return nil

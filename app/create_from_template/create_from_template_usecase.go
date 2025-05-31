@@ -57,5 +57,5 @@ func (uc *UseCase) Execute(
 	if err != nil {
 		return fmt.Errorf("creating repository from template: %w", err)
 	}
-	return repositoryService.TryClone(ctx, repo, ref.Reference, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
+	return repositoryService.TryClone(ctx, repo, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
 }
