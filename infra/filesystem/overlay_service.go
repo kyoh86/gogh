@@ -13,82 +13,33 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/wfs"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // OverlayService implements workspace.OverlayService using the filesystem
 type OverlayService struct {
-	overlayDir string
-	fsys       FSOperations
-}
-
-// FSOperations combines read and write operations for filesystem
-type FSOperations interface {
-	// fs.FS methods (read operations)
-	fs.FS
-	fs.ReadDirFS
-	fs.ReadFileFS
-	fs.StatFS
-
-	// Write operations
-	WriteFile(name string, data []byte, perm fs.FileMode) error
-	MkdirAll(path string, perm fs.FileMode) error
-	Remove(name string) error
-	Create(name string) (io.WriteCloser, error)
-}
-
-// OSFileSystem implements FSOperations using the os package
-type OSFileSystem struct{}
-
-func (fs *OSFileSystem) Open(name string) (fs.File, error) {
-	return os.Open(name)
-}
-
-func (fs *OSFileSystem) ReadDir(name string) ([]fs.DirEntry, error) {
-	return os.ReadDir(name)
-}
-
-func (fs *OSFileSystem) ReadFile(name string) ([]byte, error) {
-	return os.ReadFile(name)
-}
-
-func (fs *OSFileSystem) Stat(name string) (fs.FileInfo, error) {
-	return os.Stat(name)
-}
-
-func (fs *OSFileSystem) WriteFile(name string, data []byte, perm fs.FileMode) error {
-	return os.WriteFile(name, data, perm)
-}
-
-func (fs *OSFileSystem) MkdirAll(path string, perm fs.FileMode) error {
-	return os.MkdirAll(path, perm)
-}
-
-func (fs *OSFileSystem) Remove(name string) error {
-	return os.Remove(name)
-}
-
-func (fs *OSFileSystem) Create(name string) (io.WriteCloser, error) {
-	return os.Create(name)
+	fsys wfs.WFS
 }
 
 // NewOverlayService creates a new OverlayService instance
 func NewOverlayService(overlayDir string) (*OverlayService, error) {
+	fsys := NewLocalWFS(overlayDir)
+
 	service := &OverlayService{
-		overlayDir: overlayDir,
-		fsys:       &OSFileSystem{},
+		fsys: fsys,
 	}
 
 	// Ensure the overlay directory exists
-	if err := service.fsys.MkdirAll(overlayDir, 0755); err != nil {
+	if err := service.fsys.MkdirAll("", 0755); err != nil {
 		return nil, fmt.Errorf("creating overlay directory: %w", err)
 	}
 
 	return service, nil
 }
 
-// en: separator is a string used to separate the pattern and relative path
-// Base64 encoded results do not contain this string
+// separator はパターンと相対パスを区切るための文字列
+// Base64エンコード結果には含まれない文字列を使用
 const separator = "--"
 
 // encodeFileName safely encodes a pattern and path into a valid filename
@@ -121,13 +72,12 @@ func decodeFileName(encodedName string) (pattern, relativePath string, err error
 
 // getContentPath returns the path where the content for a given entry is stored
 func (s *OverlayService) getContentPath(entry workspace.OverlayEntry) string {
-	encodedName := encodeFileName(entry.Pattern, entry.RelativePath)
-	return filepath.Join(s.overlayDir, encodedName)
+	return encodeFileName(entry.Pattern, entry.RelativePath)
 }
 
 // ApplyOverlays implements workspace.OverlayService
 func (s *OverlayService) ApplyOverlays(ctx context.Context, ref repository.Reference, repoPath string) error {
-	// Convert repository reference to a string format for pattern matching
+	// Convert repository reference to a string for pattern matching
 	repoString := ref.String()
 
 	entries, err := s.ListOverlays(ctx)
@@ -158,7 +108,7 @@ func (s *OverlayService) ApplyOverlays(ctx context.Context, ref repository.Refer
 
 		// Ensure the directory exists
 		targetDir := filepath.Dir(targetPath)
-		if err := s.fsys.MkdirAll(targetDir, 0755); err != nil {
+		if err := os.MkdirAll(targetDir, 0755); err != nil {
 			return fmt.Errorf("creating directory '%s': %w", targetDir, err)
 		}
 
@@ -169,7 +119,7 @@ func (s *OverlayService) ApplyOverlays(ctx context.Context, ref repository.Refer
 		}
 
 		// Write to target file
-		if err := s.fsys.WriteFile(targetPath, data, 0644); err != nil {
+		if err := os.WriteFile(targetPath, data, 0644); err != nil {
 			return fmt.Errorf("writing to file '%s': %w", targetPath, err)
 		}
 	}
@@ -179,7 +129,7 @@ func (s *OverlayService) ApplyOverlays(ctx context.Context, ref repository.Refer
 
 // ListOverlays implements workspace.OverlayService
 func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayEntry, error) {
-	entries, err := s.fsys.ReadDir(s.overlayDir)
+	entries, err := s.fsys.ReadDir("")
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return []workspace.OverlayEntry{}, nil
@@ -224,12 +174,6 @@ func (s *OverlayService) GetOverlayContent(ctx context.Context, entry workspace.
 func (s *OverlayService) AddOverlay(ctx context.Context, entry workspace.OverlayEntry, content io.Reader) error {
 	// Write the content to a file
 	contentPath := s.getContentPath(entry)
-
-	// Create parent directories if needed
-	dir := filepath.Dir(contentPath)
-	if err := s.fsys.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("creating directory: %w", err)
-	}
 
 	// Read content
 	data, err := io.ReadAll(content)
