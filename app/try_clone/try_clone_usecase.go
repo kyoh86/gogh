@@ -17,6 +17,7 @@ type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
 	gitService       git.GitService
+	overlayService   workspace.OverlayService
 }
 
 // NewUseCase creates a new instance of RepositoryService.
@@ -24,11 +25,13 @@ func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
 	gitService git.GitService,
+	overlayService workspace.OverlayService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
 		gitService:       gitService,
+		overlayService:   overlayService,
 	}
 }
 
@@ -108,6 +111,10 @@ func (s *UseCase) Execute(
 		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{repo.Parent.CloneURL}); err != nil {
 			return fmt.Errorf("setting upstream remote: %w", err)
 		}
+	}
+	// Apply overlay files to the repository if overlay service is available
+	if err := s.overlayService.ApplyToRepository(ctx, localPath, repo.Ref.String()); err != nil {
+		return fmt.Errorf("applying overlay files: %w", err)
 	}
 	return nil
 }
