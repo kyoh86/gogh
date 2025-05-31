@@ -20,6 +20,9 @@ type ServiceSet struct {
 	WorkspaceStore   store.Saver[workspace.WorkspaceService]
 	WorkspaceService workspace.WorkspaceService
 
+	OverlayStore   store.Saver[workspace.OverlayService]
+	OverlayService workspace.OverlayService
+
 	FlagsStore store.Loader[*config.Flags]
 	Flags      *config.Flags
 
