@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v4/app/overlay_add"
+	"github.com/kyoh86/gogh/v4/app/overlay_list"
+	"github.com/kyoh86/gogh/v4/app/overlay_remove"
 	"github.com/kyoh86/gogh/v4/app/service"
-	"github.com/kyoh86/gogh/v4/core/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -27,9 +29,10 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
 
-			patterns := svc.OverlayService.GetPatterns()
-			if len(patterns) == 0 {
-				logger.Info("No overlay patterns defined")
+			useCase := overlay_list.NewUseCase(svc.OverlayService)
+			patterns, err := useCase.Execute(ctx)
+			if err != nil {
+				logger.Errorf("Failed to list overlay patterns: %v", err)
 				return nil
 			}
 
@@ -60,30 +63,12 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			sourcePath := args[1]
 			targetPath := args[2]
 
-			patterns := svc.OverlayService.GetPatterns()
-			var files []workspace.OverlayFile
-
-			// Find existing pattern
-			for _, p := range patterns {
-				if p.Pattern == pattern {
-					files = p.Files
-					break
-				}
-			}
-
-			// Add new file
-			files = append(files, workspace.OverlayFile{
-				SourcePath: sourcePath,
-				TargetPath: targetPath,
-			})
-
-			if err := svc.OverlayService.AddPattern(pattern, files); err != nil {
-				return fmt.Errorf("adding pattern %s: %w", pattern, err)
+			useCase := overlay_add.NewUseCase(svc.OverlayService)
+			if err := useCase.Execute(ctx, pattern, sourcePath, targetPath); err != nil {
+				return err
 			}
 
 			logger.Infof("Added overlay file %s -> %s for pattern %s", sourcePath, targetPath, pattern)
-			svc.OverlayService.MarkSaved()
-
 			return nil
 		},
 	}
@@ -102,12 +87,12 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 
 			pattern := args[0]
 
-			if err := svc.OverlayService.RemovePattern(pattern); err != nil {
-				return fmt.Errorf("removing pattern %s: %w", pattern, err)
+			useCase := overlay_remove.NewUseCase(svc.OverlayService)
+			if err := useCase.Execute(ctx, pattern); err != nil {
+				return err
 			}
 
 			logger.Infof("Removed overlay pattern %s", pattern)
-			svc.OverlayService.MarkSaved()
 
 			return nil
 		},
