@@ -54,7 +54,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 				// Clone repository
 				mhs.EXPECT().
-					GetTokenFor(gomock.Any(), targetRef).
+					GetTokenFor(gomock.Any(), targetRef.Host(), targetRef.Owner()).
 					Return("target-auth-user", auth.Token{AccessToken: "target-auth-token"}, nil) // Get token for target repository to clone
 				mgs.EXPECT().
 					AuthenticateWithUsernamePassword(gomock.Any(), "target-auth-user", "target-auth-token").
@@ -112,7 +112,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 				// Clone repository
 				mhs.EXPECT().
-					GetTokenFor(gomock.Any(), defaultRef).
+					GetTokenFor(gomock.Any(), defaultRef.Host(), defaultRef.Owner()).
 					Return("target-auth-user", auth.Token{AccessToken: "target-auth-token"}, nil) // Get token for target repository to clone
 				mgs.EXPECT().
 					AuthenticateWithUsernamePassword(gomock.Any(), "target-auth-user", "target-auth-token").
@@ -189,7 +189,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 				// Clone repository error
 				mhs.EXPECT().
-					GetTokenFor(gomock.Any(), targetRef).
+					GetTokenFor(gomock.Any(), targetRef.Host(), targetRef.Owner()).
 					Return("target-auth-user", auth.Token{AccessToken: "target-auth-token"}, nil) // Get token for target repository to clone
 				mgs.EXPECT().
 					AuthenticateWithUsernamePassword(gomock.Any(), "target-auth-user", "target-auth-token").

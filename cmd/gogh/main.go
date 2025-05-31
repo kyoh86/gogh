@@ -91,7 +91,7 @@ func run(ctx context.Context) error {
 		Flags:      flags,
 
 		ReferenceParser:     repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner()),
-		HostingService:      github.NewHostingService(tokenService),
+		HostingService:      github.NewHostingService(tokenService, defaultNameService),
 		FinderService:       filesystem.NewFinderService(),
 		AuthenticateService: github.NewAuthenticateService(),
 		GitService:          git.NewService(git.CloneProgressWriter(os.Stdout)),

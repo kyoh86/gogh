@@ -133,7 +133,7 @@ func TestTryClone(t *testing.T) {
 				mls.EXPECT().PathFor(ref).Return(localPath)
 
 				// Authentication
-				mhs.EXPECT().GetTokenFor(gomock.Any(), ref).Return("user", auth.Token{AccessToken: "token"}, nil)
+				mhs.EXPECT().GetTokenFor(gomock.Any(), ref.Host(), ref.Owner()).Return("user", auth.Token{AccessToken: "token"}, nil)
 				mgs.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "user", "token").Return(mgs, nil)
 
 				// Clone
@@ -162,7 +162,7 @@ func TestTryClone(t *testing.T) {
 				mls.EXPECT().PathFor(ref).Return(localPath)
 
 				// Authentication error
-				mhs.EXPECT().GetTokenFor(gomock.Any(), ref).Return("", auth.Token{}, errors.New("auth error"))
+				mhs.EXPECT().GetTokenFor(gomock.Any(), ref.Host(), ref.Owner()).Return("", auth.Token{}, errors.New("auth error"))
 
 				return mhs, mws, mgs, mls
 			},
@@ -185,7 +185,7 @@ func TestTryClone(t *testing.T) {
 				mls.EXPECT().PathFor(ref).Return(localPath)
 
 				// Authentication
-				mhs.EXPECT().GetTokenFor(gomock.Any(), ref).Return("user", auth.Token{AccessToken: "token"}, nil)
+				mhs.EXPECT().GetTokenFor(gomock.Any(), ref.Host(), ref.Owner()).Return("user", auth.Token{AccessToken: "token"}, nil)
 				mgs.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "user", "token").Return(nil, errors.New("auth username/password error"))
 
 				return mhs, mws, mgs, mls
@@ -212,7 +212,7 @@ func TestTryClone(t *testing.T) {
 				mls.EXPECT().PathFor(ref).Return(localPath)
 
 				// Authentication
-				mhs.EXPECT().GetTokenFor(gomock.Any(), ref).Return("user", auth.Token{AccessToken: "token"}, nil)
+				mhs.EXPECT().GetTokenFor(gomock.Any(), ref.Host(), ref.Owner()).Return("user", auth.Token{AccessToken: "token"}, nil)
 				mgs.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "user", "token").Return(mgs, nil)
 
 				// Clone error
@@ -243,7 +243,7 @@ func TestTryClone(t *testing.T) {
 				mls.EXPECT().PathFor(ref).Return(localPath)
 
 				// Authentication
-				mhs.EXPECT().GetTokenFor(gomock.Any(), ref).Return("user", auth.Token{AccessToken: "token"}, nil)
+				mhs.EXPECT().GetTokenFor(gomock.Any(), ref.Host(), ref.Owner()).Return("user", auth.Token{AccessToken: "token"}, nil)
 				mgs.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "user", "token").Return(mgs, nil)
 
 				// Clone returns empty repository error
@@ -283,7 +283,7 @@ func TestTryClone(t *testing.T) {
 				mls.EXPECT().PathFor(ref).Return(localPath)
 
 				// Authentication
-				mhs.EXPECT().GetTokenFor(gomock.Any(), ref).Return("user", auth.Token{AccessToken: "token"}, nil)
+				mhs.EXPECT().GetTokenFor(gomock.Any(), ref.Host(), ref.Owner()).Return("user", auth.Token{AccessToken: "token"}, nil)
 				mgs.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "user", "token").Return(mgs, nil)
 
 				// Clone

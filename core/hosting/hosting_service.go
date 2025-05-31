@@ -18,7 +18,7 @@ type HostingService interface {
 	// ParseURL converts a remote URL to a repository reference
 	ParseURL(u *url.URL) (*repository.Reference, error)
 	// GetTokenFor retrieves an authentication token and user for a specific repository reference
-	GetTokenFor(ctx context.Context, reference repository.Reference) (string, auth.Token, error)
+	GetTokenFor(ctx context.Context, host, owner string) (string, auth.Token, error)
 	// GetRepository retrieves repository information from a remote source
 	GetRepository(context.Context, repository.Reference) (*Repository, error)
 	// ListRepository retrieves a list of repositories from a remote source

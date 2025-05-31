@@ -9,6 +9,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/auth_mock"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/repository_mock"
 	testtarget "github.com/kyoh86/gogh/v4/infra/github"
 	"go.uber.org/mock/gomock"
 )
@@ -17,16 +18,17 @@ import (
 // In a real test, you'd use a custom mock or a test double for the GitHub client
 
 // Setup test data and mocks
-func setupHostingServiceTest(t *testing.T) (*gomock.Controller, *auth_mock.MockTokenService, *testtarget.HostingService) {
+func setupHostingServiceTest(t *testing.T) (*gomock.Controller, *auth_mock.MockTokenService, *repository_mock.MockDefaultNameService, *testtarget.HostingService) {
 	ctrl := gomock.NewController(t)
 	mockTokenService := auth_mock.NewMockTokenService(ctrl)
-	service := testtarget.NewHostingService(mockTokenService)
+	mockDefaultNameService := repository_mock.NewMockDefaultNameService(ctrl)
+	service := testtarget.NewHostingService(mockTokenService, mockDefaultNameService)
 
-	return ctrl, mockTokenService, service
+	return ctrl, mockTokenService, mockDefaultNameService, service
 }
 
 func TestGetURLOf(t *testing.T) {
-	ctrl, _, service := setupHostingServiceTest(t)
+	ctrl, _, _, service := setupHostingServiceTest(t)
 	defer ctrl.Finish()
 
 	testCases := []struct {
@@ -61,7 +63,7 @@ func TestGetURLOf(t *testing.T) {
 }
 
 func TestParseURL(t *testing.T) {
-	ctrl, _, service := setupHostingServiceTest(t)
+	ctrl, _, _, service := setupHostingServiceTest(t)
 	defer ctrl.Finish()
 
 	testCases := []struct {
@@ -144,7 +146,7 @@ func TestGetTokenFor(t *testing.T) {
 
 	// Test case 1: Token exists for exact host/owner
 	t.Run("exact match", func(t *testing.T) {
-		ctrl, mockTokenService, service := setupHostingServiceTest(t)
+		ctrl, mockTokenService, _, service := setupHostingServiceTest(t)
 		defer ctrl.Finish()
 
 		ref := repository.NewReference("github.com", "user1", "repo")
@@ -153,7 +155,7 @@ func TestGetTokenFor(t *testing.T) {
 		mockTokenService.EXPECT().Has("github.com", "user1").Return(true)
 		mockTokenService.EXPECT().Get("github.com", "user1").Return(token, nil)
 
-		tokenOwner, gotToken, err := service.GetTokenFor(ctx, ref)
+		tokenOwner, gotToken, err := service.GetTokenFor(ctx, ref.Host(), ref.Owner())
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
@@ -169,7 +171,7 @@ func TestGetTokenFor(t *testing.T) {
 
 	// Test case 2: No token available
 	t.Run("no token", func(t *testing.T) {
-		ctrl, mockTokenService, service := setupHostingServiceTest(t)
+		ctrl, mockTokenService, mockDefaultNameService, service := setupHostingServiceTest(t)
 		defer ctrl.Finish()
 
 		ref := repository.NewReference("github.com", "unknown", "repo")
@@ -177,7 +179,12 @@ func TestGetTokenFor(t *testing.T) {
 		mockTokenService.EXPECT().Has("github.com", "unknown").Return(false)
 		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
 
-		_, _, err := service.GetTokenFor(ctx, ref)
+		mockDefaultNameService.EXPECT().GetDefaultOwnerFor("github.com").Return("default-owner", nil)
+
+		mockTokenService.EXPECT().Has("github.com", "default-owner").Return(false)
+		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
+
+		_, _, err := service.GetTokenFor(ctx, ref.Host(), ref.Owner())
 		if err == nil {
 			t.Error("Expected error for missing token, got nil")
 		}
@@ -189,11 +196,16 @@ func TestGetRepository(t *testing.T) {
 
 	// Test error handling for token retrieval
 	t.Run("token error", func(t *testing.T) {
-		ctrl, mockTokenService, service := setupHostingServiceTest(t)
+		ctrl, mockTokenService, mockDefaultNameService, service := setupHostingServiceTest(t)
 		defer ctrl.Finish()
 
 		// Mock token lookup
 		mockTokenService.EXPECT().Has("github.com", "error").Return(false)
+		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
+
+		mockDefaultNameService.EXPECT().GetDefaultOwnerFor("github.com").Return("default-owner", nil)
+
+		mockTokenService.EXPECT().Has("github.com", "default-owner").Return(false)
 		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
 
 		errorRef := repository.NewReference("github.com", "error", "repo")
@@ -205,7 +217,7 @@ func TestGetRepository(t *testing.T) {
 }
 
 func TestListRepository(t *testing.T) {
-	ctrl, mockTokenService, service := setupHostingServiceTest(t)
+	ctrl, mockTokenService, _, service := setupHostingServiceTest(t)
 	defer ctrl.Finish()
 
 	ctx := context.Background()
@@ -242,9 +254,14 @@ func TestCreateRepository(t *testing.T) {
 
 	// Test error handling for token retrieval
 	t.Run("token error", func(t *testing.T) {
-		ctrl, mockTokenService, service := setupHostingServiceTest(t)
+		ctrl, mockTokenService, mockDefaultNameService, service := setupHostingServiceTest(t)
 		defer ctrl.Finish()
 		mockTokenService.EXPECT().Has("github.com", "error").Return(false)
+		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
+
+		mockDefaultNameService.EXPECT().GetDefaultOwnerFor("github.com").Return("default-owner", nil)
+
+		mockTokenService.EXPECT().Has("github.com", "default-owner").Return(false)
 		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
 
 		errorRef := repository.NewReference("github.com", "error", "repo")
@@ -261,9 +278,14 @@ func TestCreateRepositoryFromTemplate(t *testing.T) {
 
 	// Test error handling for token retrieval
 	t.Run("token error", func(t *testing.T) {
-		ctrl, mockTokenService, service := setupHostingServiceTest(t)
+		ctrl, mockTokenService, mockDefaultNameService, service := setupHostingServiceTest(t)
 		defer ctrl.Finish()
 		mockTokenService.EXPECT().Has("github.com", "error").Return(false)
+		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
+
+		mockDefaultNameService.EXPECT().GetDefaultOwnerFor("github.com").Return("default-owner", nil)
+
+		mockTokenService.EXPECT().Has("github.com", "default-owner").Return(false)
 		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
 
 		errorRef := repository.NewReference("github.com", "error", "repo")
@@ -279,9 +301,14 @@ func TestDeleteRepository(t *testing.T) {
 
 	// Test error handling for token retrieval
 	t.Run("token error", func(t *testing.T) {
-		ctrl, mockTokenService, service := setupHostingServiceTest(t)
+		ctrl, mockTokenService, mockDefaultNameService, service := setupHostingServiceTest(t)
 		defer ctrl.Finish()
 		mockTokenService.EXPECT().Has("github.com", "error").Return(false)
+		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
+
+		mockDefaultNameService.EXPECT().GetDefaultOwnerFor("github.com").Return("default-owner", nil)
+
+		mockTokenService.EXPECT().Has("github.com", "default-owner").Return(false)
 		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
 
 		errorRef := repository.NewReference("github.com", "error", "repo")
@@ -298,9 +325,14 @@ func TestForkRepository(t *testing.T) {
 
 	// Test error handling for token retrieval
 	t.Run("token error", func(t *testing.T) {
-		ctrl, mockTokenService, service := setupHostingServiceTest(t)
+		ctrl, mockTokenService, mockDefaultNameService, service := setupHostingServiceTest(t)
 		defer ctrl.Finish()
 		mockTokenService.EXPECT().Has("github.com", "error").Return(false)
+		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
+
+		mockDefaultNameService.EXPECT().GetDefaultOwnerFor("github.com").Return("default-owner", nil)
+
+		mockTokenService.EXPECT().Has("github.com", "default-owner").Return(false)
 		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
 
 		errorRef := repository.NewReference("github.com", "error", "repo")

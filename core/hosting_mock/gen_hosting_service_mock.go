@@ -120,9 +120,9 @@ func (mr *MockHostingServiceMockRecorder) GetRepository(arg0, arg1 any) *gomock.
 }
 
 // GetTokenFor mocks base method.
-func (m *MockHostingService) GetTokenFor(ctx context.Context, reference repository.Reference) (string, auth.Token, error) {
+func (m *MockHostingService) GetTokenFor(ctx context.Context, host, owner string) (string, auth.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenFor", ctx, reference)
+	ret := m.ctrl.Call(m, "GetTokenFor", ctx, host, owner)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(auth.Token)
 	ret2, _ := ret[2].(error)
@@ -130,9 +130,9 @@ func (m *MockHostingService) GetTokenFor(ctx context.Context, reference reposito
 }
 
 // GetTokenFor indicates an expected call of GetTokenFor.
-func (mr *MockHostingServiceMockRecorder) GetTokenFor(ctx, reference any) *gomock.Call {
+func (mr *MockHostingServiceMockRecorder) GetTokenFor(ctx, host, owner any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenFor", reflect.TypeOf((*MockHostingService)(nil).GetTokenFor), ctx, reference)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenFor", reflect.TypeOf((*MockHostingService)(nil).GetTokenFor), ctx, host, owner)
 }
 
 // GetURLOf mocks base method.

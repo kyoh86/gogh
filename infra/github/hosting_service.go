@@ -21,8 +21,9 @@ import (
 
 type HostingService struct {
 	// GitHub client, etc.
-	tokenService auth.TokenService
-	knownOwners  map[string]string
+	tokenService       auth.TokenService
+	defaultNameService repository.DefaultNameService
+	knownOwners        map[string]string
 }
 
 const (
@@ -122,10 +123,11 @@ func getConnection(ctx context.Context, host string, token *auth.Token) *connect
 }
 
 // NewHostingService creates a new HostingService instance
-func NewHostingService(tokenService auth.TokenService) *HostingService {
+func NewHostingService(tokenService auth.TokenService, defaultNameService repository.DefaultNameService) *HostingService {
 	return &HostingService{
-		tokenService: tokenService,
-		knownOwners:  map[string]string{},
+		tokenService:       tokenService,
+		defaultNameService: defaultNameService,
+		knownOwners:        map[string]string{},
 	}
 }
 
@@ -147,18 +149,39 @@ func (s *HostingService) ParseURL(u *url.URL) (*repository.Reference, error) {
 	return typ.Ptr(repository.NewReference(u.Host, words[0], strings.TrimSuffix(words[1], ".git"))), nil
 }
 
+var (
+	ErrTokenNotFound = errors.New("no token found")
+)
+
 // GetTokenFor cache requested token for the host and owner
-func (s *HostingService) GetTokenFor(ctx context.Context, reference repository.Reference) (string, auth.Token, error) {
-	key := strings.Join([]string{reference.Host(), reference.Owner()}, "/")
+func (s *HostingService) GetTokenFor(ctx context.Context, host, owner string) (string, auth.Token, error) {
+	key := strings.Join([]string{host, owner}, "/")
 	tokenOwner, ok := s.knownOwners[key]
 	if ok {
-		_, token, err := s.getTokenForCore(ctx, reference.Host(), tokenOwner)
+		_, token, err := s.getTokenForCore(ctx, host, tokenOwner)
 		return tokenOwner, token, err
 	}
-	tokenOwner, token, err := s.getTokenForCore(ctx, reference.Host(), reference.Owner())
-	if err == nil {
+	tokenOwner, token, err := s.getTokenForCore(ctx, host, owner)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) {
+			// If no token is found, use the default owner as the username
+			defaultOwner, inErr := s.defaultNameService.GetDefaultOwnerFor(host)
+			if inErr != nil {
+				return "", token, fmt.Errorf("getting default owner: %w", inErr)
+			}
+			tokenOwner, token, err = s.getTokenForCore(ctx, host, defaultOwner)
+			if err != nil {
+				return "", token, fmt.Errorf("getting default token: %w", inErr)
+			} else {
+				s.knownOwners[key] = tokenOwner
+			}
+		} else {
+			return "", token, fmt.Errorf("getting token for %s/%s: %w", host, owner, err)
+		}
+	} else {
 		s.knownOwners[key] = tokenOwner
 	}
+	fmt.Println(tokenOwner, err)
 	return tokenOwner, token, err
 }
 
@@ -196,12 +219,12 @@ func (s *HostingService) getTokenForCore(ctx context.Context, host, owner string
 		}
 	}
 
-	return "", auth.Token{}, fmt.Errorf("no valid token found for %s/%s", host, owner)
+	return "", auth.Token{}, ErrTokenNotFound
 }
 
 // GetRepository retrieves repository information from a remote source
 func (s *HostingService) GetRepository(ctx context.Context, reference repository.Reference) (*hosting.Repository, error) {
-	_, token, err := s.GetTokenFor(ctx, reference)
+	_, token, err := s.GetTokenFor(ctx, reference.Host(), reference.Owner())
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", reference.Host(), reference.Owner(), err)
 	}
@@ -374,7 +397,7 @@ func (s *HostingService) CreateRepository(
 	ref repository.Reference,
 	opts hosting.CreateRepositoryOptions,
 ) (*hosting.Repository, error) {
-	user, token, err := s.GetTokenFor(ctx, ref)
+	user, token, err := s.GetTokenFor(ctx, ref.Host(), ref.Owner())
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
@@ -414,7 +437,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	template repository.Reference,
 	opts hosting.CreateRepositoryFromTemplateOptions,
 ) (*hosting.Repository, error) {
-	user, token, err := s.GetTokenFor(ctx, ref)
+	user, token, err := s.GetTokenFor(ctx, ref.Host(), ref.Owner())
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}
@@ -442,7 +465,7 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 
 // DeleteRepository deletes a repository from a remote source
 func (s *HostingService) DeleteRepository(ctx context.Context, reference repository.Reference) error {
-	_, token, err := s.GetTokenFor(ctx, reference)
+	_, token, err := s.GetTokenFor(ctx, reference.Host(), reference.Owner())
 	if err != nil {
 		return fmt.Errorf("getting token for %s/%s: %w", reference.Host(), reference.Owner(), err)
 	}
@@ -460,7 +483,7 @@ func (s *HostingService) ForkRepository(
 	target repository.Reference,
 	opts hosting.ForkRepositoryOptions,
 ) (*hosting.Repository, error) {
-	user, token, err := s.GetTokenFor(ctx, target)
+	user, token, err := s.GetTokenFor(ctx, target.Host(), target.Owner())
 	if err != nil {
 		return nil, fmt.Errorf("getting token for %s/%s: %w", ref.Host(), ref.Owner(), err)
 	}

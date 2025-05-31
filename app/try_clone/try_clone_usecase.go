@@ -84,7 +84,7 @@ func (s *UseCase) Execute(
 	localPath := layout.PathFor(targetRef)
 
 	// Get the user and token for authentication
-	user, token, err := s.hostingService.GetTokenFor(ctx, repo.Ref)
+	user, token, err := s.hostingService.GetTokenFor(ctx, repo.Ref.Host(), repo.Ref.Owner())
 	if err != nil {
 		return err
 	}
