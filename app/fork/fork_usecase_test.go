@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v4/app/fork"
-	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hosting"
@@ -233,9 +233,11 @@ func TestUseCase_Execute(t *testing.T) {
 			)
 
 			opts := fork.Options{
-				RequestTimeout: 30 * time.Second,
-				TryCloneNotify: func(msg service.TryCloneStatus) error { return nil },
-				Target:         tc.target,
+				TryCloneOptions: try_clone.Options{
+					Timeout: 30 * time.Second,
+					Notify:  func(msg try_clone.Status) error { return nil },
+				},
+				Target: tc.target,
 			}
 
 			err := useCase.Execute(context.Background(), tc.source, opts)

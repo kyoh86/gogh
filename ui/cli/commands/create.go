@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/create"
 	"github.com/kyoh86/gogh/v4/app/create_from_template"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
@@ -55,7 +56,9 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	runFunc := func(ctx context.Context, refWithAlias string) error {
 		if f.Template == "" {
 			ropt := create.Options{
-				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+				TryCloneOptions: try_clone.Options{
+					Notify: try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+				},
 				RepositoryOptions: create.RepositoryOptions{
 					Description:         f.Description,
 					Homepage:            f.Homepage,
@@ -83,8 +86,10 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("invalid template: %w", err)
 			}
 			if err := createFromTemplateUseCase.Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
-				RequestTimeout: f.RequestTimeout,
-				TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+				TryCloneOptions: try_clone.Options{
+					Timeout: f.RequestTimeout,
+					Notify:  try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+				},
 				RepositoryOptions: create_from_template.RepositoryOptions{
 					Description:        f.Description,
 					IncludeAllBranches: f.IncludeAllBranches,

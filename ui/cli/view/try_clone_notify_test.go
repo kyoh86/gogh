@@ -7,7 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
-	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,15 +23,15 @@ func TestTryCloneNotify(t *testing.T) {
 
 		// 呼び出し確認用のモックnotify関数
 		var called bool
-		mockNotify := func(status service.TryCloneStatus) error {
+		mockNotify := func(status try_clone.Status) error {
 			called = true
-			assert.Equal(t, service.TryCloneStatusEmpty, status)
+			assert.Equal(t, try_clone.StatusEmpty, status)
 			return nil
 		}
 
 		// テスト対象の関数を実行
 		notify := TryCloneNotify(ctx, mockNotify)
-		err := notify(service.TryCloneStatusEmpty)
+		err := notify(try_clone.StatusEmpty)
 
 		// 検証
 		assert.NoError(t, err)
@@ -50,15 +50,15 @@ func TestTryCloneNotify(t *testing.T) {
 
 		// 呼び出し確認用のモックnotify関数
 		var called bool
-		mockNotify := func(status service.TryCloneStatus) error {
+		mockNotify := func(status try_clone.Status) error {
 			called = true
-			assert.Equal(t, service.TryCloneStatusRetry, status)
+			assert.Equal(t, try_clone.StatusRetry, status)
 			return nil
 		}
 
 		// テスト対象の関数を実行
 		notify := TryCloneNotify(ctx, mockNotify)
-		err := notify(service.TryCloneStatusRetry)
+		err := notify(try_clone.StatusRetry)
 
 		// 検証
 		assert.NoError(t, err)
@@ -71,7 +71,7 @@ func TestTryCloneNotify(t *testing.T) {
 
 		// nilのnotify関数でテスト
 		notify := TryCloneNotify(ctx, nil)
-		err := notify(service.TryCloneStatusEmpty)
+		err := notify(try_clone.StatusEmpty)
 
 		// エラーが発生しないことを確認
 		assert.NoError(t, err)

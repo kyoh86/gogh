@@ -3,9 +3,8 @@ package create_from_template
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/repository"
@@ -36,9 +35,10 @@ func NewUseCase(
 
 type RepositoryOptions = hosting.CreateRepositoryFromTemplateOptions
 
+type TryCloneOptions = try_clone.Options
+
 type CreateFromTemplateOptions struct {
-	RequestTimeout time.Duration
-	TryCloneNotify service.TryCloneNotify
+	TryCloneOptions
 	RepositoryOptions
 }
 
@@ -52,10 +52,10 @@ func (uc *UseCase) Execute(
 	if err != nil {
 		return fmt.Errorf("invalid reference: %w", err)
 	}
-	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
+	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref.Reference, template, opts.RepositoryOptions)
 	if err != nil {
 		return fmt.Errorf("creating repository from template: %w", err)
 	}
-	return repositoryService.TryClone(ctx, repo, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
+	return repositoryService.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions)
 }

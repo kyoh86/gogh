@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -60,7 +61,9 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		for _, ref := range refs {
 			eg.Go(func() error {
 				return cloneUseCase.Execute(egCtx, ref, clone.Options{
-					TryCloneNotify: service.RetryLimit(1, nil),
+					TryCloneOptions: try_clone.Options{
+						Notify: try_clone.RetryLimit(1, nil),
+					},
 				})
 			})
 		}

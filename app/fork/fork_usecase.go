@@ -3,9 +3,8 @@ package fork
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/repository"
@@ -40,10 +39,11 @@ func NewUseCase(
 
 type HostingOptions = hosting.ForkRepositoryOptions
 
+type TryCloneOptions = try_clone.Options
+
 // Options represents the options for the fork use case
 type Options struct {
-	RequestTimeout time.Duration
-	TryCloneNotify service.TryCloneNotify
+	TryCloneOptions
 	HostingOptions
 	Target string
 }
@@ -86,8 +86,8 @@ func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) err
 		return fmt.Errorf("requesting fork: %w", err)
 	}
 
-	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
-	if err := repositoryService.TryClone(ctx, fork, targetRef.Alias, opts.RequestTimeout, opts.TryCloneNotify); err != nil {
+	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.gitService)
+	if err := repositoryService.Execute(ctx, fork, targetRef.Alias, opts.TryCloneOptions); err != nil {
 		return fmt.Errorf("cloning forked repository: %w", err)
 	}
 	return nil

@@ -3,9 +3,8 @@ package create
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/repository"
@@ -36,10 +35,11 @@ func NewUseCase(
 
 type RepositoryOptions = hosting.CreateRepositoryOptions
 
+type TryCloneOptions = try_clone.Options
+
 // Options contains options for the create operation
 type Options struct {
-	RequestTimeout time.Duration
-	TryCloneNotify service.TryCloneNotify
+	TryCloneOptions
 	RepositoryOptions
 }
 
@@ -49,10 +49,10 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	if err != nil {
 		return fmt.Errorf("invalid ref: %w", err)
 	}
-	repositoryService := service.NewRepositoryService(uc.hostingService, uc.workspaceService, uc.gitService)
+	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepository(ctx, ref.Reference, opts.RepositoryOptions)
 	if err != nil {
 		return fmt.Errorf("creating: %w", err)
 	}
-	return repositoryService.TryClone(ctx, repo, ref.Alias, opts.RequestTimeout, opts.TryCloneNotify)
+	return repositoryService.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions)
 }

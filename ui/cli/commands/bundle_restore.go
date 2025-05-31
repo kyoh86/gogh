@@ -10,6 +10,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/clone"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
@@ -39,7 +40,9 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			} else {
 				eg.Go(func() error {
 					return cloneUseCase.Execute(egCtx, ref, clone.Options{
-						TryCloneNotify: service.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(egCtx, nil)),
+						TryCloneOptions: try_clone.Options{
+							Notify: try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(egCtx, nil)),
+						},
 					})
 				})
 			}

@@ -1,4 +1,4 @@
-package service_test
+package try_clone_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -17,7 +17,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestNewRepositoryService(t *testing.T) {
+func TestNewUseCase(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -25,7 +25,7 @@ func TestNewRepositoryService(t *testing.T) {
 	workspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
 	gitService := git_mock.NewMockGitService(ctrl)
 
-	svc := service.NewRepositoryService(hostingService, workspaceService, gitService)
+	svc := try_clone.NewUseCase(hostingService, workspaceService, gitService)
 	if svc == nil {
 		t.Fatal("NewRepositoryService returned nil")
 	}
@@ -35,33 +35,33 @@ func TestRetryLimit(t *testing.T) {
 	testCases := []struct {
 		name          string
 		limit         int
-		notifications []service.TryCloneStatus
+		notifications []try_clone.Status
 		expectErr     bool
 		errAt         int
 	}{
 		{
 			name:          "no retries needed",
 			limit:         3,
-			notifications: []service.TryCloneStatus{service.TryCloneStatusEmpty},
+			notifications: []try_clone.Status{try_clone.StatusEmpty},
 			expectErr:     false,
 		},
 		{
 			name:  "retries within limit",
 			limit: 3,
-			notifications: []service.TryCloneStatus{
-				service.TryCloneStatusRetry,
-				service.TryCloneStatusRetry,
-				service.TryCloneStatusEmpty,
+			notifications: []try_clone.Status{
+				try_clone.StatusRetry,
+				try_clone.StatusRetry,
+				try_clone.StatusEmpty,
 			},
 			expectErr: false,
 		},
 		{
 			name:  "retries exceed limit",
 			limit: 2,
-			notifications: []service.TryCloneStatus{
-				service.TryCloneStatusRetry,
-				service.TryCloneStatusRetry,
-				service.TryCloneStatusRetry,
+			notifications: []try_clone.Status{
+				try_clone.StatusRetry,
+				try_clone.StatusRetry,
+				try_clone.StatusRetry,
 			},
 			expectErr: true,
 			errAt:     2, // 0-indexed, so this is the 3rd retry attempt
@@ -69,9 +69,9 @@ func TestRetryLimit(t *testing.T) {
 		{
 			name:  "nil notify function",
 			limit: 2,
-			notifications: []service.TryCloneStatus{
-				service.TryCloneStatusRetry,
-				service.TryCloneStatusEmpty,
+			notifications: []try_clone.Status{
+				try_clone.StatusRetry,
+				try_clone.StatusEmpty,
 			},
 			expectErr: false,
 		},
@@ -79,12 +79,12 @@ func TestRetryLimit(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var notify service.TryCloneNotify
+			var notify try_clone.Notify
 			if tc.name != "nil notify function" {
-				notify = func(n service.TryCloneStatus) error { return nil }
+				notify = func(n try_clone.Status) error { return nil }
 			}
 
-			limitedNotify := service.RetryLimit(tc.limit, notify)
+			limitedNotify := try_clone.RetryLimit(tc.limit, notify)
 
 			var err error
 			for i, status := range tc.notifications {
@@ -308,7 +308,7 @@ func TestTryClone(t *testing.T) {
 
 			mhs, mws, mgs, _ := tc.setupMocks(ctrl)
 
-			svc := service.NewRepositoryService(mhs, mws, mgs)
+			svc := try_clone.NewUseCase(mhs, mws, mgs)
 
 			repo := &hosting.Repository{
 				Ref:      repository.NewReference("github.com", "user", "repo"),
@@ -322,18 +322,20 @@ func TestTryClone(t *testing.T) {
 				}
 			}
 
-			var notifyCalledWith service.TryCloneStatus
-			notify := func(status service.TryCloneStatus) error {
+			var notifyCalledWith try_clone.Status
+			notify := func(status try_clone.Status) error {
 				notifyCalledWith = status
 				return nil
 			}
 
-			err := svc.TryClone(
+			err := svc.Execute(
 				context.Background(),
 				repo,
 				nil, // no alias
-				30*time.Second,
-				notify,
+				try_clone.Options{
+					Timeout: 30 * time.Second,
+					Notify:  notify,
+				},
 			)
 
 			if tc.expectErr {
@@ -350,7 +352,7 @@ func TestTryClone(t *testing.T) {
 			}
 
 			// Verify notification was called correctly for empty repo case
-			if tc.name == "empty repository" && notifyCalledWith != service.TryCloneStatusEmpty {
+			if tc.name == "empty repository" && notifyCalledWith != try_clone.StatusEmpty {
 				t.Errorf("Expected notification with TryCloneStatusEmpty, got %v", notifyCalledWith)
 			}
 		})
