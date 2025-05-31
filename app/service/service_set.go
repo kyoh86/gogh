@@ -23,6 +23,7 @@ type ServiceSet struct {
 	FlagsStore store.Loader[*config.Flags]
 	Flags      *config.Flags
 
+	OverlayService      workspace.OverlayService
 	ReferenceParser     repository.ReferenceParser
 	HostingService      hosting.HostingService
 	FinderService       workspace.FinderService

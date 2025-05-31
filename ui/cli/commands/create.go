@@ -21,12 +21,14 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	createUseCase := create.NewUseCase(
 		svc.HostingService,
 		svc.WorkspaceService,
+		svc.OverlayService,
 		svc.ReferenceParser,
 		svc.GitService,
 	)
 	createFromTemplateUseCase := create_from_template.NewUseCase(
 		svc.HostingService,
 		svc.WorkspaceService,
+		svc.OverlayService,
 		svc.ReferenceParser,
 		svc.GitService,
 	)

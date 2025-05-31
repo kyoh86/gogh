@@ -16,6 +16,7 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
+	overlayService   workspace.OverlayService
 	gitService       git.GitService
 }
 
@@ -23,11 +24,13 @@ type UseCase struct {
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	overlayService workspace.OverlayService,
 	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
+		overlayService:   overlayService,
 		gitService:       gitService,
 	}
 }
@@ -66,10 +69,12 @@ type Options struct {
 	Notify Notify
 	// Timeout is the maximum wait time for each clone attempt.
 	Timeout time.Duration
+	// DisallowOverlay indicates whether to disable overlay creation.
+	DisallowOverlay bool
 }
 
 // Execute attempts to clone a repository with retry logic.
-func (s *UseCase) Execute(
+func (uc *UseCase) Execute(
 	ctx context.Context,
 	repo *hosting.Repository,
 	alias *repository.Reference,
@@ -80,15 +85,15 @@ func (s *UseCase) Execute(
 	if alias != nil {
 		targetRef = *alias
 	}
-	layout := s.workspaceService.GetPrimaryLayout()
+	layout := uc.workspaceService.GetPrimaryLayout()
 	localPath := layout.PathFor(targetRef)
 
 	// Get the user and token for authentication
-	user, token, err := s.hostingService.GetTokenFor(ctx, repo.Ref.Host(), repo.Ref.Owner())
+	user, token, err := uc.hostingService.GetTokenFor(ctx, repo.Ref.Host(), repo.Ref.Owner())
 	if err != nil {
 		return err
 	}
-	gitService, err := s.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
+	gitService, err := uc.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
 	if err != nil {
 		return err
 	}
@@ -107,6 +112,13 @@ func (s *UseCase) Execute(
 	if repo.Parent != nil {
 		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{repo.Parent.CloneURL}); err != nil {
 			return fmt.Errorf("setting upstream remote: %w", err)
+		}
+	}
+
+	// Create overlay if not disallowed
+	if !opts.DisallowOverlay {
+		if err := uc.overlayService.ApplyOverlays(ctx, targetRef, localPath); err != nil {
+			return fmt.Errorf("applying overlays: %w", err)
 		}
 	}
 	return nil
