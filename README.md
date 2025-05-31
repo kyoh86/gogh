@@ -143,7 +143,7 @@ Or see the manual in [doc/usage/gogh.md](./doc/usage/gogh.md).
 
 `gogh` manages repositories under the `roots` directories.
 
-See also: [Directory structures](#Directory+structures)
+See also: [Directory structures](#directory-structures)
 
 You can change the roots with `roots add <path>` or `roots remove <path>` and see all of them by
 `roots list`.  `gogh` uses the primary one to `create`, `fork` or `clone` to put a local repository
