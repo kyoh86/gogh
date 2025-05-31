@@ -65,7 +65,10 @@ func (s *OverlayService) RemovePattern(pattern string) error {
 
 // GetPatterns implements workspace.OverlayService
 func (s *OverlayService) GetPatterns() []workspace.OverlayPattern {
-	return s.patterns
+	// copy the slice to avoid external modifications
+	patternsCopy := make([]workspace.OverlayPattern, len(s.patterns))
+	copy(patternsCopy, s.patterns)
+	return patternsCopy
 }
 
 // MatchRepository checks which overlay files match the given repository
