@@ -22,15 +22,13 @@ type OverlayService struct {
 	fsys wfs.WFS
 }
 
-// NewOverlayService creates a new OverlayService instance
-func NewOverlayService(overlayDir string) (*OverlayService, error) {
-	fsys := NewLocalWFS(overlayDir)
-
+// NewOverlayService creates a new OverlayService instance with the given filesystem
+func NewOverlayService(fsys wfs.WFS) (*OverlayService, error) {
 	service := &OverlayService{
 		fsys: fsys,
 	}
 
-	// Ensure the overlay directory exists
+	// Ensure the root directory exists
 	if err := service.fsys.MkdirAll("", 0755); err != nil {
 		return nil, fmt.Errorf("creating overlay directory: %w", err)
 	}
@@ -38,8 +36,8 @@ func NewOverlayService(overlayDir string) (*OverlayService, error) {
 	return service, nil
 }
 
-// separator はパターンと相対パスを区切るための文字列
-// Base64エンコード結果には含まれない文字列を使用
+// separator is a string used to separate the pattern and relative path in the encoded filename
+// Base64 encoded results will not contain this string
 const separator = "--"
 
 // encodeFileName safely encodes a pattern and path into a valid filename
