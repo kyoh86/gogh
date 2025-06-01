@@ -44,21 +44,23 @@ func (m *MockWFS) SetError(op, path string, err error) {
 }
 
 // addFile adds a file to the mock filesystem and updates directory entries
-func (m *MockWFS) addFile(path string, content []byte) {
+func (m *MockWFS) addFile(path string, content []byte) error {
 	path = normalizePath(path)
 	m.files[path] = content
 
 	// Ensure parent directory exists
 	dir := normalizePath(filepath.Dir(path))
 	if dir != "" {
-		m.MkdirAll(dir, 0755)
+		if err := m.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
 	}
 
 	// Check if entry already exists
 	baseName := filepath.Base(path)
 	for _, entry := range m.dirItems[dir] {
 		if entry.Name() == baseName {
-			return // Entry already exists
+			return nil // Entry already exists
 		}
 	}
 
@@ -67,6 +69,7 @@ func (m *MockWFS) addFile(path string, content []byte) {
 		RawName:  baseName,
 		RawIsDir: false,
 	})
+	return nil
 }
 
 // Files returns the current files in the mock filesystem (for debugging)
@@ -162,8 +165,7 @@ func (m *MockWFS) WriteFile(name string, data []byte, perm fs.FileMode) error {
 		return err
 	}
 
-	m.addFile(name, data)
-	return nil
+	return m.addFile(name, data)
 }
 
 // MkdirAll implements wfs.WFS
