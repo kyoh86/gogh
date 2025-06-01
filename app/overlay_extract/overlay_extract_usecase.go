@@ -1,0 +1,101 @@
+package overlay_extract
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"iter"
+	"os"
+	"path/filepath"
+
+	"github.com/kyoh86/gogh/v4/core/git"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/workspace"
+)
+
+// UseCase implements the overlay extraction use case
+type UseCase struct {
+	gitService       git.GitService
+	overlayService   workspace.OverlayService
+	workspaceService workspace.WorkspaceService
+	finderService    workspace.FinderService
+	referenceParser  repository.ReferenceParser
+}
+
+// NewUseCase creates a new overlay extraction use case
+func NewUseCase(
+	gitService git.GitService,
+	overlayService workspace.OverlayService,
+	workspaceService workspace.WorkspaceService,
+	finderService workspace.FinderService,
+	referenceParser repository.ReferenceParser,
+) *UseCase {
+	return &UseCase{
+		gitService:       gitService,
+		overlayService:   overlayService,
+		workspaceService: workspaceService,
+		finderService:    finderService,
+		referenceParser:  referenceParser,
+	}
+}
+
+// Options for the extraction operation
+type Options struct {
+	Pattern string // Optional custom pattern for the overlay
+}
+
+// ExtractResult represents a single untracked file that can be extracted
+type ExtractResult struct {
+	Reference repository.Reference // Reference to the repository
+	FilePath  string
+	Content   io.Reader
+}
+
+// Extract finds untracked files in the repository and returns them
+// The caller is responsible for confirming and registering files as overlays
+func (u *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.Seq2[*ExtractResult, error] {
+	return func(yield func(*ExtractResult, error) bool) {
+		ref, err := u.referenceParser.Parse(refs)
+		if err != nil {
+			yield(nil, err)
+			return
+		}
+		// Find the repository path
+		repo, err := u.finderService.FindByReference(ctx, u.workspaceService, *ref)
+		if err != nil {
+			yield(nil, fmt.Errorf("failed to find repository: %w", err))
+			return
+		}
+
+		// Get untracked files
+		untrackedFiles, err := u.gitService.ListUntrackedFiles(ctx, repo.FullPath())
+		if err != nil {
+			yield(nil, fmt.Errorf("failed to list untracked files: %w", err))
+			return
+		}
+
+		if len(untrackedFiles) == 0 {
+			yield(nil, nil) // No untracked files
+			return
+		}
+
+		// Read file contents
+		for _, file := range untrackedFiles {
+			func() {
+				content, err := os.Open(filepath.Join(repo.FullPath(), file))
+				if err != nil {
+					yield(nil, fmt.Errorf("failed to open file %s: %w", file, err))
+					return
+				}
+				defer content.Close()
+				if !yield(&ExtractResult{
+					Reference: *ref,
+					FilePath:  file,
+					Content:   content,
+				}, nil) {
+					return // Stop if the yield function returns false
+				}
+			}()
+		}
+	}
+}
