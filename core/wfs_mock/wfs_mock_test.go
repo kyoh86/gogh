@@ -10,13 +10,13 @@ func TestMockWFS_DirectoryHierarchy(t *testing.T) {
 	mockFS := NewMockWFS()
 
 	// Create a deep directory structure
-	err := mockFS.MkdirAll("a/b/c", 0755)
+	err := mockFS.MkdirAll(filepath.Join("a", "b", "c"), 0755)
 	if err != nil {
 		t.Fatalf("Failed to create directory hierarchy: %v", err)
 	}
 
 	// Verify all directories exist
-	dirs := []string{"a", "a/b", "a/b/c"}
+	dirs := []string{"a", filepath.Join("a", "b"), filepath.Join("a", "b", "c")}
 	for _, dir := range dirs {
 		stat, err := mockFS.Stat(dir)
 		if err != nil {
@@ -49,8 +49,8 @@ func TestMockWFS_DirectoryHierarchy(t *testing.T) {
 	}
 
 	checkDirContains("", "a")
-	checkDirContains("a", "a/b")
-	checkDirContains("a/b", "a/b/c")
+	checkDirContains("a", filepath.Join("a", "b"))
+	checkDirContains(filepath.Join("a", "b"), filepath.Join("a", "b", "c"))
 }
 
 func TestMockWFS_FileOperations(t *testing.T) {
@@ -58,13 +58,13 @@ func TestMockWFS_FileOperations(t *testing.T) {
 
 	// Create a deep file
 	content := []byte("test content")
-	err := mockFS.WriteFile("a/b/c/test.txt", content, 0644)
+	err := mockFS.WriteFile(filepath.Join("a", "b", "c", "test.txt"), content, 0644)
 	if err != nil {
 		t.Fatalf("Failed to write file: %v", err)
 	}
 
 	// Verify file exists
-	stat, err := mockFS.Stat("a/b/c/test.txt")
+	stat, err := mockFS.Stat(filepath.Join("a", "b", "c", "test.txt"))
 	if err != nil {
 		t.Fatalf("Failed to stat file: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestMockWFS_FileOperations(t *testing.T) {
 	}
 
 	// Read file
-	readContent, err := mockFS.ReadFile("a/b/c/test.txt")
+	readContent, err := mockFS.ReadFile(filepath.Join("a", "b", "c", "test.txt"))
 	if err != nil {
 		t.Fatalf("Failed to read file: %v", err)
 	}
@@ -106,16 +106,16 @@ func TestMockWFS_FileOperations(t *testing.T) {
 
 	// Check that each directory contains the expected child
 	checkDirContains("", "a")
-	checkDirContains("a", "a/b")
-	checkDirContains("a/b", "a/b/c")
-	checkDirContains("a/b/c", "a/b/c/test.txt")
+	checkDirContains("a", filepath.Join("a", "b"))
+	checkDirContains(filepath.Join("a", "b"), filepath.Join("a", "b", "c"))
+	checkDirContains(filepath.Join("a", "b", "c"), filepath.Join("a", "b", "c", "test.txt"))
 }
 
 func TestMockWFS_Create(t *testing.T) {
 	mockFS := NewMockWFS()
 
 	// Create file using Create method
-	writer, err := mockFS.Create("a/b/c/create.txt")
+	writer, err := mockFS.Create(filepath.Join("a", "b", "c", "create.txt"))
 	if err != nil {
 		t.Fatalf("Failed to create file: %v", err)
 	}
@@ -151,7 +151,7 @@ func TestMockWFS_Create(t *testing.T) {
 	}
 
 	// Read back and verify content
-	readContent, err := mockFS.ReadFile("a/b/c/create.txt")
+	readContent, err := mockFS.ReadFile(filepath.Join("a", "b", "c", "create.txt"))
 	if err != nil {
 		t.Fatalf("Failed to read file: %v", err)
 	}
@@ -161,7 +161,7 @@ func TestMockWFS_Create(t *testing.T) {
 
 	// Check directory hierarchy
 	checkDirContains("", "a")
-	checkDirContains("a", "a/b")
-	checkDirContains("a/b", "a/b/c")
-	checkDirContains("a/b/c", "a/b/c/create.txt")
+	checkDirContains("a", filepath.Join("a", "b"))
+	checkDirContains(filepath.Join("a", "b"), filepath.Join("a", "b", "c"))
+	checkDirContains(filepath.Join("a", "b", "c"), filepath.Join("a", "b", "c", "create.txt"))
 }
