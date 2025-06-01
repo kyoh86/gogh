@@ -43,6 +43,8 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 							Notify: try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(egCtx, nil)),
 						},
 					})
+					// TODO: Apply overlays
+					// see: ./overlay_apply.go
 				})
 			}
 		}

@@ -58,5 +58,4 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 		return fmt.Errorf("creating: %w", err)
 	}
 	return repositoryService.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions)
-	// TODO: ApplyOverlays
 }

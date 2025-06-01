@@ -65,6 +65,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				if err != nil {
 					return fmt.Errorf("finding overlays for %s: %w", selected, err)
 				}
+				//TODO: confirm before applying
 				if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
 					return err
 				}

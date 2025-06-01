@@ -61,5 +61,4 @@ func (uc *UseCase) Execute(
 		return fmt.Errorf("creating repository from template: %w", err)
 	}
 	return repositoryService.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions)
-	// TODO: ApplyOverlays
 }

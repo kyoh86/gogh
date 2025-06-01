@@ -56,5 +56,4 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	}
 	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
 	return repositoryService.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions)
-	// TODO: ApplyOverlays
 }

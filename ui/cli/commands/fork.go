@@ -38,6 +38,8 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 			if err := useCase.Execute(ctx, refs[0], opts); err != nil {
 				return fmt.Errorf("forking the repository: %w", err)
 			}
+			// TODO: Apply overlays
+			// see: ./overlay_apply.go
 			return nil
 		},
 	}

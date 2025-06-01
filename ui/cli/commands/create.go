@@ -82,6 +82,8 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err := createUseCase.Execute(ctx, refWithAlias, ropt); err != nil {
 				return fmt.Errorf("creating the repository: %w", err)
 			}
+			// TODO: Apply overlays
+			// see: ./overlay_apply.go
 		} else {
 			template, err := svc.ReferenceParser.Parse(f.Template)
 			if err != nil {

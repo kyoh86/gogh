@@ -66,6 +66,8 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 						Timeout: f.CloneRetryTimeout,
 					},
 				})
+				// TODO: Apply overlays
+				// see: ./overlay_apply.go
 			})
 		}
 		return eg.Wait()
