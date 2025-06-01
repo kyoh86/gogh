@@ -38,12 +38,16 @@ type Overlay struct {
 
 func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*Overlay, error] {
 	return func(yield func(*Overlay, error) bool) {
-		ref, err := uc.referenceParser.Parse(refs)
+		refWithAlias, err := uc.referenceParser.ParseWithAlias(refs)
 		if err != nil {
 			yield(nil, fmt.Errorf("parsing reference '%s': %w", refs, err))
 			return
 		}
-		match, err := uc.finderService.FindByReference(ctx, uc.workspaceService, *ref)
+		ref := refWithAlias.Reference
+		if refWithAlias.Alias != nil {
+			ref = *refWithAlias.Alias
+		}
+		match, err := uc.finderService.FindByReference(ctx, uc.workspaceService, ref)
 		if err != nil {
 			yield(nil, fmt.Errorf("finding repository by reference '%s': %w", refs, err))
 			return
@@ -52,7 +56,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*Overlay,
 			yield(nil, fmt.Errorf("repository not found for reference '%s'", refs))
 			return
 		}
-		for overlay, err := range uc.overlayService.FindOverlays(ctx, *ref) {
+		for overlay, err := range uc.overlayService.FindOverlays(ctx, ref) {
 			if !yield(&Overlay{Overlay: *overlay, Location: *match}, err) {
 				return
 			}

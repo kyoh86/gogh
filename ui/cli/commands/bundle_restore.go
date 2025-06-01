@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/apex/log"
+	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/clone"
 	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/overlay_apply"
+	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
@@ -21,6 +25,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
 
 	runFunc := func(ctx context.Context) error {
+		logger := log.FromContext(ctx)
 		in := os.Stdin
 		if f.File != "" {
 			f, err := os.Open(f.File)
@@ -32,23 +37,77 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		}
 		eg, egCtx := errgroup.WithContext(ctx)
 		scan := bufio.NewScanner(in)
+		var refs []string
 		for scan.Scan() {
 			ref := scan.Text()
 			if f.Dryrun {
 				fmt.Printf("git clone %q\n", ref)
 			} else {
 				eg.Go(func() error {
-					return cloneUseCase.Execute(egCtx, ref, clone.Options{
+					if err := cloneUseCase.Execute(egCtx, ref, clone.Options{
 						TryCloneOptions: try_clone.Options{
 							Notify: try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(egCtx, nil)),
 						},
-					})
-					// TODO: Apply overlays
-					// see: ./overlay_apply.go
+					}); err != nil {
+						return fmt.Errorf("cloning %s: %w", ref, err)
+					}
+					refs = append(refs, ref)
+					return nil
 				})
 			}
 		}
-		return eg.Wait()
+		if err := eg.Wait(); err != nil {
+			return fmt.Errorf("cloning repositories: %w", err)
+		}
+
+		overlayFindUseCase := overlay_find.NewUseCase(
+			svc.WorkspaceService,
+			svc.FinderService,
+			svc.ReferenceParser,
+			svc.OverlayService,
+		)
+		overlayApplyUseCase := overlay_apply.NewUseCase()
+		for _, ref := range refs {
+			if f.Dryrun {
+				fmt.Printf("Apply overlay for %q\n", ref)
+			}
+			for overlay, err := range overlayFindUseCase.Execute(ctx, ref) {
+				if err != nil {
+					return fmt.Errorf("finding overlays for %s: %w", ref, err)
+				}
+				var selected string
+				if err := huh.NewForm(huh.NewGroup(
+					huh.NewSelect[string]().
+						Title("A repository to delete").
+						Options(huh.Option[string]{
+							Key:   "y",
+							Value: "Yes",
+						}, huh.Option[string]{
+							Key:   "n",
+							Value: "No",
+						}, huh.Option[string]{
+							Key:   "q",
+							Value: "Quit",
+						}).
+						Value(&selected),
+				)).Run(); err != nil {
+					return err
+				}
+				switch selected {
+				case "Yes", "y":
+					if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
+						return err
+					}
+				case "No", "n":
+					logger.Infof("Skipped applying overlay for %s", ref)
+				case "Quit", "q":
+					logger.Info("Quit applying overlays")
+					return nil
+				}
+			}
+			logger.Infof("Applied overlay for %s", ref)
+		}
+		return nil
 	}
 
 	cmd := &cobra.Command{

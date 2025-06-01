@@ -10,6 +10,8 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/create"
 	"github.com/kyoh86/gogh/v4/app/create_from_template"
+	"github.com/kyoh86/gogh/v4/app/overlay_apply"
+	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
@@ -56,6 +58,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	}
 
 	runFunc := func(ctx context.Context, refWithAlias string) error {
+		logger := log.FromContext(ctx)
 		if f.Template == "" {
 			ropt := create.Options{
 				TryCloneOptions: try_clone.Options{
@@ -82,8 +85,6 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err := createUseCase.Execute(ctx, refWithAlias, ropt); err != nil {
 				return fmt.Errorf("creating the repository: %w", err)
 			}
-			// TODO: Apply overlays
-			// see: ./overlay_apply.go
 		} else {
 			template, err := svc.ReferenceParser.Parse(f.Template)
 			if err != nil {
@@ -103,6 +104,54 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("creating the repository from template: %w", err)
 			}
 		}
+		if f.Dryrun {
+			fmt.Printf("Apply overlay for %q\n", refWithAlias)
+			return nil
+		}
+
+		overlayFindUseCase := overlay_find.NewUseCase(
+			svc.WorkspaceService,
+			svc.FinderService,
+			svc.ReferenceParser,
+			svc.OverlayService,
+		)
+		overlayApplyUseCase := overlay_apply.NewUseCase()
+		for overlay, err := range overlayFindUseCase.Execute(ctx, refWithAlias) {
+			if err != nil {
+				return fmt.Errorf("finding overlays for %s: %w", refWithAlias, err)
+			}
+			var selected string
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("A repository to delete").
+					Options(huh.Option[string]{
+						Key:   "y",
+						Value: "Yes",
+					}, huh.Option[string]{
+						Key:   "n",
+						Value: "No",
+					}, huh.Option[string]{
+						Key:   "q",
+						Value: "Quit",
+					}).
+					Value(&selected),
+			)).Run(); err != nil {
+				return err
+			}
+			switch selected {
+			case "Yes", "y":
+				if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
+					return err
+				}
+			case "No", "n":
+				logger.Infof("Skipped applying overlay for %s", refWithAlias)
+			case "Quit", "q":
+				logger.Info("Quit applying overlays")
+				return nil
+			}
+		}
+		logger.Infof("Applied overlay for %s", refWithAlias)
+
 		return nil
 	}
 

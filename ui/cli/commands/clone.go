@@ -9,6 +9,8 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/clone"
 	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/overlay_apply"
+	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
@@ -49,6 +51,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	runFunc := func(ctx context.Context, refs []string) error {
+		logger := log.FromContext(ctx)
 		if f.Dryrun {
 			for _, ref := range refs {
 				fmt.Printf("git clone %q\n", ref)
@@ -66,11 +69,59 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 						Timeout: f.CloneRetryTimeout,
 					},
 				})
-				// TODO: Apply overlays
-				// see: ./overlay_apply.go
 			})
 		}
-		return eg.Wait()
+		if err := eg.Wait(); err != nil {
+			return fmt.Errorf("cloning repositories: %w", err)
+		}
+		overlayFindUseCase := overlay_find.NewUseCase(
+			svc.WorkspaceService,
+			svc.FinderService,
+			svc.ReferenceParser,
+			svc.OverlayService,
+		)
+		overlayApplyUseCase := overlay_apply.NewUseCase()
+		for _, ref := range refs {
+			if f.Dryrun {
+				fmt.Printf("Apply overlay for %q\n", ref)
+			}
+			for overlay, err := range overlayFindUseCase.Execute(ctx, ref) {
+				if err != nil {
+					return fmt.Errorf("finding overlays for %s: %w", ref, err)
+				}
+				var selected string
+				if err := huh.NewForm(huh.NewGroup(
+					huh.NewSelect[string]().
+						Title("A repository to delete").
+						Options(huh.Option[string]{
+							Key:   "y",
+							Value: "Yes",
+						}, huh.Option[string]{
+							Key:   "n",
+							Value: "No",
+						}, huh.Option[string]{
+							Key:   "q",
+							Value: "Quit",
+						}).
+						Value(&selected),
+				)).Run(); err != nil {
+					return err
+				}
+				switch selected {
+				case "Yes", "y":
+					if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
+						return err
+					}
+				case "No", "n":
+					logger.Infof("Skipped applying overlay for %s", ref)
+				case "Quit", "q":
+					logger.Info("Quit applying overlays")
+					return nil
+				}
+			}
+			logger.Infof("Applied overlay for %s", ref)
+		}
+		return nil
 	}
 
 	cmd := &cobra.Command{

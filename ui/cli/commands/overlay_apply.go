@@ -65,9 +65,34 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				if err != nil {
 					return fmt.Errorf("finding overlays for %s: %w", selected, err)
 				}
-				//TODO: confirm before applying
-				if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
+				var selected string
+				if err := huh.NewForm(huh.NewGroup(
+					huh.NewSelect[string]().
+						Title("A repository to delete").
+						Options(huh.Option[string]{
+							Key:   "y",
+							Value: "Yes",
+						}, huh.Option[string]{
+							Key:   "n",
+							Value: "No",
+						}, huh.Option[string]{
+							Key:   "q",
+							Value: "Quit",
+						}).
+						Value(&selected),
+				)).Run(); err != nil {
 					return err
+				}
+				switch selected {
+				case "Yes", "y":
+					if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
+						return err
+					}
+				case "No", "n":
+					logger.Infof("Skipped applying overlay for %s", selected)
+				case "Quit", "q":
+					logger.Info("Quit applying overlays")
+					return nil
 				}
 			}
 
