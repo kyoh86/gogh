@@ -259,7 +259,9 @@ func (m *MockWFS) Remove(name string) error {
 
 		// Remove all files in this directory
 		for _, entry := range entries {
-			m.Remove(filepath.Join(name, entry.Name()))
+			if err := m.Remove(filepath.Join(name, entry.Name())); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -278,8 +280,7 @@ func (m *MockWFS) Create(name string) (io.WriteCloser, error) {
 	return &MockWriteCloser{
 		WriteCloser: NopWriteCloser{buffer},
 		onClose: func() error {
-			m.addFile(name, buffer.Bytes())
-			return nil
+			return m.addFile(name, buffer.Bytes())
 		},
 	}, nil
 }

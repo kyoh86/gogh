@@ -103,7 +103,6 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 				fmt.Printf("Registered %s as overlay\n", result.FilePath)
 			}
 			return nil
-
 		},
 	}
 
