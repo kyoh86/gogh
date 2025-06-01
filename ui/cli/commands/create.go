@@ -116,39 +116,17 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			svc.OverlayService,
 		)
 		overlayApplyUseCase := overlay_apply.NewUseCase()
-		for overlay, err := range overlayFindUseCase.Execute(ctx, refWithAlias) {
-			if err != nil {
-				return fmt.Errorf("finding overlays for %s: %w", refWithAlias, err)
-			}
-			var selected string
-			if err := huh.NewForm(huh.NewGroup(
-				huh.NewSelect[string]().
-					Title("A repository to delete").
-					Options(huh.Option[string]{
-						Key:   "y",
-						Value: "Yes",
-					}, huh.Option[string]{
-						Key:   "n",
-						Value: "No",
-					}, huh.Option[string]{
-						Key:   "q",
-						Value: "Quit",
-					}).
-					Value(&selected),
-			)).Run(); err != nil {
-				return err
-			}
-			switch selected {
-			case "Yes", "y":
-				if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
-					return err
-				}
-			case "No", "n":
-				logger.Infof("Skipped applying overlay for %s", refWithAlias)
-			case "Quit", "q":
-				logger.Info("Quit applying overlays")
-				return nil
-			}
+		if err := view.ProcessWithConfirmation(
+			ctx,
+			overlayFindUseCase.Execute(ctx, refWithAlias),
+			func(overlay *overlay_find.Overlay) string {
+				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, overlay.RelativePath)
+			},
+			func(overlay *overlay_find.Overlay) error {
+				return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
+			},
+		); err != nil {
+			return err
 		}
 		logger.Infof("Applied overlay for %s", refWithAlias)
 

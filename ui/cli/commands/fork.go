@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/fork"
 	"github.com/kyoh86/gogh/v4/app/overlay_apply"
@@ -51,39 +50,17 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 				svc.OverlayService,
 			)
 			overlayApplyUseCase := overlay_apply.NewUseCase()
-			for overlay, err := range overlayFindUseCase.Execute(ctx, refs[0]) {
-				if err != nil {
-					return fmt.Errorf("finding overlays for %s: %w", refs[0], err)
-				}
-				var selected string
-				if err := huh.NewForm(huh.NewGroup(
-					huh.NewSelect[string]().
-						Title("A repository to delete").
-						Options(huh.Option[string]{
-							Key:   "y",
-							Value: "Yes",
-						}, huh.Option[string]{
-							Key:   "n",
-							Value: "No",
-						}, huh.Option[string]{
-							Key:   "q",
-							Value: "Quit",
-						}).
-						Value(&selected),
-				)).Run(); err != nil {
-					return err
-				}
-				switch selected {
-				case "Yes", "y":
-					if err := overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content); err != nil {
-						return err
-					}
-				case "No", "n":
-					logger.Infof("Skipped applying overlay for %s", refs[0])
-				case "Quit", "q":
-					logger.Info("Quit applying overlays")
-					return nil
-				}
+			if err := view.ProcessWithConfirmation(
+				ctx,
+				overlayFindUseCase.Execute(ctx, refs[0]),
+				func(overlay *overlay_find.Overlay) string {
+					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], overlay.RelativePath)
+				},
+				func(overlay *overlay_find.Overlay) error {
+					return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
+				},
+			); err != nil {
+				return err
 			}
 			logger.Infof("Applied overlay for %s", refs[0])
 			return nil
