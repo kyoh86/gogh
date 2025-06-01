@@ -69,8 +69,6 @@ type Options struct {
 	Notify Notify
 	// Timeout is the maximum wait time for each clone attempt.
 	Timeout time.Duration
-	// DisallowOverlay indicates whether to disable overlay creation.
-	DisallowOverlay bool
 }
 
 // Execute attempts to clone a repository with retry logic.
@@ -112,13 +110,6 @@ func (uc *UseCase) Execute(
 	if repo.Parent != nil {
 		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{repo.Parent.CloneURL}); err != nil {
 			return fmt.Errorf("setting upstream remote: %w", err)
-		}
-	}
-
-	// Create overlay if not disallowed
-	if !opts.DisallowOverlay {
-		if err := uc.overlayService.ApplyOverlays(ctx, targetRef, localPath); err != nil {
-			return fmt.Errorf("applying overlays: %w", err)
 		}
 	}
 	return nil

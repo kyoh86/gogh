@@ -90,7 +90,7 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 	}
 	cmd := &cobra.Command{
 		Use:     "remove <target-path>",
-		Aliases: []string{"rm"},
+		Aliases: []string{"rm", "del", "delete"},
 		Short:   "Remove an overlay pattern",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

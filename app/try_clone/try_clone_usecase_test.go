@@ -144,9 +144,6 @@ func TestTryClone(t *testing.T) {
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
 
-				// Apply overlays
-				mos.EXPECT().ApplyOverlays(gomock.Any(), ref, localPath).Return(nil)
-
 				return mhs, mws, mos, mgs
 			},
 			expectErr: false,
@@ -266,9 +263,6 @@ func TestTryClone(t *testing.T) {
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
 
-				// Apply overlays
-				mos.EXPECT().ApplyOverlays(gomock.Any(), ref, localPath).Return(nil)
-
 				return mhs, mws, mos, mgs
 			},
 			expectErr: false,
@@ -307,9 +301,6 @@ func TestTryClone(t *testing.T) {
 
 				// Parent remote setup
 				mgs.EXPECT().SetRemotes(gomock.Any(), localPath, "upstream", []string{repo.Parent.CloneURL}).Return(nil)
-
-				// Apply overlays
-				mos.EXPECT().ApplyOverlays(gomock.Any(), ref, localPath).Return(nil)
 
 				return mhs, mws, mos, mgs
 			},

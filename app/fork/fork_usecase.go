@@ -93,5 +93,6 @@ func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) err
 	if err := repositoryService.Execute(ctx, fork, targetRef.Alias, opts.TryCloneOptions); err != nil {
 		return fmt.Errorf("cloning forked repository: %w", err)
 	}
+	// TODO: ApplyOverlays
 	return nil
 }

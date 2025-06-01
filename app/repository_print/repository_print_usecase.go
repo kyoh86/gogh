@@ -36,8 +36,8 @@ func NewUseCase(w io.Writer, format string) *UseCase {
 	}
 }
 
-func (u *UseCase) Execute(_ context.Context, r iter.Seq2[*hosting.Repository, error]) error {
-	printer, err := repositoryFormatter(u.format, u.w)
+func (uc *UseCase) Execute(_ context.Context, r iter.Seq2[*hosting.Repository, error]) error {
+	printer, err := repositoryFormatter(uc.format, uc.w)
 	if err != nil {
 		return err
 	}

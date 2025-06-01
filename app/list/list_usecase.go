@@ -33,11 +33,11 @@ type Options struct {
 }
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (u *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*repository.Location, error] {
-	ws := u.workspaceService
+func (uc *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*repository.Location, error] {
+	ws := uc.workspaceService
 	if opts.Primary {
 		layout := ws.GetLayoutFor(ws.GetPrimaryRoot())
-		return u.finderService.ListRepositoryInRoot(ctx, layout, opts.ListOptions)
+		return uc.finderService.ListRepositoryInRoot(ctx, layout, opts.ListOptions)
 	}
-	return u.finderService.ListAllRepository(ctx, ws, opts.ListOptions)
+	return uc.finderService.ListAllRepository(ctx, ws, opts.ListOptions)
 }

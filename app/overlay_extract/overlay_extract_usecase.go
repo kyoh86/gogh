@@ -53,22 +53,22 @@ type ExtractResult struct {
 
 // Extract finds untracked files in the repository and returns them
 // The caller is responsible for confirming and registering files as overlays
-func (u *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.Seq2[*ExtractResult, error] {
+func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.Seq2[*ExtractResult, error] {
 	return func(yield func(*ExtractResult, error) bool) {
-		ref, err := u.referenceParser.Parse(refs)
+		ref, err := uc.referenceParser.Parse(refs)
 		if err != nil {
 			yield(nil, err)
 			return
 		}
 		// Find the repository path
-		repo, err := u.finderService.FindByReference(ctx, u.workspaceService, *ref)
+		repo, err := uc.finderService.FindByReference(ctx, uc.workspaceService, *ref)
 		if err != nil {
 			yield(nil, fmt.Errorf("failed to find repository: %w", err))
 			return
 		}
 
 		// Get untracked files
-		untrackedFiles, err := u.gitService.ListUntrackedFiles(ctx, repo.FullPath())
+		untrackedFiles, err := uc.gitService.ListUntrackedFiles(ctx, repo.FullPath())
 		if err != nil {
 			yield(nil, fmt.Errorf("failed to list untracked files: %w", err))
 			return

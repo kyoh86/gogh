@@ -42,9 +42,9 @@ type BundleEntry struct {
 type Options = workspace.ListOptions
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (u *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*BundleEntry, error] {
+func (uc *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*BundleEntry, error] {
 	return func(yield func(*BundleEntry, error) bool) {
-		for repo, err := range u.finderService.ListAllRepository(ctx, u.workspaceService, opts) {
+		for repo, err := range uc.finderService.ListAllRepository(ctx, uc.workspaceService, opts) {
 			if err != nil {
 				yield(nil, err)
 				return
@@ -53,7 +53,7 @@ func (u *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*BundleEn
 				continue
 			}
 			name := repo.Path()
-			remotes, err := u.gitService.GetDefaultRemotes(ctx, repo.FullPath())
+			remotes, err := uc.gitService.GetDefaultRemotes(ctx, repo.FullPath())
 			if err != nil {
 				yield(nil, err)
 				return
@@ -68,7 +68,7 @@ func (u *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*BundleEn
 				if uobj.Host != repo.Host() {
 					continue
 				}
-				ref, err := u.hostingService.ParseURL(uobj)
+				ref, err := uc.hostingService.ParseURL(uobj)
 				if err != nil {
 					yield(nil, err)
 					return

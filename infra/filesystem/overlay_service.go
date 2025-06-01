@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"iter"
 	"os"
 	"path/filepath"
 	"strings"
@@ -69,56 +70,44 @@ func (s *OverlayService) getContentPath(entry workspace.OverlayEntry) string {
 	return encodeFileName(entry.Pattern, entry.RelativePath)
 }
 
-// ApplyOverlays implements workspace.OverlayService
-func (s *OverlayService) ApplyOverlays(ctx context.Context, ref repository.Reference, repoPath string) error {
-	// Convert repository reference to a string for pattern matching
-	repoString := ref.String()
-
-	entries, err := s.ListOverlays(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range entries {
-		// Check if this entry should be applied to this repository
-		match, err := doublestar.Match(entry.Pattern, repoString)
+// FindOverlays implements workspace.OverlayService
+func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.Overlay, error] {
+	return func(yield func(*workspace.Overlay, error) bool) {
+		// Convert repository reference to a string for pattern matching
+		repoString := ref.String()
+		entries, err := s.ListOverlays(ctx)
 		if err != nil {
-			return fmt.Errorf("matching pattern '%s': %w", entry.Pattern, err)
+			yield(nil, fmt.Errorf("listing overlays: %w", err))
+			return
 		}
+		for _, entry := range entries {
+			// Check if this entry should be applied to this repository
+			match, err := doublestar.Match(entry.Pattern, repoString)
+			if err != nil {
+				yield(nil, fmt.Errorf("matching pattern '%s': %w", entry.Pattern, err))
+				return
+			}
+			if !match {
+				continue
+			}
 
-		if !match {
-			continue
-		}
-
-		// Get the content
-		content, err := s.GetOverlayContent(ctx, entry)
-		if err != nil {
-			return fmt.Errorf("getting content for '%s': %w", entry.RelativePath, err)
-		}
-		defer content.Close()
-
-		// Create the target file
-		targetPath := filepath.Join(repoPath, entry.RelativePath)
-
-		// Ensure the directory exists
-		targetDir := filepath.Dir(targetPath)
-		if err := os.MkdirAll(targetDir, 0755); err != nil {
-			return fmt.Errorf("creating directory '%s': %w", targetDir, err)
-		}
-
-		// Read content
-		data, err := io.ReadAll(content)
-		if err != nil {
-			return fmt.Errorf("reading overlay content: %w", err)
-		}
-
-		// Write to target file
-		if err := os.WriteFile(targetPath, data, 0644); err != nil {
-			return fmt.Errorf("writing to file '%s': %w", targetPath, err)
+			// Get the content and yield it
+			func() {
+				file, err := os.Open(s.getContentPath(entry))
+				if err != nil {
+					yield(nil, fmt.Errorf("opening overlay file '%s': %w", entry.RelativePath, err))
+					return
+				}
+				defer file.Close()
+				if !yield(&workspace.Overlay{
+					Content:      io.NopCloser(file),
+					RelativePath: entry.RelativePath,
+				}, nil) {
+					return // Stop
+				}
+			}()
 		}
 	}
-
-	return nil
 }
 
 // ListOverlays implements workspace.OverlayService
@@ -162,17 +151,6 @@ func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayE
 	}
 
 	return result, nil
-}
-
-// GetOverlayContent implements workspace.OverlayService
-func (s *OverlayService) GetOverlayContent(ctx context.Context, entry workspace.OverlayEntry) (io.ReadCloser, error) {
-	contentPath := s.getContentPath(entry)
-	file, err := s.fsys.Open(contentPath)
-	if err != nil {
-		return nil, fmt.Errorf("opening overlay file: %w", err)
-	}
-
-	return file, nil
 }
 
 // AddOverlay implements workspace.OverlayService

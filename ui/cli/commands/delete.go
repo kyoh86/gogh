@@ -82,8 +82,8 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	}
 
 	cmd := &cobra.Command{
-		Use:     "delete [flags] [[OWNER/]NAME]",
-		Aliases: []string{"remove"},
+		Use:     "delete [flags] [OWNER/]NAME",
+		Aliases: []string{"remove", "rm", "del"},
 		Short:   "Delete local and remote repository",
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, refs []string) error {

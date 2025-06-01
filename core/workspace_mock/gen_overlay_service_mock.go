@@ -12,6 +12,7 @@ package workspace_mock
 import (
 	context "context"
 	io "io"
+	iter "iter"
 	reflect "reflect"
 
 	repository "github.com/kyoh86/gogh/v4/core/repository"
@@ -57,33 +58,18 @@ func (mr *MockOverlayServiceMockRecorder) AddOverlay(ctx, entry, content any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOverlay", reflect.TypeOf((*MockOverlayService)(nil).AddOverlay), ctx, entry, content)
 }
 
-// ApplyOverlays mocks base method.
-func (m *MockOverlayService) ApplyOverlays(ctx context.Context, ref repository.Reference, repoPath string) error {
+// FindOverlays mocks base method.
+func (m *MockOverlayService) FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.Overlay, error] {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyOverlays", ctx, ref, repoPath)
-	ret0, _ := ret[0].(error)
+	ret := m.ctrl.Call(m, "FindOverlays", ctx, ref)
+	ret0, _ := ret[0].(iter.Seq2[*workspace.Overlay, error])
 	return ret0
 }
 
-// ApplyOverlays indicates an expected call of ApplyOverlays.
-func (mr *MockOverlayServiceMockRecorder) ApplyOverlays(ctx, ref, repoPath any) *gomock.Call {
+// FindOverlays indicates an expected call of FindOverlays.
+func (mr *MockOverlayServiceMockRecorder) FindOverlays(ctx, ref any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyOverlays", reflect.TypeOf((*MockOverlayService)(nil).ApplyOverlays), ctx, ref, repoPath)
-}
-
-// GetOverlayContent mocks base method.
-func (m *MockOverlayService) GetOverlayContent(ctx context.Context, entry workspace.OverlayEntry) (io.ReadCloser, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOverlayContent", ctx, entry)
-	ret0, _ := ret[0].(io.ReadCloser)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOverlayContent indicates an expected call of GetOverlayContent.
-func (mr *MockOverlayServiceMockRecorder) GetOverlayContent(ctx, entry any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOverlayContent", reflect.TypeOf((*MockOverlayService)(nil).GetOverlayContent), ctx, entry)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOverlays", reflect.TypeOf((*MockOverlayService)(nil).FindOverlays), ctx, ref)
 }
 
 // ListOverlays mocks base method.

@@ -25,6 +25,6 @@ func NewUseCase(
 }
 
 // Execute retrieves a list of repository locations under the specified workspace roots
-func (u *UseCase) Execute(ctx context.Context, path string) (*repository.Location, error) {
-	return u.finderService.FindByPath(ctx, u.workspaceService, path)
+func (uc *UseCase) Execute(ctx context.Context, path string) (*repository.Location, error) {
+	return uc.finderService.FindByPath(ctx, uc.workspaceService, path)
 }

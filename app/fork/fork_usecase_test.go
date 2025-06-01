@@ -72,9 +72,6 @@ func TestUseCase_Execute(t *testing.T) {
 				mws.EXPECT().
 					GetPrimaryLayout().
 					Return(mls)
-
-				// Apply overlays
-				mos.EXPECT().ApplyOverlays(gomock.Any(), targetRef, "/path/to/repo").Return(nil)
 			},
 			expectErr: false,
 		},
@@ -133,9 +130,6 @@ func TestUseCase_Execute(t *testing.T) {
 				mws.EXPECT().
 					GetPrimaryLayout().
 					Return(mls)
-
-				// Apply overlays
-				mos.EXPECT().ApplyOverlays(gomock.Any(), defaultRef, "/path/to/repo").Return(nil)
 			},
 			expectErr: false,
 		},
