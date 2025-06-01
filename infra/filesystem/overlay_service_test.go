@@ -174,7 +174,7 @@ func TestRemoveOverlay(t *testing.T) {
 	}
 
 	// Remove it
-	err = service.RemoveOverlay(ctx, entry.Pattern, entry.RelativePath)
+	err = service.RemoveOverlay(ctx, entry)
 	if err != nil {
 		t.Fatalf("RemoveOverlay failed: %v", err)
 	}
@@ -186,7 +186,7 @@ func TestRemoveOverlay(t *testing.T) {
 	}
 
 	// Test removing non-existent entry
-	err = service.RemoveOverlay(ctx, "non-existent", "file.txt")
+	err = service.RemoveOverlay(ctx, workspace.OverlayEntry{Pattern: "non-existent", RelativePath: "file.txt"})
 	if err == nil {
 		t.Error("expected error for non-existent entry, but got nil")
 	}

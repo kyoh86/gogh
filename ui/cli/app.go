@@ -118,6 +118,19 @@ func NewApp(
 	}
 	rootsCommand.GroupID = groupConfig
 
+	overlayCommand, err := cmdWithSubs(
+		ctx, svc,
+		commands.NewOverlayCommand,
+		nil,
+		commands.NewOverlayRemoveCommand,
+		commands.NewOverlayAddCommand,
+		commands.NewOverlayListCommand,
+	)
+	if err != nil {
+		return nil, err
+	}
+	overlayCommand.GroupID = groupConfig
+
 	configAuthCommand := typ.Ptr(*authCommand)
 	configAuthCommand.GroupID = ""
 	configRootsCommand := typ.Ptr(*rootsCommand)
@@ -141,6 +154,7 @@ func NewApp(
 		authCommand,
 		bundleCommand,
 		rootsCommand,
+		overlayCommand,
 	}
 	for _, sub := range []struct {
 		fn    func(context.Context, *service.ServiceSet) (*cobra.Command, error)

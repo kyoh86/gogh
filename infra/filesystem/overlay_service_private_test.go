@@ -13,6 +13,7 @@ func TestEncodeDecodeFileName(t *testing.T) {
 		name         string
 		pattern      string
 		relativePath string
+		expected     string
 	}{
 		{
 			name:         "simple",
@@ -41,9 +42,19 @@ func TestEncodeDecodeFileName(t *testing.T) {
 			// Encode
 			encoded := encodeFileName(tc.pattern, tc.relativePath)
 
-			// Check encoded string doesn't contain path separator
-			if strings.Contains(encoded, "/") {
-				t.Errorf("encoded filename contains path separator: %s", encoded)
+			parts := strings.SplitN(encoded, "--", 2)
+			encodedPattern, encodedRelativePath := parts[0], parts[1]
+			if encodedPattern == "" || encodedRelativePath == "" {
+				t.Fatalf("encoded filename is empty: got %q", encoded)
+			}
+			if encodedPattern == tc.pattern {
+				t.Errorf("encoded pattern should not match original: got %q, want different", encodedPattern)
+			}
+			if strings.Contains(encodedPattern, "/") {
+				t.Errorf("encoded pattern should not contain slashes: got %q", encodedPattern)
+			}
+			if encodedRelativePath != tc.relativePath {
+				t.Errorf("encoded relativePath mismatch: got %q, want %q", encodedRelativePath, tc.relativePath)
 			}
 
 			// Decode

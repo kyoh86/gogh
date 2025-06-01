@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/clone"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
@@ -36,7 +35,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		for scan.Scan() {
 			ref := scan.Text()
 			if f.Dryrun {
-				log.FromContext(egCtx).Infof("git clone %q", ref)
+				fmt.Printf("git clone %q\n", ref)
 			} else {
 				eg.Go(func() error {
 					return cloneUseCase.Execute(egCtx, ref, clone.Options{

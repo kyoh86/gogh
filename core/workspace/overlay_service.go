@@ -37,5 +37,5 @@ type OverlayService interface {
 	AddOverlay(ctx context.Context, entry OverlayEntry, content io.Reader) error
 
 	// RemoveOverlay removes an overlay file
-	RemoveOverlay(ctx context.Context, pattern, relativePath string) error
+	RemoveOverlay(ctx context.Context, entry OverlayEntry) error
 }

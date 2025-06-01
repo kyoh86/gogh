@@ -38,19 +38,18 @@ func NewOverlayService(fsys wfs.WFS) (*OverlayService, error) {
 
 // separator is a string used to separate the pattern and relative path in the encoded filename
 // Base64 encoded results will not contain this string
-const separator = "--"
+const separator = "/"
 
 // encodeFileName safely encodes a pattern and path into a valid filename
 func encodeFileName(pattern, relativePath string) string {
 	patternEncoded := base64.URLEncoding.EncodeToString([]byte(pattern))
-	pathEncoded := base64.URLEncoding.EncodeToString([]byte(relativePath))
 
-	return patternEncoded + separator + pathEncoded
+	return patternEncoded + separator + relativePath
 }
 
 // decodeFileName decodes an encoded filename back to pattern and path
 func decodeFileName(encodedName string) (pattern, relativePath string, err error) {
-	parts := strings.Split(encodedName, separator)
+	parts := strings.SplitN(encodedName, separator, 2)
 	if len(parts) != 2 {
 		return "", "", fmt.Errorf("invalid encoded filename format")
 	}
@@ -60,12 +59,7 @@ func decodeFileName(encodedName string) (pattern, relativePath string, err error
 		return "", "", fmt.Errorf("decoding pattern: %w", err)
 	}
 
-	pathBytes, err := base64.URLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", "", fmt.Errorf("decoding path: %w", err)
-	}
-
-	return string(patternBytes), string(pathBytes), nil
+	return string(patternBytes), parts[1], nil
 }
 
 // getContentPath returns the path where the content for a given entry is stored
@@ -188,17 +182,12 @@ func (s *OverlayService) AddOverlay(ctx context.Context, entry workspace.Overlay
 }
 
 // RemoveOverlay implements workspace.OverlayService
-func (s *OverlayService) RemoveOverlay(ctx context.Context, pattern, relativePath string) error {
-	entry := workspace.OverlayEntry{
-		Pattern:      pattern,
-		RelativePath: relativePath,
-	}
-
+func (s *OverlayService) RemoveOverlay(ctx context.Context, entry workspace.OverlayEntry) error {
 	contentPath := s.getContentPath(entry)
 
 	if err := s.fsys.Remove(contentPath); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return fmt.Errorf("overlay not found: pattern=%s, path=%s", pattern, relativePath)
+			return fmt.Errorf("overlay not found: pattern=%s, path=%s", entry.Pattern, entry.RelativePath)
 		}
 		return fmt.Errorf("removing overlay file: %w", err)
 	}
