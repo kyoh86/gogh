@@ -42,7 +42,10 @@ func TestEncodeDecodeFileName(t *testing.T) {
 			// Encode
 			encoded := encodeFileName(tc.pattern, tc.relativePath)
 
-			parts := strings.SplitN(encoded, "--", 2)
+			parts := strings.SplitN(encoded, "/", 2)
+			if len(parts) != 2 {
+				t.Fatalf("encoded filename should have two parts: got %q", encoded)
+			}
 			encodedPattern, encodedRelativePath := parts[0], parts[1]
 			if encodedPattern == "" || encodedRelativePath == "" {
 				t.Fatalf("encoded filename is empty: got %q", encoded)

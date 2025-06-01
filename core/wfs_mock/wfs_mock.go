@@ -19,11 +19,14 @@ type MockWFS struct {
 
 // NewMockWFS creates a new mock filesystem
 func NewMockWFS() *MockWFS {
-	return &MockWFS{
+	mock := &MockWFS{
 		files:    make(map[string][]byte),
 		dirItems: make(map[string][]fs.DirEntry),
 		errors:   make(map[string]error),
 	}
+	// Initialize root directory
+	mock.dirItems[""] = []fs.DirEntry{}
+	return mock
 }
 
 // normalizePath ensures consistent path handling between "" and "."
@@ -45,11 +48,10 @@ func (m *MockWFS) addFile(path string, content []byte) {
 	path = normalizePath(path)
 	m.files[path] = content
 
-	// Update directory entries
+	// Ensure parent directory exists
 	dir := normalizePath(filepath.Dir(path))
-
-	if _, exists := m.dirItems[dir]; !exists {
-		m.dirItems[dir] = []fs.DirEntry{}
+	if dir != "" {
+		m.MkdirAll(dir, 0755)
 	}
 
 	// Check if entry already exists
@@ -62,8 +64,8 @@ func (m *MockWFS) addFile(path string, content []byte) {
 
 	// Add new entry
 	m.dirItems[dir] = append(m.dirItems[dir], &MockDirEntry{
-		name:  baseName,
-		isDir: false,
+		RawName:  baseName,
+		RawIsDir: false,
 	})
 }
 
@@ -139,17 +141,17 @@ func (m *MockWFS) Stat(name string) (fs.FileInfo, error) {
 		// Check if it's a directory
 		if _, dirExists := m.dirItems[name]; dirExists {
 			return &MockFileInfo{
-				name:  filepath.Base(name),
-				isDir: true,
+				RawName:  filepath.Base(name),
+				RawIsDir: true,
 			}, nil
 		}
 		return nil, fs.ErrNotExist
 	}
 
 	return &MockFileInfo{
-		name:  filepath.Base(name),
-		size:  int64(len(content)),
-		isDir: false,
+		RawName:  filepath.Base(name),
+		RawSize:  int64(len(content)),
+		RawIsDir: false,
 	}, nil
 }
 
@@ -181,8 +183,40 @@ func (m *MockWFS) MkdirAll(path string, perm fs.FileMode) error {
 	parent = normalizePath(parent)
 
 	if parent != "" && parent != path {
-		if _, exists := m.dirItems[parent]; !exists {
-			return m.MkdirAll(parent, perm)
+		if err := m.MkdirAll(parent, perm); err != nil {
+			return err
+		}
+
+		// Add this directory to parent's entries if not already there
+		baseName := filepath.Base(path)
+		found := false
+		for _, entry := range m.dirItems[parent] {
+			if entry.Name() == baseName && entry.IsDir() {
+				found = true
+				break
+			}
+		}
+		if !found {
+			m.dirItems[parent] = append(m.dirItems[parent], &MockDirEntry{
+				RawName:  baseName,
+				RawIsDir: true,
+			})
+		}
+	} else if parent == "" && path != "" {
+		// This is a top-level directory, add it to the root
+		baseName := filepath.Base(path)
+		found := false
+		for _, entry := range m.dirItems[""] {
+			if entry.Name() == baseName && entry.IsDir() {
+				found = true
+				break
+			}
+		}
+		if !found {
+			m.dirItems[""] = append(m.dirItems[""], &MockDirEntry{
+				RawName:  baseName,
+				RawIsDir: true,
+			})
 		}
 	}
 
@@ -262,9 +296,9 @@ func (f *MockFile) Stat() (fs.FileInfo, error) {
 		return nil, fs.ErrClosed
 	}
 	return &MockFileInfo{
-		name:  filepath.Base(f.name),
-		size:  int64(len(f.content)),
-		isDir: false,
+		RawName:  filepath.Base(f.name),
+		RawSize:  int64(len(f.content)),
+		RawIsDir: false,
 	}, nil
 }
 
@@ -292,20 +326,20 @@ func (f *MockFile) Close() error {
 
 // MockFileInfo implements fs.FileInfo interface
 type MockFileInfo struct {
-	name  string
-	size  int64
-	isDir bool
+	RawName  string
+	RawSize  int64
+	RawIsDir bool
 }
 
 // Name implements fs.FileInfo
-func (fi *MockFileInfo) Name() string { return fi.name }
+func (fi *MockFileInfo) Name() string { return fi.RawName }
 
 // Size implements fs.FileInfo
-func (fi *MockFileInfo) Size() int64 { return fi.size }
+func (fi *MockFileInfo) Size() int64 { return fi.RawSize }
 
 // Mode implements fs.FileInfo
 func (fi *MockFileInfo) Mode() fs.FileMode {
-	if fi.isDir {
+	if fi.RawIsDir {
 		return fs.ModeDir | 0755
 	}
 	return 0644
@@ -315,27 +349,27 @@ func (fi *MockFileInfo) Mode() fs.FileMode {
 func (fi *MockFileInfo) ModTime() time.Time { return time.Now() }
 
 // IsDir implements fs.FileInfo
-func (fi *MockFileInfo) IsDir() bool { return fi.isDir }
+func (fi *MockFileInfo) IsDir() bool { return fi.RawIsDir }
 
 // Sys implements fs.FileInfo
 func (fi *MockFileInfo) Sys() any { return nil }
 
 // MockDirEntry implements fs.DirEntry interface
 type MockDirEntry struct {
-	name  string
-	isDir bool
-	info  fs.FileInfo
+	RawName  string
+	RawIsDir bool
+	RawInfo  fs.FileInfo
 }
 
 // Name implements fs.DirEntry
-func (e *MockDirEntry) Name() string { return e.name }
+func (e *MockDirEntry) Name() string { return e.RawName }
 
 // IsDir implements fs.DirEntry
-func (e *MockDirEntry) IsDir() bool { return e.isDir }
+func (e *MockDirEntry) IsDir() bool { return e.RawIsDir }
 
 // Type implements fs.DirEntry
 func (e *MockDirEntry) Type() fs.FileMode {
-	if e.isDir {
+	if e.RawIsDir {
 		return fs.ModeDir
 	}
 	return 0
@@ -343,10 +377,10 @@ func (e *MockDirEntry) Type() fs.FileMode {
 
 // Info implements fs.DirEntry
 func (e *MockDirEntry) Info() (fs.FileInfo, error) {
-	if e.info != nil {
-		return e.info, nil
+	if e.RawInfo != nil {
+		return e.RawInfo, nil
 	}
-	return &MockFileInfo{name: e.name, isDir: e.isDir}, nil
+	return &MockFileInfo{RawName: e.RawName, RawIsDir: e.RawIsDir}, nil
 }
 
 // NopWriteCloser is a WriteCloser with a no-op Close method

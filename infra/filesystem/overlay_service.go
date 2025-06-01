@@ -121,31 +121,42 @@ func (s *OverlayService) ApplyOverlays(ctx context.Context, ref repository.Refer
 
 // ListOverlays implements workspace.OverlayService
 func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayEntry, error) {
-	entries, err := s.fsys.ReadDir("")
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return []workspace.OverlayEntry{}, nil
-		}
-		return nil, fmt.Errorf("reading overlay directory: %w", err)
-	}
+	var result []workspace.OverlayEntry
 
-	result := make([]workspace.OverlayEntry, 0, len(entries))
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
+	err := fs.WalkDir(s.fsys, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
 
-		pattern, relativePath, err := decodeFileName(entry.Name())
+		// Skip directories
+		if d.IsDir() {
+			return nil
+		}
+
+		// Skip files with normalized path "."
+		if path == "." {
+			return nil
+		}
+
+		pattern, relativePath, err := decodeFileName(path)
 		if err != nil {
 			// Skip files that don't follow our encoding format
-			continue
+			return nil
 		}
 
 		result = append(result, workspace.OverlayEntry{
 			Pattern:      pattern,
 			RelativePath: relativePath,
 		})
+
+		return nil
+	})
+
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return []workspace.OverlayEntry{}, nil
+		}
+		return nil, fmt.Errorf("walking overlay directory: %w", err)
 	}
 
 	return result, nil
@@ -171,6 +182,12 @@ func (s *OverlayService) AddOverlay(ctx context.Context, entry workspace.Overlay
 	data, err := io.ReadAll(content)
 	if err != nil {
 		return fmt.Errorf("reading content: %w", err)
+	}
+
+	// Ensure the directory exists
+	targetDir := filepath.Dir(contentPath)
+	if err := s.fsys.MkdirAll(targetDir, 0755); err != nil {
+		return fmt.Errorf("creating directory '%s': %w", targetDir, err)
 	}
 
 	// Write to file
