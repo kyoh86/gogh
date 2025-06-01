@@ -40,9 +40,11 @@ func NewOverlayService(fsys wfs.WFS) (*OverlayService, error) {
 // Base64 encoded results will not contain this string
 const separator = "/"
 
+var encoding = base64.URLEncoding.WithPadding('.')
+
 // encodeFileName safely encodes a pattern and path into a valid filename
 func encodeFileName(pattern, relativePath string) string {
-	patternEncoded := base64.URLEncoding.EncodeToString([]byte(pattern))
+	patternEncoded := encoding.EncodeToString([]byte(pattern))
 
 	return patternEncoded + separator + relativePath
 }
@@ -54,7 +56,7 @@ func decodeFileName(encodedName string) (pattern, relativePath string, err error
 		return "", "", fmt.Errorf("invalid encoded filename format")
 	}
 
-	patternBytes, err := base64.URLEncoding.DecodeString(parts[0])
+	patternBytes, err := encoding.DecodeString(parts[0])
 	if err != nil {
 		return "", "", fmt.Errorf("decoding pattern: %w", err)
 	}

@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) *cobra.Command {
+func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		pattern string
 		force   bool
@@ -87,7 +87,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) *cobra
 					var confirm bool
 					if err := huh.NewForm(huh.NewGroup(
 						huh.NewConfirm().
-							Title(fmt.Sprintf("Are you sure you extract a file %s?", result.FilePath)).
+							Title(fmt.Sprintf("Are you sure you extract this file?\n%q", result.FilePath)).
 							Value(&confirm),
 					)).Run(); err != nil {
 						return err
@@ -97,7 +97,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) *cobra
 					}
 				}
 
-				if err := overlayAddUseCase.Execute(ctx, patternToUse, result.FilePath, result.Content); err != nil {
+				if err := overlayAddUseCase.Execute(ctx, result.FilePath, patternToUse, result.Content); err != nil {
 					return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
 				}
 				fmt.Printf("Registered %s as overlay\n", result.FilePath)
@@ -109,5 +109,5 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) *cobra
 
 	cmd.Flags().StringVarP(&f.pattern, "pattern", "", "", "Custom pattern for overlay (default: repository reference)")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to delete.")
-	return cmd
+	return cmd, nil
 }
