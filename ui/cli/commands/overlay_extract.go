@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/apex/log"
@@ -91,6 +92,9 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 						return nil
 					},
 				); err != nil {
+					if errors.Is(err, view.ErrQuit) {
+						return nil
+					}
 					return err
 				}
 

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/apex/log"
@@ -75,6 +76,9 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 					return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
 				},
 			); err != nil {
+				if errors.Is(err, view.ErrQuit) {
+					return nil
+				}
 				return err
 			}
 

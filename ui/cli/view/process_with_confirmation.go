@@ -27,36 +27,32 @@ func ProcessWithConfirmation[T any](ctx context.Context, seq iter.Seq2[T, error]
 		}
 		var selected string
 		if err := huh.NewForm(huh.NewGroup(
-			huh.NewSelect[string]().
-				Title(title(entry)).
-				Options(huh.Option[string]{
-					Key:   "y",
-					Value: "Yes",
-				}, huh.Option[string]{
-					Key:   "n",
-					Value: "No",
-				}, huh.Option[string]{
-					Key:   "q",
-					Value: "Quit",
-				}, huh.Option[string]{
-					Key:   "a",
-					Value: "All",
+			huh.NewInput().
+				CharLimit(1).
+				Inline(true).
+				Title(title(entry) + " ").
+				Validate(func(s string) error {
+					if s == "y" || s == "n" || s == "q" || s == "a" {
+						return nil
+					}
+					return errors.New("invalid selection")
 				}).
+				Prompt("(y/n/q/a): ").
 				Value(&selected),
 		)).Run(); err != nil {
 			return err
 		}
 		switch selected {
-		case "All", "a":
+		case "a":
 			all = true
 			fallthrough
-		case "Yes", "y":
+		case "y":
 			if err := process(entry); err != nil {
 				return err
 			}
-		case "No", "n":
+		case "n":
 			logger.Info("Skipped")
-		case "Quit", "q":
+		case "q":
 			logger.Info("Quit")
 			return ErrQuit
 		}

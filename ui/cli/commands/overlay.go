@@ -37,11 +37,12 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			}
 
 			for _, entry := range entries {
-				fmt.Printf("Pattern: %s\n", entry.Pattern)
+				fmt.Printf("- ")
+				fmt.Printf("Repository pattern: %s\n", entry.Pattern)
 				if entry.ForInit {
-					fmt.Printf("For Init: Yes\n")
+					fmt.Printf("  For Init: Yes\n")
 				}
-				fmt.Printf("Path: %s\n", entry.RelativePath)
+				fmt.Printf("  Overlay path: %s\n", entry.RelativePath)
 			}
 
 			return nil

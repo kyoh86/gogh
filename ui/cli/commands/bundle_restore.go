@@ -3,6 +3,7 @@ package commands
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -83,6 +84,9 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 					return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
 				},
 			); err != nil {
+				if errors.Is(err, view.ErrQuit) {
+					return nil
+				}
 				return err
 			}
 			logger.Infof("Applied overlay for %s", ref)
