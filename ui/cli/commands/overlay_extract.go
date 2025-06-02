@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/overlay_add"
 	"github.com/kyoh86/gogh/v4/app/overlay_extract"
@@ -15,6 +16,7 @@ import (
 func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		pattern string
+		forInit bool
 		force   bool
 	}
 
@@ -51,6 +53,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		Short: "Extract untracked files as overlays",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
+			logger := log.FromContext(ctx)
 			refs, err := checkFlags(ctx, args)
 			if err != nil {
 				return err
@@ -71,6 +74,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 
 			// Extract untracked files
 			for _, ref := range refs {
+				logger.Infof("Extracting files from %q", ref)
 				for result, err := range overlayExtractUseCase.Execute(ctx, ref, overlay_extract.Options{
 					Pattern: f.pattern,
 				}) {
@@ -97,10 +101,10 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 						}
 					}
 
-					if err := overlayAddUseCase.Execute(ctx, false, result.FilePath, patternToUse, result.Content); err != nil {
+					if err := overlayAddUseCase.Execute(ctx, f.forInit, result.FilePath, patternToUse, result.Content); err != nil {
 						return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
 					}
-					fmt.Printf("Registered %s as overlay\n", result.FilePath)
+					logger.Infof("Registered %q from %q as overlay\n", result.FilePath, ref)
 				}
 			}
 			return nil
@@ -109,5 +113,6 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 
 	cmd.Flags().StringVarP(&f.pattern, "pattern", "", "", "Custom pattern for overlay (default: repository reference)")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to delete.")
+	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register overlay for `gogh create` command")
 	return cmd, nil
 }
