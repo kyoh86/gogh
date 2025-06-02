@@ -19,40 +19,40 @@ import (
 func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	reposUseCase := repos.NewUseCase(svc.HostingService)
 
-	checkFlags := func(ctx context.Context, args []string) (string, error) {
+	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
-			return args[0], nil
+			return args, nil
 		}
 		var opts []huh.Option[string]
 		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
-				return "", fmt.Errorf("listing up repositories: %w", err)
+				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}
 			opts = append(opts, huh.Option[string]{
 				Key:   repo.Ref.String(),
 				Value: repo.Ref.String(),
 			})
 		}
-		var selected string
+		var selected []string
 		if err := huh.NewForm(huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("A repository to delete").
+			huh.NewMultiSelect[string]().
+				Title("Repositories to apply overlays").
 				Options(opts...).
 				Value(&selected),
 		)).Run(); err != nil {
-			return "", err
+			return nil, err
 		}
 		return selected, nil
 	}
 
 	cmd := &cobra.Command{
-		Use:   "apply [[<owner>/]<name>]",
+		Use:   "apply [[<owner>/]<name>...]",
 		Short: "Target overlays to a repository",
-		Args:  cobra.RangeArgs(0, 1),
-		RunE: func(cmd *cobra.Command, refs []string) error {
+		Args:  cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
-			selected, err := checkFlags(ctx, refs)
+			refs, err := checkFlags(ctx, args)
 			if err != nil {
 				return err
 			}
@@ -64,25 +64,27 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				svc.OverlayService,
 			)
 			overlayApplyUseCase := overlay_apply.NewUseCase()
-			if err := view.ProcessWithConfirmation(
-				ctx,
-				typ.Filter2(overlayFindUseCase.Execute(ctx, selected), func(overlay *overlay_find.Overlay) bool {
-					return !overlay.ForInit
-				}),
-				func(overlay *overlay_find.Overlay) string {
-					return fmt.Sprintf("Apply overlay for %s (%s)", selected, overlay.RelativePath)
-				},
-				func(overlay *overlay_find.Overlay) error {
-					return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
-				},
-			); err != nil {
-				if errors.Is(err, view.ErrQuit) {
-					return nil
+			for _, ref := range refs {
+				if err := view.ProcessWithConfirmation(
+					ctx,
+					typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(overlay *overlay_find.Overlay) bool {
+						return !overlay.ForInit
+					}),
+					func(overlay *overlay_find.Overlay) string {
+						return fmt.Sprintf("Apply overlay for %s (%s)", ref, overlay.RelativePath)
+					},
+					func(overlay *overlay_find.Overlay) error {
+						return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
+					},
+				); err != nil {
+					if errors.Is(err, view.ErrQuit) {
+						return nil
+					}
+					return err
 				}
-				return err
-			}
 
-			logger.Infof("Applied overlay for %s", selected)
+				logger.Infof("Applied overlay for %s", ref)
+			}
 			return nil
 		},
 	}
