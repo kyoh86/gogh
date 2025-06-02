@@ -3,7 +3,7 @@
 Delete local and remote repository
 
 ```
-gogh delete [flags] [[OWNER/]NAME]
+gogh delete [flags] [[<owner>/]<name>]
 ```
 
 ### Options

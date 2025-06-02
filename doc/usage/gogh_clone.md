@@ -3,7 +3,7 @@
 Clone remote repositories to local
 
 ```
-gogh clone [flags] [[OWNER/]NAME[=ALIAS]]...
+gogh clone [flags] [[<owner>/]<name>[=<alias>]...]
 ```
 
 ### Examples
@@ -29,9 +29,9 @@ gogh clone [flags] [[OWNER/]NAME[=ALIAS]]...
 ### Options
 
 ```
-      --dryrun[=false]     Displays the operations that would be performed using the specified command without actually running them
-  -h, --help               help for clone
-  -t, --timeout duration   Timeout for the request (default 5s)
+  -t, --clone-retry-timeout duration   Timeout for the request (default 5m0s)
+      --dryrun[=false]                 Displays the operations that would be performed using the specified command without actually running them
+  -h, --help                           help for clone
 ```
 
 ### SEE ALSO

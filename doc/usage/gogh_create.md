@@ -3,7 +3,7 @@
 Create a new local and remote repository
 
 ```
-gogh create [flags] [[OWNER/]NAME[=ALIAS]]
+gogh create [flags] [[<owner>/]<name>[=<alias>]]
 ```
 
 ### Options
@@ -11,6 +11,7 @@ gogh create [flags] [[OWNER/]NAME[=ALIAS]]
 ```
       --auto-init[=false]                Create an initial commit with empty README
       --clone-retry-limit int            The number of retries to clone a repository (default 3)
+  -t, --clone-retry-timeout duration     Timeout for each clone attempt (default 5m0s)
       --delete-branch-on-merge[=false]   Allow automatically deleting head branches when pull requests are merged
       --description string               A short description of the repository
       --disable-downloads[=false]        Disable "Downloads" page
@@ -29,7 +30,6 @@ gogh create [flags] [[OWNER/]NAME[=ALIAS]]
       --prevent-squash-merge[=false]     Prevent squash-merging pull requests
       --private[=false]                  Whether the repository is private
       --template string                  Create new repository from the template
-  -t, --timeout duration                 Timeout for the request (default 5s)
 ```
 
 ### SEE ALSO

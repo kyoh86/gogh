@@ -3,7 +3,7 @@
 Remove a directory from the roots
 
 ```
-gogh roots remove [flags]
+gogh roots remove [<directory>] [flags]
 ```
 
 ### Options

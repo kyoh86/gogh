@@ -3,7 +3,7 @@
 Set a directory as the primary in the roots
 
 ```
-gogh roots set-primary [flags]
+gogh roots set-primary [<directory>] [flags]
 ```
 
 ### Options

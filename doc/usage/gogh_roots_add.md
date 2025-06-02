@@ -1,9 +1,9 @@
 ## gogh roots add
 
-Add directories into the roots
+Add a directory into the roots
 
 ```
-gogh roots add [flags]
+gogh roots add <directory> [flags]
 ```
 
 ### Options

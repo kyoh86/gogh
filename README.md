@@ -41,6 +41,8 @@ You can also do:
 - Clone a repository (`gogh clone`).
 - Delete a repository (`gogh delete`).
 - List remote repositories (`gogh repos`).
+- Show the current working directory's repository (`gogh cwd`).
+- Manage overlay files (`gogh overlay`).
 
 See [#Available commands](#available-commands) for more information.
 
@@ -97,12 +99,12 @@ See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 
 ### Configurations
 
-| Command   | Description                  |
-| --        | --                           |
-| `auth`    | Manage tokens                |
-| `config`  | Show / Change configurations |
-| `migrate` | Migrate configurations       |
-| `roots`   | Manage roots                 |
+| Command   | Description                      |
+| --        | --                               |
+| `auth`    | Manage tokens                    |
+| `config`  | Show / Change configurations     |
+| `overlay` | Migrate repository overlay files |
+| `roots`   | Manage roots                     |
 
 ### Others
 
@@ -133,6 +135,9 @@ Or see the manual in [doc/usage/gogh.md](./doc/usage/gogh.md).
 - `GOGH_TOKENS_PATH`
     - The path for the tokens.
     - Default: `${XDG_CACHE_HOME}/gogh/tokens.v4.toml`
+- `GOGH_OVERLAY_PATH`
+    - The path to store overlay files.
+    - Default: `${XDG_CONFIG_HOME}/gogh/overlay/`
 - `GOGH_WORKSPACE_PATH`
     - The path for the workspaces.
     - Default: `${XDG_CONFIG_HOME}/gogh/workspace.v4.toml`

@@ -20,6 +20,7 @@ GO GitHub local repository manager
 * [gogh delete](gogh_delete.md)	 - Delete local and remote repository
 * [gogh fork](gogh_fork.md)	 - Fork a repository
 * [gogh list](gogh_list.md)	 - List local repositories
+* [gogh overlay](gogh_overlay.md)	 - Manage repository overlay files
 * [gogh repos](gogh_repos.md)	 - List remote repositories
 * [gogh roots](gogh_roots.md)	 - Manage roots
 
