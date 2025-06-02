@@ -75,27 +75,26 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.
 		}
 
 		if len(untrackedFiles) == 0 {
-			yield(nil, nil) // No untracked files
 			return
 		}
 
 		// Read file contents
 		for _, file := range untrackedFiles {
-			func() {
+			if cont := func() bool {
 				content, err := os.Open(filepath.Join(repo.FullPath(), file))
 				if err != nil {
 					yield(nil, fmt.Errorf("failed to open file %s: %w", file, err))
-					return
+					return false
 				}
 				defer content.Close()
-				if !yield(&ExtractResult{
+				return yield(&ExtractResult{
 					Reference: *ref,
 					FilePath:  file,
 					Content:   content,
-				}, nil) {
-					return // Stop if the yield function returns false
-				}
-			}()
+				}, nil)
+			}(); !cont {
+				return // Stop if the yield function returns false
+			}
 		}
 	}
 }
