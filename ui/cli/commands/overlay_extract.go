@@ -10,6 +10,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/overlay_extract"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 )
 
@@ -58,8 +59,6 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 			if err != nil {
 				return err
 			}
-			patternToUse := f.pattern
-
 			overlayExtractUseCase := overlay_extract.NewUseCase(
 				svc.GitService,
 				svc.OverlayService,
@@ -67,45 +66,34 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 				svc.FinderService,
 				svc.ReferenceParser,
 			)
-
 			overlayAddUseCase := overlay_add.NewUseCase(
 				svc.OverlayService,
 			)
-
 			// Extract untracked files
 			for _, ref := range refs {
 				logger.Infof("Extracting files from %q", ref)
-				for result, err := range overlayExtractUseCase.Execute(ctx, ref, overlay_extract.Options{
+				if err := view.ProcessWithConfirmation(ctx, overlayExtractUseCase.Execute(ctx, ref, overlay_extract.Options{
 					Pattern: f.pattern,
-				}) {
-					if err != nil {
-						return err
-					}
-
-					// Determine pattern to use
-					if patternToUse == "" {
-						patternToUse = result.Reference.String()
-					}
-
-					if !f.force {
-						var confirm bool
-						if err := huh.NewForm(huh.NewGroup(
-							huh.NewConfirm().
-								Title(fmt.Sprintf("Are you sure you extract this file?\n%q", result.FilePath)).
-								Value(&confirm),
-						)).Run(); err != nil {
-							return err
+				}),
+					func(result *overlay_extract.ExtractResult) string {
+						return fmt.Sprintf("Extract %q from %q", result.FilePath, ref)
+					},
+					func(result *overlay_extract.ExtractResult) error {
+						pattern := f.pattern
+						// Determine pattern to use
+						if pattern == "" {
+							pattern = result.Reference.String()
 						}
-						if !confirm {
-							continue
+						if err := overlayAddUseCase.Execute(ctx, f.forInit, result.FilePath, pattern, result.Content); err != nil {
+							return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
 						}
-					}
-
-					if err := overlayAddUseCase.Execute(ctx, f.forInit, result.FilePath, patternToUse, result.Content); err != nil {
-						return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
-					}
-					logger.Infof("Registered %q from %q as overlay\n", result.FilePath, ref)
+						logger.Infof("Registered %q from %q as overlay\n", result.FilePath, ref)
+						return nil
+					},
+				); err != nil {
+					return err
 				}
+
 			}
 			return nil
 		},

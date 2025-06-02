@@ -2,11 +2,14 @@ package view
 
 import (
 	"context"
+	"errors"
 	"iter"
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 )
+
+var ErrQuit = errors.New("quit the process")
 
 // ProcessWithConfirmation processes each entry in the sequence with a confirmation prompt.
 func ProcessWithConfirmation[T any](ctx context.Context, seq iter.Seq2[T, error], title func(T) string, process func(entry T) error) error {
@@ -55,7 +58,7 @@ func ProcessWithConfirmation[T any](ctx context.Context, seq iter.Seq2[T, error]
 			logger.Info("Skipped")
 		case "Quit", "q":
 			logger.Info("Quit")
-			return nil
+			return ErrQuit
 		}
 	}
 	return nil
