@@ -116,15 +116,15 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			svc.ReferenceParser,
 			svc.OverlayService,
 		)
-		overlayApplyUseCase := overlay_apply.NewUseCase()
+		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
 		if err := view.ProcessWithConfirmation(
 			ctx,
 			overlayFindUseCase.Execute(ctx, refWithAlias),
-			func(overlay *overlay_find.Overlay) string {
-				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, overlay.RelativePath)
+			func(entry *overlay_find.OverlayEntry) string {
+				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, entry.RelativePath)
 			},
-			func(overlay *overlay_find.Overlay) error {
-				return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
+			func(entry *overlay_find.OverlayEntry) error {
+				return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.Pattern, entry.ForInit, entry.RelativePath)
 			},
 		); err != nil {
 			if errors.Is(err, view.ErrQuit) {

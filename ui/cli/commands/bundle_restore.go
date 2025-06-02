@@ -67,21 +67,21 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			svc.ReferenceParser,
 			svc.OverlayService,
 		)
-		overlayApplyUseCase := overlay_apply.NewUseCase()
+		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
 		for _, ref := range refs {
 			if f.Dryrun {
 				fmt.Printf("Apply overlay for %q\n", ref)
 			}
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(overlay *overlay_find.Overlay) bool {
-					return !overlay.ForInit
+				typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) bool {
+					return !entry.ForInit
 				}),
-				func(overlay *overlay_find.Overlay) string {
-					return fmt.Sprintf("Apply overlay for %s (%s)", ref, overlay.RelativePath)
+				func(entry *overlay_find.OverlayEntry) string {
+					return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)
 				},
-				func(overlay *overlay_find.Overlay) error {
-					return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
+				func(entry *overlay_find.OverlayEntry) error {
+					return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.Pattern, entry.ForInit, entry.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {

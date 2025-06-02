@@ -1,7 +1,6 @@
 package filesystem_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -344,20 +343,25 @@ func TestFindOverlays(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test FindOverlays
-			var overlays []*workspace.Overlay
+			var overlays []*workspace.OverlayEntry
 			for o, err := range service.FindOverlays(ctx, tc.ref) {
 				if err != nil {
 					t.Fatalf("FindOverlays error: %v", err)
 				}
-				if o != nil {
-					// Read content
-					content, err := io.ReadAll(o.Content)
+				if o == nil {
+					continue
+				}
+				func() {
+					content, err := service.OpenOverlay(ctx, *o)
 					if err != nil {
+						t.Fatalf("OpenOverlay failed for %s: %v", o.RelativePath, err)
+					}
+					// Read content
+					if _, err := io.ReadAll(content); err != nil {
 						t.Fatalf("Failed to read overlay content: %v", err)
 					}
-					o.Content = io.NopCloser(bytes.NewReader(content))
 					overlays = append(overlays, o)
-				}
+				}()
 			}
 
 			if len(overlays) != tc.expectedCount {
@@ -378,68 +382,6 @@ func TestFindOverlays(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-// TestFindOverlaysErrors tests error handling in FindOverlays
-func TestFindOverlaysErrors(t *testing.T) {
-	// Create a mock filesystem
-	mockWFS := wfs_mock.NewMockWFS()
-
-	service, err := testtarget.NewOverlayService(mockWFS)
-	if err != nil {
-		t.Fatalf("NewOverlayService failed: %v", err)
-	}
-
-	ctx := context.Background()
-
-	// Add a valid overlay
-	validEntry := workspace.OverlayEntry{
-		Pattern:      "github.com/user/repo",
-		ForInit:      false,
-		RelativePath: "file.txt",
-	}
-	encodedName := testtarget.EncodeFileName(validEntry)
-	err = mockWFS.WriteFile(encodedName, []byte("content"), 0644)
-	if err != nil {
-		t.Fatalf("Failed to set up mock file: %v", err)
-	}
-
-	// Test ListOverlays error
-	mockWFS.SetError("ReadDir", "", fs.ErrPermission)
-
-	repoRef := repository.NewReference("github.com", "user", "repo")
-
-	var foundOverlay bool
-	for _, err := range service.FindOverlays(ctx, repoRef) {
-		if err == nil {
-			foundOverlay = true
-			break
-		}
-	}
-
-	if foundOverlay {
-		t.Errorf("expected error during FindOverlays due to ReadDir error, but found overlay")
-	}
-
-	// Clear ReadDir error and set Open error
-	mockWFS.SetError("ReadDir", "", nil)
-	mockWFS.SetError("Open", encodedName, fs.ErrPermission)
-
-	// Test Open error
-	foundError := false
-	for _, err := range service.FindOverlays(ctx, repoRef) {
-		if err != nil {
-			foundError = true
-			if !strings.Contains(err.Error(), "opening overlay file") {
-				t.Errorf("unexpected error message: %v", err)
-			}
-			break
-		}
-	}
-
-	if !foundError {
-		t.Errorf("expected Open error but got none")
 	}
 }
 

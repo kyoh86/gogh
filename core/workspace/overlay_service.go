@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"iter"
 
@@ -24,20 +25,18 @@ type OverlayEntry struct {
 	RelativePath string
 }
 
-// Overlay represents the content of an overlay file
-type Overlay struct {
-	// Content of the overlay file
-	Content io.Reader
-	// ForInit indicates whether the overlay is for initialization only
-	ForInit bool
-	// RelativePath is the path relative to the repository root where the file should be placed
-	RelativePath string
+func (e OverlayEntry) String() string {
+	if e.ForInit {
+		return fmt.Sprintf("Init(%s): %s", e.Pattern, e.RelativePath)
+	} else {
+		return fmt.Sprintf("Overlay(%s): %s", e.Pattern, e.RelativePath)
+	}
 }
 
 // OverlayService provides functionality to add files to repositories after they are cloned
 type OverlayService interface {
 	// FindOverlays finds all overlay entries that match the given repository reference
-	FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*Overlay, error]
+	FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*OverlayEntry, error]
 
 	// ListOverlays returns all registered overlay entries
 	ListOverlays(ctx context.Context) ([]OverlayEntry, error)
@@ -47,4 +46,7 @@ type OverlayService interface {
 
 	// RemoveOverlay removes an overlay file
 	RemoveOverlay(ctx context.Context, entry OverlayEntry) error
+
+	// OpenOverlay opens an overlay file for reading
+	OpenOverlay(ctx context.Context, entry OverlayEntry) (io.ReadCloser, error)
 }

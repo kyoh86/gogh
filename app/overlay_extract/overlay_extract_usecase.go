@@ -3,9 +3,7 @@ package overlay_extract
 import (
 	"context"
 	"fmt"
-	"io"
 	"iter"
-	"os"
 	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/git"
@@ -46,9 +44,9 @@ type Options struct {
 
 // ExtractResult represents a single untracked file that can be extracted
 type ExtractResult struct {
-	Reference repository.Reference // Reference to the repository
-	FilePath  string
-	Content   io.Reader
+	Reference    repository.Reference // Reference to the repository
+	RelativePath string
+	FilePath     string // Path of the untracked file
 }
 
 // Extract finds untracked files in the repository and returns them
@@ -74,26 +72,14 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.
 			return
 		}
 
-		if len(untrackedFiles) == 0 {
-			return
-		}
-
 		// Read file contents
 		for _, file := range untrackedFiles {
-			if cont := func() bool {
-				content, err := os.Open(filepath.Join(repo.FullPath(), file))
-				if err != nil {
-					yield(nil, fmt.Errorf("failed to open file %s: %w", file, err))
-					return false
-				}
-				defer content.Close()
-				return yield(&ExtractResult{
-					Reference: *ref,
-					FilePath:  file,
-					Content:   content,
-				}, nil)
-			}(); !cont {
-				return // Stop if the yield function returns false
+			if !yield(&ExtractResult{
+				Reference:    *ref,
+				RelativePath: file,
+				FilePath:     filepath.Join(repo.FullPath(), file),
+			}, nil) {
+				return
 			}
 		}
 	}

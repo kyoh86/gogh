@@ -80,8 +80,8 @@ func DecodeFileName(encodedName string) (*workspace.OverlayEntry, error) {
 }
 
 // FindOverlays implements workspace.OverlayService
-func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.Overlay, error] {
-	return func(yield func(*workspace.Overlay, error) bool) {
+func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.OverlayEntry, error] {
+	return func(yield func(*workspace.OverlayEntry, error) bool) {
 		// Convert repository reference to a string for pattern matching
 		repoString := ref.String()
 		entries, err := s.ListOverlays(ctx)
@@ -99,25 +99,27 @@ func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Refere
 			if !match {
 				continue
 			}
-
-			// Get the content and yield it
-			func() {
-				file, err := s.fsys.Open(EncodeFileName(entry))
-				if err != nil {
-					yield(nil, fmt.Errorf("opening overlay file '%s': %w", entry.RelativePath, err))
-					return
-				}
-				defer file.Close()
-				if !yield(&workspace.Overlay{
-					Content:      io.NopCloser(file),
-					ForInit:      entry.ForInit,
-					RelativePath: entry.RelativePath,
-				}, nil) {
-					return // Stop
-				}
-			}()
+			e := entry
+			if !yield(&e, nil) {
+				return
+			}
 		}
 	}
+}
+
+// OpenOverlay implements workspace.OverlayService
+func (s *OverlayService) OpenOverlay(ctx context.Context, entry workspace.OverlayEntry) (io.ReadCloser, error) {
+	contentPath := EncodeFileName(entry)
+
+	file, err := s.fsys.Open(contentPath)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("overlay not found: pattern=%s, path=%s", entry.Pattern, entry.RelativePath)
+		}
+		return nil, fmt.Errorf("opening overlay file: %w", err)
+	}
+
+	return file, nil
 }
 
 // ListOverlays implements workspace.OverlayService

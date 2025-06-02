@@ -17,7 +17,9 @@ func NewUseCase(overlayService workspace.OverlayService) *UseCase {
 	}
 }
 
+type OverlayEntry = workspace.OverlayEntry
+
 // Execute lists all overlay patterns and their files
-func (uc *UseCase) Execute(ctx context.Context) ([]workspace.OverlayEntry, error) {
+func (uc *UseCase) Execute(ctx context.Context) ([]OverlayEntry, error) {
 	return uc.overlayService.ListOverlays(ctx)
 }

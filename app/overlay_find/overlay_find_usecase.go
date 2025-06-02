@@ -31,13 +31,13 @@ func NewUseCase(
 	}
 }
 
-type Overlay struct {
-	workspace.Overlay
+type OverlayEntry struct {
+	workspace.OverlayEntry
 	Location repository.Location
 }
 
-func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*Overlay, error] {
-	return func(yield func(*Overlay, error) bool) {
+func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*OverlayEntry, error] {
+	return func(yield func(*OverlayEntry, error) bool) {
 		refWithAlias, err := uc.referenceParser.ParseWithAlias(refs)
 		if err != nil {
 			yield(nil, fmt.Errorf("parsing reference '%s': %w", refs, err))
@@ -57,7 +57,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*Overlay,
 			return
 		}
 		for overlay, err := range uc.overlayService.FindOverlays(ctx, ref) {
-			if !yield(&Overlay{Overlay: *overlay, Location: *match}, err) {
+			if !yield(&OverlayEntry{OverlayEntry: *overlay, Location: *match}, err) {
 				return
 			}
 		}

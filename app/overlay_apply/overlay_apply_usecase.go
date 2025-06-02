@@ -6,18 +6,34 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // UseCase represents the create use case
 type UseCase struct {
+	overlayService workspace.OverlayService
 }
 
-func NewUseCase() *UseCase {
-	return &UseCase{}
+func NewUseCase(overlayService workspace.OverlayService) *UseCase {
+	return &UseCase{
+		overlayService: overlayService,
+	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, repoPath string, relativePath string, content io.Reader) error {
+func (uc *UseCase) Execute(ctx context.Context, repoPath string, pattern string, forInit bool, relativePath string) error {
 	targetPath := filepath.Join(repoPath, relativePath)
+
+	// Open the overlay source
+	source, err := uc.overlayService.OpenOverlay(ctx, workspace.OverlayEntry{
+		Pattern:      pattern,
+		ForInit:      forInit,
+		RelativePath: relativePath,
+	})
+	if err != nil {
+		return fmt.Errorf("opening overlay for pattern '%s': %w", pattern, err)
+	}
+	defer source.Close()
 
 	// Ensure the directory exists
 	targetDir := filepath.Dir(targetPath)
@@ -25,15 +41,15 @@ func (uc *UseCase) Execute(ctx context.Context, repoPath string, relativePath st
 		return fmt.Errorf("creating directory '%s': %w", targetDir, err)
 	}
 
-	// Read content
-	data, err := io.ReadAll(content)
+	// Open the target file for writing
+	target, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		return fmt.Errorf("reading overlay content: %w", err)
+		return fmt.Errorf("opening target file '%s': %w", targetPath, err)
 	}
+	defer target.Close()
 
-	// Write to target file
-	if err := os.WriteFile(targetPath, data, 0644); err != nil {
-		return fmt.Errorf("writing to file '%s': %w", targetPath, err)
+	if _, err := io.Copy(target, source); err != nil {
+		return fmt.Errorf("copying overlay content to target file '%s': %w", targetPath, err)
 	}
 	return nil
 }

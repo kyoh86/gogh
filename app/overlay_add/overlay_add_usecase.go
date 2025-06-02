@@ -3,7 +3,7 @@ package overlay_add
 import (
 	"context"
 	"fmt"
-	"io"
+	"os"
 
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -19,7 +19,12 @@ func NewUseCase(overlayService workspace.OverlayService) *UseCase {
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath string, pattern string, content io.Reader) error {
+func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath string, pattern string, sourceFile string) error {
+	content, err := os.Open(sourceFile)
+	if err != nil {
+		return fmt.Errorf("opening source file '%s': %w", sourceFile, err)
+	}
+	defer content.Close()
 	if err := uc.overlayService.AddOverlay(ctx, workspace.OverlayEntry{
 		Pattern:      pattern,
 		ForInit:      forInit,

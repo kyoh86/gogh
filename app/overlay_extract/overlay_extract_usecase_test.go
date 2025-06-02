@@ -207,25 +207,24 @@ func TestExecute(t *testing.T) {
 				if entry != nil {
 					count++
 					// Check that the entry has the expected fields
+					if entry.RelativePath == "" {
+						t.Error("Expected RelativePath to be non-empty")
+					}
 					if entry.FilePath == "" {
 						t.Error("Expected FilePath to be non-empty")
 					}
 					if entry.Reference.String() == "" {
 						t.Error("Expected Reference to be non-empty")
 					}
-					if entry.Content == nil {
-						t.Error("Expected Content to be non-nil")
-					}
 
 					// Verify the file content if it's a success case
 					if len(filePaths) > 0 {
 						// Read some content to verify it's valid
-						buf := make([]byte, 10)
-						n, readErr := entry.Content.Read(buf)
+						buf, readErr := os.ReadFile(entry.FilePath)
 						if readErr != nil && readErr.Error() != "EOF" {
 							t.Errorf("Failed to read content: %v", readErr)
 						}
-						if n == 0 && len(filePaths) > 0 {
+						if len(buf) == 0 && len(filePaths) > 0 {
 							t.Error("Expected to read some content but got nothing")
 						}
 					}

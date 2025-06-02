@@ -127,6 +127,7 @@ func NewApp(
 		commands.NewOverlayListCommand,
 		commands.NewOverlayExtractCommand,
 		commands.NewOverlayApplyCommand,
+		commands.NewOverlayShowCommand,
 	)
 	if err != nil {
 		return nil, err

@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/apex/log"
@@ -71,14 +70,8 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return fmt.Errorf("target path must be relative, got absolute path: %s", targetPath)
 			}
 
-			source, err := os.Open(sourcePath)
-			if err != nil {
-				return fmt.Errorf("opening source file %s: %w", sourcePath, err)
-			}
-			defer source.Close()
-
 			useCase := overlay_add.NewUseCase(svc.OverlayService)
-			if err := useCase.Execute(ctx, f.forInit, f.pattern, targetPath, source); err != nil {
+			if err := useCase.Execute(ctx, f.forInit, f.pattern, targetPath, sourcePath); err != nil {
 				return err
 			}
 
