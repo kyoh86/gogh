@@ -51,8 +51,9 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 	}
 
 	cmd := &cobra.Command{
-		Use:   "extract [repo-ref]",
+		Use:   "extract [[<owner>/]<name>...]",
 		Short: "Extract untracked files as overlays",
+		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)

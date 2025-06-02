@@ -20,6 +20,7 @@ func NewConfigShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	return &cobra.Command{
 		Use:   "show",
 		Short: "Show configurations",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			t, err := template.New("gogh context").Parse(configTemplate)
 			if err != nil {

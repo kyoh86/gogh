@@ -25,7 +25,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 	useCase := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.DefaultNameService, svc.ReferenceParser, svc.GitService)
 
 	cmd := &cobra.Command{
-		Use:   "fork [flags] OWNER/NAME",
+		Use:   "fork [flags] <owner>/<name>",
 		Short: "Fork a repository",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, refs []string) error {

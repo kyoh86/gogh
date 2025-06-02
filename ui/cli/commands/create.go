@@ -45,7 +45,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		var name string
 		if err := huh.NewForm(huh.NewGroup(
 			huh.NewInput().
-				Title("A ref of repository name to create [OWNER/]NAME[=ALIAS]").
+				Title("A ref of repository name to create [<owner>/]<name>[=<alias>]").
 				Validate(func(s string) error {
 					// Never do
 					_, err := svc.ReferenceParser.Parse(s)
@@ -138,7 +138,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	}
 
 	cmd := &cobra.Command{
-		Use:     "create [flags] [[OWNER/]NAME[=ALIAS]]",
+		Use:     "create [flags] [[<owner>/]<name>[=<alias>]]",
 		Aliases: []string{"new"},
 		Short:   "Create a new local and remote repository",
 		Args:    cobra.RangeArgs(0, 1),

@@ -26,6 +26,7 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
+		Args:    cobra.NoArgs,
 		Short:   "List overlays",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -57,7 +58,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		forInit bool
 	}
 	cmd := &cobra.Command{
-		Use:   "add [options] <source-path> <target-path>",
+		Use:   "add <source-path> <target-path>",
 		Short: "Add an overlay file",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {

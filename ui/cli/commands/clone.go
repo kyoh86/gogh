@@ -110,8 +110,9 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	cmd := &cobra.Command{
-		Use:     "clone [flags] [[OWNER/]NAME[=ALIAS]]...",
+		Use:     "clone [flags] [[<owner>/]<name>[=<alias>]...]",
 		Aliases: []string{"get"},
+		Args:    cobra.ArbitraryArgs,
 		Short:   "Clone remote repositories to local",
 		Example: `  It accepts a short notation for a remote repository
   (for example, "github.com/kyoh86/example") like below.
