@@ -27,7 +27,7 @@ jobs:
           sha: ${{ github.sha }}
           status: releasable
           token: ${{ github.token }}
-          check-retry-count: 5
+          check-retry-count: 20
           check-retry-interval: 20
       - name: Checkout Sources
         uses: actions/checkout@v4
