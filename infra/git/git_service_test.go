@@ -418,6 +418,110 @@ func TestErrorHandling(t *testing.T) {
 	}
 }
 
+func TestListUntrackedFiles(t *testing.T) {
+	// Create a temporary directory for the test
+	tempDir, err := os.MkdirTemp("", "git-service-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Set up a mock for git.PlainOpen and git.Worktree
+	orgPlainOpen := git.PlainOpen
+	orgWorktree := git.Worktree
+	defer func() {
+		git.PlainOpen = orgPlainOpen
+		git.Worktree = orgWorktree
+	}()
+
+	testCases := []struct {
+		name             string
+		setupMock        func()
+		expectedFiles    []string
+		expectedErrMsg   string
+	}{
+		{
+			name: "returns untracked files successfully",
+			setupMock: func() {
+				// Mock repository
+				mockRepo := &git.Repository{}
+				
+				// Mock worktree
+				mockWorktree := &git.Worktree{}
+				
+				// Set up status for untracked files
+				mockStatus := git.Status{
+					"file1.txt":  &git.FileStatus{Worktree: '?'},
+					"file2.txt":  &git.FileStatus{Worktree: '?'},
+					"staged.txt": &git.FileStatus{Worktree: 'A'},
+					"modified.txt": &git.FileStatus{Worktree: 'M'},
+				}
+				
+				git.PlainOpen = func(path string) (*git.Repository, error) {
+					return mockRepo, nil
+				}
+				
+				git.Worktree = func(r *git.Repository) (*git.Worktree, error) {
+					return mockWorktree, nil
+				}
+				
+				// Mock Status method
+				mockWorktree.StatusFunc = func() (git.Status, error) {
+					return mockStatus, nil
+				}
+			},
+			expectedFiles: []string{"file1.txt", "file2.txt"},
+		},
+		{
+			name: "returns error when repository cannot be opened",
+			setupMock: func() {
+				git.PlainOpen = func(path string) (*git.Repository, error) {
+					return nil, fs.ErrNotExist
+				}
+			},
+			expectedErrMsg: fs.ErrNotExist.Error(),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup mock
+			tc.setupMock()
+
+			// Create service and call the method
+			service := testtarget.NewGitService()
+			files, err := service.ListUntrackedFiles(context.Background(), tempDir)
+
+			// Verify results
+			if tc.expectedErrMsg != "" {
+				if err == nil || err.Error() != tc.expectedErrMsg {
+					t.Errorf("expected error %q, got %v", tc.expectedErrMsg, err)
+				}
+			} else if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			} else {
+				if len(files) != len(tc.expectedFiles) {
+					t.Errorf("expected %d files, got %d", len(tc.expectedFiles), len(files))
+				}
+				
+				// Check if all expected files are present
+				for _, expectedFile := range tc.expectedFiles {
+					found := false
+					for _, file := range files {
+						if file == expectedFile {
+							found = true
+							break
+						}
+					}
+					if !found {
+						t.Errorf("expected file %q not found in result", expectedFile)
+					}
+				}
+			}
+		})
+	}
+}
+
 // TestAuthentication tests that authentication is properly used during clone
 func TestAuthentication(t *testing.T) {
 	// This is a more theoretical test, as we can't easily test actual authentication
