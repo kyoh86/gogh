@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/pelletier/go-toml/v2"
@@ -11,6 +12,11 @@ import (
 
 // FlagsStore is a store for flags.
 type FlagsStore struct{}
+
+// NewFlagsStore creates a new FlagsStore.
+func NewFlagsStore() *FlagsStore {
+	return &FlagsStore{}
+}
 
 // Load implements store.Loader
 func (s *FlagsStore) Load(ctx context.Context, initial func() *Flags) (*Flags, error) {
@@ -30,9 +36,29 @@ func (s *FlagsStore) Load(ctx context.Context, initial func() *Flags) (*Flags, e
 	return v, nil
 }
 
-// NewFlagsStore creates a new FlagsStore.
-func NewFlagsStore() *FlagsStore {
-	return &FlagsStore{}
+// Save implements repository.FlagsRepository.
+func (d *FlagsStore) Save(ctx context.Context, flags *Flags, force bool) error {
+	if !flags.HasChanges() && !force {
+		return nil
+	}
+	source, err := d.Source()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if err := toml.NewEncoder(file).Encode(flags); err != nil {
+		return err
+	}
+	flags.MarkSaved()
+	return nil
 }
 
 func (s *FlagsStore) Source() (string, error) {
@@ -43,4 +69,4 @@ func (s *FlagsStore) Source() (string, error) {
 	return path, nil
 }
 
-var _ store.Loader[*Flags] = (*FlagsStore)(nil)
+var _ store.Store[*Flags] = (*FlagsStore)(nil)

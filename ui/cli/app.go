@@ -56,6 +56,9 @@ func NewApp(
 			if err := svc.WorkspaceStore.Save(ctx, svc.WorkspaceService, false); err != nil {
 				return fmt.Errorf("saving workspaces: %w", err)
 			}
+			if err := svc.FlagsStore.Save(ctx, svc.Flags, false); err != nil {
+				return fmt.Errorf("saving flags: %w", err)
+			}
 			return nil
 		},
 	}
