@@ -22,8 +22,6 @@ import (
 func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.ForkFlags
 
-	useCase := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.DefaultNameService, svc.ReferenceParser, svc.GitService)
-
 	cmd := &cobra.Command{
 		Use:   "fork [flags] <owner>/<name>",
 		Short: "Fork a repository",
@@ -41,27 +39,26 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 				},
 				Target: f.To,
 			}
-			if err := useCase.Execute(ctx, refs[0], opts); err != nil {
+			if err := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.DefaultNameService, svc.ReferenceParser, svc.GitService).Execute(ctx, refs[0], opts); err != nil {
 				return fmt.Errorf("forking the repository: %w", err)
 			}
 
-			overlayFindUseCase := overlay_find.NewUseCase(
-				svc.WorkspaceService,
-				svc.FinderService,
-				svc.ReferenceParser,
-				svc.OverlayService,
-			)
-			overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
+			useCase := overlay_apply.NewUseCase(svc.OverlayService)
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				typ.Filter2(overlayFindUseCase.Execute(ctx, refs[0]), func(entry *overlay_find.OverlayEntry) bool {
+				typ.Filter2(overlay_find.NewUseCase(
+					svc.WorkspaceService,
+					svc.FinderService,
+					svc.ReferenceParser,
+					svc.OverlayService,
+				).Execute(ctx, refs[0]), func(entry *overlay_find.OverlayEntry) bool {
 					return !entry.ForInit
 				}),
 				func(entry *overlay_find.OverlayEntry) string {
 					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], entry.RelativePath)
 				},
 				func(entry *overlay_find.OverlayEntry) error {
-					return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.Pattern, entry.ForInit, entry.RelativePath)
+					return useCase.Execute(ctx, entry.Location.FullPath(), entry.Pattern, entry.ForInit, entry.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {

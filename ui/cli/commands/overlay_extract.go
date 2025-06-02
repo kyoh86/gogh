@@ -22,14 +22,12 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		force   bool
 	}
 
-	reposUseCase := repos.NewUseCase(svc.HostingService)
-
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
 			return args, nil
 		}
 		var opts []huh.Option[string]
-		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
+		for repo, err := range repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}

@@ -23,8 +23,6 @@ import (
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.CloneFlags
-
-	reposUseCase := repos.NewUseCase(svc.HostingService)
 	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
@@ -32,7 +30,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			return args, nil
 		}
 		var opts []huh.Option[string]
-		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
+		for repo, err := range repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}

@@ -20,8 +20,6 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 		Host string
 	}
 
-	useCase := auth_login.NewUseCase(svc.TokenService, svc.AuthenticateService, svc.HostingService)
-
 	cmd := &cobra.Command{
 		Use:     "login",
 		Aliases: []string{"signin", "add"},
@@ -40,7 +38,7 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 				}
 			}
 
-			if err := useCase.Execute(cmd.Context(), f.Host, func(ctx context.Context, res auth_login.DeviceAuthResponse) error {
+			if err := auth_login.NewUseCase(svc.TokenService, svc.AuthenticateService, svc.HostingService).Execute(cmd.Context(), f.Host, func(ctx context.Context, res auth_login.DeviceAuthResponse) error {
 				if errors.Is(browser.OpenURL(res.VerificationURI), exec.ErrNotFound) {
 					fmt.Fprintf(
 						os.Stderr,

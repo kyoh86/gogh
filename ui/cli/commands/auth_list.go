@@ -11,14 +11,13 @@ import (
 )
 
 func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	useCase := auth_list.NewUseCase(svc.TokenService)
 	return &cobra.Command{
 		Use:   "list",
 		Short: "Listup authenticated host and owners",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := cmd.Context()
-			entries, err := useCase.Execute(ctx)
+			entries, err := auth_list.NewUseCase(svc.TokenService).Execute(ctx)
 			if err != nil {
 				return fmt.Errorf("listing up tokens: %w", err)
 			}

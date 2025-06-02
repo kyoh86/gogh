@@ -21,14 +21,12 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		dryrun bool
 	}
 
-	reposUseCase := repos.NewUseCase(svc.HostingService)
-
 	checkFlags := func(ctx context.Context, args []string) (string, error) {
 		if len(args) != 0 {
 			return args[0], nil
 		}
 		var opts []huh.Option[string]
-		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
+		for repo, err := range repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return "", fmt.Errorf("listing up repositories: %w", err)
 			}
@@ -107,13 +105,12 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if f.dryrun {
 				return nil
 			}
-			useCase := delete.NewUseCase(
+			if err := delete.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.HostingService,
 				svc.ReferenceParser,
-			)
-			if err := useCase.Execute(ctx, selected, delete.Options{
+			).Execute(ctx, selected, delete.Options{
 				Local:  f.local,
 				Remote: f.remote,
 			}); err != nil {

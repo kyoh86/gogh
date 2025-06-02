@@ -15,14 +15,13 @@ import (
 )
 
 func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	listUseCase := auth_list.NewUseCase(svc.TokenService)
 	logoutUseCase := auth_logout.NewUseCase(svc.TokenService)
 
 	checkFlags := func(cmd *cobra.Command, args []string) ([]string, error) {
 		if len(args) > 0 {
 			return args, nil
 		}
-		entries, err := listUseCase.Execute(cmd.Context())
+		entries, err := auth_list.NewUseCase(svc.TokenService).Execute(cmd.Context())
 		if err != nil {
 			return nil, fmt.Errorf("listing up tokens: %w", err)
 		}

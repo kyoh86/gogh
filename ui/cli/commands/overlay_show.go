@@ -22,11 +22,8 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		forInit      bool
 		relativePath string
 	}
-	overlayListUseCase := overlay_list.NewUseCase(
-		svc.OverlayService,
-	)
 	checkFlags := func(ctx context.Context, _ []string) ([]overlay_list.OverlayEntry, error) {
-		list, err := overlayListUseCase.Execute(ctx)
+		list, err := overlay_list.NewUseCase(svc.OverlayService).Execute(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("listing overlays: %w", err)
 		}

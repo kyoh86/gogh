@@ -21,21 +21,6 @@ import (
 )
 
 func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	createUseCase := create.NewUseCase(
-		svc.HostingService,
-		svc.WorkspaceService,
-		svc.OverlayService,
-		svc.ReferenceParser,
-		svc.GitService,
-	)
-	createFromTemplateUseCase := create_from_template.NewUseCase(
-		svc.HostingService,
-		svc.WorkspaceService,
-		svc.OverlayService,
-		svc.ReferenceParser,
-		svc.GitService,
-	)
-
 	var f config.CreateFlags
 
 	checkFlags := func(_ context.Context, args []string) (string, error) {
@@ -83,7 +68,13 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 					DeleteBranchOnMerge: f.DeleteBranchOnMerge,
 				},
 			}
-			if err := createUseCase.Execute(ctx, refWithAlias, ropt); err != nil {
+			if err := create.NewUseCase(
+				svc.HostingService,
+				svc.WorkspaceService,
+				svc.OverlayService,
+				svc.ReferenceParser,
+				svc.GitService,
+			).Execute(ctx, refWithAlias, ropt); err != nil {
 				return fmt.Errorf("creating the repository: %w", err)
 			}
 		} else {
@@ -91,7 +82,13 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err != nil {
 				return fmt.Errorf("invalid template: %w", err)
 			}
-			if err := createFromTemplateUseCase.Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
+			if err := create_from_template.NewUseCase(
+				svc.HostingService,
+				svc.WorkspaceService,
+				svc.OverlayService,
+				svc.ReferenceParser,
+				svc.GitService,
+			).Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
 				TryCloneOptions: try_clone.Options{
 					Timeout: f.CloneRetryTimeout,
 					Notify:  try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
@@ -110,16 +107,15 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			return nil
 		}
 
-		overlayFindUseCase := overlay_find.NewUseCase(
-			svc.WorkspaceService,
-			svc.FinderService,
-			svc.ReferenceParser,
-			svc.OverlayService,
-		)
 		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
 		if err := view.ProcessWithConfirmation(
 			ctx,
-			overlayFindUseCase.Execute(ctx, refWithAlias),
+			overlay_find.NewUseCase(
+				svc.WorkspaceService,
+				svc.FinderService,
+				svc.ReferenceParser,
+				svc.OverlayService,
+			).Execute(ctx, refWithAlias),
 			func(entry *overlay_find.OverlayEntry) string {
 				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, entry.RelativePath)
 			},
