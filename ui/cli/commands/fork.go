@@ -23,9 +23,12 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 	var f config.ForkFlags
 
 	cmd := &cobra.Command{
-		Use:   "fork [flags] <owner>/<name>",
+		Use:   "fork [flags] [<host>/]<owner>/<name>",
 		Short: "Fork a repository",
 		Args:  cobra.ExactArgs(1),
+		Example: `  It accepts a short notation for a repository
+  (for example, "github.com/kyoh86/example") like "<owner>/<name>": e.g. "kyoh86/example"
+  They'll be completed with the default host set by "config set-default-host"`,
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
@@ -77,12 +80,12 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 		svc.Flags.Fork.To,
 		strings.Join([]string{
 			"Fork to the specified repository.",
-			"It accepts a notation like 'OWNER/NAME' or 'OWNER/NAME=ALIAS'.",
+			"It accepts a notation like '<owner>/<name>' or '<owner>/<name>=<alias>'.",
 			"If not specified, it will be forked to the default owner and same name as the original repository.",
-			"If the alias is specified, it will be set as the local repository name.",
+			"If the alias is specified, it will be set as the local repository name",
 		}, " "),
 	)
-	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Fork.CloneRetryLimit, "")
+	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Fork.CloneRetryLimit, "The number of retries to clone a repository")
 	flags.BoolVarP(cmd, &f.DefaultBranchOnly, "default-branch-only", "", svc.Flags.Fork.DefaultBranchOnly, "Only fork the default branch")
 	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Fork.CloneRetryTimeout, "Timeout for each clone attempt")
 	return cmd, nil

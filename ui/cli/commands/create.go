@@ -30,7 +30,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		var name string
 		if err := huh.NewForm(huh.NewGroup(
 			huh.NewInput().
-				Title("A ref of repository name to create [<owner>/]<name>[=<alias>]").
+				Title("A ref of repository name to create [[<host>/]<owner>/]<name>[=<alias>]").
 				Validate(func(s string) error {
 					// Never do
 					_, err := svc.ReferenceParser.Parse(s)
@@ -134,10 +134,24 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	}
 
 	cmd := &cobra.Command{
-		Use:     "create [flags] [[<owner>/]<name>[=<alias>]]",
+		Use:     "create [flags] [[[<host>/]<owner>/]<name>[=<alias>]]",
 		Aliases: []string{"new"},
 		Short:   "Create a new local and remote repository",
 		Args:    cobra.RangeArgs(0, 1),
+		Example: `  It accepts a short notation for a repository
+  (for example, "github.com/kyoh86/example") like below.
+    - "<name>": e.g. "example"; 
+    - "<owner>/<name>": e.g. "kyoh86/example"
+  They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
+
+  It also accepts an alias for each repository.
+	The alias is used for a local repository.
+  For example:
+    - "kyoh86/example=sample"
+    - "kyoh86/example=kyoh86-tryouts/tryout"
+  For each them will be cloned from "github.com/kyoh86/example" into the local as:
+    - "$(gogh root)/github.com/kyoh86/sample"
+    - "$(gogh root)/github.com/kyoh86-tryouts/tryout"`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			ref, err := checkFlags(ctx, args)

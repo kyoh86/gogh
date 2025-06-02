@@ -3,7 +3,26 @@
 Create a new local and remote repository
 
 ```
-gogh create [flags] [[<owner>/]<name>[=<alias>]]
+gogh create [flags] [[[<host>/]<owner>/]<name>[=<alias>]]
+```
+
+### Examples
+
+```
+  It accepts a short notation for a repository
+  (for example, "github.com/kyoh86/example") like below.
+    - "<name>": e.g. "example"; 
+    - "<owner>/<name>": e.g. "kyoh86/example"
+  They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
+
+  It also accepts an alias for each repository.
+	The alias is used for a local repository.
+  For example:
+    - "kyoh86/example=sample"
+    - "kyoh86/example=kyoh86-tryouts/tryout"
+  For each them will be cloned from "github.com/kyoh86/example" into the local as:
+    - "$(gogh root)/github.com/kyoh86/sample"
+    - "$(gogh root)/github.com/kyoh86-tryouts/tryout"
 ```
 
 ### Options
@@ -18,7 +37,7 @@ gogh create [flags] [[<owner>/]<name>[=<alias>]]
       --disable-issues[=false]           Disable issues for the repository
       --disable-projects[=false]         Disable projects for the repository
       --disable-wiki[=false]             Disable Wiki for the repository
-      --dryrun[=false]                   Displays the operations that would be performed using the specified command without actually running them
+      --dry-run[=false]                  Displays the operations that would be performed using the specified command without actually running them
       --gitignore-template string        Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"
   -h, --help                             help for create
       --homepage string                  A URL with more information about the repository

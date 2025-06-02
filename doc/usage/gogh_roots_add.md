@@ -3,7 +3,7 @@
 Add a directory into the roots
 
 ```
-gogh roots add <directory> [flags]
+gogh roots add [flags] <directory>
 ```
 
 ### Options

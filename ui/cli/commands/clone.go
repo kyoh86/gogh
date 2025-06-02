@@ -108,18 +108,18 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	cmd := &cobra.Command{
-		Use:     "clone [flags] [[<owner>/]<name>[=<alias>]...]",
+		Use:     "clone [flags] [[[<host>/]<owner>/]<name>[=<alias>]...]",
 		Aliases: []string{"get"},
 		Args:    cobra.ArbitraryArgs,
 		Short:   "Clone remote repositories to local",
-		Example: `  It accepts a short notation for a remote repository
+		Example: `  It accepts a short notation for a repository
   (for example, "github.com/kyoh86/example") like below.
-    - "NAME": e.g. "example"; 
-    - "OWNER/NAME": e.g. "kyoh86/example"
+    - "<name>": e.g. "example"; 
+    - "<owner>/<name>": e.g. "kyoh86/example"
   They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
 
   It also accepts an alias for each repository.
-	The alias is a local name for the remote repository.
+	The alias is used for a local repository.
   For example:
     - "kyoh86/example=sample"
     - "kyoh86/example=kyoh86-tryouts/tryout"

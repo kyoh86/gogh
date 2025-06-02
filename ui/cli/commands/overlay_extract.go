@@ -49,9 +49,23 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 	}
 
 	cmd := &cobra.Command{
-		Use:   "extract [flags] [[<owner>/]<name>...]",
+		Use:   "extract [flags] [[[<host>/]<owner>/]<name>...]",
 		Short: "Extract untracked files as overlays",
 		Args:  cobra.ArbitraryArgs,
+		Example: `  It accepts a short notation for a repository
+  (for example, "github.com/kyoh86/example") like below.
+    - "<name>": e.g. "example"; 
+    - "<owner>/<name>": e.g. "kyoh86/example"
+  They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
+
+  It also accepts an alias for each repository.
+	The alias is a local name for the remote repository.
+  For example:
+    - "kyoh86/example=sample"
+    - "kyoh86/example=kyoh86-tryouts/tryout"
+  For each them will be cloned from "github.com/kyoh86/example" into the local as:
+    - "$(gogh root)/github.com/kyoh86/sample"
+    - "$(gogh root)/github.com/kyoh86-tryouts/tryout"`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
@@ -101,8 +115,8 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		},
 	}
 
-	cmd.Flags().StringVarP(&f.pattern, "pattern", "", "", "Custom pattern for overlay (default: repository reference)")
+	cmd.Flags().StringVarP(&f.pattern, "pattern", "", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to extract for each file")
-	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register overlay for `gogh create` command")
+	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register the overlay for `gogh create` command")
 	return cmd, nil
 }

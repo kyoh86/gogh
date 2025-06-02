@@ -3,7 +3,7 @@
 Set the default owner for a host for the repository
 
 ```
-gogh config set-default-owner <host> <owner> [flags]
+gogh config set-default-owner [flags] <host> <owner>
 ```
 
 ### Options

@@ -3,13 +3,13 @@
 Add an overlay file
 
 ```
-gogh overlay add <source-path> <target-path> [flags]
+gogh overlay add [flags] <source-path> <target-path>
 ```
 
 ### Options
 
 ```
-      --for-init         Apply this overlay for 'gogh create' command
+      --for-init         Register the overlay for 'gogh create' command
   -h, --help             help for add
   -p, --pattern string   Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')
 ```

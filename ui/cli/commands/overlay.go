@@ -77,7 +77,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		},
 	}
 	cmd.Flags().StringVarP(&f.pattern, "pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
-	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Apply this overlay for 'gogh create' command")
+	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Register the overlay for 'gogh create' command")
 	return cmd, nil
 }
 
@@ -109,6 +109,6 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		},
 	}
 	cmd.Flags().StringVarP(&f.pattern, "pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
-	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Remove this overlay for 'gogh create' command")
+	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Remove the overlay for 'gogh create' command")
 	return cmd, nil
 }

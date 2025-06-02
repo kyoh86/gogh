@@ -9,7 +9,7 @@ gogh bundle dump [flags]
 ### Options
 
 ```
-  -f, --file string   A file to output; if not specified, output to stdout (default "/home/kyoh86/.config/gogh/bundle.txt")
+  -f, --file string   A file to output; if it's empty("") or hyphen("-"), output to stdout (default "/home/kyoh86/.config/gogh/bundle.txt")
   -h, --help          help for dump
 ```
 

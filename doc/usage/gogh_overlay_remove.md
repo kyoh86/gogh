@@ -3,13 +3,13 @@
 Remove an overlay pattern
 
 ```
-gogh overlay remove <target-path> [flags]
+gogh overlay remove [flags] <target-path>
 ```
 
 ### Options
 
 ```
-      --for-init         Remove this overlay for 'gogh create' command
+      --for-init         Remove the overlay for 'gogh create' command
   -h, --help             help for remove
   -p, --pattern string   Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')
 ```

@@ -3,7 +3,7 @@
 Set the default host for the repository
 
 ```
-gogh config set-default-host <host> [flags]
+gogh config set-default-host [flags] <host>
 ```
 
 ### Options
