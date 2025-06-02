@@ -76,14 +76,14 @@ func TestDefaultFlags(t *testing.T) {
 	}
 
 	// Default boolean flags should be false
-	if f.BundleRestore.Dryrun {
-		t.Errorf("expected BundleRestore.Dryrun to be false")
+	if f.BundleRestore.DryRun {
+		t.Errorf("expected BundleRestore.DryRun to be false")
 	}
-	if f.Clone.Dryrun {
-		t.Errorf("expected Clone.Dryrun to be false")
+	if f.Clone.DryRun {
+		t.Errorf("expected Clone.DryRun to be false")
 	}
-	if f.Create.Dryrun {
-		t.Errorf("expected Create.Dryrun to be false")
+	if f.Create.DryRun {
+		t.Errorf("expected Create.DryRun to be false")
 	}
 	if f.List.Primary {
 		t.Errorf("expected List.Primary to be false")
@@ -110,16 +110,16 @@ func TestFlagStructsInitialization(t *testing.T) {
 	if bundleRestore.CloneRetryLimit != 0 {
 		t.Errorf("expected zero CloneRetryLimit, got %d", bundleRestore.CloneRetryLimit)
 	}
-	if bundleRestore.Dryrun {
-		t.Errorf("expected false Dryrun")
+	if bundleRestore.DryRun {
+		t.Errorf("expected false DryRun")
 	}
 
 	clone := testtarget.CloneFlags{}
 	if clone.CloneRetryTimeout != 0 {
 		t.Errorf("expected zero CloneRetryTimeout, got %v", clone.CloneRetryTimeout)
 	}
-	if clone.Dryrun {
-		t.Errorf("expected false Dryrun")
+	if clone.DryRun {
+		t.Errorf("expected false DryRun")
 	}
 
 	create := testtarget.CreateFlags{}

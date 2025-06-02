@@ -52,7 +52,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 
 	runFunc := func(ctx context.Context, refs []string) error {
 		logger := log.FromContext(ctx)
-		if f.Dryrun {
+		if f.DryRun {
 			for _, ref := range refs {
 				fmt.Printf("git clone %q\n", ref)
 			}
@@ -82,7 +82,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		)
 		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
 		for _, ref := range refs {
-			if f.Dryrun {
+			if f.DryRun {
 				fmt.Printf("Apply overlay for %q\n", ref)
 			}
 			if err := view.ProcessWithConfirmation(
@@ -116,18 +116,16 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
   (for example, "github.com/kyoh86/example") like below.
     - "NAME": e.g. "example"; 
     - "OWNER/NAME": e.g. "kyoh86/example"
-  They'll be completed with the default host and owner set by "config set-default".
+  They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
 
-  It accepts an alias for each repository.
+  It also accepts an alias for each repository.
 	The alias is a local name for the remote repository.
   For example:
     - "kyoh86/example=sample"
     - "kyoh86/example=kyoh86-tryouts/tryout"
-  For each them will be cloned from "github.com/kyoh86/example"
-  into the local as:
+  For each them will be cloned from "github.com/kyoh86/example" into the local as:
     - "$(gogh root)/github.com/kyoh86/sample"
     - "$(gogh root)/github.com/kyoh86-tryouts/tryout"`,
-
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			args, err := checkFlags(ctx, args)
@@ -145,7 +143,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		},
 	}
 
-	flags.BoolVarP(cmd, &f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Clone.CloneRetryTimeout, "Timeout for the request")
+	flags.BoolVarP(cmd, &f.DryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Clone.CloneRetryTimeout, "Timeout for each clone attempt")
 	return cmd, nil
 }

@@ -102,7 +102,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 	}
 
 	cmd.Flags().StringVarP(&f.pattern, "pattern", "", "", "Custom pattern for overlay (default: repository reference)")
-	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to delete.")
+	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to extract for each file")
 	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register overlay for `gogh create` command")
 	return cmd, nil
 }

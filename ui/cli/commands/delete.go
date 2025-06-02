@@ -18,7 +18,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		local  bool
 		remote bool
 		force  bool
-		dryrun bool
+		dryRun bool
 	}
 
 	checkFlags := func(ctx context.Context, args []string) (string, error) {
@@ -102,7 +102,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if f.remote {
 				logger.Infof("Deleting remote %s\n", selected)
 			}
-			if f.dryrun {
+			if f.dryRun {
 				return nil
 			}
 			if err := delete.NewUseCase(
@@ -125,12 +125,12 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			return nil
 		},
 	}
-	flags.BoolVarP(cmd, &f.local, "local", "", true, "Delete local repository.")
+	flags.BoolVarP(cmd, &f.local, "local", "", true, "Delete local repository")
 	cmd.Flags().Lookup("local").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.remote, "remote", "", false, "Delete remote repository.")
+	flags.BoolVarP(cmd, &f.remote, "remote", "", false, "Delete remote repository")
 	cmd.Flags().Lookup("remote").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.force, "force", "", false, "Do NOT confirm to delete.")
+	flags.BoolVarP(cmd, &f.force, "force", "", false, "Do NOT confirm to delete")
 	cmd.Flags().Lookup("force").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	flags.BoolVarP(cmd, &f.dryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	return cmd, nil
 }

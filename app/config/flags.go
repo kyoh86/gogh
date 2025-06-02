@@ -37,13 +37,13 @@ type BundleRestoreFlags struct {
 	File              string        `yaml:"file,omitempty" toml:"file,omitempty"`
 	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
 	CloneRetryLimit   int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
-	Dryrun            bool          `yaml:"-" toml:"-"`
+	DryRun            bool          `yaml:"-" toml:"-"`
 }
 
 // CloneFlags is a struct that contains flags for cloning a repository.
 type CloneFlags struct {
 	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
-	Dryrun            bool          `yaml:"-" toml:"-"`
+	DryRun            bool          `yaml:"-" toml:"-"`
 }
 
 // CreateFlags is a struct that contains flags for creating a repository.
@@ -67,7 +67,7 @@ type CreateFlags struct {
 	DeleteBranchOnMerge bool          `yaml:"deleteBranchOnMerge,omitempty" toml:"delete-branch-on-merge,omitempty"`
 	Private             bool          `yaml:"private,omitempty" toml:"private,omitempty"`
 	IncludeAllBranches  bool          `yaml:"includeAllBranches,omitempty" toml:"include-all-branches,omitempty"`
-	Dryrun              bool          `yaml:"-" toml:"-"`
+	DryRun              bool          `yaml:"-" toml:"-"`
 }
 
 // CwdFlags is a struct that contains flags for the cwd command.

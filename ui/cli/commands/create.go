@@ -102,7 +102,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("creating the repository from template: %w", err)
 			}
 		}
-		if f.Dryrun {
+		if f.DryRun {
 			fmt.Printf("Apply overlay for %q\n", refWithAlias)
 			return nil
 		}
@@ -152,8 +152,8 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			return nil
 		},
 	}
-	flags.BoolVarP(cmd, &f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	cmd.Flags().Lookup("dryrun").NoOptDefVal = "false"
+	flags.BoolVarP(cmd, &f.DryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cmd.Flags().Lookup("dry-run").NoOptDefVal = "false"
 	cmd.Flags().StringVarP(&f.Template, "template", "", svc.Flags.Create.Template, "Create new repository from the template")
 	flags.BoolVarP(cmd, &f.IncludeAllBranches, "include-all-branches", "", svc.Flags.Create.IncludeAllBranches, "Create all branches in the template")
 	cmd.Flags().Lookup("include-all-branches").NoOptDefVal = "false"

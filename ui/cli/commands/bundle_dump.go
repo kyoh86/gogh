@@ -20,7 +20,7 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := os.Stdout
-			if f.File != "" {
+			if f.File != "" && f.File != "-" {
 				file, err := os.OpenFile(
 					f.File,
 					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
@@ -46,6 +46,6 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		},
 	}
 
-	cmd.Flags().StringVarP(&f.File, "file", "f", svc.Flags.BundleDump.File, "A file to output; if not specified, output to stdout")
+	cmd.Flags().StringVarP(&f.File, "file", "f", svc.Flags.BundleDump.File, `A file to output; if it's empty("") or hyphen("-"), output to stdout`)
 	return cmd, nil
 }

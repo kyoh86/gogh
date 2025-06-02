@@ -28,7 +28,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 	runFunc := func(ctx context.Context) error {
 		logger := log.FromContext(ctx)
 		in := os.Stdin
-		if f.File != "" {
+		if f.File != "" && f.File != "-" {
 			f, err := os.Open(f.File)
 			if err != nil {
 				return fmt.Errorf("opening file: %w", err)
@@ -41,7 +41,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		var refs []string
 		for scan.Scan() {
 			ref := scan.Text()
-			if f.Dryrun {
+			if f.DryRun {
 				fmt.Printf("git clone %q\n", ref)
 			} else {
 				eg.Go(func() error {
@@ -69,7 +69,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		)
 		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
 		for _, ref := range refs {
-			if f.Dryrun {
+			if f.DryRun {
 				fmt.Printf("Apply overlay for %q\n", ref)
 			}
 			if err := view.ProcessWithConfirmation(
@@ -102,9 +102,9 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			return runFunc(cmd.Context())
 		},
 	}
-	flags.BoolVarP(cmd, &f.Dryrun, "dryrun", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	cmd.Flags().StringVarP(&f.File, "file", "f", svc.Flags.BundleRestore.File, "Read the file as input; if not specified, read from stdin")
-	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "", svc.Flags.BundleRestore.CloneRetryTimeout, "Timeout for each clone attempt.")
+	flags.BoolVarP(cmd, &f.DryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cmd.Flags().StringVarP(&f.File, "file", "f", svc.Flags.BundleRestore.File, `Read the file as input; if it's empty("") or hyphen("-"), read from stdin`)
+	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "", svc.Flags.BundleRestore.CloneRetryTimeout, "Timeout for each clone attempt")
 	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
 	return cmd, nil
 }
