@@ -11,7 +11,7 @@ import (
 
 func NewSetDefaultOwnerCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
-		Use:   "set-default-owner <host> <owner>",
+		Use:   "set-default-owner [flags] <host> <owner>",
 		Short: "Set the default owner for a host for the repository",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {

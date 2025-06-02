@@ -49,7 +49,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 	}
 
 	cmd := &cobra.Command{
-		Use:   "extract [[<owner>/]<name>...]",
+		Use:   "extract [flags] [[<owner>/]<name>...]",
 		Short: "Extract untracked files as overlays",
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {

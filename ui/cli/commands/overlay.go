@@ -55,7 +55,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		forInit bool
 	}
 	cmd := &cobra.Command{
-		Use:   "add <source-path> <target-path>",
+		Use:   "add [flags] <source-path> <target-path>",
 		Short: "Add an overlay file",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -87,7 +87,7 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		forInit bool
 	}
 	cmd := &cobra.Command{
-		Use:     "remove <target-path>",
+		Use:     "remove [flags] <target-path>",
 		Aliases: []string{"rm", "del", "delete"},
 		Short:   "Remove an overlay pattern",
 		Args:    cobra.ExactArgs(1),

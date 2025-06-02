@@ -44,7 +44,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 	}
 
 	cmd := &cobra.Command{
-		Use:   "apply [[<owner>/]<name>...]",
+		Use:   "apply [flags] [[<owner>/]<name>...]",
 		Short: "Target overlays to a repository",
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
