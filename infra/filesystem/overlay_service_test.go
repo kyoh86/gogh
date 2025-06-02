@@ -2,6 +2,7 @@ package filesystem_test
 
 import (
 	"context"
+	"encoding/json"
 	"io/fs"
 	"strings"
 	"testing"
@@ -73,6 +74,11 @@ func TestAddAndListOverlays(t *testing.T) {
 	}
 
 	if len(overlays) != len(entries) {
+		enc, err := json.MarshalIndent(mockWFS.DirEntries(), "", "  ")
+		if err != nil {
+			t.Fatalf("failed to marshal mock WFS entries: %v", err)
+		}
+		t.Log(string(enc))
 		t.Errorf("expected %d overlays, got %d", len(entries), len(overlays))
 	}
 
