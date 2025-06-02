@@ -44,30 +44,40 @@ const separator = "/"
 var encoding = base64.URLEncoding.WithPadding('.')
 
 // encodeFileName safely encodes a pattern and path into a valid filename
-func encodeFileName(pattern, relativePath string) string {
-	patternEncoded := encoding.EncodeToString([]byte(pattern))
-
-	return patternEncoded + separator + relativePath
+func encodeFileName(entry workspace.OverlayEntry) string {
+	patternEncoded := encoding.EncodeToString([]byte(entry.Pattern))
+	t := "overlay"
+	if entry.ForInit {
+		t = "init"
+	}
+	return strings.Join([]string{patternEncoded, t, entry.RelativePath}, separator)
 }
 
 // decodeFileName decodes an encoded filename back to pattern and path
-func decodeFileName(encodedName string) (pattern, relativePath string, err error) {
-	parts := strings.SplitN(encodedName, separator, 2)
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid encoded filename format")
+func decodeFileName(encodedName string) (*workspace.OverlayEntry, error) {
+	parts := strings.SplitN(encodedName, separator, 3)
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("invalid encoded filename format")
 	}
 
 	patternBytes, err := encoding.DecodeString(parts[0])
 	if err != nil {
-		return "", "", fmt.Errorf("decoding pattern: %w", err)
+		return nil, fmt.Errorf("decoding pattern: %w", err)
+	}
+	t := false
+	switch parts[1] {
+	case "overlay":
+	case "init":
+		t = true
+	default:
+		return nil, fmt.Errorf("unknown overlay type: %s", parts[1])
 	}
 
-	return string(patternBytes), parts[1], nil
-}
-
-// getContentPath returns the path where the content for a given entry is stored
-func (s *OverlayService) getContentPath(entry workspace.OverlayEntry) string {
-	return encodeFileName(entry.Pattern, entry.RelativePath)
+	return &workspace.OverlayEntry{
+		Pattern:      string(patternBytes),
+		ForInit:      t,
+		RelativePath: parts[2],
+	}, nil
 }
 
 // FindOverlays implements workspace.OverlayService
@@ -93,7 +103,7 @@ func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Refere
 
 			// Get the content and yield it
 			func() {
-				file, err := os.Open(s.getContentPath(entry))
+				file, err := os.Open(encodeFileName(entry))
 				if err != nil {
 					yield(nil, fmt.Errorf("opening overlay file '%s': %w", entry.RelativePath, err))
 					return
@@ -101,6 +111,7 @@ func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Refere
 				defer file.Close()
 				if !yield(&workspace.Overlay{
 					Content:      io.NopCloser(file),
+					ForInit:      entry.ForInit,
 					RelativePath: entry.RelativePath,
 				}, nil) {
 					return // Stop
@@ -129,16 +140,13 @@ func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayE
 			return nil
 		}
 
-		pattern, relativePath, err := decodeFileName(path)
+		entry, err := decodeFileName(path)
 		if err != nil {
 			// Skip files that don't follow our encoding format
 			return nil
 		}
 
-		result = append(result, workspace.OverlayEntry{
-			Pattern:      pattern,
-			RelativePath: relativePath,
-		})
+		result = append(result, *entry)
 
 		return nil
 	})
@@ -156,7 +164,7 @@ func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayE
 // AddOverlay implements workspace.OverlayService
 func (s *OverlayService) AddOverlay(ctx context.Context, entry workspace.OverlayEntry, content io.Reader) error {
 	// Write the content to a file
-	contentPath := s.getContentPath(entry)
+	contentPath := encodeFileName(entry)
 
 	// Read content
 	data, err := io.ReadAll(content)
@@ -180,7 +188,7 @@ func (s *OverlayService) AddOverlay(ctx context.Context, entry workspace.Overlay
 
 // RemoveOverlay implements workspace.OverlayService
 func (s *OverlayService) RemoveOverlay(ctx context.Context, entry workspace.OverlayEntry) error {
-	contentPath := s.getContentPath(entry)
+	contentPath := encodeFileName(entry)
 
 	if err := s.fsys.Remove(contentPath); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {

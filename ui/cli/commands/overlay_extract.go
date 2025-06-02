@@ -97,7 +97,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 					}
 				}
 
-				if err := overlayAddUseCase.Execute(ctx, result.FilePath, patternToUse, result.Content); err != nil {
+				if err := overlayAddUseCase.Execute(ctx, false, result.FilePath, patternToUse, result.Content); err != nil {
 					return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
 				}
 				fmt.Printf("Registered %s as overlay\n", result.FilePath)

@@ -17,7 +17,8 @@ type OverlayEntry struct {
 	// - "github.com/kyoh86/*" matches all kyoh86's repositories on GitHub
 	// - "github.com/kyoh86/gogh" matches only the gogh repository
 	Pattern string
-
+	// ForInit indicates whether the overlay should be applied only during repository initialization
+	ForInit bool
 	// RelativePath is the path relative to the repository root where the file should be placed
 	// Example: ".envrc", "scripts/setup.sh"
 	RelativePath string
@@ -27,6 +28,8 @@ type OverlayEntry struct {
 type Overlay struct {
 	// Content of the overlay file
 	Content io.Reader
+	// ForInit indicates whether the overlay is for initialization only
+	ForInit bool
 	// RelativePath is the path relative to the repository root where the file should be placed
 	RelativePath string
 }

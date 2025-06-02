@@ -19,9 +19,10 @@ func NewUseCase(overlayService workspace.OverlayService) *UseCase {
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, relativePath string, pattern string, content io.Reader) error {
+func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath string, pattern string, content io.Reader) error {
 	if err := uc.overlayService.AddOverlay(ctx, workspace.OverlayEntry{
 		Pattern:      pattern,
+		ForInit:      forInit,
 		RelativePath: relativePath,
 	}, content); err != nil {
 		return fmt.Errorf("adding pattern %s: %w", pattern, err)

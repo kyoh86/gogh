@@ -38,6 +38,9 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 
 			for _, entry := range entries {
 				fmt.Printf("Pattern: %s\n", entry.Pattern)
+				if entry.ForInit {
+					fmt.Printf("For Init: Yes\n")
+				}
 				fmt.Printf("Path: %s\n", entry.RelativePath)
 			}
 
@@ -50,6 +53,7 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		pattern string
+		forInit bool
 	}
 	cmd := &cobra.Command{
 		Use:   "add [options] <source-path> <target-path>",
@@ -72,7 +76,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			defer source.Close()
 
 			useCase := overlay_add.NewUseCase(svc.OverlayService)
-			if err := useCase.Execute(ctx, f.pattern, targetPath, source); err != nil {
+			if err := useCase.Execute(ctx, f.forInit, f.pattern, targetPath, source); err != nil {
 				return err
 			}
 
@@ -81,12 +85,14 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		},
 	}
 	cmd.Flags().StringVarP(&f.pattern, "pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
+	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Apply this overlay for 'gogh create' command")
 	return cmd, nil
 }
 
 func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		pattern string
+		forInit bool
 	}
 	cmd := &cobra.Command{
 		Use:     "remove <target-path>",
@@ -103,7 +109,7 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			}
 
 			useCase := overlay_remove.NewUseCase(svc.OverlayService)
-			if err := useCase.Execute(ctx, targetPath, f.pattern); err != nil {
+			if err := useCase.Execute(ctx, f.forInit, targetPath, f.pattern); err != nil {
 				return err
 			}
 
@@ -112,5 +118,6 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		},
 	}
 	cmd.Flags().StringVarP(&f.pattern, "pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
+	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Remove this overlay for 'gogh create' command")
 	return cmd, nil
 }

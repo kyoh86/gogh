@@ -12,6 +12,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
+	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
@@ -52,7 +53,9 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 			overlayApplyUseCase := overlay_apply.NewUseCase()
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				overlayFindUseCase.Execute(ctx, refs[0]),
+				typ.Filter2(overlayFindUseCase.Execute(ctx, refs[0]), func(overlay *overlay_find.Overlay) bool {
+					return !overlay.ForInit
+				}),
 				func(overlay *overlay_find.Overlay) string {
 					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], overlay.RelativePath)
 				},

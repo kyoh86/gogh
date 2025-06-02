@@ -14,6 +14,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
+	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
@@ -88,7 +89,9 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			}
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				overlayFindUseCase.Execute(ctx, ref),
+				typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(overlay *overlay_find.Overlay) bool {
+					return !overlay.ForInit
+				}),
 				func(overlay *overlay_find.Overlay) string {
 					return fmt.Sprintf("Apply overlay for %s (%s)", ref, overlay.RelativePath)
 				},
