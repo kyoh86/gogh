@@ -20,28 +20,28 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 
 	reposUseCase := repos.NewUseCase(svc.HostingService)
 
-	checkFlags := func(ctx context.Context, args []string) (string, error) {
+	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
-			return args[0], nil
+			return args, nil
 		}
 		var opts []huh.Option[string]
 		for repo, err := range reposUseCase.Execute(ctx, repos.Options{}) {
 			if err != nil {
-				return "", fmt.Errorf("listing up repositories: %w", err)
+				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}
 			opts = append(opts, huh.Option[string]{
 				Key:   repo.Ref.String(),
 				Value: repo.Ref.String(),
 			})
 		}
-		var selected string
+		var selected []string
 		if err := huh.NewForm(huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("A repository to extract overlays").
+			huh.NewMultiSelect[string]().
+				Title("Repositories to extract overlays").
 				Options(opts...).
 				Value(&selected),
 		)).Run(); err != nil {
-			return "", err
+			return nil, err
 		}
 		return selected, nil
 	}
@@ -49,10 +49,9 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 	cmd := &cobra.Command{
 		Use:   "extract [repo-ref]",
 		Short: "Extract untracked files as overlays",
-		Args:  cobra.RangeArgs(0, 1),
-		RunE: func(cmd *cobra.Command, refs []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			selected, err := checkFlags(ctx, refs)
+			refs, err := checkFlags(ctx, args)
 			if err != nil {
 				return err
 			}
@@ -71,36 +70,38 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 			)
 
 			// Extract untracked files
-			for result, err := range overlayExtractUseCase.Execute(ctx, selected, overlay_extract.Options{
-				Pattern: f.pattern,
-			}) {
-				if err != nil {
-					return err
-				}
-
-				// Determine pattern to use
-				if patternToUse == "" {
-					patternToUse = result.Reference.String()
-				}
-
-				if !f.force {
-					var confirm bool
-					if err := huh.NewForm(huh.NewGroup(
-						huh.NewConfirm().
-							Title(fmt.Sprintf("Are you sure you extract this file?\n%q", result.FilePath)).
-							Value(&confirm),
-					)).Run(); err != nil {
+			for _, ref := range refs {
+				for result, err := range overlayExtractUseCase.Execute(ctx, ref, overlay_extract.Options{
+					Pattern: f.pattern,
+				}) {
+					if err != nil {
 						return err
 					}
-					if !confirm {
-						continue
-					}
-				}
 
-				if err := overlayAddUseCase.Execute(ctx, false, result.FilePath, patternToUse, result.Content); err != nil {
-					return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
+					// Determine pattern to use
+					if patternToUse == "" {
+						patternToUse = result.Reference.String()
+					}
+
+					if !f.force {
+						var confirm bool
+						if err := huh.NewForm(huh.NewGroup(
+							huh.NewConfirm().
+								Title(fmt.Sprintf("Are you sure you extract this file?\n%q", result.FilePath)).
+								Value(&confirm),
+						)).Run(); err != nil {
+							return err
+						}
+						if !confirm {
+							continue
+						}
+					}
+
+					if err := overlayAddUseCase.Execute(ctx, false, result.FilePath, patternToUse, result.Content); err != nil {
+						return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
+					}
+					fmt.Printf("Registered %s as overlay\n", result.FilePath)
 				}
-				fmt.Printf("Registered %s as overlay\n", result.FilePath)
 			}
 			return nil
 		},
