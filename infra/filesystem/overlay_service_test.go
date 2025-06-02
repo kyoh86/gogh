@@ -1,12 +1,16 @@
 package filesystem_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/fs"
 	"strings"
 	"testing"
 
+	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/wfs_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 	testtarget "github.com/kyoh86/gogh/v4/infra/filesystem"
@@ -148,5 +152,338 @@ func TestRemoveOverlay(t *testing.T) {
 	err = service.RemoveOverlay(ctx, workspace.OverlayEntry{Pattern: "non-existent", RelativePath: "file.txt"})
 	if err == nil {
 		t.Error("expected error for non-existent entry, but got nil")
+	}
+}
+
+// TestEncodeDecodeFileName tests the encoding and decoding of file names
+func TestEncodeDecodeFileName(t *testing.T) {
+	testCases := []struct {
+		name         string
+		pattern      string
+		forInit      bool
+		relativePath string
+		expected     string
+	}{
+		{
+			name:         "simple overlay",
+			pattern:      "github.com/user/repo",
+			forInit:      false,
+			relativePath: ".envrc",
+		},
+		{
+			name:         "simple init",
+			pattern:      "github.com/user/repo",
+			forInit:      true,
+			relativePath: ".envrc",
+		},
+		{
+			name:         "with wildcard",
+			pattern:      "github.com/user/*",
+			forInit:      false,
+			relativePath: "config.json",
+		},
+		{
+			name:         "with special chars",
+			pattern:      "github.com/user-name/repo+name",
+			forInit:      true,
+			relativePath: "path/with spaces/and#special$chars.txt",
+		},
+		{
+			name:         "with unicode",
+			pattern:      "github.com/user/😊",
+			forInit:      false,
+			relativePath: "path/to/file/日本語.txt",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Encode
+			entry := workspace.OverlayEntry{
+				Pattern:      tc.pattern,
+				ForInit:      tc.forInit,
+				RelativePath: tc.relativePath,
+			}
+			encoded := testtarget.EncodeFileName(entry)
+
+			parts := strings.SplitN(encoded, "/", 3)
+			if len(parts) != 3 {
+				t.Fatalf("encoded filename should have three parts: got %q", encoded)
+			}
+			encodedPattern, encodedType, encodedRelativePath := parts[0], parts[1], parts[2]
+			if encodedPattern == "" || encodedRelativePath == "" {
+				t.Fatalf("encoded filename is empty: got %q", encoded)
+			}
+			if encodedPattern == tc.pattern {
+				t.Errorf("encoded pattern should not match original: got %q, want different", encodedPattern)
+			}
+			if strings.Contains(encodedPattern, "/") {
+				t.Errorf("encoded pattern should not contain slashes: got %q", encodedPattern)
+			}
+			expectedType := "overlay"
+			if tc.forInit {
+				expectedType = "init"
+			}
+			if encodedType != expectedType {
+				t.Errorf("encoded type mismatch: got %q, want %q", encodedType, expectedType)
+			}
+			if encodedRelativePath != tc.relativePath {
+				t.Errorf("encoded relativePath mismatch: got %q, want %q", encodedRelativePath, tc.relativePath)
+			}
+
+			// Decode
+			decodedEntry, err := testtarget.DecodeFileName(encoded)
+			if err != nil {
+				t.Fatalf("failed to decode: %v", err)
+			}
+
+			// Verify
+			if decodedEntry.Pattern != tc.pattern {
+				t.Errorf("pattern mismatch: got %q, want %q", decodedEntry.Pattern, tc.pattern)
+			}
+			if decodedEntry.ForInit != tc.forInit {
+				t.Errorf("forInit mismatch: got %v, want %v", decodedEntry.ForInit, tc.forInit)
+			}
+			if decodedEntry.RelativePath != tc.relativePath {
+				t.Errorf("relativePath mismatch: got %q, want %q", decodedEntry.RelativePath, tc.relativePath)
+			}
+		})
+	}
+
+	// Test invalid encoded filename
+	_, err := testtarget.DecodeFileName("invalid-not-base64")
+	if err == nil {
+		t.Error("expected error for invalid encoded filename, but got nil")
+	}
+}
+
+// TestFindOverlays tests the FindOverlays method
+func TestFindOverlays(t *testing.T) {
+	// Create a mock filesystem
+	mockWFS := wfs_mock.NewMockWFS()
+
+	service, err := testtarget.NewOverlayService(mockWFS)
+	if err != nil {
+		t.Fatalf("NewOverlayService failed: %v", err)
+	}
+
+	ctx := context.Background()
+
+	// Create test entries
+	testEntries := []workspace.OverlayEntry{
+		{
+			Pattern:      "github.com/user/repo",
+			ForInit:      false,
+			RelativePath: "config.json",
+		},
+		{
+			Pattern:      "github.com/user/*",
+			ForInit:      false,
+			RelativePath: "common.yaml",
+		},
+		{
+			Pattern:      "github.com/org/project",
+			ForInit:      true,
+			RelativePath: ".envrc",
+		},
+		{
+			Pattern:      "gitlab.com/user/*",
+			ForInit:      false,
+			RelativePath: "settings.json",
+		},
+	}
+
+	// Add overlays to the mock filesystem
+	for _, entry := range testEntries {
+		encodedName := testtarget.EncodeFileName(entry)
+		content := fmt.Appendf(nil, "content for %s", entry.RelativePath)
+		err := mockWFS.WriteFile(encodedName, content, 0644)
+		if err != nil {
+			t.Fatalf("Failed to set up mock file %s: %v", encodedName, err)
+		}
+	}
+
+	// Test cases
+	testCases := []struct {
+		name          string
+		ref           repository.Reference
+		expectedCount int
+		expectedFiles []string
+	}{
+		{
+			name:          "exact match",
+			ref:           repository.NewReference("github.com", "user", "repo"),
+			expectedCount: 2,
+			expectedFiles: []string{"config.json", "common.yaml"},
+		},
+		{
+			name:          "wildcard match",
+			ref:           repository.NewReference("github.com", "user", "other-repo"),
+			expectedCount: 1,
+			expectedFiles: []string{"common.yaml"},
+		},
+		{
+			name:          "init match",
+			ref:           repository.NewReference("github.com", "org", "project"),
+			expectedCount: 1,
+			expectedFiles: []string{".envrc"},
+		},
+		{
+			name:          "no matches",
+			ref:           repository.NewReference("github.com", "different", "repo"),
+			expectedCount: 0,
+		},
+		{
+			name:          "different domain",
+			ref:           repository.NewReference("gitlab.com", "user", "project"),
+			expectedCount: 1,
+			expectedFiles: []string{"settings.json"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test FindOverlays
+			var overlays []*workspace.Overlay
+			for o, err := range service.FindOverlays(ctx, tc.ref) {
+				if err != nil {
+					t.Fatalf("FindOverlays error: %v", err)
+				}
+				if o != nil {
+					// Read content
+					content, err := io.ReadAll(o.Content)
+					if err != nil {
+						t.Fatalf("Failed to read overlay content: %v", err)
+					}
+					o.Content = io.NopCloser(bytes.NewReader(content))
+					overlays = append(overlays, o)
+				}
+			}
+
+			if len(overlays) != tc.expectedCount {
+				t.Errorf("overlay count mismatch: got %d, want %d", len(overlays), tc.expectedCount)
+			}
+
+			// Check if expected files are in the result
+			for _, expectedFile := range tc.expectedFiles {
+				found := false
+				for _, overlay := range overlays {
+					if overlay.RelativePath == expectedFile {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected file %q not found in results", expectedFile)
+				}
+			}
+		})
+	}
+}
+
+// TestFindOverlaysErrors tests error handling in FindOverlays
+func TestFindOverlaysErrors(t *testing.T) {
+	// Create a mock filesystem
+	mockWFS := wfs_mock.NewMockWFS()
+
+	service, err := testtarget.NewOverlayService(mockWFS)
+	if err != nil {
+		t.Fatalf("NewOverlayService failed: %v", err)
+	}
+
+	ctx := context.Background()
+
+	// Add a valid overlay
+	validEntry := workspace.OverlayEntry{
+		Pattern:      "github.com/user/repo",
+		ForInit:      false,
+		RelativePath: "file.txt",
+	}
+	encodedName := testtarget.EncodeFileName(validEntry)
+	err = mockWFS.WriteFile(encodedName, []byte("content"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to set up mock file: %v", err)
+	}
+
+	// Test ListOverlays error
+	mockWFS.SetError("ReadDir", "", fs.ErrPermission)
+
+	repoRef := repository.NewReference("github.com", "user", "repo")
+
+	var foundOverlay bool
+	for _, err := range service.FindOverlays(ctx, repoRef) {
+		if err == nil {
+			foundOverlay = true
+			break
+		}
+	}
+
+	if foundOverlay {
+		t.Errorf("expected error during FindOverlays due to ReadDir error, but found overlay")
+	}
+
+	// Clear ReadDir error and set Open error
+	mockWFS.SetError("ReadDir", "", nil)
+	mockWFS.SetError("Open", encodedName, fs.ErrPermission)
+
+	// Test Open error
+	foundError := false
+	for _, err := range service.FindOverlays(ctx, repoRef) {
+		if err != nil {
+			foundError = true
+			if !strings.Contains(err.Error(), "opening overlay file") {
+				t.Errorf("unexpected error message: %v", err)
+			}
+			break
+		}
+	}
+
+	if !foundError {
+		t.Errorf("expected Open error but got none")
+	}
+}
+
+// TestInvalidPatternHandling tests how FindOverlays handles invalid patterns
+func TestInvalidPatternHandling(t *testing.T) {
+	// Create a mock filesystem
+	mockWFS := wfs_mock.NewMockWFS()
+
+	service, err := testtarget.NewOverlayService(mockWFS)
+	if err != nil {
+		t.Fatalf("NewOverlayService failed: %v", err)
+	}
+
+	ctx := context.Background()
+
+	// Add entry with invalid pattern (this is a contrived example to force a pattern matching error)
+	invalidEntry := workspace.OverlayEntry{
+		Pattern:      "[invalid-pattern", // Invalid regex pattern
+		ForInit:      false,
+		RelativePath: "file.txt",
+	}
+	encodedName := testtarget.EncodeFileName(invalidEntry)
+	err = mockWFS.WriteFile(encodedName, []byte("content"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to set up mock file: %v", err)
+	}
+
+	// Try to find overlays - shouldn't crash but might return an error
+	repoRef := repository.NewReference("github.com", "user", "repo")
+	if err != nil {
+		t.Fatalf("Failed to parse repository reference: %v", err)
+	}
+
+	// Should handle invalid pattern errors gracefully
+	foundOverlay := false
+	for o, err := range service.FindOverlays(ctx, repoRef) {
+		if err == nil && o != nil {
+			foundOverlay = true
+			break
+		}
+	}
+
+	// We shouldn't find any valid overlays for this repository
+	if foundOverlay {
+		t.Errorf("found overlay despite invalid pattern")
 	}
 }
