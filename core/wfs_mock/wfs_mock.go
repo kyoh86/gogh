@@ -34,7 +34,7 @@ func normalizePath(path string) string {
 	if path == "." {
 		return ""
 	}
-	return path
+	return filepath.ToSlash(path)
 }
 
 // SetError sets an error to be returned for a specific operation on a path
@@ -139,23 +139,23 @@ func (m *MockWFS) Stat(name string) (fs.FileInfo, error) {
 		return nil, err
 	}
 
-	content, exists := m.files[name]
-	if !exists {
-		// Check if it's a directory
-		if _, dirExists := m.dirItems[name]; dirExists {
-			return &MockFileInfo{
-				RawName:  filepath.Base(name),
-				RawIsDir: true,
-			}, nil
-		}
-		return nil, fs.ErrNotExist
+	// Check if it's a file
+	if content, exists := m.files[name]; exists {
+		return &MockFileInfo{
+			RawName:  filepath.Base(name),
+			RawSize:  int64(len(content)),
+			RawIsDir: false,
+		}, nil
 	}
+	// Check if it's a directory
+	if _, dirExists := m.dirItems[name]; dirExists {
+		return &MockFileInfo{
+			RawName:  filepath.Base(name),
+			RawIsDir: true,
+		}, nil
+	}
+	return nil, fs.ErrNotExist
 
-	return &MockFileInfo{
-		RawName:  filepath.Base(name),
-		RawSize:  int64(len(content)),
-		RawIsDir: false,
-	}, nil
 }
 
 // WriteFile implements wfs.WFS
