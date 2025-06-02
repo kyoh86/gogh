@@ -98,7 +98,6 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 					}
 					return err
 				}
-
 			}
 			return nil
 		},
