@@ -155,7 +155,6 @@ func (m *MockWFS) Stat(name string) (fs.FileInfo, error) {
 		}, nil
 	}
 	return nil, fs.ErrNotExist
-
 }
 
 // WriteFile implements wfs.WFS
