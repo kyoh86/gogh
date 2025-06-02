@@ -8,7 +8,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/apex/log"
 	"github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
@@ -21,8 +20,8 @@ func NewConfigShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	return &cobra.Command{
 		Use:   "show",
 		Short: "Show configurations",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			logger := log.FromContext(cmd.Context())
 			t, err := template.New("gogh context").Parse(configTemplate)
 			if err != nil {
 				return fmt.Errorf("[Bug] invalid template string: %w", err)
@@ -30,8 +29,7 @@ func NewConfigShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 
 			flags, err := encodeYAML(svc.Flags)
 			if err != nil {
-				logger.Error("[Bug] failed to load flags")
-				return nil
+				return fmt.Errorf("[Bug] failed to encode flags: %w", err)
 			}
 			var w strings.Builder
 			defaultNameSource, err := svc.DefaultNameStore.Source()

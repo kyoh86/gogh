@@ -140,4 +140,31 @@ func (s *GitService) GetDefaultRemotes(
 	return s.GetRemotes(ctx, localPath, git.DefaultRemoteName)
 }
 
+// ListUntrackedFiles returns a list of untracked files in the repository.
+func (s *GitService) ListUntrackedFiles(ctx context.Context, localPath string) ([]string, error) {
+	repo, err := git.PlainOpen(localPath)
+	if err != nil {
+		return nil, err
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return nil, err
+	}
+
+	status, err := worktree.Status()
+	if err != nil {
+		return nil, err
+	}
+
+	var untrackedFiles []string
+	for filePath, fileStatus := range status {
+		if fileStatus.Worktree == '?' {
+			untrackedFiles = append(untrackedFiles, filePath)
+		}
+	}
+
+	return untrackedFiles, nil
+}
+
 var _ coregit.GitService = (*GitService)(nil)

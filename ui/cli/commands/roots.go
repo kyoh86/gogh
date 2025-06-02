@@ -46,8 +46,8 @@ func RootsListRunE(svc *service.ServiceSet) func(*cobra.Command, []string) error
 func NewRootsAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var asPrimary bool
 	cmd := &cobra.Command{
-		Use:   "add",
-		Short: "Add directories into the roots",
+		Use:   "add <directory>",
+		Short: "Add a directory into the roots",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, rootList []string) error {
 			ctx := cmd.Context()
@@ -85,7 +85,7 @@ func selectRoot(svc *service.ServiceSet, title string, rootList []string) (strin
 
 func NewRootsRemoveCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
-		Use:   "remove",
+		Use:   "remove [<directory>]",
 		Short: "Remove a directory from the roots",
 		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(_ *cobra.Command, rootList []string) error {
@@ -104,7 +104,7 @@ func NewRootsRemoveCommand(ctx context.Context, svc *service.ServiceSet) (*cobra
 
 func NewRootsSetPrimaryCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	return &cobra.Command{
-		Use:     "set-primary",
+		Use:     "set-primary [<directory>]",
 		Aliases: []string{"set-default"},
 		Short:   "Set a directory as the primary in the roots",
 		Args:    cobra.RangeArgs(0, 1),

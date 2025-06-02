@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/create"
 	"github.com/kyoh86/gogh/v4/app/create_from_template"
+	"github.com/kyoh86/gogh/v4/app/overlay_apply"
+	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
@@ -21,12 +24,14 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	createUseCase := create.NewUseCase(
 		svc.HostingService,
 		svc.WorkspaceService,
+		svc.OverlayService,
 		svc.ReferenceParser,
 		svc.GitService,
 	)
 	createFromTemplateUseCase := create_from_template.NewUseCase(
 		svc.HostingService,
 		svc.WorkspaceService,
+		svc.OverlayService,
 		svc.ReferenceParser,
 		svc.GitService,
 	)
@@ -40,7 +45,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		var name string
 		if err := huh.NewForm(huh.NewGroup(
 			huh.NewInput().
-				Title("A ref of repository name to create [OWNER/]NAME[=ALIAS]").
+				Title("A ref of repository name to create [<owner>/]<name>[=<alias>]").
 				Validate(func(s string) error {
 					// Never do
 					_, err := svc.ReferenceParser.Parse(s)
@@ -54,6 +59,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	}
 
 	runFunc := func(ctx context.Context, refWithAlias string) error {
+		logger := log.FromContext(ctx)
 		if f.Template == "" {
 			ropt := create.Options{
 				TryCloneOptions: try_clone.Options{
@@ -99,11 +105,40 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("creating the repository from template: %w", err)
 			}
 		}
+		if f.Dryrun {
+			fmt.Printf("Apply overlay for %q\n", refWithAlias)
+			return nil
+		}
+
+		overlayFindUseCase := overlay_find.NewUseCase(
+			svc.WorkspaceService,
+			svc.FinderService,
+			svc.ReferenceParser,
+			svc.OverlayService,
+		)
+		overlayApplyUseCase := overlay_apply.NewUseCase()
+		if err := view.ProcessWithConfirmation(
+			ctx,
+			overlayFindUseCase.Execute(ctx, refWithAlias),
+			func(overlay *overlay_find.Overlay) string {
+				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, overlay.RelativePath)
+			},
+			func(overlay *overlay_find.Overlay) error {
+				return overlayApplyUseCase.Execute(ctx, overlay.Location.FullPath(), overlay.RelativePath, overlay.Content)
+			},
+		); err != nil {
+			if errors.Is(err, view.ErrQuit) {
+				return nil
+			}
+			return err
+		}
+		logger.Infof("Applied overlay for %s", refWithAlias)
+
 		return nil
 	}
 
 	cmd := &cobra.Command{
-		Use:     "create [flags] [[OWNER/]NAME[=ALIAS]]",
+		Use:     "create [flags] [[<owner>/]<name>[=<alias>]]",
 		Aliases: []string{"new"},
 		Short:   "Create a new local and remote repository",
 		Args:    cobra.RangeArgs(0, 1),

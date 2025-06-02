@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/bundle_dump"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
@@ -36,8 +35,7 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			useCase := bundle_dump.NewUseCase(svc.WorkspaceService, svc.FinderService, svc.HostingService, svc.GitService)
 			for entry, err := range useCase.Execute(cmd.Context(), bundle_dump.Options{}) {
 				if err != nil {
-					log.FromContext(cmd.Context()).Error(err.Error())
-					return nil
+					return err
 				}
 				if entry.Alias == nil {
 					fmt.Fprintln(out, entry.Name)

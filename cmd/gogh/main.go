@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/config"
@@ -27,7 +28,13 @@ var (
 func main() {
 	ctx := logger.NewLogger(context.Background(), os.Stdout, os.Stderr)
 	if err := run(ctx); err != nil {
-		log.FromContext(ctx).Error(err.Error())
+		errString := err.Error()
+		if strings.Contains(errString, "context canceled") || strings.Contains(errString, "context deadline exceeded") {
+			// Ignore context cancellation errors
+		} else {
+			// Log the error with the Capitalized first letter
+			log.FromContext(ctx).Errorf("%s: %s", gogh.AppName, strings.ToUpper(errString[:1])+errString[1:])
+		}
 		os.Exit(1)
 	}
 }
@@ -77,6 +84,16 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("loading workspace: %w", err)
 	}
 
+	overlayDir, err := config.OverlayDir()
+	if err != nil {
+		return fmt.Errorf("getting overlay directory: %w", err)
+	}
+	overlayFS := filesystem.NewLocalWFS(overlayDir)
+	overlayService, err := filesystem.NewOverlayService(overlayFS)
+	if err != nil {
+		return fmt.Errorf("creating overlay service: %w", err)
+	}
+
 	svc := &service.ServiceSet{
 		DefaultNameStore:   defaultNameStore,
 		DefaultNameService: defaultNameService,
@@ -87,8 +104,9 @@ func run(ctx context.Context) error {
 		WorkspaceStore:   workspaceStore,
 		WorkspaceService: workspaceService,
 
-		FlagsStore: flagsStore,
-		Flags:      flags,
+		OverlayService: overlayService,
+		FlagsStore:     flagsStore,
+		Flags:          flags,
 
 		ReferenceParser:     repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner()),
 		HostingService:      github.NewHostingService(tokenService, defaultNameService),

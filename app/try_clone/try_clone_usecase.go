@@ -16,6 +16,7 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
+	overlayService   workspace.OverlayService
 	gitService       git.GitService
 }
 
@@ -23,11 +24,13 @@ type UseCase struct {
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
+	overlayService workspace.OverlayService,
 	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
+		overlayService:   overlayService,
 		gitService:       gitService,
 	}
 }
@@ -69,7 +72,7 @@ type Options struct {
 }
 
 // Execute attempts to clone a repository with retry logic.
-func (s *UseCase) Execute(
+func (uc *UseCase) Execute(
 	ctx context.Context,
 	repo *hosting.Repository,
 	alias *repository.Reference,
@@ -80,15 +83,15 @@ func (s *UseCase) Execute(
 	if alias != nil {
 		targetRef = *alias
 	}
-	layout := s.workspaceService.GetPrimaryLayout()
+	layout := uc.workspaceService.GetPrimaryLayout()
 	localPath := layout.PathFor(targetRef)
 
 	// Get the user and token for authentication
-	user, token, err := s.hostingService.GetTokenFor(ctx, repo.Ref.Host(), repo.Ref.Owner())
+	user, token, err := uc.hostingService.GetTokenFor(ctx, repo.Ref.Host(), repo.Ref.Owner())
 	if err != nil {
 		return err
 	}
-	gitService, err := s.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
+	gitService, err := uc.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,7 @@ import (
 
 func NewSetDefaultHostCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
-		Use:   "set-default-host",
+		Use:   "set-default-host <host>",
 		Short: "Set the default host for the repository",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

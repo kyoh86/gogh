@@ -82,12 +82,13 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	}
 
 	cmd := &cobra.Command{
-		Use:     "delete [flags] [[OWNER/]NAME]",
-		Aliases: []string{"remove"},
+		Use:     "delete [flags] [[<owner>/]<name>]",
+		Aliases: []string{"remove", "rm", "del"},
 		Short:   "Delete local and remote repository",
 		Args:    cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
+			logger := log.FromContext(ctx)
 			selected, err := checkFlags(ctx, refs)
 			if err != nil {
 				return err
@@ -98,10 +99,10 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			}
 
 			if f.local {
-				log.FromContext(ctx).Infof("Delete local %s\n", selected)
+				logger.Infof("Delete local %s\n", selected)
 			}
 			if f.remote {
-				log.FromContext(ctx).Infof("Deleting remote %s\n", selected)
+				logger.Infof("Deleting remote %s\n", selected)
 			}
 			if f.dryrun {
 				return nil
@@ -119,10 +120,10 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("deleting the repository: %w", err)
 			}
 			if f.local {
-				log.FromContext(ctx).Infof("Deleted local %s", selected)
+				logger.Infof("Deleted local %s", selected)
 			}
 			if f.remote {
-				log.FromContext(ctx).Infof("Deleted remote %s", selected)
+				logger.Infof("Deleted remote %s", selected)
 			}
 			return nil
 		},

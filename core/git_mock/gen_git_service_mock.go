@@ -114,6 +114,21 @@ func (mr *MockGitServiceMockRecorder) Init(ctx, remoteURL, localPath, isBare, op
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockGitService)(nil).Init), ctx, remoteURL, localPath, isBare, opts)
 }
 
+// ListUntrackedFiles mocks base method.
+func (m *MockGitService) ListUntrackedFiles(ctx context.Context, repoPath string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListUntrackedFiles", ctx, repoPath)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListUntrackedFiles indicates an expected call of ListUntrackedFiles.
+func (mr *MockGitServiceMockRecorder) ListUntrackedFiles(ctx, repoPath any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUntrackedFiles", reflect.TypeOf((*MockGitService)(nil).ListUntrackedFiles), ctx, repoPath)
+}
+
 // SetDefaultRemotes mocks base method.
 func (m *MockGitService) SetDefaultRemotes(ctx context.Context, localPath string, remotes []string) error {
 	m.ctrl.T.Helper()
