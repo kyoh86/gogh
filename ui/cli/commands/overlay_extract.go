@@ -52,7 +52,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		Use:   "extract [repo-ref]",
 		Short: "Extract untracked files as overlays",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.Background()
+			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
 			refs, err := checkFlags(ctx, args)
 			if err != nil {
