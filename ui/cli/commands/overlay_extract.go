@@ -115,6 +115,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 	}
 
 	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "", "", "Pattern to match repositories to apply the overlays to (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
+	//TODO: cmd.Flags().StringVarP(&f.filePattern, "file-pattern", "", "", "Pattern to match files to use as the overlays. If not specified, all git-excluded files will be extracted")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to extract for each file")
 	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register the overlay for `gogh create` command")
 	return cmd, nil
