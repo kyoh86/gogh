@@ -1,4 +1,4 @@
-package wfs_mock
+package fs_mock
 
 import (
 	"bytes"
@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/kyoh86/gogh/v4/core/wfs"
+	corefs "github.com/kyoh86/gogh/v4/core/fs"
 )
 
-// MockWFS is a mock implementation of wfs.WFS for testing
+// MockWFS is a mock implementation of fs.WFS for testing
 type MockWFS struct {
 	files    map[string][]byte
 	dirItems map[string][]fs.DirEntry
@@ -82,7 +82,7 @@ func (m *MockWFS) DirEntries() map[string][]fs.DirEntry {
 	return m.dirItems
 }
 
-// Open implements wfs.WFS
+// Open implements fs.WFS
 func (m *MockWFS) Open(name string) (fs.File, error) {
 	name = normalizePath(name)
 	if err, exists := m.errors["Open:"+name]; exists && err != nil {
@@ -102,7 +102,7 @@ func (m *MockWFS) Open(name string) (fs.File, error) {
 	}, nil
 }
 
-// ReadDir implements wfs.WFS
+// ReadDir implements fs.WFS
 func (m *MockWFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	name = normalizePath(name)
 	if err, exists := m.errors["ReadDir:"+name]; exists && err != nil {
@@ -117,7 +117,7 @@ func (m *MockWFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return entries, nil
 }
 
-// ReadFile implements wfs.WFS
+// ReadFile implements fs.WFS
 func (m *MockWFS) ReadFile(name string) ([]byte, error) {
 	name = normalizePath(name)
 	if err, exists := m.errors["ReadFile:"+name]; exists && err != nil {
@@ -132,7 +132,7 @@ func (m *MockWFS) ReadFile(name string) ([]byte, error) {
 	return content, nil
 }
 
-// Stat implements wfs.WFS
+// Stat implements fs.WFS
 func (m *MockWFS) Stat(name string) (fs.FileInfo, error) {
 	name = normalizePath(name)
 	if err, exists := m.errors["Stat:"+name]; exists && err != nil {
@@ -157,7 +157,7 @@ func (m *MockWFS) Stat(name string) (fs.FileInfo, error) {
 	return nil, fs.ErrNotExist
 }
 
-// WriteFile implements wfs.WFS
+// WriteFile implements fs.WFS
 func (m *MockWFS) WriteFile(name string, data []byte, perm fs.FileMode) error {
 	name = normalizePath(name)
 	if err, exists := m.errors["WriteFile:"+name]; exists && err != nil {
@@ -167,7 +167,7 @@ func (m *MockWFS) WriteFile(name string, data []byte, perm fs.FileMode) error {
 	return m.addFile(name, data)
 }
 
-// MkdirAll implements wfs.WFS
+// MkdirAll implements fs.WFS
 func (m *MockWFS) MkdirAll(path string, perm fs.FileMode) error {
 	path = normalizePath(path)
 	if err, exists := m.errors["MkdirAll:"+path]; exists && err != nil {
@@ -224,7 +224,7 @@ func (m *MockWFS) MkdirAll(path string, perm fs.FileMode) error {
 	return nil
 }
 
-// Remove implements wfs.WFS
+// Remove implements fs.WFS
 func (m *MockWFS) Remove(name string) error {
 	name = normalizePath(name)
 	if err, exists := m.errors["Remove:"+name]; exists && err != nil {
@@ -267,7 +267,7 @@ func (m *MockWFS) Remove(name string) error {
 	return nil
 }
 
-// Create implements wfs.WFS
+// Create implements fs.WFS
 func (m *MockWFS) Create(name string) (io.WriteCloser, error) {
 	name = normalizePath(name)
 	if err, exists := m.errors["Create:"+name]; exists && err != nil {
@@ -409,5 +409,5 @@ func (w *MockWriteCloser) Close() error {
 	return err2
 }
 
-// Ensure MockWFS implements wfs.WFS
-var _ wfs.WFS = (*MockWFS)(nil)
+// Ensure MockWFS implements fs.WFS
+var _ corefs.FS = (*MockWFS)(nil)

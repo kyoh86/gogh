@@ -1,14 +1,14 @@
-package wfs
+package fs
 
 import (
 	"io"
 	"io/fs"
 )
 
-// WFS extends the standard fs.FS interface with write operations
-// It combines several fs interfaces (fs.WFS, fs.ReadDirFS, fs.ReadFileFS, fs.StatFS)
+// FS extends the standard fs.FS interface with write operations
+// It combines several fs interfaces (fs.FS, fs.ReadDirFS, fs.ReadFileFS, fs.StatFS)
 // and adds write operations
-type WFS interface {
+type FS interface {
 	// Read operations from standard fs interfaces
 	fs.FS
 	fs.ReadDirFS

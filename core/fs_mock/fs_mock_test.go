@@ -1,4 +1,4 @@
-package wfs_mock
+package fs_mock
 
 import (
 	"bytes"

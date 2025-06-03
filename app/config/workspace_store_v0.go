@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
+	"github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 	"gopkg.in/yaml.v2"
@@ -16,32 +16,6 @@ type WorkspaceStoreV0 struct{}
 
 type yamlWorkspaceStoreV0 struct {
 	Roots []workspace.Root `yaml:"roots,omitempty"`
-}
-
-func ExpandPath(p string) (string, error) {
-	p = os.ExpandEnv(p)
-	runes := []rune(p)
-	switch len(runes) {
-	case 0:
-		return p, nil
-	case 1:
-		if runes[0] == '~' {
-			homeDir, err := os.UserHomeDir()
-			if err != nil {
-				return "", fmt.Errorf("search user home dir: %w", err)
-			}
-			return homeDir, nil
-		}
-	default:
-		if runes[0] == '~' && (runes[1] == filepath.Separator || runes[1] == '/') {
-			homeDir, err := os.UserHomeDir()
-			if err != nil {
-				return "", fmt.Errorf("search user home dir: %w", err)
-			}
-			return filepath.Join(homeDir, string(runes[2:])), nil
-		}
-	}
-	return p, nil
 }
 
 // Load implements store.Loader
@@ -61,7 +35,7 @@ func (w *WorkspaceStoreV0) Load(ctx context.Context, initial func() workspace.Wo
 	}
 	svc := initial()
 	for i, root := range v.Roots {
-		path, err := ExpandPath(root)
+		path, err := fs.ReplaceTildeWithHome(root)
 		if err != nil {
 			return nil, fmt.Errorf("expand path: %w", err)
 		}

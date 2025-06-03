@@ -12,18 +12,18 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
+	corefs "github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/core/repository"
-	"github.com/kyoh86/gogh/v4/core/wfs"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // OverlayService implements workspace.OverlayService using the filesystem
 type OverlayService struct {
-	fsys wfs.WFS
+	fsys corefs.FS
 }
 
 // NewOverlayService creates a new OverlayService instance with the given filesystem
-func NewOverlayService(fsys wfs.WFS) (*OverlayService, error) {
+func NewOverlayService(fsys corefs.FS) (*OverlayService, error) {
 	service := &OverlayService{
 		fsys: fsys,
 	}

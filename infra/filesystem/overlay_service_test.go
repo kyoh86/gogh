@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kyoh86/gogh/v4/core/fs_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
-	"github.com/kyoh86/gogh/v4/core/wfs_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 	testtarget "github.com/kyoh86/gogh/v4/infra/filesystem"
 )
@@ -18,7 +18,7 @@ import (
 // TestNewOverlayService tests creating a new OverlayService
 func TestNewOverlayService(t *testing.T) {
 	// Create a mock WFS implementation
-	mockWFS := wfs_mock.NewMockWFS()
+	mockWFS := fs_mock.NewMockWFS()
 
 	// Test successful creation
 	_, err := testtarget.NewOverlayService(mockWFS)
@@ -27,7 +27,7 @@ func TestNewOverlayService(t *testing.T) {
 	}
 
 	// Test directory creation error
-	mockWFSWithError := wfs_mock.NewMockWFS()
+	mockWFSWithError := fs_mock.NewMockWFS()
 	mockWFSWithError.SetError("MkdirAll", "", fs.ErrPermission)
 
 	_, err = testtarget.NewOverlayService(mockWFSWithError)
@@ -38,7 +38,7 @@ func TestNewOverlayService(t *testing.T) {
 
 // TestAddAndListOverlays tests adding overlays and listing them
 func TestAddAndListOverlays(t *testing.T) {
-	mockWFS := wfs_mock.NewMockWFS()
+	mockWFS := fs_mock.NewMockWFS()
 
 	service, err := testtarget.NewOverlayService(mockWFS)
 	if err != nil {
@@ -110,7 +110,7 @@ func TestAddAndListOverlays(t *testing.T) {
 
 // TestRemoveOverlay tests removing an overlay
 func TestRemoveOverlay(t *testing.T) {
-	mockWFS := wfs_mock.NewMockWFS()
+	mockWFS := fs_mock.NewMockWFS()
 
 	service, err := testtarget.NewOverlayService(mockWFS)
 	if err != nil {
@@ -259,7 +259,7 @@ func TestEncodeDecodeFileName(t *testing.T) {
 // TestFindOverlays tests the FindOverlays method
 func TestFindOverlays(t *testing.T) {
 	// Create a mock filesystem
-	mockWFS := wfs_mock.NewMockWFS()
+	mockWFS := fs_mock.NewMockWFS()
 
 	service, err := testtarget.NewOverlayService(mockWFS)
 	if err != nil {
@@ -388,7 +388,7 @@ func TestFindOverlays(t *testing.T) {
 // TestInvalidPatternHandling tests how FindOverlays handles invalid patterns
 func TestInvalidPatternHandling(t *testing.T) {
 	// Create a mock filesystem
-	mockWFS := wfs_mock.NewMockWFS()
+	mockWFS := fs_mock.NewMockWFS()
 
 	service, err := testtarget.NewOverlayService(mockWFS)
 	if err != nil {
