@@ -18,13 +18,13 @@ func NewUseCase(overlayService workspace.OverlayService) *UseCase {
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath, pattern string) error {
+func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath, repoPattern string) error {
 	if err := uc.overlayService.RemoveOverlay(ctx, workspace.OverlayEntry{
-		Pattern:      pattern,
+		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,
 	}); err != nil {
-		return fmt.Errorf("removing entry %s for %s: %w", relativePath, pattern, err)
+		return fmt.Errorf("removing entry %s for %s: %w", relativePath, repoPattern, err)
 	}
 	return nil
 }

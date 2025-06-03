@@ -31,7 +31,7 @@ gogh overlay extract [flags] [[[<host>/]<owner>/]<name>...]
       --for-init gogh create   Register the overlay for gogh create command
       --force                  Do NOT confirm to extract for each file
   -h, --help                   help for extract
-      --pattern string         Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)
+  -p, --repo-pattern string    Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)
 ```
 
 ### SEE ALSO

@@ -17,9 +17,9 @@ import (
 
 func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
-		pattern string
-		forInit bool
-		force   bool
+		repoPattern string
+		forInit     bool
+		force       bool
 	}
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
@@ -86,19 +86,17 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 			// Extract untracked files
 			for _, ref := range refs {
 				logger.Infof("Extracting files from %q", ref)
-				if err := view.ProcessWithConfirmation(ctx, overlayExtractUseCase.Execute(ctx, ref, overlay_extract.Options{
-					Pattern: f.pattern,
-				}),
+				if err := view.ProcessWithConfirmation(ctx, overlayExtractUseCase.Execute(ctx, ref, overlay_extract.Options{}),
 					func(result *overlay_extract.ExtractResult) string {
 						return fmt.Sprintf("Extract %q from %q", result.FilePath, ref)
 					},
 					func(result *overlay_extract.ExtractResult) error {
-						pattern := f.pattern
-						// Determine pattern to use
-						if pattern == "" {
-							pattern = result.Reference.String()
+						repoPattern := f.repoPattern
+						// Determine repo-pattern to use
+						if repoPattern == "" {
+							repoPattern = result.Reference.String()
 						}
-						if err := overlayAddUseCase.Execute(ctx, f.forInit, result.RelativePath, pattern, result.FilePath); err != nil {
+						if err := overlayAddUseCase.Execute(ctx, f.forInit, result.RelativePath, repoPattern, result.FilePath); err != nil {
 							return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
 						}
 						logger.Infof("Registered %q from %q as overlay\n", result.FilePath, ref)
@@ -115,7 +113,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		},
 	}
 
-	cmd.Flags().StringVarP(&f.pattern, "pattern", "", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
+	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to extract for each file")
 	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register the overlay for `gogh create` command")
 	return cmd, nil

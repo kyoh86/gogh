@@ -61,7 +61,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], entry.RelativePath)
 				},
 				func(entry *overlay_find.OverlayEntry) error {
-					return useCase.Execute(ctx, entry.Location.FullPath(), entry.Pattern, entry.ForInit, entry.RelativePath)
+					return useCase.Execute(ctx, entry.Location.FullPath(), entry.RepoPattern, entry.ForInit, entry.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {

@@ -36,15 +36,15 @@ func NewOverlayService(fsys corefs.FS) (*OverlayService, error) {
 	return service, nil
 }
 
-// separator is a string used to separate the pattern and relative path in the encoded filename
+// separator is a string used to separate the repo-pattern and relative path in the encoded filename
 // Base64 encoded results will not contain this string
 const separator = "/"
 
 var encoding = base64.URLEncoding.WithPadding('.')
 
-// EncodeFileName safely encodes a pattern and path into a valid filename
+// EncodeFileName safely encodes a repo-pattern and relative path into a valid filename
 func EncodeFileName(entry workspace.OverlayEntry) string {
-	patternEncoded := encoding.EncodeToString([]byte(entry.Pattern))
+	patternEncoded := encoding.EncodeToString([]byte(entry.RepoPattern))
 	t := "overlay"
 	if entry.ForInit {
 		t = "init"
@@ -52,7 +52,7 @@ func EncodeFileName(entry workspace.OverlayEntry) string {
 	return strings.Join([]string{patternEncoded, t, entry.RelativePath}, separator)
 }
 
-// DecodeFileName decodes an encoded filename back to pattern and path
+// DecodeFileName decodes an encoded filename back to repo-pattern and relative path
 func DecodeFileName(encodedName string) (*workspace.OverlayEntry, error) {
 	parts := strings.SplitN(encodedName, separator, 3)
 	if len(parts) != 3 {
@@ -61,7 +61,7 @@ func DecodeFileName(encodedName string) (*workspace.OverlayEntry, error) {
 
 	patternBytes, err := encoding.DecodeString(parts[0])
 	if err != nil {
-		return nil, fmt.Errorf("decoding pattern: %w", err)
+		return nil, fmt.Errorf("decoding repo-pattern: %w", err)
 	}
 	t := false
 	switch parts[1] {
@@ -73,7 +73,7 @@ func DecodeFileName(encodedName string) (*workspace.OverlayEntry, error) {
 	}
 
 	return &workspace.OverlayEntry{
-		Pattern:      string(patternBytes),
+		RepoPattern:  string(patternBytes),
 		ForInit:      t,
 		RelativePath: parts[2],
 	}, nil
@@ -91,9 +91,9 @@ func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Refere
 		}
 		for _, entry := range entries {
 			// Check if this entry should be applied to this repository
-			match, err := doublestar.Match(entry.Pattern, repoString)
+			match, err := doublestar.Match(entry.RepoPattern, repoString)
 			if err != nil {
-				yield(nil, fmt.Errorf("matching pattern '%s': %w", entry.Pattern, err))
+				yield(nil, fmt.Errorf("matching repo-pattern '%s': %w", entry.RepoPattern, err))
 				return
 			}
 			if !match {
@@ -114,7 +114,7 @@ func (s *OverlayService) OpenOverlay(ctx context.Context, entry workspace.Overla
 	file, err := s.fsys.Open(contentPath)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return nil, fmt.Errorf("overlay not found: pattern=%s, path=%s", entry.Pattern, entry.RelativePath)
+			return nil, fmt.Errorf("overlay not found: repo-pattern=%s, path=%s", entry.RepoPattern, entry.RelativePath)
 		}
 		return nil, fmt.Errorf("opening overlay file: %w", err)
 	}
@@ -193,7 +193,7 @@ func (s *OverlayService) RemoveOverlay(ctx context.Context, entry workspace.Over
 
 	if err := s.fsys.Remove(contentPath); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return fmt.Errorf("overlay not found: pattern=%s, path=%s", entry.Pattern, entry.RelativePath)
+			return fmt.Errorf("overlay not found: repo-pattern=%s, path=%s", entry.RepoPattern, entry.RelativePath)
 		}
 		return fmt.Errorf("removing overlay file: %w", err)
 	}

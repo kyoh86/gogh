@@ -36,7 +36,7 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 
 			for _, entry := range entries {
 				fmt.Printf("- ")
-				fmt.Printf("Repository pattern: %s\n", entry.Pattern)
+				fmt.Printf("Repository pattern: %s\n", entry.RepoPattern)
 				if entry.ForInit {
 					fmt.Printf("  For Init: Yes\n")
 				}
@@ -51,8 +51,8 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 
 func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
-		pattern string
-		forInit bool
+		repoPattern string
+		forInit     bool
 	}
 	cmd := &cobra.Command{
 		Use:   "add [flags] <source-path> <target-path>",
@@ -68,28 +68,28 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return fmt.Errorf("target path must be relative, got absolute path: %s", targetPath)
 			}
 
-			if err := overlay_add.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, f.pattern, targetPath, sourcePath); err != nil {
+			if err := overlay_add.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, f.repoPattern, targetPath, sourcePath); err != nil {
 				return err
 			}
 
-			logger.Infof("Added overlay file %s -> %s for pattern %s", sourcePath, targetPath, f.pattern)
+			logger.Infof("Added overlay file %s -> %s for repo-pattern %s", sourcePath, targetPath, f.repoPattern)
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.pattern, "pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
-	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Register the overlay for 'gogh create' command")
+	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
+	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register the overlay for 'gogh create' command")
 	return cmd, nil
 }
 
 func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
-		pattern string
-		forInit bool
+		repoPattern string
+		forInit     bool
 	}
 	cmd := &cobra.Command{
 		Use:     "remove [flags] <target-path>",
 		Aliases: []string{"rm", "del", "delete"},
-		Short:   "Remove an overlay pattern",
+		Short:   "Remove an overlay",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -100,15 +100,15 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 				return fmt.Errorf("target path must be relative, got absolute path: %s", targetPath)
 			}
 
-			if err := overlay_remove.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, targetPath, f.pattern); err != nil {
+			if err := overlay_remove.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, targetPath, f.repoPattern); err != nil {
 				return err
 			}
 
-			logger.Infof("Removed overlay %s for %s", targetPath, f.pattern)
+			logger.Infof("Removed overlay %s for %s", targetPath, f.repoPattern)
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&f.pattern, "pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
-	cmd.Flags().BoolVar(&f.forInit, "for-init", false, "Remove the overlay for 'gogh create' command")
+	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "p", "", "Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')")
+	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Remove the overlay for 'gogh create' command")
 	return cmd, nil
 }

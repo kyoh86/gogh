@@ -11,13 +11,13 @@ import (
 
 // OverlayEntry represents a file to be overlaid onto repositories
 type OverlayEntry struct {
-	// Pattern is a glob pattern that matches repository references
+	// RepoPattern is a glob pattern that matches repository references
 	// Examples:
 	// - "*" matches all repositories
 	// - "github.com/*" matches all GitHub repositories
 	// - "github.com/kyoh86/*" matches all kyoh86's repositories on GitHub
 	// - "github.com/kyoh86/gogh" matches only the gogh repository
-	Pattern string
+	RepoPattern string
 	// ForInit indicates whether the overlay should be applied only during repository initialization
 	ForInit bool
 	// RelativePath is the path relative to the repository root where the file should be placed
@@ -27,9 +27,9 @@ type OverlayEntry struct {
 
 func (e OverlayEntry) String() string {
 	if e.ForInit {
-		return fmt.Sprintf("Init(%s): %s", e.Pattern, e.RelativePath)
+		return fmt.Sprintf("Init(%s): %s", e.RepoPattern, e.RelativePath)
 	} else {
-		return fmt.Sprintf("Overlay(%s): %s", e.Pattern, e.RelativePath)
+		return fmt.Sprintf("Overlay(%s): %s", e.RepoPattern, e.RelativePath)
 	}
 }
 

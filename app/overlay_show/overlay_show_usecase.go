@@ -20,15 +20,15 @@ func NewUseCase(overlayService workspace.OverlayService) *UseCase {
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, pattern string, forInit bool, relativePath string) error {
+func (uc *UseCase) Execute(ctx context.Context, repoPattern string, forInit bool, relativePath string) error {
 	// Open the overlay content
 	content, err := uc.overlayService.OpenOverlay(ctx, workspace.OverlayEntry{
-		Pattern:      pattern,
+		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,
 	})
 	if err != nil {
-		return fmt.Errorf("opening overlay for pattern '%s': %w", pattern, err)
+		return fmt.Errorf("opening overlay for repo-pattern '%s': %w", repoPattern, err)
 	}
 	defer content.Close()
 	if _, err := io.Copy(os.Stdout, content); err != nil {

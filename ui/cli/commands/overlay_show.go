@@ -18,7 +18,7 @@ import (
 
 func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
-		pattern      string
+		repoPattern  string
 		forInit      bool
 		relativePath string
 	}
@@ -28,7 +28,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			return nil, fmt.Errorf("listing overlays: %w", err)
 		}
 		list = slices.Collect(typ.Filter(slices.Values(list), func(entry overlay_list.OverlayEntry) bool {
-			if f.pattern != "" && f.pattern != entry.Pattern {
+			if f.repoPattern != "" && f.repoPattern != entry.RepoPattern {
 				return false
 			}
 			if f.forInit && !entry.ForInit {
@@ -82,7 +82,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 				}
 				name := entry.String()
 				fmt.Printf("%s %s\n", name, strings.Repeat("-", width-len(name)-1))
-				if err := overlayShowUseCase.Execute(ctx, entry.Pattern, entry.ForInit, entry.RelativePath); err != nil {
+				if err := overlayShowUseCase.Execute(ctx, entry.RepoPattern, entry.ForInit, entry.RelativePath); err != nil {
 					return fmt.Errorf("showing overlay %s: %w", entry.RelativePath, err)
 				}
 			}

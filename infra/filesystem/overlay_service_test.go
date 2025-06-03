@@ -58,8 +58,8 @@ func TestAddAndListOverlays(t *testing.T) {
 
 	// Add some overlays
 	entries := []workspace.OverlayEntry{
-		{Pattern: "github.com/user1/repo1", RelativePath: ".envrc"},
-		{Pattern: "github.com/user2/*", RelativePath: "config/settings.json"},
+		{RepoPattern: "github.com/user1/repo1", RelativePath: ".envrc"},
+		{RepoPattern: "github.com/user2/*", RelativePath: "config/settings.json"},
 	}
 
 	for _, entry := range entries {
@@ -88,12 +88,12 @@ func TestAddAndListOverlays(t *testing.T) {
 	// Check if all entries are present
 	foundEntries := make(map[string]bool)
 	for _, overlay := range overlays {
-		key := overlay.Pattern + ":" + overlay.RelativePath
+		key := overlay.RepoPattern + ":" + overlay.RelativePath
 		foundEntries[key] = true
 	}
 
 	for _, entry := range entries {
-		key := entry.Pattern + ":" + entry.RelativePath
+		key := entry.RepoPattern + ":" + entry.RelativePath
 		if !foundEntries[key] {
 			t.Errorf("expected entry %s not found in result", key)
 		}
@@ -121,7 +121,7 @@ func TestRemoveOverlay(t *testing.T) {
 
 	// Add an overlay
 	entry := workspace.OverlayEntry{
-		Pattern:      "github.com/user/repo",
+		RepoPattern:  "github.com/user/repo",
 		RelativePath: ".envrc",
 	}
 	err = service.AddOverlay(ctx, entry, strings.NewReader("content"))
@@ -141,14 +141,14 @@ func TestRemoveOverlay(t *testing.T) {
 		t.Fatalf("ListOverlays failed after removal: %v", err)
 	}
 	for _, overlay := range overlays {
-		if overlay.Pattern == entry.Pattern && overlay.RelativePath == entry.RelativePath {
-			t.Errorf("expected overlay %s:%s to be removed, but it still exists", entry.Pattern, entry.RelativePath)
+		if overlay.RepoPattern == entry.RepoPattern && overlay.RelativePath == entry.RelativePath {
+			t.Errorf("expected overlay %s:%s to be removed, but it still exists", entry.RepoPattern, entry.RelativePath)
 			return
 		}
 	}
 
 	// Test removing non-existent entry
-	err = service.RemoveOverlay(ctx, workspace.OverlayEntry{Pattern: "non-existent", RelativePath: "file.txt"})
+	err = service.RemoveOverlay(ctx, workspace.OverlayEntry{RepoPattern: "non-existent", RelativePath: "file.txt"})
 	if err == nil {
 		t.Error("expected error for non-existent entry, but got nil")
 	}
@@ -158,38 +158,38 @@ func TestRemoveOverlay(t *testing.T) {
 func TestEncodeDecodeFileName(t *testing.T) {
 	testCases := []struct {
 		name         string
-		pattern      string
+		repoPattern  string
 		forInit      bool
 		relativePath string
 		expected     string
 	}{
 		{
 			name:         "simple overlay",
-			pattern:      "github.com/user/repo",
+			repoPattern:  "github.com/user/repo",
 			forInit:      false,
 			relativePath: ".envrc",
 		},
 		{
 			name:         "simple init",
-			pattern:      "github.com/user/repo",
+			repoPattern:  "github.com/user/repo",
 			forInit:      true,
 			relativePath: ".envrc",
 		},
 		{
 			name:         "with wildcard",
-			pattern:      "github.com/user/*",
+			repoPattern:  "github.com/user/*",
 			forInit:      false,
 			relativePath: "config.json",
 		},
 		{
 			name:         "with special chars",
-			pattern:      "github.com/user-name/repo+name",
+			repoPattern:  "github.com/user-name/repo+name",
 			forInit:      true,
 			relativePath: "path/with spaces/and#special$chars.txt",
 		},
 		{
 			name:         "with unicode",
-			pattern:      "github.com/user/😊",
+			repoPattern:  "github.com/user/😊",
 			forInit:      false,
 			relativePath: "path/to/file/日本語.txt",
 		},
@@ -199,7 +199,7 @@ func TestEncodeDecodeFileName(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Encode
 			entry := workspace.OverlayEntry{
-				Pattern:      tc.pattern,
+				RepoPattern:  tc.repoPattern,
 				ForInit:      tc.forInit,
 				RelativePath: tc.relativePath,
 			}
@@ -213,7 +213,7 @@ func TestEncodeDecodeFileName(t *testing.T) {
 			if encodedPattern == "" || encodedRelativePath == "" {
 				t.Fatalf("encoded filename is empty: got %q", encoded)
 			}
-			if encodedPattern == tc.pattern {
+			if encodedPattern == tc.repoPattern {
 				t.Errorf("encoded pattern should not match original: got %q, want different", encodedPattern)
 			}
 			if strings.Contains(encodedPattern, "/") {
@@ -237,8 +237,8 @@ func TestEncodeDecodeFileName(t *testing.T) {
 			}
 
 			// Verify
-			if decodedEntry.Pattern != tc.pattern {
-				t.Errorf("pattern mismatch: got %q, want %q", decodedEntry.Pattern, tc.pattern)
+			if decodedEntry.RepoPattern != tc.repoPattern {
+				t.Errorf("pattern mismatch: got %q, want %q", decodedEntry.RepoPattern, tc.repoPattern)
 			}
 			if decodedEntry.ForInit != tc.forInit {
 				t.Errorf("forInit mismatch: got %v, want %v", decodedEntry.ForInit, tc.forInit)
@@ -271,22 +271,22 @@ func TestFindOverlays(t *testing.T) {
 	// Create test entries
 	testEntries := []workspace.OverlayEntry{
 		{
-			Pattern:      "github.com/user/repo",
+			RepoPattern:  "github.com/user/repo",
 			ForInit:      false,
 			RelativePath: "config.json",
 		},
 		{
-			Pattern:      "github.com/user/*",
+			RepoPattern:  "github.com/user/*",
 			ForInit:      false,
 			RelativePath: "common.yaml",
 		},
 		{
-			Pattern:      "github.com/org/project",
+			RepoPattern:  "github.com/org/project",
 			ForInit:      true,
 			RelativePath: ".envrc",
 		},
 		{
-			Pattern:      "gitlab.com/user/*",
+			RepoPattern:  "gitlab.com/user/*",
 			ForInit:      false,
 			RelativePath: "settings.json",
 		},
@@ -399,7 +399,7 @@ func TestInvalidPatternHandling(t *testing.T) {
 
 	// Add entry with invalid pattern (this is a contrived example to force a pattern matching error)
 	invalidEntry := workspace.OverlayEntry{
-		Pattern:      "[invalid-pattern", // Invalid regex pattern
+		RepoPattern:  "[invalid-pattern", // Invalid regex pattern
 		ForInit:      false,
 		RelativePath: "file.txt",
 	}

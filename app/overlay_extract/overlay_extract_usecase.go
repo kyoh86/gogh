@@ -38,9 +38,7 @@ func NewUseCase(
 }
 
 // Options for the extraction operation
-type Options struct {
-	Pattern string // Optional custom pattern for the overlay
-}
+type Options struct{}
 
 // ExtractResult represents a single untracked file that can be extracted
 type ExtractResult struct {
