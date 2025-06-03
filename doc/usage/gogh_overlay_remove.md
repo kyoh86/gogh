@@ -3,15 +3,22 @@
 Remove an overlay
 
 ```
-gogh overlay remove [flags] <target-path>
+gogh overlay remove [flags] <repo-pattern> <target-path>
+```
+
+### Examples
+
+```
+   Remove an overlay file from a repository.
+			 The <repo-pattern> is the pattern of the repository you want to remove the overlay from.
+			 The <target-path> is the path where the overlay file is located in the repository.
 ```
 
 ### Options
 
 ```
-      --for-init              Remove the overlay for 'gogh create' command
-  -h, --help                  help for remove
-  -p, --repo-pattern string   Pattern to match repositories (e.g., 'github.com/owner/repo', '**/gogh')
+      --for-init   Remove the overlay for 'gogh create' command
+  -h, --help       help for remove
 ```
 
 ### SEE ALSO

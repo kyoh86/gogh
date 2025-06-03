@@ -19,7 +19,6 @@ func NewOverlayCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 		Short: "Manage repository overlay files",
 		Example: `   Overlay files are used to put custom files into repositories.
    They are useful to add files that are not tracked by the repository, such as editor configurations or scripts.
-   For example, you can add a custom editor configuration file to a repository using the overlay command.
 
    For example, to add a custom VSCode settings file to a repository, you can run:
 

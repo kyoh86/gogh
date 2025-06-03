@@ -7,9 +7,9 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
+	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/overlay_add"
 	"github.com/kyoh86/gogh/v4/app/overlay_extract"
-	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
@@ -18,6 +18,7 @@ import (
 func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		repoPattern string
+		filePattern string
 		forInit     bool
 		force       bool
 	}
@@ -27,13 +28,13 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 			return args, nil
 		}
 		var opts []huh.Option[string]
-		for repo, err := range repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{}) {
+		for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, list.Options{}) {
 			if err != nil {
 				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}
 			opts = append(opts, huh.Option[string]{
-				Key:   repo.Ref.String(),
-				Value: repo.Ref.String(),
+				Key:   repo.Path(),
+				Value: repo.Path(),
 			})
 		}
 		var selected []string
@@ -113,7 +114,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		},
 	}
 
-	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "p", "", "Pattern to match repositories to apply the overlays to (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
+	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "", "", "Pattern to match repositories to apply the overlays to (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to extract for each file")
 	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register the overlay for `gogh create` command")
 	return cmd, nil
