@@ -181,6 +181,7 @@ func (s *GitService) ListExcludedFiles(ctx context.Context, repoPath string) ([]
 			}
 		}
 
+		// build matcher to ignore excluded files in the current directory
 		var excludes []gitignore.Pattern
 		for traversePath := path; ; traversePath = filepath.Dir(traversePath) {
 			patterns := ignores[traversePath]
@@ -190,10 +191,13 @@ func (s *GitService) ListExcludedFiles(ctx context.Context, repoPath string) ([]
 			if traversePath == repoPath {
 				break
 			}
+			if traversePath == filepath.Dir(traversePath) {
+				break
+			}
 		}
+		matcher := gitignore.NewMatcher(slices.Concat(userExcludes, localExcludes, excludes))
 
 		pathWords := strings.Split(filepath.ToSlash(path), "/")
-		matcher := gitignore.NewMatcher(slices.Concat(userExcludes, localExcludes, excludes))
 		// Check if the file is excluded by user or local excludes
 		if matcher.Match(pathWords, info.IsDir()) {
 			if info.IsDir() {
