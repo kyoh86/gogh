@@ -114,19 +114,19 @@ func (mr *MockGitServiceMockRecorder) Init(ctx, remoteURL, localPath, isBare, op
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockGitService)(nil).Init), ctx, remoteURL, localPath, isBare, opts)
 }
 
-// ListUntrackedFiles mocks base method.
-func (m *MockGitService) ListUntrackedFiles(ctx context.Context, repoPath string) ([]string, error) {
+// ListExcludedFiles mocks base method.
+func (m *MockGitService) ListExcludedFiles(ctx context.Context, repoPath string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListUntrackedFiles", ctx, repoPath)
+	ret := m.ctrl.Call(m, "ListExcludedFiles", ctx, repoPath)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListUntrackedFiles indicates an expected call of ListUntrackedFiles.
-func (mr *MockGitServiceMockRecorder) ListUntrackedFiles(ctx, repoPath any) *gomock.Call {
+// ListExcludedFiles indicates an expected call of ListExcludedFiles.
+func (mr *MockGitServiceMockRecorder) ListExcludedFiles(ctx, repoPath any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUntrackedFiles", reflect.TypeOf((*MockGitService)(nil).ListUntrackedFiles), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExcludedFiles", reflect.TypeOf((*MockGitService)(nil).ListExcludedFiles), ctx, repoPath)
 }
 
 // SetDefaultRemotes mocks base method.

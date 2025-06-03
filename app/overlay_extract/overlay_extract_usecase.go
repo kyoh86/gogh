@@ -66,7 +66,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.
 		}
 
 		// Get untracked files
-		untrackedFiles, err := uc.gitService.ListUntrackedFiles(ctx, repo.FullPath())
+		untrackedFiles, err := uc.gitService.ListExcludedFiles(ctx, repo.FullPath())
 		if err != nil {
 			yield(nil, fmt.Errorf("failed to list untracked files: %w", err))
 			return

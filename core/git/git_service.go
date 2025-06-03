@@ -40,8 +40,8 @@ type GitService interface {
 		localPath string,
 	) ([]string, error)
 
-	// ListUntrackedFiles returns a list of untracked files in the repository
-	ListUntrackedFiles(ctx context.Context, repoPath string) ([]string, error)
+	// ListExcludedFiles returns a list of untracked files in the repository
+	ListExcludedFiles(ctx context.Context, repoPath string) ([]string, error)
 }
 
 // CloneOptions contains options for the local clone operation

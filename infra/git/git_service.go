@@ -3,10 +3,16 @@ package git
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	coregit "github.com/kyoh86/gogh/v4/core/git"
@@ -140,31 +146,84 @@ func (s *GitService) GetDefaultRemotes(
 	return s.GetRemotes(ctx, localPath, git.DefaultRemoteName)
 }
 
-// ListUntrackedFiles returns a list of untracked files in the repository.
-func (s *GitService) ListUntrackedFiles(ctx context.Context, localPath string) ([]string, error) {
-	repo, err := git.PlainOpen(localPath)
+// ListExcludedFiles returns a list of excluded/ignored files in the repository.
+func (s *GitService) ListExcludedFiles(ctx context.Context, repoPath string) ([]string, error) {
+	repoPath, err := filepath.Abs(repoPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting absolute path of repo: %w", err)
+	}
+	userExcludes, err := LoadUserExcludes(repoPath)
+	if err != nil {
+		return nil, fmt.Errorf("loading user excludes: %w", err)
+	}
+	localExcludes, err := LoadLocalExcludes(repoPath)
+	if err != nil {
+		return nil, fmt.Errorf("loading local excludes: %w", err)
 	}
 
-	worktree, err := repo.Worktree()
-	if err != nil {
-		return nil, err
-	}
-
-	status, err := worktree.Status()
-	if err != nil {
-		return nil, err
-	}
-
-	var untrackedFiles []string
-	for filePath, fileStatus := range status {
-		if fileStatus.Worktree == '?' {
-			untrackedFiles = append(untrackedFiles, filePath)
+	ignores := map[string][]gitignore.Pattern{}
+	var exDirs [][]string
+	var exFiles []string
+	if err := filepath.Walk(repoPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
+		if info.IsDir() {
+			if info.Name() == ".git" {
+				return filepath.SkipDir
+			}
+			patterns, err := LoadLocalIgnore(path)
+			if err != nil {
+				return err
+			}
+			if len(patterns) > 0 {
+				ignores[path] = patterns
+			}
+		}
+
+		var excludes []gitignore.Pattern
+		for traversePath := path; ; traversePath = filepath.Dir(traversePath) {
+			patterns := ignores[traversePath]
+			if len(patterns) > 0 {
+				excludes = slices.Concat(patterns, excludes)
+			}
+			if traversePath == repoPath {
+				break
+			}
+		}
+
+		pathWords := strings.Split(filepath.ToSlash(path), "/")
+		matcher := gitignore.NewMatcher(slices.Concat(userExcludes, localExcludes, excludes))
+		// Check if the file is excluded by user or local excludes
+		if matcher.Match(pathWords, info.IsDir()) {
+			if info.IsDir() {
+				// If it's a directory, we need to remember it for later
+				exDirs = append(exDirs, pathWords)
+			} else {
+				// If it's a file, we can add it directly to the result
+				exFiles = append(exFiles, path)
+			}
+			return nil
+		}
+		if info.IsDir() {
+			return nil
+		}
+		// If the file is not excluded, we check if it is in an ignored directory
+		for _, dir := range exDirs {
+			if len(pathWords) <= len(dir) {
+				continue
+			}
+			if slices.Equal(pathWords[:len(dir)], dir) {
+				exFiles = append(exFiles, path)
+				return nil
+			}
+		}
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
-	return untrackedFiles, nil
+	return exFiles, nil
 }
 
 var _ coregit.GitService = (*GitService)(nil)

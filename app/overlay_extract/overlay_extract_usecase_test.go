@@ -43,7 +43,7 @@ func TestExecute(t *testing.T) {
 
 				// Setup untracked files with the actual file paths
 				git.EXPECT().
-					ListUntrackedFiles(gomock.Any(), repoPath).
+					ListExcludedFiles(gomock.Any(), repoPath).
 					Return([]string{
 						"file1.txt",
 						"file2.txt",
@@ -88,7 +88,7 @@ func TestExecute(t *testing.T) {
 
 				// Setup empty untracked files
 				git.EXPECT().
-					ListUntrackedFiles(gomock.Any(), repoPath).
+					ListExcludedFiles(gomock.Any(), repoPath).
 					Return([]string{}, nil)
 			},
 			refString:     "github.com/kyoh86/gogh",
@@ -154,7 +154,7 @@ func TestExecute(t *testing.T) {
 
 				// Setup git error
 				git.EXPECT().
-					ListUntrackedFiles(gomock.Any(), repoPath).
+					ListExcludedFiles(gomock.Any(), repoPath).
 					Return(nil, errors.New("git command failed"))
 			},
 			refString:     "github.com/kyoh86/gogh",
