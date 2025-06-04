@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/git"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -14,7 +15,7 @@ import (
 // UseCase implements the overlay extraction use case
 type UseCase struct {
 	gitService       git.GitService
-	overlayService   workspace.OverlayService
+	overlayStore     overlay.OverlayStore
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	referenceParser  repository.ReferenceParser
@@ -23,14 +24,14 @@ type UseCase struct {
 // NewUseCase creates a new overlay extraction use case
 func NewUseCase(
 	gitService git.GitService,
-	overlayService workspace.OverlayService,
+	overlayStore overlay.OverlayStore,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
 ) *UseCase {
 	return &UseCase{
 		gitService:       gitService,
-		overlayService:   overlayService,
+		overlayStore:     overlayStore,
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		referenceParser:  referenceParser,
@@ -38,7 +39,10 @@ func NewUseCase(
 }
 
 // Options for the extraction operation
-type Options struct{}
+type Options struct {
+	Excluded     bool     // Whether to extract only excluded files
+	FilePatterns []string // Pattern to match files for extraction; if empty, all excluded files are returned.
+}
 
 // ExtractResult represents a single untracked file that can be extracted
 type ExtractResult struct {
@@ -47,7 +51,7 @@ type ExtractResult struct {
 	FilePath     string // Path of the untracked file
 }
 
-// Extract finds untracked files in the repository and returns them
+// Extract files in the repository and returns them.
 // The caller is responsible for confirming and registering files as overlays
 func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.Seq2[*ExtractResult, error] {
 	return func(yield func(*ExtractResult, error) bool) {
@@ -56,6 +60,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.
 			yield(nil, err)
 			return
 		}
+
 		// Find the repository path
 		repo, err := uc.finderService.FindByReference(ctx, uc.workspaceService, *ref)
 		if err != nil {
@@ -63,15 +68,17 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.
 			return
 		}
 
-		// Get untracked files
-		untrackedFiles, err := uc.gitService.ListExcludedFiles(ctx, repo.FullPath())
-		if err != nil {
-			yield(nil, fmt.Errorf("failed to list untracked files: %w", err))
-			return
+		files := uc.gitService.ListAllFiles
+		if opts.Excluded {
+			files = uc.gitService.ListExcludedFiles
 		}
 
 		// Read file contents
-		for _, file := range untrackedFiles {
+		for file, err := range files(ctx, repo.FullPath(), opts.FilePatterns) {
+			if err != nil {
+				yield(nil, fmt.Errorf("failed to list untracked files: %w", err))
+				continue
+			}
 			if !yield(&ExtractResult{
 				Reference:    *ref,
 				RelativePath: file,

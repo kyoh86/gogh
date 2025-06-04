@@ -11,6 +11,7 @@ package git_mock
 
 import (
 	context "context"
+	iter "iter"
 	reflect "reflect"
 
 	git "github.com/kyoh86/gogh/v4/core/git"
@@ -114,19 +115,32 @@ func (mr *MockGitServiceMockRecorder) Init(ctx, remoteURL, localPath, isBare, op
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockGitService)(nil).Init), ctx, remoteURL, localPath, isBare, opts)
 }
 
-// ListExcludedFiles mocks base method.
-func (m *MockGitService) ListExcludedFiles(ctx context.Context, repoPath string) ([]string, error) {
+// ListAllFiles mocks base method.
+func (m *MockGitService) ListAllFiles(ctx context.Context, localPath string, filePatterns []string) iter.Seq2[string, error] {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListExcludedFiles", ctx, repoPath)
-	ret0, _ := ret[0].([]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "ListAllFiles", ctx, localPath, filePatterns)
+	ret0, _ := ret[0].(iter.Seq2[string, error])
+	return ret0
+}
+
+// ListAllFiles indicates an expected call of ListAllFiles.
+func (mr *MockGitServiceMockRecorder) ListAllFiles(ctx, localPath, filePatterns any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllFiles", reflect.TypeOf((*MockGitService)(nil).ListAllFiles), ctx, localPath, filePatterns)
+}
+
+// ListExcludedFiles mocks base method.
+func (m *MockGitService) ListExcludedFiles(ctx context.Context, localPath string, filePatterns []string) iter.Seq2[string, error] {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListExcludedFiles", ctx, localPath, filePatterns)
+	ret0, _ := ret[0].(iter.Seq2[string, error])
+	return ret0
 }
 
 // ListExcludedFiles indicates an expected call of ListExcludedFiles.
-func (mr *MockGitServiceMockRecorder) ListExcludedFiles(ctx, repoPath any) *gomock.Call {
+func (mr *MockGitServiceMockRecorder) ListExcludedFiles(ctx, localPath, filePatterns any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExcludedFiles", reflect.TypeOf((*MockGitService)(nil).ListExcludedFiles), ctx, repoPath)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListExcludedFiles", reflect.TypeOf((*MockGitService)(nil).ListExcludedFiles), ctx, localPath, filePatterns)
 }
 
 // SetDefaultRemotes mocks base method.

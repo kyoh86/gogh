@@ -7,25 +7,49 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/kyoh86/gogh/v4/core/overlay"
+	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // UseCase represents the create use case
 type UseCase struct {
-	overlayService workspace.OverlayService
+	workspaceService workspace.WorkspaceService
+	finderService    workspace.FinderService
+	referenceParser  repository.ReferenceParser
+	overlayStore     overlay.OverlayStore
 }
 
-func NewUseCase(overlayService workspace.OverlayService) *UseCase {
+func NewUseCase(
+	workspaceService workspace.WorkspaceService,
+	finderService workspace.FinderService,
+	referenceParser repository.ReferenceParser,
+	overlayStore overlay.OverlayStore,
+) *UseCase {
 	return &UseCase{
-		overlayService: overlayService,
+		workspaceService: workspaceService,
+		finderService:    finderService,
+		referenceParser:  referenceParser,
+		overlayStore:     overlayStore,
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, repoPath string, repoPattern string, forInit bool, relativePath string) error {
-	targetPath := filepath.Join(repoPath, relativePath)
+func (uc *UseCase) Execute(ctx context.Context, refs string, repoPattern string, forInit bool, relativePath string) error {
+	refWithAlias, err := uc.referenceParser.ParseWithAlias(refs)
+	if err != nil {
+		return fmt.Errorf("parsing reference '%s': %w", refs, err)
+	}
+	match, err := uc.finderService.FindByReference(ctx, uc.workspaceService, refWithAlias.Local())
+	if err != nil {
+		return fmt.Errorf("finding repository by reference '%s': %w", refs, err)
+	}
+	if match == nil {
+		return fmt.Errorf("repository not found for reference '%s'", refs)
+	}
+	targetPath := filepath.Join(match.FullPath(), relativePath)
 
 	// Open the overlay source
-	source, err := uc.overlayService.OpenOverlay(ctx, workspace.OverlayEntry{
+	source, err := uc.overlayStore.OpenOverlay(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

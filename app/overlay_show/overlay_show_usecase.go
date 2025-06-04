@@ -6,23 +6,23 @@ import (
 	"io"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 )
 
 // UseCase represents the create use case
 type UseCase struct {
-	overlayService workspace.OverlayService
+	overlayStore overlay.OverlayStore
 }
 
-func NewUseCase(overlayService workspace.OverlayService) *UseCase {
+func NewUseCase(overlayStore overlay.OverlayStore) *UseCase {
 	return &UseCase{
-		overlayService: overlayService,
+		overlayStore: overlayStore,
 	}
 }
 
 func (uc *UseCase) Execute(ctx context.Context, repoPattern string, forInit bool, relativePath string) error {
 	// Open the overlay content
-	content, err := uc.overlayService.OpenOverlay(ctx, workspace.OverlayEntry{
+	content, err := uc.overlayStore.OpenOverlay(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

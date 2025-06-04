@@ -23,7 +23,7 @@ import (
 
 func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
+	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayStore, svc.ReferenceParser, svc.GitService)
 
 	runFunc := func(ctx context.Context) error {
 		logger := log.FromContext(ctx)
@@ -62,26 +62,29 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		}
 
 		overlayFindUseCase := overlay_find.NewUseCase(
+			svc.ReferenceParser,
+			svc.OverlayStore,
+		)
+		overlayApplyUseCase := overlay_apply.NewUseCase(
 			svc.WorkspaceService,
 			svc.FinderService,
 			svc.ReferenceParser,
-			svc.OverlayService,
+			svc.OverlayStore,
 		)
-		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
 		for _, ref := range refs {
 			if f.DryRun {
 				fmt.Printf("Apply overlay for %q\n", ref)
 			}
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) bool {
-					return !entry.ForInit
+				typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(ov *overlay_find.Overlay) (bool, error) {
+					return !ov.ForInit, nil
 				}),
-				func(entry *overlay_find.OverlayEntry) string {
-					return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)
+				func(ov *overlay_find.Overlay) string {
+					return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
 				},
-				func(entry *overlay_find.OverlayEntry) error {
-					return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.RepoPattern, entry.ForInit, entry.RelativePath)
+				func(ov *overlay_find.Overlay) error {
+					return overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {

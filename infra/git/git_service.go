@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"iter"
 	"os"
 	"path/filepath"
 	"slices"
@@ -147,87 +148,156 @@ func (s *GitService) GetDefaultRemotes(
 }
 
 // ListExcludedFiles returns a list of excluded/ignored files in the repository.
-func (s *GitService) ListExcludedFiles(ctx context.Context, repoPath string) ([]string, error) {
-	repoPath, err := filepath.Abs(repoPath)
-	if err != nil {
-		return nil, fmt.Errorf("getting absolute path of repo: %w", err)
-	}
-	userExcludes, err := LoadUserExcludes(repoPath)
-	if err != nil {
-		return nil, fmt.Errorf("loading user excludes: %w", err)
-	}
-	localExcludes, err := LoadLocalExcludes(repoPath)
-	if err != nil {
-		return nil, fmt.Errorf("loading local excludes: %w", err)
-	}
-
-	ignores := map[string][]gitignore.Pattern{}
-	var exDirs [][]string
-	var exFiles []string
-	if err := filepath.Walk(repoPath, func(path string, info os.FileInfo, err error) error {
+func (s *GitService) ListExcludedFiles(
+	ctx context.Context,
+	localPath string,
+	filePatterns []string,
+) iter.Seq2[string, error] {
+	return func(yield func(string, error) bool) {
+		localPath, err := filepath.Abs(localPath)
 		if err != nil {
-			return err
+			yield("", fmt.Errorf("getting absolute path of repo: %w", err))
+			return
 		}
-		if info.IsDir() {
-			if info.Name() == ".git" {
-				return filepath.SkipDir
+
+		var inclusion gitignore.Matcher
+		if len(filePatterns) > 0 {
+			var ps []gitignore.Pattern
+			domain := strings.Split(filepath.ToSlash(localPath), "/")
+			for _, p := range filePatterns {
+				ps = append(ps, gitignore.ParsePattern(p, domain))
 			}
-			patterns, err := LoadLocalIgnore(path)
+			inclusion = gitignore.NewMatcher(ps)
+		}
+
+		userExcludes, err := LoadUserExcludes(localPath)
+		if err != nil {
+			yield("", fmt.Errorf("loading user excludes: %w", err))
+			return
+		}
+		localExcludes, err := LoadLocalExcludes(localPath)
+		if err != nil {
+			yield("", fmt.Errorf("loading local excludes: %w", err))
+			return
+		}
+
+		ignores := map[string][]gitignore.Pattern{}
+		var exDirs [][]string
+		if err := filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			if len(patterns) > 0 {
-				ignores[path] = patterns
-			}
-		}
-
-		// build matcher to ignore excluded files in the current directory
-		var excludes []gitignore.Pattern
-		for traversePath := path; ; traversePath = filepath.Dir(traversePath) {
-			patterns := ignores[traversePath]
-			if len(patterns) > 0 {
-				excludes = slices.Concat(patterns, excludes)
-			}
-			if traversePath == repoPath {
-				break
-			}
-			if traversePath == filepath.Dir(traversePath) {
-				break
-			}
-		}
-		matcher := gitignore.NewMatcher(slices.Concat(userExcludes, localExcludes, excludes))
-
-		pathWords := strings.Split(filepath.ToSlash(path), "/")
-		// Check if the file is excluded by user or local excludes
-		if matcher.Match(pathWords, info.IsDir()) {
 			if info.IsDir() {
-				// If it's a directory, we need to remember it for later
-				exDirs = append(exDirs, pathWords)
-			} else {
-				// If it's a file, we can add it directly to the result
-				exFiles = append(exFiles, path)
+				if info.Name() == ".git" {
+					return filepath.SkipDir
+				}
+				patterns, err := LoadLocalIgnore(path)
+				if err != nil {
+					return err
+				}
+				if len(patterns) > 0 {
+					ignores[path] = patterns
+				}
 			}
-			return nil
-		}
-		if info.IsDir() {
-			return nil
-		}
-		// If the file is not excluded, we check if it is in an ignored directory
-		for _, dir := range exDirs {
-			if len(pathWords) <= len(dir) {
-				continue
+
+			// build matcher to ignore excluded files in the current directory
+			var excludes []gitignore.Pattern
+			for traversePath := path; ; traversePath = filepath.Dir(traversePath) {
+				patterns := ignores[traversePath]
+				if len(patterns) > 0 {
+					excludes = slices.Concat(patterns, excludes)
+				}
+				if traversePath == localPath {
+					break
+				}
+				if traversePath == filepath.Dir(traversePath) {
+					break
+				}
 			}
-			if slices.Equal(pathWords[:len(dir)], dir) {
-				exFiles = append(exFiles, path)
+			exclusion := gitignore.NewMatcher(slices.Concat(userExcludes, localExcludes, excludes))
+
+			pathWords := strings.Split(filepath.ToSlash(path), "/")
+			// Check if the file is excluded by user or local excludes
+			if exclusion.Match(pathWords, info.IsDir()) {
+				if info.IsDir() {
+					// If it's a directory, we need to remember it for later
+					exDirs = append(exDirs, pathWords)
+				} else if inclusion == nil || inclusion.Match(pathWords, info.IsDir()) {
+					// If it's a file, we can add it directly to the result
+					if !yield(path, nil) {
+						return filepath.SkipAll
+					}
+				}
 				return nil
 			}
+			if info.IsDir() {
+				return nil
+			}
+			// If the file is not excluded, we check if it is in an ignored directory
+			for _, dir := range exDirs {
+				if len(pathWords) <= len(dir) {
+					continue
+				}
+				if slices.Equal(pathWords[:len(dir)], dir) {
+					if inclusion == nil || inclusion.Match(pathWords, info.IsDir()) {
+						if !yield(path, nil) {
+							return filepath.SkipAll
+						}
+					}
+					return nil
+				}
+			}
+			return nil
+		}); err != nil {
+			yield("", fmt.Errorf("walking repository path %q: %w", localPath, err))
+			return
 		}
-		return nil
-	}); err != nil {
-		return nil, err
 	}
+}
 
-	return exFiles, nil
+// ListAllFiles returns a list of all files in the repository.
+// It includes `.git` directory.
+func (s *GitService) ListAllFiles(
+	ctx context.Context,
+	localPath string,
+	filePatterns []string,
+) iter.Seq2[string, error] {
+	return func(yield func(string, error) bool) {
+		localPath, err := filepath.Abs(localPath)
+		if err != nil {
+			yield("", fmt.Errorf("getting absolute path of repo: %w", err))
+			return
+		}
+
+		var inclusion gitignore.Matcher
+		if len(filePatterns) > 0 {
+			var ps []gitignore.Pattern
+			domain := strings.Split(filepath.ToSlash(localPath), "/")
+			for _, p := range filePatterns {
+				ps = append(ps, gitignore.ParsePattern(p, domain))
+			}
+			inclusion = gitignore.NewMatcher(ps)
+		}
+
+		if err := filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			if inclusion != nil && !inclusion.Match(strings.Split(filepath.ToSlash(path), "/"), info.IsDir()) {
+				return nil
+			}
+			if !yield(path, nil) {
+				return filepath.SkipAll
+			}
+			return nil
+		}); err != nil {
+			yield("", fmt.Errorf("walking repository path %q: %w", localPath, err))
+			return
+		}
+	}
 }
 
 var _ coregit.GitService = (*GitService)(nil)

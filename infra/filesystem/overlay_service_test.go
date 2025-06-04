@@ -6,31 +6,32 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"strings"
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/core/fs_mock"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
-	"github.com/kyoh86/gogh/v4/core/workspace"
 	testtarget "github.com/kyoh86/gogh/v4/infra/filesystem"
 )
 
-// TestNewOverlayService tests creating a new OverlayService
-func TestNewOverlayService(t *testing.T) {
+// TestNewOverlayStore tests creating a new OverlayStore
+func TestNewOverlayStore(t *testing.T) {
 	// Create a mock WFS implementation
 	mockWFS := fs_mock.NewMockWFS()
 
 	// Test successful creation
-	_, err := testtarget.NewOverlayService(mockWFS)
+	_, err := testtarget.NewOverlayStore(mockWFS)
 	if err != nil {
-		t.Fatalf("NewOverlayService failed: %v", err)
+		t.Fatalf("NewOverlayStore failed: %v", err)
 	}
 
 	// Test directory creation error
 	mockWFSWithError := fs_mock.NewMockWFS()
 	mockWFSWithError.SetError("MkdirAll", "", fs.ErrPermission)
 
-	_, err = testtarget.NewOverlayService(mockWFSWithError)
+	_, err = testtarget.NewOverlayStore(mockWFSWithError)
 	if err == nil {
 		t.Error("expected error when directory creation fails, but got nil")
 	}
@@ -40,24 +41,21 @@ func TestNewOverlayService(t *testing.T) {
 func TestAddAndListOverlays(t *testing.T) {
 	mockWFS := fs_mock.NewMockWFS()
 
-	service, err := testtarget.NewOverlayService(mockWFS)
+	service, err := testtarget.NewOverlayStore(mockWFS)
 	if err != nil {
-		t.Fatalf("NewOverlayService failed: %v", err)
+		t.Fatalf("NewOverlayStore failed: %v", err)
 	}
 
 	ctx := context.Background()
 
 	// Test listing empty directory
-	overlays, err := service.ListOverlays(ctx)
-	if err != nil {
-		t.Fatalf("ListOverlays failed: %v", err)
-	}
-	if len(overlays) != 0 {
-		t.Errorf("expected empty list, got %d items", len(overlays))
+	before := maps.Collect(service.ListOverlays(ctx))
+	if len(before) != 0 {
+		t.Errorf("expected empty list, got %d items", len(before))
 	}
 
 	// Add some overlays
-	entries := []workspace.OverlayEntry{
+	entries := []overlay.Overlay{
 		{RepoPattern: "github.com/user1/repo1", RelativePath: ".envrc"},
 		{RepoPattern: "github.com/user2/*", RelativePath: "config/settings.json"},
 	}
@@ -71,23 +69,23 @@ func TestAddAndListOverlays(t *testing.T) {
 	}
 
 	// List overlays and verify
-	overlays, err = service.ListOverlays(ctx)
-	if err != nil {
-		t.Fatalf("ListOverlays failed: %v", err)
-	}
+	after := maps.Collect(service.ListOverlays(ctx))
 
-	if len(overlays) != len(entries) {
+	if len(after) != len(entries) {
 		enc, err := json.MarshalIndent(mockWFS.DirEntries(), "", "  ")
 		if err != nil {
 			t.Fatalf("failed to marshal mock WFS entries: %v", err)
 		}
 		t.Log(string(enc))
-		t.Errorf("expected %d overlays, got %d", len(entries), len(overlays))
+		t.Errorf("expected %d overlays, got %d", len(entries), len(after))
 	}
 
 	// Check if all entries are present
 	foundEntries := make(map[string]bool)
-	for _, overlay := range overlays {
+	for overlay, err := range after {
+		if err != nil {
+			t.Fatalf("ListOverlays returned error: %v", err)
+		}
 		key := overlay.RepoPattern + ":" + overlay.RelativePath
 		foundEntries[key] = true
 	}
@@ -101,9 +99,10 @@ func TestAddAndListOverlays(t *testing.T) {
 
 	// Test error during listing
 	mockWFS.SetError("ReadDir", "", fs.ErrPermission)
-	_, err = service.ListOverlays(ctx)
-	if err == nil {
-		t.Error("expected error during ListOverlays, but got nil")
+	for _, err := range service.ListOverlays(ctx) {
+		if err == nil {
+			t.Error("expected error during ListOverlays, but got nil")
+		}
 	}
 	mockWFS.SetError("ReadDir", "", nil) // Clear error
 }
@@ -112,15 +111,15 @@ func TestAddAndListOverlays(t *testing.T) {
 func TestRemoveOverlay(t *testing.T) {
 	mockWFS := fs_mock.NewMockWFS()
 
-	service, err := testtarget.NewOverlayService(mockWFS)
+	service, err := testtarget.NewOverlayStore(mockWFS)
 	if err != nil {
-		t.Fatalf("NewOverlayService failed: %v", err)
+		t.Fatalf("NewOverlayStore failed: %v", err)
 	}
 
 	ctx := context.Background()
 
 	// Add an overlay
-	entry := workspace.OverlayEntry{
+	entry := overlay.Overlay{
 		RepoPattern:  "github.com/user/repo",
 		RelativePath: ".envrc",
 	}
@@ -136,11 +135,10 @@ func TestRemoveOverlay(t *testing.T) {
 	}
 
 	// Verify it's gone
-	overlays, err := service.ListOverlays(ctx)
-	if err != nil {
-		t.Fatalf("ListOverlays failed after removal: %v", err)
-	}
-	for _, overlay := range overlays {
+	for overlay, err := range service.ListOverlays(ctx) {
+		if err != nil {
+			t.Fatalf("ListOverlays failed after removal: %v", err)
+		}
 		if overlay.RepoPattern == entry.RepoPattern && overlay.RelativePath == entry.RelativePath {
 			t.Errorf("expected overlay %s:%s to be removed, but it still exists", entry.RepoPattern, entry.RelativePath)
 			return
@@ -148,7 +146,7 @@ func TestRemoveOverlay(t *testing.T) {
 	}
 
 	// Test removing non-existent entry
-	err = service.RemoveOverlay(ctx, workspace.OverlayEntry{RepoPattern: "non-existent", RelativePath: "file.txt"})
+	err = service.RemoveOverlay(ctx, overlay.Overlay{RepoPattern: "non-existent", RelativePath: "file.txt"})
 	if err == nil {
 		t.Error("expected error for non-existent entry, but got nil")
 	}
@@ -198,12 +196,12 @@ func TestEncodeDecodeFileName(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Encode
-			entry := workspace.OverlayEntry{
+			ov := overlay.Overlay{
 				RepoPattern:  tc.repoPattern,
 				ForInit:      tc.forInit,
 				RelativePath: tc.relativePath,
 			}
-			encoded := testtarget.EncodeFileName(entry)
+			encoded := testtarget.EncodeFileName(ov)
 
 			parts := strings.SplitN(encoded, "/", 3)
 			if len(parts) != 3 {
@@ -261,15 +259,15 @@ func TestFindOverlays(t *testing.T) {
 	// Create a mock filesystem
 	mockWFS := fs_mock.NewMockWFS()
 
-	service, err := testtarget.NewOverlayService(mockWFS)
+	service, err := testtarget.NewOverlayStore(mockWFS)
 	if err != nil {
-		t.Fatalf("NewOverlayService failed: %v", err)
+		t.Fatalf("NewOverlayStore failed: %v", err)
 	}
 
 	ctx := context.Background()
 
 	// Create test entries
-	testEntries := []workspace.OverlayEntry{
+	testOverlays := []overlay.Overlay{
 		{
 			RepoPattern:  "github.com/user/repo",
 			ForInit:      false,
@@ -293,9 +291,9 @@ func TestFindOverlays(t *testing.T) {
 	}
 
 	// Add overlays to the mock filesystem
-	for _, entry := range testEntries {
-		encodedName := testtarget.EncodeFileName(entry)
-		content := fmt.Appendf(nil, "content for %s", entry.RelativePath)
+	for _, ov := range testOverlays {
+		encodedName := testtarget.EncodeFileName(ov)
+		content := fmt.Appendf(nil, "content for %s", ov.RelativePath)
 		err := mockWFS.WriteFile(encodedName, content, 0644)
 		if err != nil {
 			t.Fatalf("Failed to set up mock file %s: %v", encodedName, err)
@@ -343,24 +341,24 @@ func TestFindOverlays(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test FindOverlays
-			var overlays []*workspace.OverlayEntry
-			for o, err := range service.FindOverlays(ctx, tc.ref) {
+			var overlays []*overlay.Overlay
+			for ov, err := range overlay.ForReference(service.ListOverlays(ctx), tc.ref) {
 				if err != nil {
 					t.Fatalf("FindOverlays error: %v", err)
 				}
-				if o == nil {
+				if ov == nil {
 					continue
 				}
 				func() {
-					content, err := service.OpenOverlay(ctx, *o)
+					content, err := service.OpenOverlay(ctx, *ov)
 					if err != nil {
-						t.Fatalf("OpenOverlay failed for %s: %v", o.RelativePath, err)
+						t.Fatalf("OpenOverlay failed for %s: %v", ov.RelativePath, err)
 					}
 					// Read content
 					if _, err := io.ReadAll(content); err != nil {
 						t.Fatalf("Failed to read overlay content: %v", err)
 					}
-					overlays = append(overlays, o)
+					overlays = append(overlays, ov)
 				}()
 			}
 
@@ -390,22 +388,21 @@ func TestInvalidPatternHandling(t *testing.T) {
 	// Create a mock filesystem
 	mockWFS := fs_mock.NewMockWFS()
 
-	service, err := testtarget.NewOverlayService(mockWFS)
+	service, err := testtarget.NewOverlayStore(mockWFS)
 	if err != nil {
-		t.Fatalf("NewOverlayService failed: %v", err)
+		t.Fatalf("NewOverlayStore failed: %v", err)
 	}
 
 	ctx := context.Background()
 
 	// Add entry with invalid pattern (this is a contrived example to force a pattern matching error)
-	invalidEntry := workspace.OverlayEntry{
+	invalidOverlay := overlay.Overlay{
 		RepoPattern:  "[invalid-pattern", // Invalid regex pattern
 		ForInit:      false,
 		RelativePath: "file.txt",
 	}
-	encodedName := testtarget.EncodeFileName(invalidEntry)
-	err = mockWFS.WriteFile(encodedName, []byte("content"), 0644)
-	if err != nil {
+	encodedName := testtarget.EncodeFileName(invalidOverlay)
+	if err = mockWFS.WriteFile(encodedName, []byte("content"), 0644); err != nil {
 		t.Fatalf("Failed to set up mock file: %v", err)
 	}
 
@@ -417,8 +414,8 @@ func TestInvalidPatternHandling(t *testing.T) {
 
 	// Should handle invalid pattern errors gracefully
 	foundOverlay := false
-	for o, err := range service.FindOverlays(ctx, repoRef) {
-		if err == nil && o != nil {
+	for ov, err := range overlay.ForReference(service.ListOverlays(ctx), repoRef) {
+		if err == nil && ov != nil {
 			foundOverlay = true
 			break
 		}

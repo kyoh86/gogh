@@ -7,6 +7,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -15,7 +16,7 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
-	overlayService   workspace.OverlayService
+	overlayStore     overlay.OverlayStore
 	referenceParser  repository.ReferenceParser
 	gitService       git.GitService
 }
@@ -23,14 +24,14 @@ type UseCase struct {
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	overlayService workspace.OverlayService,
+	overlayStore overlay.OverlayStore,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
-		overlayService:   overlayService,
+		overlayStore:     overlayStore,
 		referenceParser:  referenceParser,
 		gitService:       gitService,
 	}
@@ -55,7 +56,7 @@ func (uc *UseCase) Execute(
 	if err != nil {
 		return fmt.Errorf("invalid reference: %w", err)
 	}
-	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
+	repositoryService := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.overlayStore, uc.gitService)
 	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref.Reference, template, opts.RepositoryOptions)
 	if err != nil {
 		return fmt.Errorf("creating repository from template: %w", err)

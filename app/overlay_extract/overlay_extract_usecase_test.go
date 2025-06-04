@@ -3,12 +3,14 @@ package overlay_extract_test
 import (
 	"context"
 	"errors"
+	"maps"
 	"os"
 	"path/filepath"
 	"testing"
 
 	testtarget "github.com/kyoh86/gogh/v4/app/overlay_extract"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
+	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
@@ -19,7 +21,7 @@ func TestExecute(t *testing.T) {
 	// Test cases
 	tests := []struct {
 		name          string
-		setupMocks    func(*git_mock.MockGitService, *workspace_mock.MockOverlayService, *workspace_mock.MockWorkspaceService, *workspace_mock.MockFinderService, *repository_mock.MockReferenceParser, string)
+		setupMocks    func(*git_mock.MockGitService, *overlay_mock.MockOverlayStore, *workspace_mock.MockWorkspaceService, *workspace_mock.MockFinderService, *repository_mock.MockReferenceParser, string)
 		refString     string
 		options       testtarget.Options
 		expectedCount int
@@ -28,7 +30,7 @@ func TestExecute(t *testing.T) {
 	}{
 		{
 			name: "Success: When untracked files exist",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *overlay_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -43,14 +45,14 @@ func TestExecute(t *testing.T) {
 
 				// Setup untracked files with the actual file paths
 				git.EXPECT().
-					ListExcludedFiles(gomock.Any(), repoPath).
-					Return([]string{
-						"file1.txt",
-						"file2.txt",
-					}, nil)
+					ListExcludedFiles(gomock.Any(), repoPath, gomock.Any()).
+					Return(maps.All(map[string]error{
+						"file1.txt": nil,
+						"file2.txt": nil,
+					}))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 2,
 			expectedError: false,
 			setupFiles: func(repoPath string) []string {
@@ -73,7 +75,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Success: When no untracked files exist",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *overlay_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -88,11 +90,11 @@ func TestExecute(t *testing.T) {
 
 				// Setup empty untracked files
 				git.EXPECT().
-					ListExcludedFiles(gomock.Any(), repoPath).
-					Return([]string{}, nil)
+					ListExcludedFiles(gomock.Any(), repoPath, gomock.Any()).
+					Return(maps.All(map[string]error{}))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: false,
 			setupFiles: func(repoPath string) []string {
@@ -102,13 +104,13 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Error: When reference parsing fails",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *overlay_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				parser.EXPECT().
 					Parse("invalid/ref").
 					Return(nil, errors.New("invalid reference format"))
 			},
 			refString:     "invalid/ref",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: true,
 			setupFiles: func(repoPath string) []string {
@@ -117,7 +119,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Error: When repository finder fails",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *overlay_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -130,7 +132,7 @@ func TestExecute(t *testing.T) {
 					Return(nil, errors.New("repository not found"))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: true,
 			setupFiles: func(repoPath string) []string {
@@ -139,7 +141,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Error: When git service fails",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *overlay_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -154,11 +156,11 @@ func TestExecute(t *testing.T) {
 
 				// Setup git error
 				git.EXPECT().
-					ListExcludedFiles(gomock.Any(), repoPath).
-					Return(nil, errors.New("git command failed"))
+					ListExcludedFiles(gomock.Any(), repoPath, gomock.Any()).
+					Return(maps.All(map[string]error{"": errors.New("git command failed")}))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: true,
 			setupFiles: func(repoPath string) []string {
@@ -181,7 +183,7 @@ func TestExecute(t *testing.T) {
 
 			// Create mocks
 			mockGit := git_mock.NewMockGitService(ctrl)
-			mockOverlay := workspace_mock.NewMockOverlayService(ctrl)
+			mockOverlay := overlay_mock.NewMockOverlayStore(ctrl)
 			mockWs := workspace_mock.NewMockWorkspaceService(ctrl)
 			mockFinder := workspace_mock.NewMockFinderService(ctrl)
 			mockParser := repository_mock.NewMockReferenceParser(ctrl)

@@ -31,7 +31,13 @@ func NewOverlayCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
      gogh overlay add --for-init /path/to/source/deno.jsonc "github.com/owner/deno-*" deno.jsonc
 
    This will copy the ` + "`deno.jsonc`" + ` file to the root of the repository only when you run ` + "`gogh create`" + `
-	 if the repository matches the pattern ` + "`github.com/owner/deno-*`" + `.`,
+   if the repository matches the pattern ` + "`github.com/owner/deno-*`" + `.
+
+   And then you can use the ` + "`gogh overlay apply`" + ` command to apply the overlay files manually.
+
+   You can create overlay files that never be applied to the repository automatically,
+   (and only be applied manually by ` + "`gogh overlay apply`" + ` command),
+   you can set the ` + "`--repo-pattern`" + ` flag to never match any repository.`,
 	}
 	return cmd, nil
 }
@@ -44,18 +50,16 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		Short:   "List overlays",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			entries, err := overlay_list.NewUseCase(svc.OverlayService).Execute(ctx)
-			if err != nil {
-				return fmt.Errorf("listing overlay: %w", err)
-			}
-
-			for _, entry := range entries {
+			for overlay, err := range overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx) {
+				if err != nil {
+					return fmt.Errorf("listing overlay: %w", err)
+				}
 				fmt.Printf("- ")
-				fmt.Printf("Repository pattern: %s\n", entry.RepoPattern)
-				if entry.ForInit {
+				fmt.Printf("Repository pattern: %s\n", overlay.RepoPattern)
+				if overlay.ForInit {
 					fmt.Printf("  For Init: Yes\n")
 				}
-				fmt.Printf("  Overlay path: %s\n", entry.RelativePath)
+				fmt.Printf("  Overlay path: %s\n", overlay.RelativePath)
 			}
 
 			return nil
@@ -88,7 +92,11 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
      gogh overlay add --for-init /path/to/source/deno.jsonc "github.com/owner/deno-*" deno.jsonc
 
    This will copy the ` + "`deno.jsonc`" + ` file to the root of the repository only when you run ` + "`gogh create`" + `
-   if the repository matches the pattern ` + "`github.com/owner/deno-*`" + `.`,
+   if the repository matches the pattern ` + "`github.com/owner/deno-*`" + `.
+
+   You can create overlay files that never be applied to the repository automatically,
+   (and only be applied manually by ` + "`gogh overlay apply`" + ` command),
+   you can set the ` + "`--repo-pattern`" + ` flag to never match any repository.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
@@ -100,7 +108,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return fmt.Errorf("target path must be relative, got absolute path: %s", targetPath)
 			}
 
-			if err := overlay_add.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, repoPattern, targetPath, sourcePath); err != nil {
+			if err := overlay_add.NewUseCase(svc.OverlayStore).Execute(ctx, f.forInit, repoPattern, targetPath, sourcePath); err != nil {
 				return err
 			}
 
@@ -134,7 +142,7 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 				return fmt.Errorf("target path must be relative, got absolute path: %s", targetPath)
 			}
 
-			if err := overlay_remove.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, targetPath, repoPattern); err != nil {
+			if err := overlay_remove.NewUseCase(svc.OverlayStore).Execute(ctx, f.forInit, targetPath, repoPattern); err != nil {
 				return err
 			}
 

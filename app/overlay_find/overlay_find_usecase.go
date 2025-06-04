@@ -5,59 +5,37 @@ import (
 	"fmt"
 	"iter"
 
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
-	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
 // UseCase represents the create use case
 type UseCase struct {
-	workspaceService workspace.WorkspaceService
-	finderService    workspace.FinderService
-	referenceParser  repository.ReferenceParser
-	overlayService   workspace.OverlayService
+	referenceParser repository.ReferenceParser
+	overlayStore    overlay.OverlayStore
 }
 
 func NewUseCase(
-	workspaceService workspace.WorkspaceService,
-	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
-	overlayService workspace.OverlayService,
+	overlayStore overlay.OverlayStore,
 ) *UseCase {
 	return &UseCase{
-		workspaceService: workspaceService,
-		finderService:    finderService,
-		referenceParser:  referenceParser,
-		overlayService:   overlayService,
+		referenceParser: referenceParser,
+		overlayStore:    overlayStore,
 	}
 }
 
-type OverlayEntry struct {
-	workspace.OverlayEntry
-	Location repository.Location
-}
+type Overlay = overlay.Overlay
 
-func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*OverlayEntry, error] {
-	return func(yield func(*OverlayEntry, error) bool) {
+func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*Overlay, error] {
+	return func(yield func(*Overlay, error) bool) {
 		refWithAlias, err := uc.referenceParser.ParseWithAlias(refs)
 		if err != nil {
 			yield(nil, fmt.Errorf("parsing reference '%s': %w", refs, err))
 			return
 		}
-		ref := refWithAlias.Reference
-		if refWithAlias.Alias != nil {
-			ref = *refWithAlias.Alias
-		}
-		match, err := uc.finderService.FindByReference(ctx, uc.workspaceService, ref)
-		if err != nil {
-			yield(nil, fmt.Errorf("finding repository by reference '%s': %w", refs, err))
-			return
-		}
-		if match == nil {
-			yield(nil, fmt.Errorf("repository not found for reference '%s'", refs))
-			return
-		}
-		for overlay, err := range uc.overlayService.FindOverlays(ctx, ref) {
-			if !yield(&OverlayEntry{OverlayEntry: *overlay, Location: *match}, err) {
+		for overlay, err := range overlay.ForReference(uc.overlayStore.ListOverlays(ctx), refWithAlias.Local()) {
+			if !yield(overlay, err) {
 				return
 			}
 		}

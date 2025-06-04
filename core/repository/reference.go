@@ -41,3 +41,11 @@ type ReferenceWithAlias struct {
 	// Alias is an optional alias for the reference if needed.
 	Alias *Reference
 }
+
+// Local returns the local reference. If an alias is set, it returns the alias; otherwise, it returns the main reference.
+func (r ReferenceWithAlias) Local() Reference {
+	if r.Alias != nil {
+		return *r.Alias
+	}
+	return r.Reference
+}

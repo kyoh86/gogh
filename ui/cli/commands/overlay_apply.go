@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"iter"
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/overlay_apply"
 	"github.com/kyoh86/gogh/v4/app/overlay_find"
+	"github.com/kyoh86/gogh/v4/app/overlay_list"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/typ"
@@ -17,6 +19,11 @@ import (
 )
 
 func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+	var f struct {
+		repoPattern string
+		forInit     bool
+	}
+
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
 			return args, nil
@@ -45,7 +52,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 
 	cmd := &cobra.Command{
 		Use:   "apply [flags] [[[<host>/]<owner>/]<name>...]",
-		Short: "Target overlays to a repository",
+		Short: "Apply overlays to specified repositories",
 		Args:  cobra.ArbitraryArgs,
 		Example: `  It accepts a short notation for a repository
   (for example, "github.com/kyoh86/example") like below.
@@ -69,24 +76,36 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				return err
 			}
 
-			overlayFindUseCase := overlay_find.NewUseCase(
+			overlayApplyUseCase := overlay_apply.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,
-				svc.OverlayService,
+				svc.OverlayStore,
 			)
-			overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
+			var listup func(ctx context.Context, ref string) iter.Seq2[*overlay_find.Overlay, error]
+			var filter func(ov *overlay_find.Overlay) (bool, error)
+			if f.repoPattern == "" {
+				listup = overlay_find.NewUseCase(svc.ReferenceParser, svc.OverlayStore).Execute
+				filter = func(ov *overlay_find.Overlay) (bool, error) {
+					return ov.ForInit == f.forInit, nil // Filter by `forInit` flag
+				}
+			} else {
+				listup = func(ctx context.Context, ref string) iter.Seq2[*overlay_find.Overlay, error] {
+					return overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx)
+				}
+				filter = func(ov *overlay_find.Overlay) (bool, error) {
+					return ov.RepoPattern == f.repoPattern && ov.ForInit == f.forInit, nil // Filter by `forInit` flag
+				}
+			}
 			for _, ref := range refs {
 				if err := view.ProcessWithConfirmation(
 					ctx,
-					typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) bool {
-						return !entry.ForInit
-					}),
-					func(entry *overlay_find.OverlayEntry) string {
-						return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)
+					typ.FilterE(listup(ctx, ref), filter),
+					func(ov *overlay_find.Overlay) string {
+						return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
 					},
-					func(entry *overlay_find.OverlayEntry) error {
-						return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.RepoPattern, entry.ForInit, entry.RelativePath)
+					func(ov *overlay_find.Overlay) error {
+						return overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath)
 					},
 				); err != nil {
 					if errors.Is(err, view.ErrQuit) {
@@ -100,6 +119,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			return nil
 		},
 	}
-
+	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "", "", "Force apply overlays having this pattern, ignoring automatic repository name matching (useful for applying specific overlays or templates that would not normally match)")
+	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Apply overlays only for `gogh create` command (useful for templates)")
 	return cmd, nil
 }
