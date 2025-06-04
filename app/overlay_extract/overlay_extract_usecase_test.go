@@ -3,6 +3,7 @@ package overlay_extract_test
 import (
 	"context"
 	"errors"
+	"maps"
 	"os"
 	"path/filepath"
 	"testing"
@@ -44,14 +45,14 @@ func TestExecute(t *testing.T) {
 
 				// Setup untracked files with the actual file paths
 				git.EXPECT().
-					ListExcludedFiles(gomock.Any(), repoPath).
-					Return([]string{
-						"file1.txt",
-						"file2.txt",
-					}, nil)
+					ListExcludedFiles(gomock.Any(), repoPath, gomock.Any()).
+					Return(maps.All(map[string]error{
+						"file1.txt": nil,
+						"file2.txt": nil,
+					}))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 2,
 			expectedError: false,
 			setupFiles: func(repoPath string) []string {
@@ -89,11 +90,11 @@ func TestExecute(t *testing.T) {
 
 				// Setup empty untracked files
 				git.EXPECT().
-					ListExcludedFiles(gomock.Any(), repoPath).
-					Return([]string{}, nil)
+					ListExcludedFiles(gomock.Any(), repoPath, gomock.Any()).
+					Return(maps.All(map[string]error{}))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: false,
 			setupFiles: func(repoPath string) []string {
@@ -109,7 +110,7 @@ func TestExecute(t *testing.T) {
 					Return(nil, errors.New("invalid reference format"))
 			},
 			refString:     "invalid/ref",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: true,
 			setupFiles: func(repoPath string) []string {
@@ -131,7 +132,7 @@ func TestExecute(t *testing.T) {
 					Return(nil, errors.New("repository not found"))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: true,
 			setupFiles: func(repoPath string) []string {
@@ -155,11 +156,11 @@ func TestExecute(t *testing.T) {
 
 				// Setup git error
 				git.EXPECT().
-					ListExcludedFiles(gomock.Any(), repoPath).
-					Return(nil, errors.New("git command failed"))
+					ListExcludedFiles(gomock.Any(), repoPath, gomock.Any()).
+					Return(maps.All(map[string]error{"": errors.New("git command failed")}))
 			},
 			refString:     "github.com/kyoh86/gogh",
-			options:       testtarget.Options{},
+			options:       testtarget.Options{Excluded: true},
 			expectedCount: 0,
 			expectedError: true,
 			setupFiles: func(repoPath string) []string {

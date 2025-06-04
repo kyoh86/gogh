@@ -18,7 +18,7 @@ import (
 func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		repoPattern string
-		filePattern string
+		filePattern []string
 		forInit     bool
 		force       bool
 	}
@@ -84,10 +84,16 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 			overlayAddUseCase := overlay_add.NewUseCase(
 				svc.OverlayStore,
 			)
+			opts := overlay_extract.Options{}
+			if len(f.filePattern) > 0 {
+				opts.FilePatterns = f.filePattern // Extract files matching the specified patterns
+			} else {
+				opts.Excluded = true // Extract only excluded files
+			}
 			// Extract untracked files
 			for _, ref := range refs {
 				logger.Infof("Extracting files from %q", ref)
-				if err := view.ProcessWithConfirmation(ctx, overlayExtractUseCase.Execute(ctx, ref, overlay_extract.Options{}),
+				if err := view.ProcessWithConfirmation(ctx, overlayExtractUseCase.Execute(ctx, ref, opts),
 					func(result *overlay_extract.ExtractResult) string {
 						return fmt.Sprintf("Extract %q from %q", result.FilePath, ref)
 					},
@@ -115,7 +121,7 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 	}
 
 	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "", "", "Pattern to match repositories to apply the overlays to (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
-	//TODO: cmd.Flags().StringVarP(&f.filePattern, "file-pattern", "", "", "Pattern to match files to use as the overlays. If not specified, all git-excluded files will be extracted")
+	cmd.Flags().StringArrayVarP(&f.filePattern, "file-pattern", "", nil, "Pattern like git-ignore to match files to extract; if empty, all excluded files are returned")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to extract for each file")
 	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register the overlay for `gogh create` command")
 	return cmd, nil

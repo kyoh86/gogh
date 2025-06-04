@@ -3,6 +3,7 @@ package git
 import (
 	"context"
 	"errors"
+	"iter"
 )
 
 // ErrRepositoryNotExists is returned when the repository does not exist
@@ -41,8 +42,10 @@ type GitService interface {
 	) ([]string, error)
 
 	// ListExcludedFiles returns a list of untracked files in the repository
-	//TODO: make it returns iter.Seq2
-	ListExcludedFiles(ctx context.Context, repoPath string) ([]string, error)
+	ListExcludedFiles(ctx context.Context, localPath string, filePatterns []string) iter.Seq2[string, error]
+
+	// ListAllFiles returns a list of untracked files in the repository
+	ListAllFiles(ctx context.Context, localPath string, filePatterns []string) iter.Seq2[string, error]
 }
 
 // CloneOptions contains options for the local clone operation
