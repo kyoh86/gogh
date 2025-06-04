@@ -27,6 +27,9 @@ type Overlay struct {
 	RelativePath string
 }
 
+type OverlayLocation struct {
+}
+
 func (ov Overlay) String() string {
 	if ov.ForInit {
 		return fmt.Sprintf("Init(%s): %s", ov.RepoPattern, ov.RelativePath)

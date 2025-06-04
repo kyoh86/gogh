@@ -75,12 +75,15 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			return fmt.Errorf("cloning repositories: %w", err)
 		}
 		overlayFindUseCase := overlay_find.NewUseCase(
+			svc.ReferenceParser,
+			svc.OverlayStore,
+		)
+		overlayApplyUseCase := overlay_apply.NewUseCase(
 			svc.WorkspaceService,
 			svc.FinderService,
 			svc.ReferenceParser,
 			svc.OverlayStore,
 		)
-		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayStore)
 		for _, ref := range refs {
 			if f.DryRun {
 				fmt.Printf("Apply overlay for %q\n", ref)
@@ -94,7 +97,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 					return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
 				},
 				func(ov *overlay_find.Overlay) error {
-					return overlayApplyUseCase.Execute(ctx, ov.Location.FullPath(), ov.RepoPattern, ov.ForInit, ov.RelativePath)
+					return overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {

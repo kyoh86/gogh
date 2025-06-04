@@ -46,12 +46,15 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 				return fmt.Errorf("forking the repository: %w", err)
 			}
 
-			useCase := overlay_apply.NewUseCase(svc.OverlayStore)
+			useCase := overlay_apply.NewUseCase(
+				svc.WorkspaceService,
+				svc.FinderService,
+				svc.ReferenceParser,
+				svc.OverlayStore,
+			)
 			if err := view.ProcessWithConfirmation(
 				ctx,
 				typ.FilterE(overlay_find.NewUseCase(
-					svc.WorkspaceService,
-					svc.FinderService,
 					svc.ReferenceParser,
 					svc.OverlayStore,
 				).Execute(ctx, refs[0]), func(ov *overlay_find.Overlay) (bool, error) {
@@ -61,7 +64,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], ov.RelativePath)
 				},
 				func(ov *overlay_find.Overlay) error {
-					return useCase.Execute(ctx, ov.Location.FullPath(), ov.RepoPattern, ov.ForInit, ov.RelativePath)
+					return useCase.Execute(ctx, refs[0], ov.RepoPattern, ov.ForInit, ov.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {
