@@ -89,7 +89,7 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("getting overlay directory: %w", err)
 	}
 	overlayFS := filesystem.NewLocalWFS(overlayDir)
-	overlayService, err := filesystem.NewOverlayService(overlayFS)
+	overlayStore, err := filesystem.NewOverlayStore(overlayFS)
 	if err != nil {
 		return fmt.Errorf("creating overlay service: %w", err)
 	}
@@ -104,9 +104,9 @@ func run(ctx context.Context) error {
 		WorkspaceStore:   workspaceStore,
 		WorkspaceService: workspaceService,
 
-		OverlayService: overlayService,
-		FlagsStore:     flagsStore,
-		Flags:          flags,
+		OverlayStore: overlayStore,
+		FlagsStore:   flagsStore,
+		Flags:        flags,
 
 		ReferenceParser:     repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner()),
 		HostingService:      github.NewHostingService(tokenService, defaultNameService),

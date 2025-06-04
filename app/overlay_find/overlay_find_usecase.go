@@ -14,25 +14,25 @@ type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	referenceParser  repository.ReferenceParser
-	overlayService   workspace.OverlayService
+	overlayStore     workspace.OverlayStore
 }
 
 func NewUseCase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
-	overlayService workspace.OverlayService,
+	overlayStore workspace.OverlayStore,
 ) *UseCase {
 	return &UseCase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		referenceParser:  referenceParser,
-		overlayService:   overlayService,
+		overlayStore:     overlayStore,
 	}
 }
 
 type OverlayEntry struct {
-	workspace.OverlayEntry
+	workspace.Overlay
 	Location repository.Location
 }
 
@@ -56,8 +56,8 @@ func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*OverlayE
 			yield(nil, fmt.Errorf("repository not found for reference '%s'", refs))
 			return
 		}
-		for overlay, err := range uc.overlayService.FindOverlays(ctx, ref) {
-			if !yield(&OverlayEntry{OverlayEntry: *overlay, Location: *match}, err) {
+		for overlay, err := range uc.overlayStore.FindOverlaysForReference(ctx, ref) {
+			if !yield(&OverlayEntry{Overlay: *overlay, Location: *match}, err) {
 				return
 			}
 		}

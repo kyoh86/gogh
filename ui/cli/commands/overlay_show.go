@@ -23,7 +23,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		relativePath string
 	}
 	checkFlags := func(ctx context.Context, _ []string) ([]overlay_list.OverlayEntry, error) {
-		list, err := overlay_list.NewUseCase(svc.OverlayService).Execute(ctx)
+		list, err := overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("listing overlays: %w", err)
 		}
@@ -75,7 +75,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			if w, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
 				width = w
 			}
-			overlayShowUseCase := overlay_show.NewUseCase(svc.OverlayService)
+			overlayShowUseCase := overlay_show.NewUseCase(svc.OverlayStore)
 			for i, entry := range entries {
 				if i > 0 {
 					fmt.Println()

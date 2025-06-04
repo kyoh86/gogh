@@ -76,13 +76,13 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 			}
 			overlayExtractUseCase := overlay_extract.NewUseCase(
 				svc.GitService,
-				svc.OverlayService,
+				svc.OverlayStore,
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,
 			)
 			overlayAddUseCase := overlay_add.NewUseCase(
-				svc.OverlayService,
+				svc.OverlayStore,
 			)
 			// Extract untracked files
 			for _, ref := range refs {

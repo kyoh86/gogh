@@ -23,7 +23,7 @@ type ServiceSet struct {
 	FlagsStore store.Saver[*config.Flags]
 	Flags      *config.Flags
 
-	OverlayService      workspace.OverlayService
+	OverlayStore        workspace.OverlayStore
 	ReferenceParser     repository.ReferenceParser
 	HostingService      hosting.HostingService
 	FinderService       workspace.FinderService

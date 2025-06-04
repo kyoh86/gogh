@@ -9,17 +9,17 @@ import (
 
 // UseCase represents the create use case
 type UseCase struct {
-	overlayService workspace.OverlayService
+	overlayStore workspace.OverlayStore
 }
 
-func NewUseCase(overlayService workspace.OverlayService) *UseCase {
+func NewUseCase(overlayStore workspace.OverlayStore) *UseCase {
 	return &UseCase{
-		overlayService: overlayService,
+		overlayStore: overlayStore,
 	}
 }
 
 func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath, repoPattern string) error {
-	if err := uc.overlayService.RemoveOverlay(ctx, workspace.OverlayEntry{
+	if err := uc.overlayStore.RemoveOverlay(ctx, workspace.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

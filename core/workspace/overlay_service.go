@@ -6,11 +6,12 @@ import (
 	"io"
 	"iter"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
-// OverlayEntry represents a file to be overlaid onto repositories
-type OverlayEntry struct {
+// Overlay represents a file to be overlaid onto repositories
+type Overlay struct {
 	// RepoPattern is a glob pattern that matches repository references
 	// Examples:
 	// - "*" matches all repositories
@@ -25,7 +26,7 @@ type OverlayEntry struct {
 	RelativePath string
 }
 
-func (e OverlayEntry) String() string {
+func (e Overlay) String() string {
 	if e.ForInit {
 		return fmt.Sprintf("Init(%s): %s", e.RepoPattern, e.RelativePath)
 	} else {
@@ -33,20 +34,27 @@ func (e OverlayEntry) String() string {
 	}
 }
 
-// OverlayService provides functionality to add files to repositories after they are cloned
-type OverlayService interface {
-	// FindOverlays finds all overlay entries that match the given repository reference
-	FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*OverlayEntry, error]
+func (e Overlay) Match(ref repository.Reference) (bool, error) {
+	return doublestar.Match(e.RepoPattern, ref.String())
+}
+
+// OverlayStore provides functionality to add files to repositories after they are cloned
+type OverlayStore interface {
+	// FindOverlaysForReference finds all overlay entries that match the given repository reference
+	FindOverlaysForReference(ctx context.Context, ref repository.Reference) iter.Seq2[*Overlay, error]
+
+	// FindOverlaysForPattern finds all overlay entries that match the given repository pattern
+	FindOverlaysForPattern(ctx context.Context, pattern string) iter.Seq2[*Overlay, error]
 
 	// ListOverlays returns all registered overlay entries
-	ListOverlays(ctx context.Context) ([]OverlayEntry, error)
+	ListOverlays(ctx context.Context) ([]Overlay, error)
 
 	// AddOverlay adds a new overlay file
-	AddOverlay(ctx context.Context, entry OverlayEntry, content io.Reader) error
+	AddOverlay(ctx context.Context, entry Overlay, content io.Reader) error
 
 	// RemoveOverlay removes an overlay file
-	RemoveOverlay(ctx context.Context, entry OverlayEntry) error
+	RemoveOverlay(ctx context.Context, entry Overlay) error
 
 	// OpenOverlay opens an overlay file for reading
-	OpenOverlay(ctx context.Context, entry OverlayEntry) (io.ReadCloser, error)
+	OpenOverlay(ctx context.Context, entry Overlay) (io.ReadCloser, error)
 }

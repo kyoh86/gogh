@@ -42,18 +42,18 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 				},
 				Target: f.To,
 			}
-			if err := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.DefaultNameService, svc.ReferenceParser, svc.GitService).Execute(ctx, refs[0], opts); err != nil {
+			if err := fork.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayStore, svc.DefaultNameService, svc.ReferenceParser, svc.GitService).Execute(ctx, refs[0], opts); err != nil {
 				return fmt.Errorf("forking the repository: %w", err)
 			}
 
-			useCase := overlay_apply.NewUseCase(svc.OverlayService)
+			useCase := overlay_apply.NewUseCase(svc.OverlayStore)
 			if err := view.ProcessWithConfirmation(
 				ctx,
 				typ.Filter2(overlay_find.NewUseCase(
 					svc.WorkspaceService,
 					svc.FinderService,
 					svc.ReferenceParser,
-					svc.OverlayService,
+					svc.OverlayStore,
 				).Execute(ctx, refs[0]), func(entry *overlay_find.OverlayEntry) bool {
 					return !entry.ForInit
 				}),

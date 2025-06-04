@@ -11,20 +11,19 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bmatcuk/doublestar/v4"
 	corefs "github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// OverlayService implements workspace.OverlayService using the filesystem
-type OverlayService struct {
+// OverlayStore implements workspace.OverlayStore using the filesystem
+type OverlayStore struct {
 	fsys corefs.FS
 }
 
-// NewOverlayService creates a new OverlayService instance with the given filesystem
-func NewOverlayService(fsys corefs.FS) (*OverlayService, error) {
-	service := &OverlayService{
+// NewOverlayStore creates a new OverlayStore instance with the given filesystem
+func NewOverlayStore(fsys corefs.FS) (*OverlayStore, error) {
+	service := &OverlayStore{
 		fsys: fsys,
 	}
 
@@ -43,7 +42,7 @@ const separator = "/"
 var encoding = base64.URLEncoding.WithPadding('.')
 
 // EncodeFileName safely encodes a repo-pattern and relative path into a valid filename
-func EncodeFileName(entry workspace.OverlayEntry) string {
+func EncodeFileName(entry workspace.Overlay) string {
 	patternEncoded := encoding.EncodeToString([]byte(entry.RepoPattern))
 	t := "overlay"
 	if entry.ForInit {
@@ -53,7 +52,7 @@ func EncodeFileName(entry workspace.OverlayEntry) string {
 }
 
 // DecodeFileName decodes an encoded filename back to repo-pattern and relative path
-func DecodeFileName(encodedName string) (*workspace.OverlayEntry, error) {
+func DecodeFileName(encodedName string) (*workspace.Overlay, error) {
 	parts := strings.SplitN(encodedName, separator, 3)
 	if len(parts) != 3 {
 		return nil, fmt.Errorf("invalid encoded filename format")
@@ -72,18 +71,17 @@ func DecodeFileName(encodedName string) (*workspace.OverlayEntry, error) {
 		return nil, fmt.Errorf("unknown overlay type: %s", parts[1])
 	}
 
-	return &workspace.OverlayEntry{
+	return &workspace.Overlay{
 		RepoPattern:  string(patternBytes),
 		ForInit:      t,
 		RelativePath: parts[2],
 	}, nil
 }
 
-// FindOverlays implements workspace.OverlayService
-func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.OverlayEntry, error] {
-	return func(yield func(*workspace.OverlayEntry, error) bool) {
+// FindOverlaysForReference implements workspace.OverlayStore
+func (s *OverlayStore) FindOverlaysForReference(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.Overlay, error] {
+	return func(yield func(*workspace.Overlay, error) bool) {
 		// Convert repository reference to a string for pattern matching
-		repoString := ref.String()
 		entries, err := s.ListOverlays(ctx)
 		if err != nil {
 			yield(nil, fmt.Errorf("listing overlays: %w", err))
@@ -91,7 +89,7 @@ func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Refere
 		}
 		for _, entry := range entries {
 			// Check if this entry should be applied to this repository
-			match, err := doublestar.Match(entry.RepoPattern, repoString)
+			match, err := entry.Match(ref)
 			if err != nil {
 				yield(nil, fmt.Errorf("matching repo-pattern '%s': %w", entry.RepoPattern, err))
 				return
@@ -107,8 +105,27 @@ func (s *OverlayService) FindOverlays(ctx context.Context, ref repository.Refere
 	}
 }
 
-// OpenOverlay implements workspace.OverlayService
-func (s *OverlayService) OpenOverlay(ctx context.Context, entry workspace.OverlayEntry) (io.ReadCloser, error) {
+func (s *OverlayStore) FindOverlaysForPattern(ctx context.Context, pattern string) iter.Seq2[*workspace.Overlay, error] {
+	return func(yield func(*workspace.Overlay, error) bool) {
+		entries, err := s.ListOverlays(ctx)
+		if err != nil {
+			yield(nil, fmt.Errorf("listing overlays: %w", err))
+			return
+		}
+		for _, entry := range entries {
+			if entry.RepoPattern != pattern {
+				continue
+			}
+			e := entry
+			if !yield(&e, nil) {
+				return
+			}
+		}
+	}
+}
+
+// OpenOverlay implements workspace.OverlayStore
+func (s *OverlayStore) OpenOverlay(ctx context.Context, entry workspace.Overlay) (io.ReadCloser, error) {
 	contentPath := EncodeFileName(entry)
 
 	file, err := s.fsys.Open(contentPath)
@@ -122,9 +139,9 @@ func (s *OverlayService) OpenOverlay(ctx context.Context, entry workspace.Overla
 	return file, nil
 }
 
-// ListOverlays implements workspace.OverlayService
-func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayEntry, error) {
-	var result []workspace.OverlayEntry
+// ListOverlays implements workspace.OverlayStore
+func (s *OverlayStore) ListOverlays(ctx context.Context) ([]workspace.Overlay, error) {
+	var result []workspace.Overlay
 
 	err := fs.WalkDir(s.fsys, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -154,7 +171,7 @@ func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayE
 
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			return []workspace.OverlayEntry{}, nil
+			return []workspace.Overlay{}, nil
 		}
 		return nil, fmt.Errorf("walking overlay directory: %w", err)
 	}
@@ -162,8 +179,8 @@ func (s *OverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayE
 	return result, nil
 }
 
-// AddOverlay implements workspace.OverlayService
-func (s *OverlayService) AddOverlay(ctx context.Context, entry workspace.OverlayEntry, content io.Reader) error {
+// AddOverlay implements workspace.OverlayStore
+func (s *OverlayStore) AddOverlay(ctx context.Context, entry workspace.Overlay, content io.Reader) error {
 	// Write the content to a file
 	contentPath := EncodeFileName(entry)
 
@@ -187,8 +204,8 @@ func (s *OverlayService) AddOverlay(ctx context.Context, entry workspace.Overlay
 	return nil
 }
 
-// RemoveOverlay implements workspace.OverlayService
-func (s *OverlayService) RemoveOverlay(ctx context.Context, entry workspace.OverlayEntry) error {
+// RemoveOverlay implements workspace.OverlayStore
+func (s *OverlayStore) RemoveOverlay(ctx context.Context, entry workspace.Overlay) error {
 	contentPath := EncodeFileName(entry)
 
 	if err := s.fsys.Remove(contentPath); err != nil {
@@ -201,5 +218,5 @@ func (s *OverlayService) RemoveOverlay(ctx context.Context, entry workspace.Over
 	return nil
 }
 
-// Ensure OverlayService implements workspace.OverlayService
-var _ workspace.OverlayService = (*OverlayService)(nil)
+// Ensure OverlayStore implements workspace.OverlayStore
+var _ workspace.OverlayStore = (*OverlayStore)(nil)

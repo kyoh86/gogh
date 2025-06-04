@@ -14,7 +14,7 @@ import (
 // UseCase implements the overlay extraction use case
 type UseCase struct {
 	gitService       git.GitService
-	overlayService   workspace.OverlayService
+	overlayStore     workspace.OverlayStore
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	referenceParser  repository.ReferenceParser
@@ -23,14 +23,14 @@ type UseCase struct {
 // NewUseCase creates a new overlay extraction use case
 func NewUseCase(
 	gitService git.GitService,
-	overlayService workspace.OverlayService,
+	overlayStore workspace.OverlayStore,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
 ) *UseCase {
 	return &UseCase{
 		gitService:       gitService,
-		overlayService:   overlayService,
+		overlayStore:     overlayStore,
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		referenceParser:  referenceParser,

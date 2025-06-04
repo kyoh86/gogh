@@ -16,7 +16,7 @@ import (
 type UseCase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
-	overlayService   workspace.OverlayService
+	overlayStore     workspace.OverlayStore
 	gitService       git.GitService
 }
 
@@ -24,13 +24,13 @@ type UseCase struct {
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	overlayService workspace.OverlayService,
+	overlayStore workspace.OverlayStore,
 	gitService git.GitService,
 ) *UseCase {
 	return &UseCase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
-		overlayService:   overlayService,
+		overlayStore:     overlayStore,
 		gitService:       gitService,
 	}
 }

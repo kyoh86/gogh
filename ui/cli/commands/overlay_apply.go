@@ -17,6 +17,11 @@ import (
 )
 
 func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+	var f struct {
+		repoPattern string
+		forInit     bool
+	}
+
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
 			return args, nil
@@ -45,7 +50,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 
 	cmd := &cobra.Command{
 		Use:   "apply [flags] [[[<host>/]<owner>/]<name>...]",
-		Short: "Target overlays to a repository",
+		Short: "Apply overlays to specified repositories",
 		Args:  cobra.ArbitraryArgs,
 		Example: `  It accepts a short notation for a repository
   (for example, "github.com/kyoh86/example") like below.
@@ -73,14 +78,14 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,
-				svc.OverlayService,
+				svc.OverlayStore,
 			)
-			overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
+			overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayStore)
 			for _, ref := range refs {
 				if err := view.ProcessWithConfirmation(
 					ctx,
 					typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) bool {
-						return !entry.ForInit
+						return f.forInit == entry.ForInit // Filter by `forInit` flag
 					}),
 					func(entry *overlay_find.OverlayEntry) string {
 						return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)
@@ -101,5 +106,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 		},
 	}
 	//TODO: Add flags for and --repo-pattern
+	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "", "", "Force apply overlays having this pattern, ignoring automatic repository name matching (useful for applying specific overlays or templates that would not normally match)")
+	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Apply overlays only for `gogh create` command (useful for templates)")
 	return cmd, nil
 }

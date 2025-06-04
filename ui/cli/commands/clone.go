@@ -23,7 +23,7 @@ import (
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.CloneFlags
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
+	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayStore, svc.ReferenceParser, svc.GitService)
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
@@ -78,9 +78,9 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			svc.WorkspaceService,
 			svc.FinderService,
 			svc.ReferenceParser,
-			svc.OverlayService,
+			svc.OverlayStore,
 		)
-		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayService)
+		overlayApplyUseCase := overlay_apply.NewUseCase(svc.OverlayStore)
 		for _, ref := range refs {
 			if f.DryRun {
 				fmt.Printf("Apply overlay for %q\n", ref)

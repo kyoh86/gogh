@@ -19,7 +19,7 @@ func TestExecute(t *testing.T) {
 	// Test cases
 	tests := []struct {
 		name          string
-		setupMocks    func(*git_mock.MockGitService, *workspace_mock.MockOverlayService, *workspace_mock.MockWorkspaceService, *workspace_mock.MockFinderService, *repository_mock.MockReferenceParser, string)
+		setupMocks    func(*git_mock.MockGitService, *workspace_mock.MockOverlayStore, *workspace_mock.MockWorkspaceService, *workspace_mock.MockFinderService, *repository_mock.MockReferenceParser, string)
 		refString     string
 		options       testtarget.Options
 		expectedCount int
@@ -28,7 +28,7 @@ func TestExecute(t *testing.T) {
 	}{
 		{
 			name: "Success: When untracked files exist",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -73,7 +73,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Success: When no untracked files exist",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -102,7 +102,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Error: When reference parsing fails",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				parser.EXPECT().
 					Parse("invalid/ref").
 					Return(nil, errors.New("invalid reference format"))
@@ -117,7 +117,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Error: When repository finder fails",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -139,7 +139,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			name: "Error: When git service fails",
-			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayService, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
+			setupMocks: func(git *git_mock.MockGitService, overlay *workspace_mock.MockOverlayStore, ws *workspace_mock.MockWorkspaceService, finder *workspace_mock.MockFinderService, parser *repository_mock.MockReferenceParser, repoPath string) {
 				// Setup reference
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				parser.EXPECT().
@@ -181,7 +181,7 @@ func TestExecute(t *testing.T) {
 
 			// Create mocks
 			mockGit := git_mock.NewMockGitService(ctrl)
-			mockOverlay := workspace_mock.NewMockOverlayService(ctrl)
+			mockOverlay := workspace_mock.NewMockOverlayStore(ctrl)
 			mockWs := workspace_mock.NewMockWorkspaceService(ctrl)
 			mockFinder := workspace_mock.NewMockFinderService(ctrl)
 			mockParser := repository_mock.NewMockReferenceParser(ctrl)

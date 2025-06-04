@@ -20,32 +20,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockOverlayService is a mock of OverlayService interface.
-type MockOverlayService struct {
+// MockOverlayStore is a mock of OverlayStore interface.
+type MockOverlayStore struct {
 	ctrl     *gomock.Controller
-	recorder *MockOverlayServiceMockRecorder
+	recorder *MockOverlayStoreMockRecorder
 	isgomock struct{}
 }
 
-// MockOverlayServiceMockRecorder is the mock recorder for MockOverlayService.
-type MockOverlayServiceMockRecorder struct {
-	mock *MockOverlayService
+// MockOverlayStoreMockRecorder is the mock recorder for MockOverlayStore.
+type MockOverlayStoreMockRecorder struct {
+	mock *MockOverlayStore
 }
 
-// NewMockOverlayService creates a new mock instance.
-func NewMockOverlayService(ctrl *gomock.Controller) *MockOverlayService {
-	mock := &MockOverlayService{ctrl: ctrl}
-	mock.recorder = &MockOverlayServiceMockRecorder{mock}
+// NewMockOverlayStore creates a new mock instance.
+func NewMockOverlayStore(ctrl *gomock.Controller) *MockOverlayStore {
+	mock := &MockOverlayStore{ctrl: ctrl}
+	mock.recorder = &MockOverlayStoreMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockOverlayService) EXPECT() *MockOverlayServiceMockRecorder {
+func (m *MockOverlayStore) EXPECT() *MockOverlayStoreMockRecorder {
 	return m.recorder
 }
 
 // AddOverlay mocks base method.
-func (m *MockOverlayService) AddOverlay(ctx context.Context, entry workspace.OverlayEntry, content io.Reader) error {
+func (m *MockOverlayStore) AddOverlay(ctx context.Context, entry workspace.Overlay, content io.Reader) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddOverlay", ctx, entry, content)
 	ret0, _ := ret[0].(error)
@@ -53,42 +53,56 @@ func (m *MockOverlayService) AddOverlay(ctx context.Context, entry workspace.Ove
 }
 
 // AddOverlay indicates an expected call of AddOverlay.
-func (mr *MockOverlayServiceMockRecorder) AddOverlay(ctx, entry, content any) *gomock.Call {
+func (mr *MockOverlayStoreMockRecorder) AddOverlay(ctx, entry, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOverlay", reflect.TypeOf((*MockOverlayService)(nil).AddOverlay), ctx, entry, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddOverlay", reflect.TypeOf((*MockOverlayStore)(nil).AddOverlay), ctx, entry, content)
 }
 
-// FindOverlays mocks base method.
-func (m *MockOverlayService) FindOverlays(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.OverlayEntry, error] {
+// FindOverlaysForPattern mocks base method.
+func (m *MockOverlayStore) FindOverlaysForPattern(ctx context.Context, pattern string) iter.Seq2[*workspace.Overlay, error] {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindOverlays", ctx, ref)
-	ret0, _ := ret[0].(iter.Seq2[*workspace.OverlayEntry, error])
+	ret := m.ctrl.Call(m, "FindOverlaysForPattern", ctx, pattern)
+	ret0, _ := ret[0].(iter.Seq2[*workspace.Overlay, error])
 	return ret0
 }
 
-// FindOverlays indicates an expected call of FindOverlays.
-func (mr *MockOverlayServiceMockRecorder) FindOverlays(ctx, ref any) *gomock.Call {
+// FindOverlaysForPattern indicates an expected call of FindOverlaysForPattern.
+func (mr *MockOverlayStoreMockRecorder) FindOverlaysForPattern(ctx, pattern any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOverlays", reflect.TypeOf((*MockOverlayService)(nil).FindOverlays), ctx, ref)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOverlaysForPattern", reflect.TypeOf((*MockOverlayStore)(nil).FindOverlaysForPattern), ctx, pattern)
+}
+
+// FindOverlaysForReference mocks base method.
+func (m *MockOverlayStore) FindOverlaysForReference(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.Overlay, error] {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindOverlaysForReference", ctx, ref)
+	ret0, _ := ret[0].(iter.Seq2[*workspace.Overlay, error])
+	return ret0
+}
+
+// FindOverlaysForReference indicates an expected call of FindOverlaysForReference.
+func (mr *MockOverlayStoreMockRecorder) FindOverlaysForReference(ctx, ref any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOverlaysForReference", reflect.TypeOf((*MockOverlayStore)(nil).FindOverlaysForReference), ctx, ref)
 }
 
 // ListOverlays mocks base method.
-func (m *MockOverlayService) ListOverlays(ctx context.Context) ([]workspace.OverlayEntry, error) {
+func (m *MockOverlayStore) ListOverlays(ctx context.Context) ([]workspace.Overlay, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListOverlays", ctx)
-	ret0, _ := ret[0].([]workspace.OverlayEntry)
+	ret0, _ := ret[0].([]workspace.Overlay)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListOverlays indicates an expected call of ListOverlays.
-func (mr *MockOverlayServiceMockRecorder) ListOverlays(ctx any) *gomock.Call {
+func (mr *MockOverlayStoreMockRecorder) ListOverlays(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOverlays", reflect.TypeOf((*MockOverlayService)(nil).ListOverlays), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOverlays", reflect.TypeOf((*MockOverlayStore)(nil).ListOverlays), ctx)
 }
 
 // OpenOverlay mocks base method.
-func (m *MockOverlayService) OpenOverlay(ctx context.Context, entry workspace.OverlayEntry) (io.ReadCloser, error) {
+func (m *MockOverlayStore) OpenOverlay(ctx context.Context, entry workspace.Overlay) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OpenOverlay", ctx, entry)
 	ret0, _ := ret[0].(io.ReadCloser)
@@ -97,13 +111,13 @@ func (m *MockOverlayService) OpenOverlay(ctx context.Context, entry workspace.Ov
 }
 
 // OpenOverlay indicates an expected call of OpenOverlay.
-func (mr *MockOverlayServiceMockRecorder) OpenOverlay(ctx, entry any) *gomock.Call {
+func (mr *MockOverlayStoreMockRecorder) OpenOverlay(ctx, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenOverlay", reflect.TypeOf((*MockOverlayService)(nil).OpenOverlay), ctx, entry)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OpenOverlay", reflect.TypeOf((*MockOverlayStore)(nil).OpenOverlay), ctx, entry)
 }
 
 // RemoveOverlay mocks base method.
-func (m *MockOverlayService) RemoveOverlay(ctx context.Context, entry workspace.OverlayEntry) error {
+func (m *MockOverlayStore) RemoveOverlay(ctx context.Context, entry workspace.Overlay) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveOverlay", ctx, entry)
 	ret0, _ := ret[0].(error)
@@ -111,7 +125,7 @@ func (m *MockOverlayService) RemoveOverlay(ctx context.Context, entry workspace.
 }
 
 // RemoveOverlay indicates an expected call of RemoveOverlay.
-func (mr *MockOverlayServiceMockRecorder) RemoveOverlay(ctx, entry any) *gomock.Call {
+func (mr *MockOverlayStoreMockRecorder) RemoveOverlay(ctx, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveOverlay", reflect.TypeOf((*MockOverlayService)(nil).RemoveOverlay), ctx, entry)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveOverlay", reflect.TypeOf((*MockOverlayStore)(nil).RemoveOverlay), ctx, entry)
 }

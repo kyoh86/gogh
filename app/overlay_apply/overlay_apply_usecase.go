@@ -12,12 +12,12 @@ import (
 
 // UseCase represents the create use case
 type UseCase struct {
-	overlayService workspace.OverlayService
+	overlayStore workspace.OverlayStore
 }
 
-func NewUseCase(overlayService workspace.OverlayService) *UseCase {
+func NewUseCase(overlayStore workspace.OverlayStore) *UseCase {
 	return &UseCase{
-		overlayService: overlayService,
+		overlayStore: overlayStore,
 	}
 }
 
@@ -25,7 +25,7 @@ func (uc *UseCase) Execute(ctx context.Context, repoPath string, repoPattern str
 	targetPath := filepath.Join(repoPath, relativePath)
 
 	// Open the overlay source
-	source, err := uc.overlayService.OpenOverlay(ctx, workspace.OverlayEntry{
+	source, err := uc.overlayStore.OpenOverlay(ctx, workspace.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,
