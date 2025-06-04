@@ -50,18 +50,16 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		Short:   "List overlays",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			entries, err := overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx)
-			if err != nil {
-				return fmt.Errorf("listing overlay: %w", err)
-			}
-
-			for _, entry := range entries {
+			for overlay, err := range overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx) {
+				if err != nil {
+					return fmt.Errorf("listing overlay: %w", err)
+				}
 				fmt.Printf("- ")
-				fmt.Printf("Repository pattern: %s\n", entry.RepoPattern)
-				if entry.ForInit {
+				fmt.Printf("Repository pattern: %s\n", overlay.RepoPattern)
+				if overlay.ForInit {
 					fmt.Printf("  For Init: Yes\n")
 				}
-				fmt.Printf("  Overlay path: %s\n", entry.RelativePath)
+				fmt.Printf("  Overlay path: %s\n", overlay.RelativePath)
 			}
 
 			return nil

@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	corefs "github.com/kyoh86/gogh/v4/core/fs"
-	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
@@ -78,48 +77,39 @@ func DecodeFileName(encodedName string) (*workspace.Overlay, error) {
 	}, nil
 }
 
-// FindOverlaysForReference implements workspace.OverlayStore
-func (s *OverlayStore) FindOverlaysForReference(ctx context.Context, ref repository.Reference) iter.Seq2[*workspace.Overlay, error] {
+// ListOverlays implements workspace.OverlayStore
+func (s *OverlayStore) ListOverlays(ctx context.Context) iter.Seq2[*workspace.Overlay, error] {
 	return func(yield func(*workspace.Overlay, error) bool) {
-		// Convert repository reference to a string for pattern matching
-		entries, err := s.ListOverlays(ctx)
-		if err != nil {
-			yield(nil, fmt.Errorf("listing overlays: %w", err))
-			return
-		}
-		for _, entry := range entries {
-			// Check if this entry should be applied to this repository
-			match, err := entry.Match(ref)
+		err := fs.WalkDir(s.fsys, ".", func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
-				yield(nil, fmt.Errorf("matching repo-pattern '%s': %w", entry.RepoPattern, err))
-				return
+				return err
 			}
-			if !match {
-				continue
-			}
-			e := entry
-			if !yield(&e, nil) {
-				return
-			}
-		}
-	}
-}
 
-func (s *OverlayStore) FindOverlaysForPattern(ctx context.Context, pattern string) iter.Seq2[*workspace.Overlay, error] {
-	return func(yield func(*workspace.Overlay, error) bool) {
-		entries, err := s.ListOverlays(ctx)
-		if err != nil {
-			yield(nil, fmt.Errorf("listing overlays: %w", err))
-			return
-		}
-		for _, entry := range entries {
-			if entry.RepoPattern != pattern {
-				continue
+			// Skip directories
+			if d.IsDir() {
+				return nil
 			}
-			e := entry
-			if !yield(&e, nil) {
-				return
+
+			// Skip files with normalized path "."
+			if path == "." {
+				return nil
 			}
+
+			entry, err := DecodeFileName(path)
+			if err != nil {
+				// Skip files that don't follow our encoding format
+				return nil
+			}
+
+			if !yield(entry, nil) {
+				return fs.SkipAll
+			}
+
+			return nil
+		})
+
+		if err != nil && err != fs.SkipAll {
+			yield(nil, fmt.Errorf("walking overlay directory: %w", err))
 		}
 	}
 }
@@ -137,46 +127,6 @@ func (s *OverlayStore) OpenOverlay(ctx context.Context, entry workspace.Overlay)
 	}
 
 	return file, nil
-}
-
-// ListOverlays implements workspace.OverlayStore
-func (s *OverlayStore) ListOverlays(ctx context.Context) ([]workspace.Overlay, error) {
-	var result []workspace.Overlay
-
-	err := fs.WalkDir(s.fsys, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Skip directories
-		if d.IsDir() {
-			return nil
-		}
-
-		// Skip files with normalized path "."
-		if path == "." {
-			return nil
-		}
-
-		entry, err := DecodeFileName(path)
-		if err != nil {
-			// Skip files that don't follow our encoding format
-			return nil
-		}
-
-		result = append(result, *entry)
-
-		return nil
-	})
-
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return []workspace.Overlay{}, nil
-		}
-		return nil, fmt.Errorf("walking overlay directory: %w", err)
-	}
-
-	return result, nil
 }
 
 // AddOverlay implements workspace.OverlayStore

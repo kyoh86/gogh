@@ -8,6 +8,7 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/typ"
 )
 
 // Overlay represents a file to be overlaid onto repositories
@@ -38,16 +39,22 @@ func (e Overlay) Match(ref repository.Reference) (bool, error) {
 	return doublestar.Match(e.RepoPattern, ref.String())
 }
 
+func FilterOverlayForReference(entries iter.Seq2[*Overlay, error], ref repository.Reference) iter.Seq2[*Overlay, error] {
+	return typ.FilterE(entries, func(entry *Overlay) (bool, error) {
+		return entry.Match(ref)
+	})
+}
+
+func FilterOverlayForPattern(entries iter.Seq2[*Overlay, error], repoPattern string) iter.Seq2[*Overlay, error] {
+	return typ.FilterE(entries, func(entry *Overlay) (bool, error) {
+		return entry.RepoPattern == repoPattern, nil
+	})
+}
+
 // OverlayStore provides functionality to add files to repositories after they are cloned
 type OverlayStore interface {
-	// FindOverlaysForReference finds all overlay entries that match the given repository reference
-	FindOverlaysForReference(ctx context.Context, ref repository.Reference) iter.Seq2[*Overlay, error]
-
-	// FindOverlaysForPattern finds all overlay entries that match the given repository pattern
-	FindOverlaysForPattern(ctx context.Context, pattern string) iter.Seq2[*Overlay, error]
-
 	// ListOverlays returns all registered overlay entries
-	ListOverlays(ctx context.Context) ([]Overlay, error)
+	ListOverlays(ctx context.Context) iter.Seq2[*Overlay, error]
 
 	// AddOverlay adds a new overlay file
 	AddOverlay(ctx context.Context, entry Overlay, content io.Reader) error

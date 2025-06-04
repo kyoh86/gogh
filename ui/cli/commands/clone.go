@@ -87,8 +87,8 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			}
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) bool {
-					return !entry.ForInit
+				typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) (bool, error) {
+					return !entry.ForInit, nil
 				}),
 				func(entry *overlay_find.OverlayEntry) string {
 					return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)

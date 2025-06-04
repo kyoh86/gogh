@@ -49,13 +49,13 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 			useCase := overlay_apply.NewUseCase(svc.OverlayStore)
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				typ.Filter2(overlay_find.NewUseCase(
+				typ.FilterE(overlay_find.NewUseCase(
 					svc.WorkspaceService,
 					svc.FinderService,
 					svc.ReferenceParser,
 					svc.OverlayStore,
-				).Execute(ctx, refs[0]), func(entry *overlay_find.OverlayEntry) bool {
-					return !entry.ForInit
+				).Execute(ctx, refs[0]), func(entry *overlay_find.OverlayEntry) (bool, error) {
+					return !entry.ForInit, nil
 				}),
 				func(entry *overlay_find.OverlayEntry) string {
 					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], entry.RelativePath)

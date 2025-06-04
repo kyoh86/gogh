@@ -2,6 +2,7 @@ package overlay_list
 
 import (
 	"context"
+	"iter"
 
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -20,6 +21,6 @@ func NewUseCase(overlayStore workspace.OverlayStore) *UseCase {
 type OverlayEntry = workspace.Overlay
 
 // Execute lists all overlay patterns and their files
-func (uc *UseCase) Execute(ctx context.Context) ([]OverlayEntry, error) {
+func (uc *UseCase) Execute(ctx context.Context) iter.Seq2[*OverlayEntry, error] {
 	return uc.overlayStore.ListOverlays(ctx)
 }

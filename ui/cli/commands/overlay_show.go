@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -23,30 +22,32 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		relativePath string
 	}
 	checkFlags := func(ctx context.Context, _ []string) ([]overlay_list.OverlayEntry, error) {
-		list, err := overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx)
+		list, err := typ.CollectWithError(typ.FilterE(overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx), func(entry *overlay_list.OverlayEntry) (bool, error) {
+			if f.repoPattern != "" && f.repoPattern != entry.RepoPattern {
+				return false, nil
+			}
+			if f.forInit && !entry.ForInit {
+				return false, nil
+			}
+			if f.relativePath != "" && f.relativePath != entry.RelativePath {
+				return false, nil
+			}
+			return true, nil
+		}))
 		if err != nil {
 			return nil, fmt.Errorf("listing overlays: %w", err)
 		}
-		list = slices.Collect(typ.Filter(slices.Values(list), func(entry overlay_list.OverlayEntry) bool {
-			if f.repoPattern != "" && f.repoPattern != entry.RepoPattern {
-				return false
-			}
-			if f.forInit && !entry.ForInit {
-				return false
-			}
-			if f.relativePath != "" && f.relativePath != entry.RelativePath {
-				return false
-			}
-			return true
-		}))
-		if len(list) <= 1 {
-			return list, nil
+		switch len(list) {
+		case 0:
+			return nil, fmt.Errorf("no overlays found matching the criteria")
+		case 1:
+			return []overlay_list.OverlayEntry{*list[0]}, nil
 		}
 		var opts []huh.Option[overlay_list.OverlayEntry]
 		for _, entry := range list {
 			opts = append(opts, huh.Option[overlay_list.OverlayEntry]{
 				Key:   entry.String(),
-				Value: entry,
+				Value: *entry,
 			})
 		}
 		var selected []overlay_list.OverlayEntry

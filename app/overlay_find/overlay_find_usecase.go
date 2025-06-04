@@ -56,7 +56,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*OverlayE
 			yield(nil, fmt.Errorf("repository not found for reference '%s'", refs))
 			return
 		}
-		for overlay, err := range uc.overlayStore.FindOverlaysForReference(ctx, ref) {
+		for overlay, err := range workspace.FilterOverlayForReference(uc.overlayStore.ListOverlays(ctx), ref) {
 			if !yield(&OverlayEntry{Overlay: *overlay, Location: *match}, err) {
 				return
 			}

@@ -84,8 +84,8 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			for _, ref := range refs {
 				if err := view.ProcessWithConfirmation(
 					ctx,
-					typ.Filter2(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) bool {
-						return f.forInit == entry.ForInit // Filter by `forInit` flag
+					typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) (bool, error) {
+						return f.forInit == entry.ForInit, nil // Filter by `forInit` flag
 					}),
 					func(entry *overlay_find.OverlayEntry) string {
 						return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)

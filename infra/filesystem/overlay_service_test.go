@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"strings"
 	"testing"
 
@@ -48,10 +49,7 @@ func TestAddAndListOverlays(t *testing.T) {
 	ctx := context.Background()
 
 	// Test listing empty directory
-	overlays, err := service.ListOverlays(ctx)
-	if err != nil {
-		t.Fatalf("ListOverlays failed: %v", err)
-	}
+	overlays := maps.Collect(service.ListOverlays(ctx))
 	if len(overlays) != 0 {
 		t.Errorf("expected empty list, got %d items", len(overlays))
 	}
@@ -71,10 +69,7 @@ func TestAddAndListOverlays(t *testing.T) {
 	}
 
 	// List overlays and verify
-	overlays, err = service.ListOverlays(ctx)
-	if err != nil {
-		t.Fatalf("ListOverlays failed: %v", err)
-	}
+	overlays = maps.Collect(service.ListOverlays(ctx))
 
 	if len(overlays) != len(entries) {
 		enc, err := json.MarshalIndent(mockWFS.DirEntries(), "", "  ")
@@ -87,7 +82,10 @@ func TestAddAndListOverlays(t *testing.T) {
 
 	// Check if all entries are present
 	foundEntries := make(map[string]bool)
-	for _, overlay := range overlays {
+	for overlay, err := range overlays {
+		if err != nil {
+			t.Fatalf("ListOverlays returned error: %v", err)
+		}
 		key := overlay.RepoPattern + ":" + overlay.RelativePath
 		foundEntries[key] = true
 	}
@@ -101,9 +99,10 @@ func TestAddAndListOverlays(t *testing.T) {
 
 	// Test error during listing
 	mockWFS.SetError("ReadDir", "", fs.ErrPermission)
-	_, err = service.ListOverlays(ctx)
-	if err == nil {
-		t.Error("expected error during ListOverlays, but got nil")
+	for _, err := range service.ListOverlays(ctx) {
+		if err == nil {
+			t.Error("expected error during ListOverlays, but got nil")
+		}
 	}
 	mockWFS.SetError("ReadDir", "", nil) // Clear error
 }
@@ -136,11 +135,10 @@ func TestRemoveOverlay(t *testing.T) {
 	}
 
 	// Verify it's gone
-	overlays, err := service.ListOverlays(ctx)
-	if err != nil {
-		t.Fatalf("ListOverlays failed after removal: %v", err)
-	}
-	for _, overlay := range overlays {
+	for overlay, err := range service.ListOverlays(ctx) {
+		if err != nil {
+			t.Fatalf("ListOverlays failed after removal: %v", err)
+		}
 		if overlay.RepoPattern == entry.RepoPattern && overlay.RelativePath == entry.RelativePath {
 			t.Errorf("expected overlay %s:%s to be removed, but it still exists", entry.RepoPattern, entry.RelativePath)
 			return
@@ -344,7 +342,7 @@ func TestFindOverlays(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test FindOverlays
 			var overlays []*workspace.Overlay
-			for o, err := range service.FindOverlaysForReference(ctx, tc.ref) {
+			for o, err := range workspace.FilterOverlayForReference(service.ListOverlays(ctx), tc.ref) {
 				if err != nil {
 					t.Fatalf("FindOverlays error: %v", err)
 				}
@@ -417,7 +415,7 @@ func TestInvalidPatternHandling(t *testing.T) {
 
 	// Should handle invalid pattern errors gracefully
 	foundOverlay := false
-	for o, err := range service.FindOverlaysForReference(ctx, repoRef) {
+	for o, err := range workspace.FilterOverlayForReference(service.ListOverlays(ctx), repoRef) {
 		if err == nil && o != nil {
 			foundOverlay = true
 			break

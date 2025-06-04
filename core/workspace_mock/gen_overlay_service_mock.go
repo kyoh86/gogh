@@ -87,12 +87,11 @@ func (mr *MockOverlayStoreMockRecorder) FindOverlaysForReference(ctx, ref any) *
 }
 
 // ListOverlays mocks base method.
-func (m *MockOverlayStore) ListOverlays(ctx context.Context) ([]workspace.Overlay, error) {
+func (m *MockOverlayStore) ListOverlays(ctx context.Context) iter.Seq2[*workspace.Overlay, error] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListOverlays", ctx)
-	ret0, _ := ret[0].([]workspace.Overlay)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(iter.Seq2[*workspace.Overlay, error])
+	return ret0
 }
 
 // ListOverlays indicates an expected call of ListOverlays.
