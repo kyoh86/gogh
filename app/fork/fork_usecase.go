@@ -7,6 +7,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -15,7 +16,7 @@ import (
 type UseCase struct {
 	hostingService     hosting.HostingService
 	workspaceService   workspace.WorkspaceService
-	overlayStore       workspace.OverlayStore
+	overlayStore       overlay.OverlayStore
 	defaultNameService repository.DefaultNameService
 	referenceParser    repository.ReferenceParser
 	gitService         git.GitService
@@ -25,7 +26,7 @@ type UseCase struct {
 func NewUseCase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
-	overlayStore workspace.OverlayStore,
+	overlayStore overlay.OverlayStore,
 	defaultNameService repository.DefaultNameService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,

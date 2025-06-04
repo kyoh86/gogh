@@ -21,15 +21,15 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		forInit      bool
 		relativePath string
 	}
-	checkFlags := func(ctx context.Context, _ []string) ([]overlay_list.OverlayEntry, error) {
-		list, err := typ.CollectWithError(typ.FilterE(overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx), func(entry *overlay_list.OverlayEntry) (bool, error) {
-			if f.repoPattern != "" && f.repoPattern != entry.RepoPattern {
+	checkFlags := func(ctx context.Context, _ []string) ([]overlay_list.Overlay, error) {
+		overlays, err := typ.CollectWithError(typ.FilterE(overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx), func(ov *overlay_list.Overlay) (bool, error) {
+			if f.repoPattern != "" && f.repoPattern != ov.RepoPattern {
 				return false, nil
 			}
-			if f.forInit && !entry.ForInit {
+			if f.forInit && !ov.ForInit {
 				return false, nil
 			}
-			if f.relativePath != "" && f.relativePath != entry.RelativePath {
+			if f.relativePath != "" && f.relativePath != ov.RelativePath {
 				return false, nil
 			}
 			return true, nil
@@ -37,22 +37,22 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		if err != nil {
 			return nil, fmt.Errorf("listing overlays: %w", err)
 		}
-		switch len(list) {
+		switch len(overlays) {
 		case 0:
 			return nil, fmt.Errorf("no overlays found matching the criteria")
 		case 1:
-			return []overlay_list.OverlayEntry{*list[0]}, nil
+			return []overlay_list.Overlay{*overlays[0]}, nil
 		}
-		var opts []huh.Option[overlay_list.OverlayEntry]
-		for _, entry := range list {
-			opts = append(opts, huh.Option[overlay_list.OverlayEntry]{
-				Key:   entry.String(),
-				Value: *entry,
+		var opts []huh.Option[overlay_list.Overlay]
+		for _, ov := range overlays {
+			opts = append(opts, huh.Option[overlay_list.Overlay]{
+				Key:   ov.String(),
+				Value: *ov,
 			})
 		}
-		var selected []overlay_list.OverlayEntry
+		var selected []overlay_list.Overlay
 		if err := huh.NewForm(huh.NewGroup(
-			huh.NewMultiSelect[overlay_list.OverlayEntry]().
+			huh.NewMultiSelect[overlay_list.Overlay]().
 				Title("Overlays to show").
 				Options(opts...).
 				Value(&selected),
@@ -69,7 +69,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			entries, err := checkFlags(ctx, args)
+			overlays, err := checkFlags(ctx, args)
 			if err != nil {
 				return err
 			}
@@ -77,14 +77,14 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 				width = w
 			}
 			overlayShowUseCase := overlay_show.NewUseCase(svc.OverlayStore)
-			for i, entry := range entries {
+			for i, ov := range overlays {
 				if i > 0 {
 					fmt.Println()
 				}
-				name := entry.String()
+				name := ov.String()
 				fmt.Printf("%s %s\n", name, strings.Repeat("-", width-len(name)-1))
-				if err := overlayShowUseCase.Execute(ctx, entry.RepoPattern, entry.ForInit, entry.RelativePath); err != nil {
-					return fmt.Errorf("showing overlay %s: %w", entry.RelativePath, err)
+				if err := overlayShowUseCase.Execute(ctx, ov.RepoPattern, ov.ForInit, ov.RelativePath); err != nil {
+					return fmt.Errorf("showing overlay %s: %w", ov.RelativePath, err)
 				}
 			}
 			return nil

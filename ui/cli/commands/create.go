@@ -116,11 +116,11 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				svc.ReferenceParser,
 				svc.OverlayStore,
 			).Execute(ctx, refWithAlias),
-			func(entry *overlay_find.OverlayEntry) string {
-				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, entry.RelativePath)
+			func(ov *overlay_find.Overlay) string {
+				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, ov.RelativePath)
 			},
-			func(entry *overlay_find.OverlayEntry) error {
-				return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.RepoPattern, entry.ForInit, entry.RelativePath)
+			func(ov *overlay_find.Overlay) error {
+				return overlayApplyUseCase.Execute(ctx, ov.Location.FullPath(), ov.RepoPattern, ov.ForInit, ov.RelativePath)
 			},
 		); err != nil {
 			if errors.Is(err, view.ErrQuit) {

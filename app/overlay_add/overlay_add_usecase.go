@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 )
 
 // UseCase represents the create use case
 type UseCase struct {
-	overlayStore workspace.OverlayStore
+	overlayStore overlay.OverlayStore
 }
 
-func NewUseCase(overlayStore workspace.OverlayStore) *UseCase {
+func NewUseCase(overlayStore overlay.OverlayStore) *UseCase {
 	return &UseCase{
 		overlayStore: overlayStore,
 	}
@@ -25,7 +25,7 @@ func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath strin
 		return fmt.Errorf("opening source file '%s': %w", sourceFile, err)
 	}
 	defer content.Close()
-	if err := uc.overlayStore.AddOverlay(ctx, workspace.Overlay{
+	if err := uc.overlayStore.AddOverlay(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

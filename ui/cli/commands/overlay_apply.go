@@ -84,14 +84,14 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			for _, ref := range refs {
 				if err := view.ProcessWithConfirmation(
 					ctx,
-					typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) (bool, error) {
-						return f.forInit == entry.ForInit, nil // Filter by `forInit` flag
+					typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(ov *overlay_find.Overlay) (bool, error) {
+						return f.forInit == ov.ForInit, nil // Filter by `forInit` flag
 					}),
-					func(entry *overlay_find.OverlayEntry) string {
-						return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)
+					func(ov *overlay_find.Overlay) string {
+						return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
 					},
-					func(entry *overlay_find.OverlayEntry) error {
-						return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.RepoPattern, entry.ForInit, entry.RelativePath)
+					func(ov *overlay_find.Overlay) error {
+						return overlayApplyUseCase.Execute(ctx, ov.Location.FullPath(), ov.RepoPattern, ov.ForInit, ov.RelativePath)
 					},
 				); err != nil {
 					if errors.Is(err, view.ErrQuit) {

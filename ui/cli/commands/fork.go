@@ -54,14 +54,14 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 					svc.FinderService,
 					svc.ReferenceParser,
 					svc.OverlayStore,
-				).Execute(ctx, refs[0]), func(entry *overlay_find.OverlayEntry) (bool, error) {
-					return !entry.ForInit, nil
+				).Execute(ctx, refs[0]), func(ov *overlay_find.Overlay) (bool, error) {
+					return !ov.ForInit, nil
 				}),
-				func(entry *overlay_find.OverlayEntry) string {
-					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], entry.RelativePath)
+				func(ov *overlay_find.Overlay) string {
+					return fmt.Sprintf("Apply overlay for %s (%s)", refs[0], ov.RelativePath)
 				},
-				func(entry *overlay_find.OverlayEntry) error {
-					return useCase.Execute(ctx, entry.Location.FullPath(), entry.RepoPattern, entry.ForInit, entry.RelativePath)
+				func(ov *overlay_find.Overlay) error {
+					return useCase.Execute(ctx, ov.Location.FullPath(), ov.RepoPattern, ov.ForInit, ov.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {

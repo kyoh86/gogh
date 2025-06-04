@@ -87,14 +87,14 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			}
 			if err := view.ProcessWithConfirmation(
 				ctx,
-				typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(entry *overlay_find.OverlayEntry) (bool, error) {
-					return !entry.ForInit, nil
+				typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(ov *overlay_find.Overlay) (bool, error) {
+					return !ov.ForInit, nil
 				}),
-				func(entry *overlay_find.OverlayEntry) string {
-					return fmt.Sprintf("Apply overlay for %s (%s)", ref, entry.RelativePath)
+				func(ov *overlay_find.Overlay) string {
+					return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
 				},
-				func(entry *overlay_find.OverlayEntry) error {
-					return overlayApplyUseCase.Execute(ctx, entry.Location.FullPath(), entry.RepoPattern, entry.ForInit, entry.RelativePath)
+				func(ov *overlay_find.Overlay) error {
+					return overlayApplyUseCase.Execute(ctx, ov.Location.FullPath(), ov.RepoPattern, ov.ForInit, ov.RelativePath)
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {

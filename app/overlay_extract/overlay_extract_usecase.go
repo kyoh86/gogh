@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/git"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -14,7 +15,7 @@ import (
 // UseCase implements the overlay extraction use case
 type UseCase struct {
 	gitService       git.GitService
-	overlayStore     workspace.OverlayStore
+	overlayStore     overlay.OverlayStore
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	referenceParser  repository.ReferenceParser
@@ -23,7 +24,7 @@ type UseCase struct {
 // NewUseCase creates a new overlay extraction use case
 func NewUseCase(
 	gitService git.GitService,
-	overlayStore workspace.OverlayStore,
+	overlayStore overlay.OverlayStore,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,

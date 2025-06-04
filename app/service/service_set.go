@@ -5,6 +5,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -23,7 +24,7 @@ type ServiceSet struct {
 	FlagsStore store.Saver[*config.Flags]
 	Flags      *config.Flags
 
-	OverlayStore        workspace.OverlayStore
+	OverlayStore        overlay.OverlayStore
 	ReferenceParser     repository.ReferenceParser
 	HostingService      hosting.HostingService
 	FinderService       workspace.FinderService
