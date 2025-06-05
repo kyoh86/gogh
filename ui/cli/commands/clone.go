@@ -84,6 +84,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			svc.ReferenceParser,
 			svc.OverlayStore,
 		)
+		var applied bool
 		for _, ref := range refs {
 			if f.DryRun {
 				fmt.Printf("Apply overlay for %q\n", ref)
@@ -97,7 +98,11 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 					return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
 				},
 				func(ov *overlay_find.Overlay) error {
-					return overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath)
+					if err := overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath); err != nil {
+						return err
+					}
+					applied = true
+					return nil
 				},
 			); err != nil {
 				if errors.Is(err, view.ErrQuit) {
@@ -105,7 +110,9 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 				}
 				return err
 			}
-			logger.Infof("Applied overlay for %s", ref)
+			if applied {
+				logger.Infof("Applied overlay for %s", ref)
+			}
 		}
 		return nil
 	}

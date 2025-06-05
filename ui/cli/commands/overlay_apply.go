@@ -98,6 +98,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				}
 			}
 			for _, ref := range refs {
+				var applied bool
 				if err := view.ProcessWithConfirmation(
 					ctx,
 					typ.FilterE(listup(ctx, ref), filter),
@@ -105,7 +106,11 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 						return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
 					},
 					func(ov *overlay_find.Overlay) error {
-						return overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath)
+						if err := overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath); err != nil {
+							return err
+						}
+						applied = true
+						return nil
 					},
 				); err != nil {
 					if errors.Is(err, view.ErrQuit) {
@@ -113,8 +118,9 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 					}
 					return err
 				}
-
-				logger.Infof("Applied overlay for %s", ref)
+				if applied {
+					logger.Infof("Applied overlay for %s", ref)
+				}
 			}
 			return nil
 		},

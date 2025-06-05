@@ -181,7 +181,6 @@ func (s *HostingService) GetTokenFor(ctx context.Context, host, owner string) (s
 	} else {
 		s.knownOwners[key] = tokenOwner
 	}
-	fmt.Println(tokenOwner, err)
 	return tokenOwner, token, err
 }
 
