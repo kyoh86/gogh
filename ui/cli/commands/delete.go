@@ -140,11 +140,8 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		},
 	}
 	flags.BoolVarP(cmd, &f.local, "local", "", true, "Delete local repository")
-	cmd.Flags().Lookup("local").NoOptDefVal = "false"
 	flags.BoolVarP(cmd, &f.remote, "remote", "", false, "Delete remote repository")
-	cmd.Flags().Lookup("remote").NoOptDefVal = "false"
 	flags.BoolVarP(cmd, &f.force, "force", "", false, "Do NOT confirm to delete")
-	cmd.Flags().Lookup("force").NoOptDefVal = "false"
 	flags.BoolVarP(cmd, &f.dryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	return cmd, nil
 }

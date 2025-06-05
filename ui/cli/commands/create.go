@@ -15,7 +15,6 @@ import (
 	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
-	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 )
@@ -176,11 +175,9 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			return nil
 		},
 	}
-	flags.BoolVarP(cmd, &f.DryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
-	cmd.Flags().Lookup("dry-run").NoOptDefVal = "false"
+	cmd.Flags().BoolVarP(&f.DryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().StringVarP(&f.Template, "template", "", svc.Flags.Create.Template, "Create new repository from the template")
-	flags.BoolVarP(cmd, &f.IncludeAllBranches, "include-all-branches", "", svc.Flags.Create.IncludeAllBranches, "Create all branches in the template")
-	cmd.Flags().Lookup("include-all-branches").NoOptDefVal = "false"
+	cmd.Flags().BoolVarP(&f.IncludeAllBranches, "include-all-branches", "", svc.Flags.Create.IncludeAllBranches, "Create all branches in the template")
 	cmd.Flags().StringVarP(&f.Description, "description", "", "", "A short description of the repository")
 	cmd.Flags().StringVarP(&f.Homepage, "homepage", "", "", "A URL with more information about the repository")
 	cmd.Flags().StringVarP(
@@ -195,22 +192,17 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		}, " "),
 	)
 	cmd.Flags().StringVarP(&f.GitignoreTemplate, "gitignore-template", "", svc.Flags.Create.GitignoreTemplate, `Desired language or platform .gitignore template to apply when "auto-init" flag is set. Use the name of the template without the extension. For example, "Haskell"`)
-	flags.BoolVarP(cmd, &f.Private, "private", "", svc.Flags.Create.Private, "Whether the repository is private")
-	cmd.Flags().Lookup("private").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.IsTemplate, "is-template", "", false, "Whether the repository is available as a template")
-	cmd.Flags().Lookup("is-template").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.DisableDownloads, "disable-downloads", "", svc.Flags.Create.DisableDownloads, `Disable "Downloads" page`)
-	cmd.Flags().Lookup("disable-downloads").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.DisableWiki, "disable-wiki", "", svc.Flags.Create.DisableWiki, `Disable Wiki for the repository`)
-	cmd.Flags().Lookup("disable-wiki").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.AutoInit, "auto-init", "", svc.Flags.Create.AutoInit, "Create an initial commit with empty README")
-	cmd.Flags().Lookup("disable-wiki").NoOptDefVal = "false"
-	flags.BoolVarP(cmd, &f.DisableProjects, "disable-projects", "", svc.Flags.Create.DisableProjects, `Disable projects for the repository`)
-	flags.BoolVarP(cmd, &f.DisableIssues, "disable-issues", "", svc.Flags.Create.DisableIssues, `Disable issues for the repository`)
-	flags.BoolVarP(cmd, &f.PreventSquashMerge, "prevent-squash-merge", "", svc.Flags.Create.PreventSquashMerge, "Prevent squash-merging pull requests")
-	flags.BoolVarP(cmd, &f.PreventMergeCommit, "prevent-merge-commit", "", svc.Flags.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
-	flags.BoolVarP(cmd, &f.PreventRebaseMerge, "prevent-rebase-merge", "", svc.Flags.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
-	flags.BoolVarP(cmd, &f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
+	cmd.Flags().BoolVarP(&f.Private, "private", "", svc.Flags.Create.Private, "Whether the repository is private")
+	cmd.Flags().BoolVarP(&f.IsTemplate, "is-template", "", false, "Whether the repository is available as a template")
+	cmd.Flags().BoolVarP(&f.DisableDownloads, "disable-downloads", "", svc.Flags.Create.DisableDownloads, `Disable "Downloads" page`)
+	cmd.Flags().BoolVarP(&f.DisableWiki, "disable-wiki", "", svc.Flags.Create.DisableWiki, `Disable Wiki for the repository`)
+	cmd.Flags().BoolVarP(&f.AutoInit, "auto-init", "", svc.Flags.Create.AutoInit, "Create an initial commit with empty README")
+	cmd.Flags().BoolVarP(&f.DisableProjects, "disable-projects", "", svc.Flags.Create.DisableProjects, `Disable projects for the repository`)
+	cmd.Flags().BoolVarP(&f.DisableIssues, "disable-issues", "", svc.Flags.Create.DisableIssues, `Disable issues for the repository`)
+	cmd.Flags().BoolVarP(&f.PreventSquashMerge, "prevent-squash-merge", "", svc.Flags.Create.PreventSquashMerge, "Prevent squash-merging pull requests")
+	cmd.Flags().BoolVarP(&f.PreventMergeCommit, "prevent-merge-commit", "", svc.Flags.Create.PreventMergeCommit, "Prevent merging pull requests with a merge commit")
+	cmd.Flags().BoolVarP(&f.PreventRebaseMerge, "prevent-rebase-merge", "", svc.Flags.Create.PreventRebaseMerge, "Prevent rebase-merging pull requests")
+	cmd.Flags().BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
 	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Create.CloneRetryTimeout, "Timeout for each clone attempt")
 	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
 	return cmd, nil
