@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -44,6 +45,7 @@ func (w *WorkspaceStoreV0) Load(ctx context.Context, initial func() workspace.Wo
 		}
 	}
 	svc.MarkSaved()
+	log.FromContext(ctx).Warnf("Workspaces are stored in %q which is deprecated. Please migrate to the new workspace store with `gogh config migrate`.", source)
 	return svc, nil
 }
 

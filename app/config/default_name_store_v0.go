@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/apex/log"
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/store"
@@ -46,6 +47,7 @@ func (d *DefaultNameStoreV0) Load(ctx context.Context, initial func() repository
 		}
 	}
 	svc.MarkSaved()
+	log.FromContext(ctx).Warnf("Default names are stored in %q which is deprecated. Please migrate to the new default names store with `gogh config migrate`.", source)
 	return svc, nil
 }
 

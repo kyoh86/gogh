@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/apex/log"
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/store"
@@ -53,6 +54,7 @@ func (d *TokenStoreV0) Load(ctx context.Context, initial func() auth.TokenServic
 		}
 	}
 	svc.MarkSaved()
+	log.FromContext(ctx).Warnf("Tokens are stored in %q which is deprecated. Please migrate to the new token store with `gogh config migrate`.", source)
 	return svc, nil
 }
 
