@@ -42,9 +42,9 @@ You can also do:
 - Delete a repository (`gogh delete`).
 - List remote repositories (`gogh repos`).
 - Show the current working directory's repository (`gogh cwd`).
-- Manage overlay files (`gogh overlay`).
+- Manage [overlay files](#overlay-feature) (`gogh overlay`).
 
-See [#Available commands](#available-commands) for more information.
+See [#Available commands](#available-commands) and [#Overlay Feature](#overlay-feature) for more information.
 
 ## Install
 
@@ -222,6 +222,93 @@ Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo
             +-- yyy/
 /...
 ```
+
+## Overlay Feature
+
+### What are Overlays?
+
+Overlays are a powerful feature in Gogh that allow you to automatically place custom files into repositories. They're particularly useful for:
+
+- Adding untracked files (like editor configurations or scripts)
+- Applying consistent settings across multiple repositories
+- Creating templates for new projects
+
+### How Overlays Work
+
+When you run commands like `gogh create`, `gogh clone`, or `gogh fork`, Gogh can automatically copy overlay files into the repository based on your configuration.
+
+### Use Cases
+
+1. **Editor Configuration**: Automatically add your favorite editor settings to each repository
+2. **Project Templates**: Apply language-specific configurations to new projects
+3. **License Files**: Ensure all your repositories have the correct license file
+4. **CI/CD Templates**: Add standard workflow files to all repositories
+
+### Basic Overlay Commands
+
+#### Adding an Overlay
+
+```sh
+gogh overlay add <source-path> <repo-pattern> <target-path>
+```
+
+For example:
+```sh
+gogh overlay add /path/to/source/vscode/settings.json "github.com/owner/repo" .vscode/settings.json
+```
+
+#### Listing Overlays
+
+```sh
+gogh overlay list
+```
+
+#### Removing an Overlay
+
+```sh
+gogh overlay remove <repo-pattern> <target-path>
+```
+
+#### Manually Applying Overlays
+
+```sh
+gogh overlay apply [repo-refs...]
+```
+
+### Advanced Features
+
+#### Template Files for New Projects
+
+You can create templates that only apply when initializing a new repository:
+
+```sh
+gogh overlay add --for-init /path/to/source/deno.jsonc "github.com/owner/deno-*" deno.jsonc
+```
+
+#### Extracting Untracked Files as Overlays
+
+Extract files from a repository that aren't tracked by git:
+
+```sh
+gogh overlay extract [repo-refs...]
+```
+
+#### Repository Pattern Matching
+
+You can use patterns to match repositories:
+- Exact match: `github.com/owner/repo`
+- Wildcard: `github.com/owner/*`
+- Multiple directories: `**/docs`
+
+#### Showing Overlay Content
+
+View the content of registered overlays:
+
+```sh
+gogh overlay show
+```
+
+Overlays can be applied automatically on repository operations or manually when needed, giving you complete control over your repository setup.
 
 # LICENSE
 
