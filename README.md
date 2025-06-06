@@ -190,6 +190,13 @@ values for each command.  You can set the flags in the configuration file like t
     request-timeout = 5
 ```
 
+The configuration file is located at `${XDG_CONFIG_HOME}/gogh/flags.v4.toml` by default, and you can
+change the path with the `GOGH_FLAG_PATH` environment variable.
+
+NOTE: If you set the boolean flags to `true` in the configuration file, you can disable them in the command line by
+using `--<flag>=false`. For example, if you set `--private=true` in the configuration file, you can disable it by
+using `--private=false` in the command line.
+
 ## Directory structures
 
 Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo*.
