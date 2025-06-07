@@ -22,7 +22,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		relativePath string
 	}
 	checkFlags := func(ctx context.Context, _ []string) ([]overlay_list.Overlay, error) {
-		overlays, err := typ.CollectWithError(typ.FilterE(overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx), func(ov *overlay_list.Overlay) (bool, error) {
+		overlays, err := typ.CollectWithError(typ.FilterE(overlay_list.NewUseCase(svc.OverlayService).Execute(ctx), func(ov *overlay_list.Overlay) (bool, error) {
 			if f.repoPattern != "" && f.repoPattern != ov.RepoPattern {
 				return false, nil
 			}
@@ -76,7 +76,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			if w, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
 				width = w
 			}
-			overlayShowUseCase := overlay_show.NewUseCase(svc.OverlayStore)
+			overlayShowUseCase := overlay_show.NewUseCase(svc.OverlayService)
 			for i, ov := range overlays {
 				if i > 0 {
 					fmt.Println()

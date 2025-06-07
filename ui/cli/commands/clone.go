@@ -23,7 +23,7 @@ import (
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.CloneFlags
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayStore, svc.ReferenceParser, svc.GitService)
+	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
@@ -76,13 +76,13 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		}
 		overlayFindUseCase := overlay_find.NewUseCase(
 			svc.ReferenceParser,
-			svc.OverlayStore,
+			svc.OverlayService,
 		)
 		overlayApplyUseCase := overlay_apply.NewUseCase(
 			svc.WorkspaceService,
 			svc.FinderService,
 			svc.ReferenceParser,
-			svc.OverlayStore,
+			svc.OverlayService,
 		)
 		var applied bool
 		for _, ref := range refs {

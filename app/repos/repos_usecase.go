@@ -51,15 +51,15 @@ func convertOpts(f Options) (hosting.ListRepositoryOptions, error) {
 	}, f.Privacy); err != nil {
 		return opts, fmt.Errorf("invalid privacy option %q", f.Privacy)
 	}
-	if err := typ.Remap(&opts.IsFork, map[string]hosting.Tristate{
-		"forked":     hosting.TristateTrue,
-		"not-forked": hosting.TristateFalse,
+	if err := typ.Remap(&opts.IsFork, map[string]typ.Tristate{
+		"forked":     typ.TristateTrue,
+		"not-forked": typ.TristateFalse,
 	}, f.Fork); err != nil {
 		return opts, fmt.Errorf("invalid fork option %q", f.Fork)
 	}
-	if err := typ.Remap(&opts.IsArchived, map[string]hosting.Tristate{
-		"archived":     hosting.TristateTrue,
-		"not-archived": hosting.TristateFalse,
+	if err := typ.Remap(&opts.IsArchived, map[string]typ.Tristate{
+		"archived":     typ.TristateTrue,
+		"not-archived": typ.TristateFalse,
 	}, f.Archive); err != nil {
 		return opts, fmt.Errorf("invalid archive option %q", f.Archive)
 	}

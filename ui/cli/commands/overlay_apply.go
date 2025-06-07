@@ -80,18 +80,18 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,
-				svc.OverlayStore,
+				svc.OverlayService,
 			)
 			var listup func(ctx context.Context, ref string) iter.Seq2[*overlay_find.Overlay, error]
 			var filter func(ov *overlay_find.Overlay) (bool, error)
 			if f.repoPattern == "" {
-				listup = overlay_find.NewUseCase(svc.ReferenceParser, svc.OverlayStore).Execute
+				listup = overlay_find.NewUseCase(svc.ReferenceParser, svc.OverlayService).Execute
 				filter = func(ov *overlay_find.Overlay) (bool, error) {
 					return ov.ForInit == f.forInit, nil // Filter by `forInit` flag
 				}
 			} else {
 				listup = func(ctx context.Context, ref string) iter.Seq2[*overlay_find.Overlay, error] {
-					return overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx)
+					return overlay_list.NewUseCase(svc.OverlayService).Execute(ctx)
 				}
 				filter = func(ov *overlay_find.Overlay) (bool, error) {
 					return ov.RepoPattern == f.repoPattern && ov.ForInit == f.forInit, nil // Filter by `forInit` flag

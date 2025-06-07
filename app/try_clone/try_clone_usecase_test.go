@@ -24,10 +24,10 @@ func TestNewUseCase(t *testing.T) {
 
 	hostingService := hosting_mock.NewMockHostingService(ctrl)
 	workspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
-	overlayStore := overlay_mock.NewMockOverlayStore(ctrl)
+	overlayService := overlay_mock.NewMockOverlayService(ctrl)
 	gitService := git_mock.NewMockGitService(ctrl)
 
-	svc := try_clone.NewUseCase(hostingService, workspaceService, overlayStore, gitService)
+	svc := try_clone.NewUseCase(hostingService, workspaceService, overlayService, gitService)
 	if svc == nil {
 		t.Fatal("NewRepositoryService returned nil")
 	}
@@ -112,18 +112,18 @@ func TestRetryLimit(t *testing.T) {
 func TestTryClone(t *testing.T) {
 	testCases := []struct {
 		name          string
-		setupMocks    func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayStore, *git_mock.MockGitService)
+		setupMocks    func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayService, *git_mock.MockGitService)
 		expectErr     bool
 		expectErrText string
 	}{
 		{
 			name: "successful clone",
-			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayStore, *git_mock.MockGitService) {
+			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayService, *git_mock.MockGitService) {
 				mhs := hosting_mock.NewMockHostingService(ctrl)
 				mws := workspace_mock.NewMockWorkspaceService(ctrl)
 				mgs := git_mock.NewMockGitService(ctrl)
 				mls := workspace_mock.NewMockLayoutService(ctrl)
-				mos := overlay_mock.NewMockOverlayStore(ctrl)
+				mos := overlay_mock.NewMockOverlayService(ctrl)
 
 				ref := repository.NewReference("github.com", "user", "repo")
 				repo := &hosting.Repository{
@@ -151,12 +151,12 @@ func TestTryClone(t *testing.T) {
 		},
 		{
 			name: "authentication error",
-			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayStore, *git_mock.MockGitService) {
+			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayService, *git_mock.MockGitService) {
 				mhs := hosting_mock.NewMockHostingService(ctrl)
 				mws := workspace_mock.NewMockWorkspaceService(ctrl)
 				mgs := git_mock.NewMockGitService(ctrl)
 				mls := workspace_mock.NewMockLayoutService(ctrl)
-				mos := overlay_mock.NewMockOverlayStore(ctrl)
+				mos := overlay_mock.NewMockOverlayService(ctrl)
 
 				ref := repository.NewReference("github.com", "user", "repo")
 				localPath := "/path/to/repo"
@@ -175,12 +175,12 @@ func TestTryClone(t *testing.T) {
 		},
 		{
 			name: "authentication username/password error",
-			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayStore, *git_mock.MockGitService) {
+			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayService, *git_mock.MockGitService) {
 				mhs := hosting_mock.NewMockHostingService(ctrl)
 				mws := workspace_mock.NewMockWorkspaceService(ctrl)
 				mgs := git_mock.NewMockGitService(ctrl)
 				mls := workspace_mock.NewMockLayoutService(ctrl)
-				mos := overlay_mock.NewMockOverlayStore(ctrl)
+				mos := overlay_mock.NewMockOverlayService(ctrl)
 
 				ref := repository.NewReference("github.com", "user", "repo")
 				localPath := "/path/to/repo"
@@ -200,12 +200,12 @@ func TestTryClone(t *testing.T) {
 		},
 		{
 			name: "clone error",
-			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayStore, *git_mock.MockGitService) {
+			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayService, *git_mock.MockGitService) {
 				mhs := hosting_mock.NewMockHostingService(ctrl)
 				mws := workspace_mock.NewMockWorkspaceService(ctrl)
 				mgs := git_mock.NewMockGitService(ctrl)
 				mls := workspace_mock.NewMockLayoutService(ctrl)
-				mos := overlay_mock.NewMockOverlayStore(ctrl)
+				mos := overlay_mock.NewMockOverlayService(ctrl)
 
 				ref := repository.NewReference("github.com", "user", "repo")
 				repo := &hosting.Repository{
@@ -232,12 +232,12 @@ func TestTryClone(t *testing.T) {
 		},
 		{
 			name: "empty repository",
-			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayStore, *git_mock.MockGitService) {
+			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayService, *git_mock.MockGitService) {
 				mhs := hosting_mock.NewMockHostingService(ctrl)
 				mws := workspace_mock.NewMockWorkspaceService(ctrl)
 				mgs := git_mock.NewMockGitService(ctrl)
 				mls := workspace_mock.NewMockLayoutService(ctrl)
-				mos := overlay_mock.NewMockOverlayStore(ctrl)
+				mos := overlay_mock.NewMockOverlayService(ctrl)
 
 				ref := repository.NewReference("github.com", "user", "repo")
 				repo := &hosting.Repository{
@@ -270,12 +270,12 @@ func TestTryClone(t *testing.T) {
 		},
 		{
 			name: "parent repository setup",
-			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayStore, *git_mock.MockGitService) {
+			setupMocks: func(ctrl *gomock.Controller) (*hosting_mock.MockHostingService, *workspace_mock.MockWorkspaceService, *overlay_mock.MockOverlayService, *git_mock.MockGitService) {
 				mhs := hosting_mock.NewMockHostingService(ctrl)
 				mws := workspace_mock.NewMockWorkspaceService(ctrl)
 				mgs := git_mock.NewMockGitService(ctrl)
 				mls := workspace_mock.NewMockLayoutService(ctrl)
-				mos := overlay_mock.NewMockOverlayStore(ctrl)
+				mos := overlay_mock.NewMockOverlayService(ctrl)
 
 				ref := repository.NewReference("github.com", "user", "repo")
 				repo := &hosting.Repository{

@@ -45,6 +45,20 @@ func FilterE[T any](seq iter.Seq2[T, error], predicate func(T) (bool, error)) it
 	}
 }
 
+// WithNilError is a function that wraps a iter.Seq and yields items with a nil error.
+func WithNilError[T any](seq iter.Seq[T]) iter.Seq2[T, error] {
+	return WithError(seq, nil)
+}
+
+// WithError is a function that wraps a iter.Seq and yields items with a error.
+func WithError[T any](seq iter.Seq[T], err error) iter.Seq2[T, error] {
+	return func(yield func(T, error) bool) {
+		seq(func(item T) bool {
+			return yield(item, err)
+		})
+	}
+}
+
 // CollectWithError is a function that collects items from a iter.Seq2 with an error into a slice, returning an error if any.
 func CollectWithError[T any](seq iter.Seq2[T, error]) (res []T, _ error) {
 	for item, err := range seq {

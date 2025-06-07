@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/core/hosting"
+	"github.com/kyoh86/gogh/v4/typ"
 )
 
 func TestConvertOpts(t *testing.T) {
@@ -66,7 +67,7 @@ func TestConvertOpts(t *testing.T) {
 			},
 			want: hosting.ListRepositoryOptions{
 				Limit:  30,
-				IsFork: hosting.TristateTrue,
+				IsFork: typ.TristateTrue,
 			},
 			wantErr: false,
 		},
@@ -84,7 +85,7 @@ func TestConvertOpts(t *testing.T) {
 			},
 			want: hosting.ListRepositoryOptions{
 				Limit:      30,
-				IsArchived: hosting.TristateTrue,
+				IsArchived: typ.TristateTrue,
 			},
 			wantErr: false,
 		},

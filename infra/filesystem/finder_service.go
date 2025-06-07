@@ -154,6 +154,7 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 			return nil
 		}); err != nil {
 			yield(nil, err)
+			return
 		}
 	}
 }

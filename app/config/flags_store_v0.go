@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/apex/log"
 	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v4/core/store"
 )
@@ -15,6 +14,7 @@ type FlagsStoreV0 struct{}
 // Load implements store.Loader
 func (d *FlagsStoreV0) Load(ctx context.Context, initial func() *Flags) (*Flags, error) {
 	v := initial()
+	v.RawHasChanges = true
 	source, err := d.Source()
 	if err != nil {
 		return nil, err
@@ -27,7 +27,6 @@ func (d *FlagsStoreV0) Load(ctx context.Context, initial func() *Flags) (*Flags,
 	if err := yaml.NewDecoder(file).Decode(v); err != nil {
 		return nil, err
 	}
-	log.FromContext(ctx).Warnf("Flags are stored in %q which is deprecated. Please migrate to the new flags store with `gogh config migrate`.", source)
 	return v, nil
 }
 

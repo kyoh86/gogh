@@ -106,6 +106,7 @@ type ForkFlags struct {
 
 // Flags is a struct that contains all the flags for the application.
 type Flags struct {
+	RawHasChanges bool               `yaml:"-" toml:"-"` // RawHasChanges is used to track if there are any changes in the flags.
 	BundleDump    BundleDumpFlags    `yaml:"bundleDump,omitempty" toml:"bundle-dump,omitempty"`
 	BundleRestore BundleRestoreFlags `yaml:"bundleRestore,omitempty" toml:"bundle-restore,omitempty"`
 	Clone         CloneFlags         `yaml:"clone,omitempty" toml:"clone"`
@@ -118,12 +119,13 @@ type Flags struct {
 
 // HasChanges always returns false because Flags does not support saving.
 func (f *Flags) HasChanges() bool {
-	return false
+	return f.RawHasChanges
 }
 
 // MarkSaved is a no-op function. It does not save any changes to the Flags struct.
 func (f *Flags) MarkSaved() {
 	// No-op
+	f.RawHasChanges = false
 }
 
 func DefaultFlags() *Flags {

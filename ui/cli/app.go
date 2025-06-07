@@ -59,6 +59,9 @@ func NewApp(
 			if err := svc.FlagsStore.Save(ctx, svc.Flags, false); err != nil {
 				return fmt.Errorf("saving flags: %w", err)
 			}
+			if err := svc.OverlayStore.Save(ctx, svc.OverlayService, false); err != nil {
+				return fmt.Errorf("saving overlays: %w", err)
+			}
 			return nil
 		},
 	}

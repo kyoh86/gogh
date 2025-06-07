@@ -76,13 +76,13 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 			}
 			overlayExtractUseCase := overlay_extract.NewUseCase(
 				svc.GitService,
-				svc.OverlayStore,
+				svc.OverlayService,
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,
 			)
 			overlayAddUseCase := overlay_add.NewUseCase(
-				svc.OverlayStore,
+				svc.OverlayService,
 			)
 			opts := overlay_extract.Options{}
 			if len(f.filePattern) > 0 {

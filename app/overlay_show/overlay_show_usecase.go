@@ -11,18 +11,18 @@ import (
 
 // UseCase represents the create use case
 type UseCase struct {
-	overlayStore overlay.OverlayStore
+	overlayService overlay.OverlayService
 }
 
-func NewUseCase(overlayStore overlay.OverlayStore) *UseCase {
+func NewUseCase(overlayService overlay.OverlayService) *UseCase {
 	return &UseCase{
-		overlayStore: overlayStore,
+		overlayService: overlayService,
 	}
 }
 
 func (uc *UseCase) Execute(ctx context.Context, repoPattern string, forInit bool, relativePath string) error {
 	// Open the overlay content
-	content, err := uc.overlayStore.OpenOverlay(ctx, overlay.Overlay{
+	content, err := uc.overlayService.OpenOverlayContent(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

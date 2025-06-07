@@ -3,3 +3,5 @@ ignore:
   - "**/*_mock.go"
   - "**/gen.go"
   - "**/generated.go"
+  - "ui/cli/" # CLI code is not tested
+  - "infra/github" # GitHub integration code is not tested because it requires a GitHub host

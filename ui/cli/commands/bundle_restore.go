@@ -23,7 +23,7 @@ import (
 
 func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayStore, svc.ReferenceParser, svc.GitService)
+	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
 
 	runFunc := func(ctx context.Context) error {
 		logger := log.FromContext(ctx)
@@ -63,13 +63,13 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 
 		overlayFindUseCase := overlay_find.NewUseCase(
 			svc.ReferenceParser,
-			svc.OverlayStore,
+			svc.OverlayService,
 		)
 		overlayApplyUseCase := overlay_apply.NewUseCase(
 			svc.WorkspaceService,
 			svc.FinderService,
 			svc.ReferenceParser,
-			svc.OverlayStore,
+			svc.OverlayService,
 		)
 		for _, ref := range refs {
 			if f.DryRun {

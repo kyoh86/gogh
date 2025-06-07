@@ -25,6 +25,7 @@ type ServiceSet struct {
 	Flags      *config.Flags
 
 	OverlayStore        overlay.OverlayStore
+	OverlayService      overlay.OverlayService
 	ReferenceParser     repository.ReferenceParser
 	HostingService      hosting.HostingService
 	FinderService       workspace.FinderService

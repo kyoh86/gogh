@@ -133,3 +133,122 @@ fork = "exclude"
 		}
 	})
 }
+
+func TestFlagsStore_Save(t *testing.T) {
+	// Create temporary directory for testing
+	tempDir, err := os.MkdirTemp("", "flags_save_test")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Save and restore environment variable
+	oldFlagPath := os.Getenv("GOGH_FLAG_PATH")
+	defer os.Setenv("GOGH_FLAG_PATH", oldFlagPath)
+
+	// Set up the flags path in the temp directory
+	flagsPath := filepath.Join(tempDir, "flags.v4.toml")
+	os.Setenv("GOGH_FLAG_PATH", flagsPath)
+
+	// Create store and initial flags
+	store := config.NewFlagsStore()
+	ctx := context.Background()
+
+	t.Run("save with changes", func(t *testing.T) {
+		// Create flags with changes
+		flags := config.DefaultFlags()
+		flags.List.Limit = 300
+		flags.List.Format = "custom"
+		flags.Repos.Privacy = "private"
+
+		// Mark as changed
+		flags.RawHasChanges = true
+
+		// Save the flags
+		err := store.Save(ctx, flags, false)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Verify file was created
+		if _, err := os.Stat(flagsPath); os.IsNotExist(err) {
+			t.Fatal("flags file was not created")
+		}
+
+		// Load the saved flags and verify content
+		loadedFlags, err := store.Load(ctx, config.DefaultFlags)
+		if err != nil {
+			t.Fatalf("failed to load saved flags: %v", err)
+		}
+
+		// Check values were correctly saved
+		if loadedFlags.List.Limit != 300 {
+			t.Errorf("expected List.Limit to be 300, got %d", loadedFlags.List.Limit)
+		}
+		if loadedFlags.List.Format != "custom" {
+			t.Errorf("expected List.Format to be 'custom', got '%s'", loadedFlags.List.Format)
+		}
+		if loadedFlags.Repos.Privacy != "private" {
+			t.Errorf("expected Repos.Privacy to be 'private', got '%s'", loadedFlags.Repos.Privacy)
+		}
+	})
+
+	t.Run("no save when no changes", func(t *testing.T) {
+		// Delete the existing file
+		os.Remove(flagsPath)
+
+		// Create flags with no changes
+		flags := config.DefaultFlags()
+		flags.MarkSaved() // Explicitly mark as saved (no changes)
+
+		// Attempt to save
+		err := store.Save(ctx, flags, false)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Verify file was not created
+		if _, err := os.Stat(flagsPath); !os.IsNotExist(err) {
+			t.Fatal("flags file was created when it shouldn't have been")
+		}
+	})
+
+	t.Run("save with force", func(t *testing.T) {
+		// Delete the existing file
+		os.Remove(flagsPath)
+
+		// Create flags with no changes
+		flags := config.DefaultFlags()
+		flags.MarkSaved() // Explicitly mark as saved (no changes)
+
+		// Save with force=true
+		err := store.Save(ctx, flags, true)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Verify file was created despite no changes
+		if _, err := os.Stat(flagsPath); os.IsNotExist(err) {
+			t.Fatal("flags file was not created when forced")
+		}
+	})
+
+	t.Run("does not error on write to non-exist directory", func(t *testing.T) {
+		// Set an invalid path (not a directory)
+		invalidPath := filepath.Join(tempDir, "non-exist", "dir", "flags.toml")
+		os.Setenv("GOGH_FLAG_PATH", invalidPath)
+
+		// Create flags with changes
+		flags := config.DefaultFlags()
+		flags.RawHasChanges = true
+
+		// Try to save to an invalid directory
+		store := config.NewFlagsStore() // Need a new store to pick up the env var change
+		err := store.Save(ctx, flags, true)
+
+		// Should not fail to create directory
+		if err != nil {
+			t.Fatalf("expected success when saving to invalid directory, got %v", err)
+		}
+	})
+}

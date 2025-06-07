@@ -70,7 +70,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err := create.NewUseCase(
 				svc.HostingService,
 				svc.WorkspaceService,
-				svc.OverlayStore,
+				svc.OverlayService,
 				svc.ReferenceParser,
 				svc.GitService,
 			).Execute(ctx, refWithAlias, ropt); err != nil {
@@ -84,7 +84,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err := create_from_template.NewUseCase(
 				svc.HostingService,
 				svc.WorkspaceService,
-				svc.OverlayStore,
+				svc.OverlayService,
 				svc.ReferenceParser,
 				svc.GitService,
 			).Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
@@ -111,13 +111,13 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			svc.WorkspaceService,
 			svc.FinderService,
 			svc.ReferenceParser,
-			svc.OverlayStore,
+			svc.OverlayService,
 		)
 		if err := view.ProcessWithConfirmation(
 			ctx,
 			overlay_find.NewUseCase(
 				svc.ReferenceParser,
-				svc.OverlayStore,
+				svc.OverlayService,
 			).Execute(ctx, refWithAlias),
 			func(ov *overlay_find.Overlay) string {
 				return fmt.Sprintf("Apply overlay for %s (%s)", refWithAlias, ov.RelativePath)

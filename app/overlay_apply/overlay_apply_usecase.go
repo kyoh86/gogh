@@ -17,20 +17,20 @@ type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	referenceParser  repository.ReferenceParser
-	overlayStore     overlay.OverlayStore
+	overlayService   overlay.OverlayService
 }
 
 func NewUseCase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
-	overlayStore overlay.OverlayStore,
+	overlayService overlay.OverlayService,
 ) *UseCase {
 	return &UseCase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		referenceParser:  referenceParser,
-		overlayStore:     overlayStore,
+		overlayService:   overlayService,
 	}
 }
 
@@ -49,7 +49,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, repoPattern string,
 	targetPath := filepath.Join(match.FullPath(), relativePath)
 
 	// Open the overlay source
-	source, err := uc.overlayStore.OpenOverlay(ctx, overlay.Overlay{
+	source, err := uc.overlayService.OpenOverlayContent(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

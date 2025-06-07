@@ -21,6 +21,13 @@ import (
 	"github.com/kyoh86/gogh/v4/core/fs"
 )
 
+// Function variables that can be mocked in tests
+var (
+	osUserConfigDir  = os.UserConfigDir
+	osUserHomeDir    = os.UserHomeDir
+	UserExcludesFile = defaultUserExcludesFile
+)
+
 // LoadUserExcludes loads the user's gitignore patterns from the core.excludesfile property.
 // It reads the user's gitignore file, which is typically located at
 // `$XDG_CONFIG_HOME/git/ignore` or `$HOME/.config/git/ignore`.
@@ -74,7 +81,7 @@ func LoadLocalIgnore(repoPath string) ([]gitignore.Pattern, error) {
 	return ps, err
 }
 
-// UserExcludesFile returns the path to the user's gitignore file.
+// defaultUserExcludesFile returns the path to the user's gitignore file.
 // It reads the core.excludesfile property from the user-specific configuration files.
 // (`$XDG_CONFIG_HOME/git/config` and `~/.gitconfig`)
 // When the XDG_CONFIG_HOME environment variable is not set or empty, $HOME/.config/ is used as $XDG_CONFIG_HOME.
@@ -84,9 +91,9 @@ func LoadLocalIgnore(repoPath string) ([]gitignore.Pattern, error) {
 // See:
 // - Git documentation on configuration file locations: https://git-scm.com/docs/git-config#FILES
 // - Git documentation on core.excludesFile: https://git-scm.com/docs/git-config#Documentation/git-config.txt-coreexcludesFile
-func UserExcludesFile() (filename string, _ error) {
+func defaultUserExcludesFile() (filename string, _ error) {
 	// Get the excludesfile property from the XDG git config file
-	config, err := os.UserConfigDir()
+	config, err := osUserConfigDir()
 	if err != nil {
 		return "", fmt.Errorf("searching user config dir: %w", err)
 	}
@@ -97,7 +104,7 @@ func UserExcludesFile() (filename string, _ error) {
 
 	// Override with the ~/.gitconfig if it exists
 	{
-		home, err := os.UserHomeDir()
+		home, err := osUserHomeDir()
 		if err != nil {
 			return "", fmt.Errorf("searching user home dir: %w", err)
 		}
@@ -155,6 +162,9 @@ func readIgnoreFile(ignoreFile string, domain []string) (ps []gitignore.Pattern,
 	ignoreFile, _ = fs.ReplaceTildeWithHome(ignoreFile)
 
 	f, err := os.Open(ignoreFile)
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
 	if err == nil {
 		defer f.Close()
 
@@ -165,9 +175,6 @@ func readIgnoreFile(ignoreFile string, domain []string) (ps []gitignore.Pattern,
 				ps = append(ps, gitignore.ParsePattern(s, domain))
 			}
 		}
-	} else if !os.IsNotExist(err) {
-		return nil, err
 	}
-
 	return
 }

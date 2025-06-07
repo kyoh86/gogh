@@ -12,16 +12,16 @@ import (
 // UseCase represents the create use case
 type UseCase struct {
 	referenceParser repository.ReferenceParser
-	overlayStore    overlay.OverlayStore
+	overlayService  overlay.OverlayService
 }
 
 func NewUseCase(
 	referenceParser repository.ReferenceParser,
-	overlayStore overlay.OverlayStore,
+	overlayService overlay.OverlayService,
 ) *UseCase {
 	return &UseCase{
 		referenceParser: referenceParser,
-		overlayStore:    overlayStore,
+		overlayService:  overlayService,
 	}
 }
 
@@ -34,7 +34,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*Overlay,
 			yield(nil, fmt.Errorf("parsing reference '%s': %w", refs, err))
 			return
 		}
-		for overlay, err := range overlay.ForReference(uc.overlayStore.ListOverlays(ctx), refWithAlias.Local()) {
+		for overlay, err := range overlay.ForReference(uc.overlayService.ListOverlays(), refWithAlias.Local()) {
 			if !yield(overlay, err) {
 				return
 			}

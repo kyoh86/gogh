@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/gogh"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/infra/filesystem"
 	"github.com/kyoh86/gogh/v4/infra/git"
@@ -84,14 +85,12 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("loading workspace: %w", err)
 	}
 
-	overlayDir, err := config.OverlayDir()
+	overlayStore := config.NewOverlayStore()
+	overlayService, err := overlayStore.Load(ctx, func() overlay.OverlayService {
+		return overlay.NewOverlayService(config.NewOverlayContentStore())
+	})
 	if err != nil {
-		return fmt.Errorf("getting overlay directory: %w", err)
-	}
-	overlayFS := filesystem.NewLocalWFS(overlayDir)
-	overlayStore, err := filesystem.NewOverlayStore(overlayFS)
-	if err != nil {
-		return fmt.Errorf("creating overlay service: %w", err)
+		return fmt.Errorf("loading overlays: %w", err)
 	}
 
 	svc := &service.ServiceSet{
@@ -104,9 +103,11 @@ func run(ctx context.Context) error {
 		WorkspaceStore:   workspaceStore,
 		WorkspaceService: workspaceService,
 
-		OverlayStore: overlayStore,
-		FlagsStore:   flagsStore,
-		Flags:        flags,
+		OverlayStore:   overlayStore,
+		OverlayService: overlayService,
+
+		FlagsStore: flagsStore,
+		Flags:      flags,
 
 		ReferenceParser:     repository.NewReferenceParser(defaultNameService.GetDefaultHostAndOwner()),
 		HostingService:      github.NewHostingService(tokenService, defaultNameService),

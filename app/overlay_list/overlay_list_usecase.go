@@ -9,12 +9,12 @@ import (
 
 // UseCase represents the overlay list use case
 type UseCase struct {
-	overlayStore overlay.OverlayStore
+	overlayService overlay.OverlayService
 }
 
-func NewUseCase(overlayStore overlay.OverlayStore) *UseCase {
+func NewUseCase(overlayService overlay.OverlayService) *UseCase {
 	return &UseCase{
-		overlayStore: overlayStore,
+		overlayService: overlayService,
 	}
 }
 
@@ -22,5 +22,5 @@ type Overlay = overlay.Overlay
 
 // Execute lists all overlay patterns and their files
 func (uc *UseCase) Execute(ctx context.Context) iter.Seq2[*Overlay, error] {
-	return uc.overlayStore.ListOverlays(ctx)
+	return uc.overlayService.ListOverlays()
 }

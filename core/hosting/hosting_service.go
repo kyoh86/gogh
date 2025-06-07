@@ -2,7 +2,6 @@ package hosting
 
 import (
 	"context"
-	"fmt"
 	"iter"
 	"net/url"
 
@@ -47,32 +46,6 @@ type HostingService interface {
 	) (*Repository, error)
 }
 
-// Tristate represents a filter state for boolean repository attributes
-type Tristate int
-
-const (
-	// TristateZero indicates no filtering should be applied
-	TristateZero Tristate = iota
-
-	// TristateTrue filters for repositories where the attribute is true
-	TristateTrue
-	// TristateFalse filters for repositories where the attribute is false
-	TristateFalse
-)
-
-// AsBoolPtr converts the BooleanFilter to a pointer to a boolean value
-func (f Tristate) AsBoolPtr() (*bool, error) {
-	var r *bool
-	if err := typ.Remap(&r, map[Tristate]*bool{
-		TristateZero:  nil,
-		TristateTrue:  typ.Ptr(true),
-		TristateFalse: typ.Ptr(false),
-	}, f); err != nil {
-		return nil, fmt.Errorf("invalid Tristate: %w", err)
-	}
-	return r, nil
-}
-
 // ListRepositoryOptions represents options for listing repositories
 type ListRepositoryOptions struct {
 	// OrderBy specifies the ordering of the repositories
@@ -84,9 +57,9 @@ type ListRepositoryOptions struct {
 	// Limit specifies the maximum number of repositories to return
 	Limit int
 	// IsFork filters for repositories that are forks
-	IsFork Tristate
+	IsFork typ.Tristate
 	// IsArchived filters for repositories that are archived
-	IsArchived Tristate
+	IsArchived typ.Tristate
 }
 
 // Ordering options for repository connections

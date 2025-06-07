@@ -2,31 +2,19 @@ VERSION ?= `git vertag get`
 COMMIT  ?= `git rev-parse HEAD`
 DATE    ?= `date --iso-8601`
 
-generate-clear: gen-clear
-.PHONY: generate-clear
+.PHONY: clean
+clean:
+	$(MAKE) -C ./core clean
+	$(MAKE) -C ./infra/githubv4 clean
 
-gen-clear:
-	rm -rf ./**/*_gen.go
-.PHONY: gen-clear
-
-generate: gen
+# Alias for gen
 .PHONY: generate
+generate: gen
 
-gen: gen-clear
-	go generate -x ./...
 .PHONY: gen
-
-clear-sdl:
-	rm -f ./infra/githubv4/schema.graphql
-.PHONY: clear-sdl
-
-get-sdl:
-	curl -Lo ./infra/githubv4/schema.graphql https://docs.github.com/public/fpt/schema.docs.graphql
-.PHONY: get-sdl
-
-gen-gql: clear-sdl get-sdl
-	go generate -tags gengraphql -x ./infra/githubv4
-.PHONY: gen-gql
+gen:
+	$(MAKE) -C ./infra/githubv4
+	$(MAKE) -C ./core
 
 lint: gen
 	go tool golangci-lint run

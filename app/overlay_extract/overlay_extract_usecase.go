@@ -15,7 +15,7 @@ import (
 // UseCase implements the overlay extraction use case
 type UseCase struct {
 	gitService       git.GitService
-	overlayStore     overlay.OverlayStore
+	overlayService   overlay.OverlayService
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	referenceParser  repository.ReferenceParser
@@ -24,14 +24,14 @@ type UseCase struct {
 // NewUseCase creates a new overlay extraction use case
 func NewUseCase(
 	gitService git.GitService,
-	overlayStore overlay.OverlayStore,
+	overlayService overlay.OverlayService,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
 ) *UseCase {
 	return &UseCase{
 		gitService:       gitService,
-		overlayStore:     overlayStore,
+		overlayService:   overlayService,
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		referenceParser:  referenceParser,
@@ -74,15 +74,21 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) iter.
 		}
 
 		// Read file contents
-		for file, err := range files(ctx, repo.FullPath(), opts.FilePatterns) {
+		repoPath := repo.FullPath()
+		for file, err := range files(ctx, repoPath, opts.FilePatterns) {
 			if err != nil {
 				yield(nil, fmt.Errorf("failed to list untracked files: %w", err))
-				continue
+				return
+			}
+			rel, err := filepath.Rel(repoPath, file)
+			if err != nil {
+				yield(nil, fmt.Errorf("failed to get relative path for %s: %w", file, err))
+				return
 			}
 			if !yield(&ExtractResult{
 				Reference:    *ref,
-				RelativePath: file,
-				FilePath:     filepath.Join(repo.FullPath(), file),
+				RelativePath: rel,
+				FilePath:     file,
 			}, nil) {
 				return
 			}

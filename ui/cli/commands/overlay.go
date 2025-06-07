@@ -50,7 +50,7 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		Short:   "List overlays",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			for overlay, err := range overlay_list.NewUseCase(svc.OverlayStore).Execute(ctx) {
+			for overlay, err := range overlay_list.NewUseCase(svc.OverlayService).Execute(ctx) {
 				if err != nil {
 					return fmt.Errorf("listing overlay: %w", err)
 				}
@@ -108,7 +108,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return fmt.Errorf("target path must be relative, got absolute path: %s", targetPath)
 			}
 
-			if err := overlay_add.NewUseCase(svc.OverlayStore).Execute(ctx, f.forInit, repoPattern, targetPath, sourcePath); err != nil {
+			if err := overlay_add.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, repoPattern, targetPath, sourcePath); err != nil {
 				return err
 			}
 
@@ -142,7 +142,7 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 				return fmt.Errorf("target path must be relative, got absolute path: %s", targetPath)
 			}
 
-			if err := overlay_remove.NewUseCase(svc.OverlayStore).Execute(ctx, f.forInit, targetPath, repoPattern); err != nil {
+			if err := overlay_remove.NewUseCase(svc.OverlayService).Execute(ctx, f.forInit, targetPath, repoPattern); err != nil {
 				return err
 			}
 

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	git "github.com/go-git/go-git/v5"
@@ -443,5 +444,237 @@ func TestAuthentication(t *testing.T) {
 	// This test is more for code coverage than actual verification
 	if err == nil {
 		t.Error("Expected an error from clone")
+	}
+}
+
+// TestListExcludedFiles tests the ListExcludedFiles method of GitService
+func TestListExcludedFiles(t *testing.T) {
+	ctx := context.Background()
+	tempDir := setupTempDir(t)
+	defer os.RemoveAll(tempDir)
+
+	service := testtarget.NewService()
+
+	// Setup test repository with some ignored files
+	repoPath := filepath.Join(tempDir, "repo")
+	if err := os.MkdirAll(repoPath, 0755); err != nil {
+		t.Fatalf("Failed to create repo dir: %v", err)
+	}
+
+	// Create .git directory and exclude file
+	gitInfoDir := filepath.Join(repoPath, ".git", "info")
+	if err := os.MkdirAll(gitInfoDir, 0755); err != nil {
+		t.Fatalf("Failed to create .git/info dir: %v", err)
+	}
+	excludeContent := "*.tmp\n*.log\n"
+	if err := os.WriteFile(filepath.Join(gitInfoDir, "exclude"), []byte(excludeContent), 0644); err != nil {
+		t.Fatalf("Failed to write exclude file: %v", err)
+	}
+
+	// Create .gitignore file
+	ignoreContent := "*.bak\n/node_modules/\n"
+	if err := os.WriteFile(filepath.Join(repoPath, ".gitignore"), []byte(ignoreContent), 0644); err != nil {
+		t.Fatalf("Failed to write .gitignore file: %v", err)
+	}
+
+	// Create sample files - some ignored, some not
+	sampleFiles := map[string]bool{ // filename -> should be excluded
+		"main.go":                   false,
+		"test.log":                  true,
+		"temp.tmp":                  true,
+		"backup.bak":                true,
+		"node_modules/package.json": true,
+		"lib/util.js":               false,
+		"docs/readme.md":            false,
+	}
+
+	// Create sample files and directories
+	for file, _ := range sampleFiles {
+		dirPath := filepath.Dir(filepath.Join(repoPath, file))
+		if dirPath != repoPath {
+			if err := os.MkdirAll(dirPath, 0755); err != nil {
+				t.Fatalf("Failed to create directory %s: %v", dirPath, err)
+			}
+		}
+		if err := os.WriteFile(filepath.Join(repoPath, file), []byte("content"), 0644); err != nil {
+			t.Fatalf("Failed to write file %s: %v", file, err)
+		}
+	}
+
+	// Save original functions and restore them after the test
+	originalUserExcludesFile := testtarget.UserExcludesFile
+	defer func() { testtarget.UserExcludesFile = originalUserExcludesFile }()
+
+	// Mock the user excludes file to return an empty list
+	testtarget.UserExcludesFile = func() (string, error) {
+		return filepath.Join(tempDir, "nonexistent"), nil
+	}
+
+	// Test 1: List all excluded files
+	var excludedFiles []string
+	for file, err := range service.ListExcludedFiles(ctx, repoPath, nil) {
+		if err != nil {
+			t.Errorf("Unexpected error listing excluded files: %v", err)
+			break
+		}
+		excludedFiles = append(excludedFiles, file)
+	}
+
+	// Check that all files that should be excluded are in the list
+	for file, shouldBeExcluded := range sampleFiles {
+		absPath := filepath.Join(repoPath, file)
+		isExcluded := false
+		for _, excludedFile := range excludedFiles {
+			if excludedFile == absPath {
+				isExcluded = true
+				break
+			}
+		}
+		if isExcluded != shouldBeExcluded {
+			t.Errorf("File %s: expected excluded=%v, got excluded=%v", file, shouldBeExcluded, isExcluded)
+		}
+	}
+
+	// Test 2: List excluded files with filter pattern
+	excludedFiles = nil
+	for file, err := range service.ListExcludedFiles(ctx, repoPath, []string{"*.log", "*.bak"}) {
+		if err != nil {
+			t.Errorf("Unexpected error listing excluded files with filter: %v", err)
+			break
+		}
+		excludedFiles = append(excludedFiles, file)
+	}
+
+	// Should only include .log and .bak files
+	for _, file := range excludedFiles {
+		if !strings.HasSuffix(file, ".log") && !strings.HasSuffix(file, ".bak") {
+			t.Errorf("Unexpected file in filtered excluded list: %s", file)
+		}
+	}
+
+	// Test 3: Error handling - invalid path
+	invalidPath := filepath.Join(tempDir, "nonexistent")
+	var gotError bool
+	for _, err := range service.ListExcludedFiles(ctx, invalidPath, nil) {
+		if err != nil {
+			gotError = true
+			break
+		}
+	}
+	if !gotError {
+		t.Errorf("Expected error for invalid path, got none")
+	}
+}
+
+// TestListAllFiles tests the ListAllFiles method of GitService
+func TestListAllFiles(t *testing.T) {
+	ctx := context.Background()
+	tempDir := setupTempDir(t)
+	defer os.RemoveAll(tempDir)
+
+	service := testtarget.NewService()
+
+	// Setup test repository with various files
+	repoPath := filepath.Join(tempDir, "repo")
+	if err := os.MkdirAll(repoPath, 0755); err != nil {
+		t.Fatalf("Failed to create repo dir: %v", err)
+	}
+
+	// Create .git directory (should be included in all files)
+	gitDir := filepath.Join(repoPath, ".git")
+	if err := os.MkdirAll(gitDir, 0755); err != nil {
+		t.Fatalf("Failed to create .git dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(gitDir, "HEAD"), []byte("ref: refs/heads/master"), 0644); err != nil {
+		t.Fatalf("Failed to write HEAD file: %v", err)
+	}
+
+	// Create sample files in various directories
+	sampleFiles := []string{
+		"main.go",
+		"lib/util.js",
+		"docs/readme.md",
+		"build/output.bin",
+		".gitignore",
+	}
+
+	for _, file := range sampleFiles {
+		dirPath := filepath.Dir(filepath.Join(repoPath, file))
+		if dirPath != repoPath {
+			if err := os.MkdirAll(dirPath, 0755); err != nil {
+				t.Fatalf("Failed to create directory %s: %v", dirPath, err)
+			}
+		}
+		if err := os.WriteFile(filepath.Join(repoPath, file), []byte("content"), 0644); err != nil {
+			t.Fatalf("Failed to write file %s: %v", file, err)
+		}
+	}
+
+	// Test 1: List all files without filter
+	var allFiles []string
+	for file, err := range service.ListAllFiles(ctx, repoPath, nil) {
+		if err != nil {
+			t.Errorf("Unexpected error listing all files: %v", err)
+			break
+		}
+		allFiles = append(allFiles, file)
+	}
+
+	// Check that all created files are in the list
+	for _, file := range sampleFiles {
+		absPath := filepath.Join(repoPath, file)
+		found := false
+		for _, listedFile := range allFiles {
+			if listedFile == absPath {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("File %s not found in ListAllFiles result", file)
+		}
+	}
+
+	// Git HEAD file should also be present
+	gitHeadPath := filepath.Join(gitDir, "HEAD")
+	found := false
+	for _, listedFile := range allFiles {
+		if listedFile == gitHeadPath {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("Git HEAD file not found in ListAllFiles result")
+	}
+
+	// Test 2: List files with filter pattern
+	var filteredFiles []string
+	for file, err := range service.ListAllFiles(ctx, repoPath, []string{"*.go", "*.md"}) {
+		if err != nil {
+			t.Errorf("Unexpected error listing filtered files: %v", err)
+			break
+		}
+		filteredFiles = append(filteredFiles, file)
+	}
+
+	// Should only include .go and .md files
+	for _, file := range filteredFiles {
+		if !strings.HasSuffix(file, ".go") && !strings.HasSuffix(file, ".md") {
+			t.Errorf("Unexpected file in filtered list: %s", file)
+		}
+	}
+
+	// Test 3: Error handling - invalid path
+	invalidPath := filepath.Join(tempDir, "nonexistent")
+	var gotError bool
+	for _, err := range service.ListAllFiles(ctx, invalidPath, nil) {
+		if err != nil {
+			gotError = true
+			break
+		}
+	}
+	if !gotError {
+		t.Errorf("Expected error for invalid path, got none")
 	}
 }
