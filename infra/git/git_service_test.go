@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
@@ -489,7 +490,7 @@ func TestListExcludedFiles(t *testing.T) {
 	}
 
 	// Create sample files and directories
-	for file, _ := range sampleFiles {
+	for file := range sampleFiles {
 		dirPath := filepath.Dir(filepath.Join(repoPath, file))
 		if dirPath != repoPath {
 			if err := os.MkdirAll(dirPath, 0755); err != nil {
@@ -523,13 +524,7 @@ func TestListExcludedFiles(t *testing.T) {
 	// Check that all files that should be excluded are in the list
 	for file, shouldBeExcluded := range sampleFiles {
 		absPath := filepath.Join(repoPath, file)
-		isExcluded := false
-		for _, excludedFile := range excludedFiles {
-			if excludedFile == absPath {
-				isExcluded = true
-				break
-			}
-		}
+		isExcluded := slices.Contains(excludedFiles, absPath)
 		if isExcluded != shouldBeExcluded {
 			t.Errorf("File %s: expected excluded=%v, got excluded=%v", file, shouldBeExcluded, isExcluded)
 		}

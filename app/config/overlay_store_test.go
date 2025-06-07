@@ -2,6 +2,7 @@ package config_test
 
 import (
 	"context"
+	"iter"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +11,6 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
-	"iter"
 )
 
 func TestOverlayStore(t *testing.T) {

@@ -7,7 +7,6 @@ linters:
     - godox
     - misspell
     - nakedret
-    - prealloc
     - staticcheck
     - unconvert
     - unparam
