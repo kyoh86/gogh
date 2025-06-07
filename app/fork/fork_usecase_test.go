@@ -12,6 +12,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/hosting_mock"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
@@ -21,10 +22,19 @@ import (
 
 func TestUseCase_Execute(t *testing.T) {
 	testCases := []struct {
-		name          string
-		source        string
-		target        string
-		setupMocks    func(mhs *hosting_mock.MockHostingService, mws *workspace_mock.MockWorkspaceService, mls *workspace_mock.MockLayoutService, mos *overlay_mock.MockOverlayService, mdns *repository_mock.MockDefaultNameService, mrp *repository_mock.MockReferenceParser, mgs *git_mock.MockGitService)
+		name       string
+		source     string
+		target     string
+		setupMocks func(
+			mhs *hosting_mock.MockHostingService,
+			mws *workspace_mock.MockWorkspaceService,
+			mfs *workspace_mock.MockFinderService,
+			mls *workspace_mock.MockLayoutService,
+			mos *overlay_mock.MockOverlayService,
+			mdns *repository_mock.MockDefaultNameService,
+			mrp *repository_mock.MockReferenceParser,
+			mgs *git_mock.MockGitService,
+		)
 		expectErr     bool
 		expectErrText string
 	}{
@@ -32,7 +42,16 @@ func TestUseCase_Execute(t *testing.T) {
 			name:   "successful fork and clone",
 			source: "github.com/source/repo",
 			target: "github.com/target/repo",
-			setupMocks: func(mhs *hosting_mock.MockHostingService, mws *workspace_mock.MockWorkspaceService, mls *workspace_mock.MockLayoutService, mos *overlay_mock.MockOverlayService, mdns *repository_mock.MockDefaultNameService, mrp *repository_mock.MockReferenceParser, mgs *git_mock.MockGitService) {
+			setupMocks: func(
+				mhs *hosting_mock.MockHostingService,
+				mws *workspace_mock.MockWorkspaceService,
+				mfs *workspace_mock.MockFinderService,
+				mls *workspace_mock.MockLayoutService,
+				mos *overlay_mock.MockOverlayService,
+				mdns *repository_mock.MockDefaultNameService,
+				mrp *repository_mock.MockReferenceParser,
+				mgs *git_mock.MockGitService,
+			) {
 				sourceRef := repository.NewReference("github.com", "source", "repo")
 				targetRef := repository.NewReference("github.com", "target", "repo")
 				targetRefWithAlias := &repository.ReferenceWithAlias{
@@ -45,7 +64,7 @@ func TestUseCase_Execute(t *testing.T) {
 					Return(&sourceRef, nil)
 				mrp.EXPECT().
 					ParseWithAlias("github.com/target/repo").
-					Return(targetRefWithAlias, nil)
+					Return(targetRefWithAlias, nil).AnyTimes()
 
 				// Fork repository
 				forkedRepo := &hosting.Repository{Ref: targetRef}
@@ -73,13 +92,26 @@ func TestUseCase_Execute(t *testing.T) {
 				mws.EXPECT().
 					GetPrimaryLayout().
 					Return(mls)
+
+				// Overlay application
+				mos.EXPECT().
+					ListOverlays().Return(func(yield func(*overlay.Overlay, error) bool) {})
 			},
 			expectErr: false,
 		},
 		{
 			name:   "invalid source reference",
 			source: "invalid-source",
-			setupMocks: func(mhs *hosting_mock.MockHostingService, mws *workspace_mock.MockWorkspaceService, mls *workspace_mock.MockLayoutService, mos *overlay_mock.MockOverlayService, mdns *repository_mock.MockDefaultNameService, mrp *repository_mock.MockReferenceParser, mgs *git_mock.MockGitService) {
+			setupMocks: func(
+				mhs *hosting_mock.MockHostingService,
+				mws *workspace_mock.MockWorkspaceService,
+				mfs *workspace_mock.MockFinderService,
+				mls *workspace_mock.MockLayoutService,
+				mos *overlay_mock.MockOverlayService,
+				mdns *repository_mock.MockDefaultNameService,
+				mrp *repository_mock.MockReferenceParser,
+				mgs *git_mock.MockGitService,
+			) {
 				mrp.EXPECT().
 					Parse("invalid-source").
 					Return(nil, errors.New("invalid source reference"))
@@ -91,7 +123,16 @@ func TestUseCase_Execute(t *testing.T) {
 			name:   "empty target with default owner",
 			source: "github.com/source/repo",
 			target: "",
-			setupMocks: func(mhs *hosting_mock.MockHostingService, mws *workspace_mock.MockWorkspaceService, mls *workspace_mock.MockLayoutService, mos *overlay_mock.MockOverlayService, mdns *repository_mock.MockDefaultNameService, mrp *repository_mock.MockReferenceParser, mgs *git_mock.MockGitService) {
+			setupMocks: func(
+				mhs *hosting_mock.MockHostingService,
+				mws *workspace_mock.MockWorkspaceService,
+				mfs *workspace_mock.MockFinderService,
+				mls *workspace_mock.MockLayoutService,
+				mos *overlay_mock.MockOverlayService,
+				mdns *repository_mock.MockDefaultNameService,
+				mrp *repository_mock.MockReferenceParser,
+				mgs *git_mock.MockGitService,
+			) {
 				sourceRef := repository.NewReference("github.com", "source", "repo")
 				mrp.EXPECT().
 					Parse("github.com/source/repo").
@@ -102,6 +143,9 @@ func TestUseCase_Execute(t *testing.T) {
 					Return("default-owner", nil)
 
 				defaultRef := repository.NewReference("github.com", "default-owner", "repo")
+				mrp.EXPECT().
+					ParseWithAlias("github.com/default-owner/repo").
+					Return(&repository.ReferenceWithAlias{Reference: defaultRef}, nil)
 
 				// Fork repository
 				forkedRepo := &hosting.Repository{
@@ -131,6 +175,10 @@ func TestUseCase_Execute(t *testing.T) {
 				mws.EXPECT().
 					GetPrimaryLayout().
 					Return(mls)
+
+				// Overlay application
+				mos.EXPECT().
+					ListOverlays().Return(func(yield func(*overlay.Overlay, error) bool) {})
 			},
 			expectErr: false,
 		},
@@ -138,7 +186,16 @@ func TestUseCase_Execute(t *testing.T) {
 			name:   "fork error",
 			source: "github.com/source/repo",
 			target: "github.com/target/repo",
-			setupMocks: func(mhs *hosting_mock.MockHostingService, mws *workspace_mock.MockWorkspaceService, mls *workspace_mock.MockLayoutService, mos *overlay_mock.MockOverlayService, mdns *repository_mock.MockDefaultNameService, mrp *repository_mock.MockReferenceParser, mgs *git_mock.MockGitService) {
+			setupMocks: func(
+				mhs *hosting_mock.MockHostingService,
+				mws *workspace_mock.MockWorkspaceService,
+				mfs *workspace_mock.MockFinderService,
+				mls *workspace_mock.MockLayoutService,
+				mos *overlay_mock.MockOverlayService,
+				mdns *repository_mock.MockDefaultNameService,
+				mrp *repository_mock.MockReferenceParser,
+				mgs *git_mock.MockGitService,
+			) {
 				sourceRef := repository.NewReference("github.com", "source", "repo")
 				targetRef := repository.NewReference("github.com", "target", "repo")
 				targetRefWithAlias := &repository.ReferenceWithAlias{
@@ -165,7 +222,16 @@ func TestUseCase_Execute(t *testing.T) {
 			name:   "clone error",
 			source: "github.com/source/repo",
 			target: "github.com/target/repo",
-			setupMocks: func(mhs *hosting_mock.MockHostingService, mws *workspace_mock.MockWorkspaceService, mls *workspace_mock.MockLayoutService, mos *overlay_mock.MockOverlayService, mdns *repository_mock.MockDefaultNameService, mrp *repository_mock.MockReferenceParser, mgs *git_mock.MockGitService) {
+			setupMocks: func(
+				mhs *hosting_mock.MockHostingService,
+				mws *workspace_mock.MockWorkspaceService,
+				mfs *workspace_mock.MockFinderService,
+				mls *workspace_mock.MockLayoutService,
+				mos *overlay_mock.MockOverlayService,
+				mdns *repository_mock.MockDefaultNameService,
+				mrp *repository_mock.MockReferenceParser,
+				mgs *git_mock.MockGitService,
+			) {
 				sourceRef := repository.NewReference("github.com", "source", "repo")
 				targetRef := repository.NewReference("github.com", "target", "repo")
 				targetRefWithAlias := &repository.ReferenceWithAlias{
@@ -218,17 +284,19 @@ func TestUseCase_Execute(t *testing.T) {
 
 			mockHostingService := hosting_mock.NewMockHostingService(ctrl)
 			mockWorkspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
+			mockFinderService := workspace_mock.NewMockFinderService(ctrl)
 			mockOverlayService := overlay_mock.NewMockOverlayService(ctrl)
 			mockLayoutService := workspace_mock.NewMockLayoutService(ctrl)
 			mockDefaultNameService := repository_mock.NewMockDefaultNameService(ctrl)
 			mockReferenceParser := repository_mock.NewMockReferenceParser(ctrl)
 			mockGitService := git_mock.NewMockGitService(ctrl)
 
-			tc.setupMocks(mockHostingService, mockWorkspaceService, mockLayoutService, mockOverlayService, mockDefaultNameService, mockReferenceParser, mockGitService)
+			tc.setupMocks(mockHostingService, mockWorkspaceService, mockFinderService, mockLayoutService, mockOverlayService, mockDefaultNameService, mockReferenceParser, mockGitService)
 
 			useCase := fork.NewUseCase(
 				mockHostingService,
 				mockWorkspaceService,
+				mockFinderService,
 				mockOverlayService,
 				mockDefaultNameService,
 				mockReferenceParser,

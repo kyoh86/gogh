@@ -12,6 +12,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/hosting_mock"
+	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
@@ -27,6 +28,7 @@ func TestUseCase_Execute(t *testing.T) {
 		setupMocks   func(
 			mockHosting *hosting_mock.MockHostingService,
 			mockWorkspace *workspace_mock.MockWorkspaceService,
+			mockFinder *workspace_mock.MockFinderService,
 			mockLayout *workspace_mock.MockLayoutService,
 			mockOverlay *overlay_mock.MockOverlayService,
 			mockRefParser *repository_mock.MockReferenceParser,
@@ -41,6 +43,7 @@ func TestUseCase_Execute(t *testing.T) {
 			setupMocks: func(
 				mockHosting *hosting_mock.MockHostingService,
 				mockWorkspace *workspace_mock.MockWorkspaceService,
+				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
 				mockRefParser *repository_mock.MockReferenceParser,
@@ -53,7 +56,8 @@ func TestUseCase_Execute(t *testing.T) {
 					Return(&repository.ReferenceWithAlias{
 						Reference: ref,
 						Alias:     nil,
-					}, nil)
+					}, nil).
+					AnyTimes()
 
 				pseudoCloneURL := "https://github.com/kyoh86/gogh.git"
 				// Get repository information
@@ -82,6 +86,10 @@ func TestUseCase_Execute(t *testing.T) {
 				mockGit.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "kyoh86", "").Return(mockGit, nil)
 				mockGit.EXPECT().Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockGit.EXPECT().SetDefaultRemotes(gomock.Any(), pseudoPath, []string{pseudoCloneURL}).Return(nil)
+
+				// Overlay application
+				mockOverlay.EXPECT().
+					ListOverlays().Return(func(yield func(*overlay.Overlay, error) bool) {})
 			},
 			expectedError: false,
 		},
@@ -91,6 +99,7 @@ func TestUseCase_Execute(t *testing.T) {
 			setupMocks: func(
 				mockHosting *hosting_mock.MockHostingService,
 				mockWorkspace *workspace_mock.MockWorkspaceService,
+				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
 				mockRefParser *repository_mock.MockReferenceParser,
@@ -110,6 +119,7 @@ func TestUseCase_Execute(t *testing.T) {
 			setupMocks: func(
 				mockHosting *hosting_mock.MockHostingService,
 				mockWorkspace *workspace_mock.MockWorkspaceService,
+				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
 				mockRefParser *repository_mock.MockReferenceParser,
@@ -142,16 +152,17 @@ func TestUseCase_Execute(t *testing.T) {
 			// Create mocks
 			mockHosting := hosting_mock.NewMockHostingService(ctrl)
 			mockWorkspace := workspace_mock.NewMockWorkspaceService(ctrl)
+			mockFinder := workspace_mock.NewMockFinderService(ctrl)
 			mockLayout := workspace_mock.NewMockLayoutService(ctrl)
 			mockOverlay := overlay_mock.NewMockOverlayService(ctrl)
 			mockRefParser := repository_mock.NewMockReferenceParser(ctrl)
 			mockGit := git_mock.NewMockGitService(ctrl)
 
 			// Setup mocks
-			tt.setupMocks(mockHosting, mockWorkspace, mockLayout, mockOverlay, mockRefParser, mockGit)
+			tt.setupMocks(mockHosting, mockWorkspace, mockFinder, mockLayout, mockOverlay, mockRefParser, mockGit)
 
 			// Create UseCase to test
-			useCase := NewUseCase(mockHosting, mockWorkspace, mockOverlay, mockRefParser, mockGit)
+			useCase := NewUseCase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockRefParser, mockGit)
 
 			// Execute test
 			err := useCase.Execute(context.Background(), tt.refWithAlias, Options{

@@ -49,3 +49,11 @@ func (r ReferenceWithAlias) Local() Reference {
 	}
 	return r.Reference
 }
+
+// String returns a string representation of the reference with alias.
+func (r ReferenceWithAlias) String() string {
+	if r.Alias != nil {
+		return r.Reference.String() + "=" + r.Alias.String()
+	}
+	return r.Reference.String()
+}
