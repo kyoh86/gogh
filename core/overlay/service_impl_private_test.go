@@ -2,7 +2,6 @@ package overlay
 
 import (
 	"context"
-	"errors"
 	"io"
 	"reflect"
 	"strings"
@@ -28,8 +27,8 @@ func TestNewOverlayService(t *testing.T) {
 		t.Error("expected contentStore to be set correctly")
 	}
 
-	if len(impl.overlays) != 0 {
-		t.Errorf("expected empty overlays, got %d", len(impl.overlays))
+	if impl.overlays.Len() != 0 {
+		t.Errorf("expected empty overlays, got %d", impl.overlays.Len())
 	}
 
 	if impl.changed {
@@ -100,8 +99,8 @@ func TestAddOverlay(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	if len(service.overlays) != 1 {
-		t.Errorf("expected 1 overlay, got %d", len(service.overlays))
+	if service.overlays.Len() != 1 {
+		t.Errorf("expected 1 overlay, got %d", service.overlays.Len())
 	}
 
 	if !service.changed {
@@ -109,12 +108,12 @@ func TestAddOverlay(t *testing.T) {
 	}
 
 	// Verify the content location was set
-	if service.overlays[0].ContentLocation == "" {
+	if service.overlays.At(0).ContentLocation == "" {
 		t.Error("expected ContentLocation to be set")
 	}
 
 	// Verify the content was actually saved to the filesystem
-	savedLocation := service.overlays[0].ContentLocation
+	savedLocation := service.overlays.At(0).ContentLocation
 	reader, err := store.OpenContent(ctx, savedLocation)
 	if err != nil {
 		t.Errorf("failed to open saved content: %v", err)
@@ -131,9 +130,17 @@ func TestAddOverlay(t *testing.T) {
 	}
 
 	// Test add with nil content
-	err = service.AddOverlay(ctx, ov, nil)
-	if err == nil {
+
+	if err := service.AddOverlay(ctx, ov, nil); err == nil {
 		t.Error("expected error when adding nil content")
+	}
+
+	// Test adding duplicate overlay
+	if err := service.AddOverlay(ctx, ov, strings.NewReader("duplicate content")); err != nil {
+		t.Errorf("unexpected error adding duplicate overlay: %v", err)
+	}
+	if service.overlays.Len() != 1 {
+		t.Errorf("expected still 1 overlay after adding duplicate, got %d", service.overlays.Len())
 	}
 }
 
@@ -155,7 +162,7 @@ func TestRemoveOverlay(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to add overlay: %v", err)
 		}
-		locations = append(locations, service.overlays[len(service.overlays)-1].ContentLocation)
+		locations = append(locations, service.overlays.At(-1).ContentLocation)
 	}
 
 	service.changed = false // Reset for testing
@@ -166,8 +173,8 @@ func TestRemoveOverlay(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	if len(service.overlays) != 2 {
-		t.Errorf("expected 2 overlays, got %d", len(service.overlays))
+	if service.overlays.Len() != 2 {
+		t.Errorf("expected 2 overlays, got %d", service.overlays.Len())
 	}
 
 	if !service.changed {
@@ -175,7 +182,8 @@ func TestRemoveOverlay(t *testing.T) {
 	}
 
 	// Check that the remaining overlays are the expected ones
-	if service.overlays[0].RepoPattern != "repo1" || service.overlays[1].RepoPattern != "repo3" {
+	if service.overlays.At(0).RepoPattern != "repo1" || service.overlays.At(1).RepoPattern != "repo3" {
+		t.Error(service.overlays.At(0), service.overlays.At(1))
 		t.Error("wrong overlay was removed")
 	}
 
@@ -194,8 +202,8 @@ func TestRemoveOverlay(t *testing.T) {
 		t.Errorf("unexpected error removing non-existent overlay: %v", err)
 	}
 
-	if len(service.overlays) != 2 {
-		t.Errorf("expected still 2 overlays, got %d", len(service.overlays))
+	if service.overlays.Len() != 2 {
+		t.Errorf("expected still 2 overlays, got %d", service.overlays.Len())
 	}
 
 	if service.changed {
@@ -277,57 +285,39 @@ func TestSetOverlays(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test overlays and save content for them
-	testOverlays := []*Overlay{
+	testOverlays := []Overlay{
 		{RepoPattern: "repo1", RelativePath: "path1", ForInit: true},
 		{RepoPattern: "repo2", RelativePath: "path2", ForInit: false},
 	}
 
 	// Save content for each overlay
 	for _, ov := range testOverlays {
-		location, err := store.SaveContent(ctx, *ov, strings.NewReader("content for "+ov.RepoPattern))
+		location, err := store.SaveContent(ctx, ov, strings.NewReader("content for "+ov.RepoPattern))
 		if err != nil {
 			t.Fatalf("failed to save content: %v", err)
 		}
 		ov.ContentLocation = location
 	}
 
-	// Create iterator function
-	iter := func(yield func(*Overlay, error) bool) {
-		for _, ov := range testOverlays {
-			if !yield(ov, nil) {
-				return
-			}
-		}
-	}
-
 	// Set overlays
-	err := service.SetOverlays(iter)
+	err := service.SetOverlays(testOverlays)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	if len(service.overlays) != len(testOverlays) {
-		t.Errorf("expected %d overlays, got %d", len(testOverlays), len(service.overlays))
+	if service.overlays.Len() != len(testOverlays) {
+		t.Errorf("expected %d overlays, got %d", len(testOverlays), service.overlays.Len())
 	}
 
-	for i, ov := range service.overlays {
-		if !reflect.DeepEqual(ov, *testOverlays[i]) {
-			t.Errorf("overlay mismatch at index %d: expected %v, got %v", i, *testOverlays[i], ov)
+	i := 0
+	for ov := range service.overlays.Iter() {
+		if !reflect.DeepEqual(ov, testOverlays[i]) {
+			t.Errorf("overlay mismatch at index %d: expected %v, got %v", i, testOverlays[i], ov)
 		}
+		i++
 	}
 
-	if service.changed {
-		t.Error("expected changed to be false after SetOverlays")
-	}
-
-	// Test with error in iterator
-	expectedError := errors.New("test error")
-	errIter := func(yield func(*Overlay, error) bool) {
-		yield(nil, expectedError)
-	}
-
-	err = service.SetOverlays(errIter)
-	if err != expectedError {
-		t.Errorf("expected error %v, got %v", expectedError, err)
+	if !service.changed {
+		t.Error("expected changed to be true after SetOverlays")
 	}
 }

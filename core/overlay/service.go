@@ -16,5 +16,5 @@ type OverlayService interface {
 	AddOverlay(ctx context.Context, ov Overlay, content io.Reader) error
 	RemoveOverlay(ctx context.Context, ov Overlay) error
 	OpenOverlayContent(ctx context.Context, ov Overlay) (io.ReadCloser, error)
-	SetOverlays(iter.Seq2[*Overlay, error]) error
+	SetOverlays([]Overlay) error
 }
