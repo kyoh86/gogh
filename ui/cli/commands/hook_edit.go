@@ -18,7 +18,7 @@ func NewHookEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			hookID := args[0]
-			// 一時ファイルへスクリプトを展開
+			// Extract the script to a temporary file
 			tmpFile, err := os.CreateTemp("", "gogh_hook_edit_*.lua")
 			if err != nil {
 				return err
@@ -42,7 +42,6 @@ func NewHookEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 				return err
 			}
 
-			// 編集後、内容を反映
 			edited, err := os.Open(tmpFile.Name())
 			if err != nil {
 				return err

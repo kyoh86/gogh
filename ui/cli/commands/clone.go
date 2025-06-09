@@ -24,6 +24,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		svc.WorkspaceService,
 		svc.FinderService,
 		svc.OverlayService,
+		svc.HookService,
 		svc.ReferenceParser,
 		svc.GitService,
 	)

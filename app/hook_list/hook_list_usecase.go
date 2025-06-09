@@ -2,9 +2,9 @@ package hook_list
 
 import (
 	"context"
+	"iter"
 
 	"github.com/kyoh86/gogh/v4/core/hook"
-	"iter"
 )
 
 type UseCase struct {

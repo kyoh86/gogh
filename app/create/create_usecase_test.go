@@ -11,6 +11,8 @@ import (
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
+	"github.com/kyoh86/gogh/v4/core/hook"
+	"github.com/kyoh86/gogh/v4/core/hook_mock"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/hosting_mock"
 	"github.com/kyoh86/gogh/v4/core/overlay"
@@ -33,6 +35,7 @@ func TestUseCase_Execute(t *testing.T) {
 			mockFinder *workspace_mock.MockFinderService,
 			mockLayout *workspace_mock.MockLayoutService,
 			mockOverlay *overlay_mock.MockOverlayService,
+			mockHook *hook_mock.MockHookService,
 			mockRefParser *repository_mock.MockReferenceParser,
 			mockGit *git_mock.MockGitService,
 		)
@@ -55,6 +58,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockHook *hook_mock.MockHookService,
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
@@ -99,6 +103,9 @@ func TestUseCase_Execute(t *testing.T) {
 				// Overlay application
 				mockOverlay.EXPECT().
 					ListOverlays().Return(func(yield func(*overlay.Overlay, error) bool) {})
+				// Hook application
+				mockHook.EXPECT().
+					ListHooks().Return(func(yield func(*hook.Hook, error) bool) {}).Times(2)
 			},
 			expectedError: false,
 		},
@@ -115,6 +122,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockHook *hook_mock.MockHookService,
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
@@ -139,6 +147,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockHook *hook_mock.MockHookService,
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
@@ -173,14 +182,15 @@ func TestUseCase_Execute(t *testing.T) {
 			mockFinder := workspace_mock.NewMockFinderService(ctrl)
 			mockLayout := workspace_mock.NewMockLayoutService(ctrl)
 			mockOverlay := overlay_mock.NewMockOverlayService(ctrl)
+			mockHook := hook_mock.NewMockHookService(ctrl)
 			mockRefParser := repository_mock.NewMockReferenceParser(ctrl)
 			mockGit := git_mock.NewMockGitService(ctrl)
 
 			// Setup mocks
-			tt.setupMocks(mockHosting, mockWorkspace, mockFinder, mockLayout, mockOverlay, mockRefParser, mockGit)
+			tt.setupMocks(mockHosting, mockWorkspace, mockFinder, mockLayout, mockOverlay, mockHook, mockRefParser, mockGit)
 
 			// Create UseCase to test
-			useCase := testtarget.NewUseCase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockRefParser, mockGit)
+			useCase := testtarget.NewUseCase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockHook, mockRefParser, mockGit)
 
 			// Execute test
 			err := useCase.Execute(context.Background(), tt.refWithAlias, tt.options)

@@ -26,7 +26,7 @@ func hookKey(h hook.Hook) (string, error) {
 	return hex.EncodeToString(sum[:]), nil
 }
 
-func (cs *HookContentStore) SaveContent(ctx context.Context, h hook.Hook, content io.Reader) (string, error) {
+func (cs *HookContentStore) SaveScript(ctx context.Context, h hook.Hook, content io.Reader) (string, error) {
 	source, err := cs.Source()
 	if err != nil {
 		return "", fmt.Errorf("get content source: %w", err)
@@ -50,7 +50,7 @@ func (cs *HookContentStore) SaveContent(ctx context.Context, h hook.Hook, conten
 	return fileName, nil
 }
 
-func (cs *HookContentStore) OpenContent(ctx context.Context, location string) (io.ReadCloser, error) {
+func (cs *HookContentStore) OpenScript(ctx context.Context, location string) (io.ReadCloser, error) {
 	source, err := cs.Source()
 	if err != nil {
 		return nil, fmt.Errorf("get content source: %w", err)
@@ -58,7 +58,7 @@ func (cs *HookContentStore) OpenContent(ctx context.Context, location string) (i
 	return os.Open(filepath.Join(source, location))
 }
 
-func (cs *HookContentStore) RemoveContent(ctx context.Context, location string) error {
+func (cs *HookContentStore) RemoveScript(ctx context.Context, location string) error {
 	source, err := cs.Source()
 	if err != nil {
 		return fmt.Errorf("get content source: %w", err)
@@ -73,3 +73,5 @@ func (*HookContentStore) Source() (string, error) {
 	}
 	return path, nil
 }
+
+var _ hook.HookScriptStore = (*HookContentStore)(nil)

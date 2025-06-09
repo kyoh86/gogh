@@ -14,6 +14,7 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 	var f struct {
 		name        string
 		description string
+		useCase     string
 		event       string
 		repoPattern string
 	}
@@ -36,6 +37,7 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 			opts := hook_add.Options{
 				Name:        f.name,
 				Description: f.description,
+				UseCase:     f.useCase,
 				Event:       f.event,
 				RepoPattern: f.repoPattern,
 			}
@@ -44,8 +46,15 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 	}
 	cmd.Flags().StringVar(&f.name, "name", "", "Name of the hook")
 	cmd.Flags().StringVar(&f.description, "description", "", "Description")
-	cmd.Flags().StringVar(&f.event, "event", "", "Event (before-clone, after-clone, etc.)")
+
+	if err := enumFlag(cmd, &f.useCase, "use-case", "never", "Use case to hook automatically", "", "clone", "fork", "create", "never"); err != nil {
+		return nil, fmt.Errorf("registering use-case flag: %w", err)
+	}
+
+	if err := enumFlag(cmd, &f.event, "event", "never", "event to hook automatically", "", "clone", "fork", "create", "never"); err != nil {
+		return nil, fmt.Errorf("registering event flag: %w", err)
+	}
+
 	cmd.Flags().StringVar(&f.repoPattern, "repo-pattern", "", "Repository pattern")
 	return cmd, nil
 }
-

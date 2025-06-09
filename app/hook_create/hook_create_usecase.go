@@ -2,16 +2,18 @@ package hook_create
 
 import (
 	"context"
-	"github.com/kyoh86/gogh/v4/core/hook"
-	"github.com/google/uuid"
 	"io"
+
+	"github.com/google/uuid"
+	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
 type Options struct {
 	Name        string
 	Description string
-	Event       string
 	RepoPattern string
+	UseCase     string
+	Event       string
 }
 
 type UseCase struct {
@@ -27,8 +29,11 @@ func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader)
 		ID:          uuid.NewString(),
 		Name:        opts.Name,
 		Description: opts.Description,
-		Event:       hook.EventType(opts.Event),
-		RepoPattern: opts.RepoPattern,
+		Target: hook.Target{
+			RepoPattern: opts.RepoPattern,
+			UseCase:     hook.UseCase(opts.UseCase),
+			Event:       hook.Event(opts.Event),
+		},
 	}
 	return uc.hookService.AddHook(ctx, h, content)
 }

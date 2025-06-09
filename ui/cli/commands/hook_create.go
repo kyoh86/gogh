@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -14,6 +15,7 @@ func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	var f struct {
 		name        string
 		description string
+		useCase     string
 		event       string
 		repoPattern string
 	}
@@ -27,14 +29,10 @@ func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			if err != nil {
 				return err
 			}
+			if err := file.Close(); err != nil {
+				return fmt.Errorf("close temporary file: %v", err)
+			}
 			defer os.Remove(file.Name())
-			// 空テンプレートやサンプルLuaを書き込んでもよい
-			file.WriteString(`-- Gogh Hook Lua script template
-function main()
-  -- your code here
-end
-`)
-			file.Close()
 
 			editor := os.Getenv("EDITOR")
 			if editor == "" {
@@ -47,7 +45,7 @@ end
 			if err := cmdEdit.Run(); err != nil {
 				return err
 			}
-			// 編集後内容を読み込む
+			// Reopen the file to read the content after editing
 			content, err := os.Open(file.Name())
 			if err != nil {
 				return err
@@ -57,6 +55,7 @@ end
 			opts := hook_create.Options{
 				Name:        f.name,
 				Description: f.description,
+				UseCase:     f.useCase,
 				Event:       f.event,
 				RepoPattern: f.repoPattern,
 			}
@@ -65,8 +64,15 @@ end
 	}
 	cmd.Flags().StringVar(&f.name, "name", "", "Name of the hook")
 	cmd.Flags().StringVar(&f.description, "description", "", "Description")
-	cmd.Flags().StringVar(&f.event, "event", "", "Event (before-clone, after-clone, etc.)")
+
+	if err := enumFlag(cmd, &f.useCase, "use-case", "never", "Use case to hook automatically", "", "clone", "fork", "create", "never"); err != nil {
+		return nil, fmt.Errorf("registering use-case flag: %w", err)
+	}
+
+	if err := enumFlag(cmd, &f.event, "event", "never", "event to hook automatically", "", "clone", "fork", "create", "never"); err != nil {
+		return nil, fmt.Errorf("registering event flag: %w", err)
+	}
+
 	cmd.Flags().StringVar(&f.repoPattern, "repo-pattern", "", "Repository pattern")
 	return cmd, nil
 }
-

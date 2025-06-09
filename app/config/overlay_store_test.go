@@ -225,17 +225,3 @@ func makeOverlayIterator(overlays []overlay.Overlay) iter.Seq2[*overlay.Overlay,
 		}
 	}
 }
-
-// Helper function to sort overlays by RepoPattern for consistent comparison
-func sortOverlays(overlays []*overlay.Overlay) {
-	if overlays == nil {
-		return
-	}
-	for i := range overlays {
-		for j := i + 1; j < len(overlays); j++ {
-			if overlays[i].RepoPattern > overlays[j].RepoPattern {
-				overlays[i], overlays[j] = overlays[j], overlays[i]
-			}
-		}
-	}
-}

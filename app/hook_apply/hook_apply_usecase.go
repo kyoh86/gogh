@@ -2,24 +2,57 @@ package hook_apply
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"io"
+	"maps"
+	"os"
+	"os/exec"
 
-	lua "github.com/Shopify/go-lua"
+	"github.com/kyoh86/gogh/v4/app/hook_run"
 	"github.com/kyoh86/gogh/v4/core/hook"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/workspace"
+	"golang.org/x/sync/errgroup"
 )
 
 // UseCase for running hook scripts
 type UseCase struct {
-	hookService hook.HookService
+	hookService      hook.HookService
+	referenceParser  repository.ReferenceParser
+	workspaceService workspace.WorkspaceService
+	finderService    workspace.FinderService
 }
 
-func NewUseCase(hookService hook.HookService) *UseCase {
-	return &UseCase{hookService: hookService}
+func NewUseCase(
+	hookService hook.HookService,
+	referenceParser repository.ReferenceParser,
+	workspaceService workspace.WorkspaceService,
+	finderService workspace.FinderService,
+) *UseCase {
+	return &UseCase{
+		hookService:      hookService,
+		referenceParser:  referenceParser,
+		workspaceService: workspaceService,
+		finderService:    finderService,
+	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, h hook.Hook, env map[string]string) error {
-	src, err := uc.hookService.OpenHookScript(ctx, h)
+func (uc *UseCase) Execute(ctx context.Context, hookID string, refWithAlias string, globals map[string]any) error {
+	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
+	if err != nil {
+		return fmt.Errorf("parsing repository reference: %w", err)
+	}
+	loc, err := uc.finderService.FindByReference(ctx, uc.workspaceService, ref.Local())
+	if err != nil {
+		return fmt.Errorf("find repository location: %w", err)
+	}
+
+	hook, err := uc.hookService.GetHookByID(ctx, hookID)
+	if err != nil {
+		return fmt.Errorf("get hook by ID: %w", err)
+	}
+	src, err := uc.hookService.OpenHookScript(ctx, *hook)
 	if err != nil {
 		return fmt.Errorf("open hook script: %w", err)
 	}
@@ -28,13 +61,41 @@ func (uc *UseCase) Execute(ctx context.Context, h hook.Hook, env map[string]stri
 	if err != nil {
 		return fmt.Errorf("read script: %w", err)
 	}
-	l := lua.NewState()
-	lua.OpenLibraries(l)
-	// 必要ならGo関数をLuaにExpose（例: リポジトリパス、環境変数、ログ出力など）
-	// e.g., l.Register("gogh_log", ...)
-	if err := lua.DoString(l, string(code)); err != nil {
-		return fmt.Errorf("run Lua: %w", err)
-	}
-	return nil
-}
 
+	g := make(map[string]any, len(globals)+1)
+	maps.Copy(g, globals)
+	// Add domain objects as maps
+	g["repo"] = map[string]any{
+		"full_path": loc.FullPath(),
+		"path":      loc.Path(),
+		"host":      loc.Host(),
+		"owner":     loc.Owner(),
+		"name":      loc.Name(),
+	}
+
+	cmd := exec.Command(os.Args[0], "hook", "run")
+	cmd.Env = append(os.Environ(), "CWD="+loc.FullPath())
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+	defer stdin.Close()
+
+	var eg errgroup.Group
+	eg.SetLimit(2)
+
+	eg.Go(func() error {
+		enc := gob.NewEncoder(stdin)
+
+		return enc.Encode(hook_run.Script{
+			Code:    string(code),
+			Globals: g,
+		})
+	})
+
+	eg.Go(cmd.Run)
+
+	return eg.Wait()
+}

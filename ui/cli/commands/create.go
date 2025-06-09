@@ -68,6 +68,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.OverlayService,
+				svc.HookService,
 				svc.ReferenceParser,
 				svc.GitService,
 			).Execute(ctx, refWithAlias, ropt); err != nil {
@@ -81,7 +82,9 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err := create_from_template.NewUseCase(
 				svc.HostingService,
 				svc.WorkspaceService,
+				svc.FinderService,
 				svc.OverlayService,
+				svc.HookService,
 				svc.ReferenceParser,
 				svc.GitService,
 			).Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{

@@ -17,7 +17,7 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 	return &UseCase{hookService: hookService}
 }
 
-// ExtractScript: 指定IDのhookスクリプト内容を書き出す（編集用一時ファイルへの書き込み等）
+// ExtractScript extracts the script of a hook by its ID and writes it to the provided writer.
 func (uc *UseCase) ExtractScript(ctx context.Context, hookID string, w io.Writer) error {
 	var found *hook.Hook
 	for h, err := range uc.hookService.ListHooks() {
@@ -41,7 +41,7 @@ func (uc *UseCase) ExtractScript(ctx context.Context, hookID string, w io.Writer
 	return err
 }
 
-// ApplyScript: 編集後のLuaスクリプト内容を反映する
+// ApplyScript applies a new script to a hook identified by its ID.
 func (uc *UseCase) ApplyScript(ctx context.Context, hookID string, r io.Reader) error {
 	var found *hook.Hook
 	hooks := slices.Clone(collectHooks(uc.hookService))
@@ -54,11 +54,9 @@ func (uc *UseCase) ApplyScript(ctx context.Context, hookID string, r io.Reader) 
 	if found == nil {
 		return errors.New("hook not found")
 	}
-	// 新しい内容でUpdate
 	return uc.hookService.UpdateHook(ctx, *found, r)
 }
 
-// 補助: 全hooksをスライスで取得
 func collectHooks(svc hook.HookService) []*hook.Hook {
 	var out []*hook.Hook
 	for h, err := range svc.ListHooks() {

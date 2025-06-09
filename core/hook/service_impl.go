@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"iter"
+	"slices"
 	"sync"
 )
 
@@ -12,12 +13,12 @@ import (
 type hookServiceImpl struct {
 	mu      sync.RWMutex
 	hooks   []*Hook
-	content HookContentStore
+	content HookScriptStore
 	dirty   bool
 }
 
 // NewHookService creates a new HookService with the given content store.
-func NewHookService(content HookContentStore) HookService {
+func NewHookService(content HookScriptStore) HookService {
 	return &hookServiceImpl{
 		hooks:   []*Hook{},
 		content: content,
@@ -42,8 +43,7 @@ func (s *hookServiceImpl) ListHooks() iter.Seq2[*Hook, error] {
 func (s *hookServiceImpl) AddHook(ctx context.Context, h Hook, content io.Reader) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	// 保存
-	scriptPath, err := s.content.SaveContent(ctx, h, content)
+	scriptPath, err := s.content.SaveScript(ctx, h, content)
 	if err != nil {
 		return err
 	}
@@ -59,11 +59,10 @@ func (s *hookServiceImpl) UpdateHook(ctx context.Context, h Hook, content io.Rea
 	defer s.mu.Unlock()
 	for i, hook := range s.hooks {
 		if hook.ID == h.ID {
-			// 古いスクリプトを削除
 			if hook.ScriptPath != "" {
-				_ = s.content.RemoveContent(ctx, hook.ScriptPath)
+				_ = s.content.RemoveScript(ctx, hook.ScriptPath)
 			}
-			scriptPath, err := s.content.SaveContent(ctx, h, content)
+			scriptPath, err := s.content.SaveScript(ctx, h, content)
 			if err != nil {
 				return err
 			}
@@ -76,6 +75,18 @@ func (s *hookServiceImpl) UpdateHook(ctx context.Context, h Hook, content io.Rea
 	return errors.New("hook not found")
 }
 
+// GetHookByID retrieves a hook by its ID.
+func (s *hookServiceImpl) GetHookByID(ctx context.Context, id string) (*Hook, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, h := range s.hooks {
+		if h.ID == id {
+			return h, nil
+		}
+	}
+	return nil, errors.New("hook not found")
+}
+
 // RemoveHook removes a hook and its script content by ID.
 func (s *hookServiceImpl) RemoveHook(ctx context.Context, id string) error {
 	s.mu.Lock()
@@ -83,9 +94,9 @@ func (s *hookServiceImpl) RemoveHook(ctx context.Context, id string) error {
 	for i, h := range s.hooks {
 		if h.ID == id {
 			if h.ScriptPath != "" {
-				_ = s.content.RemoveContent(ctx, h.ScriptPath)
+				_ = s.content.RemoveScript(ctx, h.ScriptPath)
 			}
-			s.hooks = append(s.hooks[:i], s.hooks[i+1:]...)
+			s.hooks = slices.Delete(s.hooks, i, i+1)
 			s.dirty = true
 			return nil
 		}
@@ -100,7 +111,7 @@ func (s *hookServiceImpl) OpenHookScript(ctx context.Context, h Hook) (io.ReadCl
 	if h.ScriptPath == "" {
 		return nil, errors.New("hook has no script path")
 	}
-	return s.content.OpenContent(ctx, h.ScriptPath)
+	return s.content.OpenScript(ctx, h.ScriptPath)
 }
 
 // SetHooks replaces the list of hooks (used for loading from persistent storage).
@@ -132,3 +143,5 @@ func (s *hookServiceImpl) MarkSaved() {
 	defer s.mu.Unlock()
 	s.dirty = false
 }
+
+var _ HookService = (*hookServiceImpl)(nil)
