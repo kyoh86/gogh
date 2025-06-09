@@ -74,9 +74,9 @@ func (uc *UseCase) Execute(ctx context.Context, hookID string, refWithAlias stri
 	}
 
 	cmd := exec.Command(os.Args[0], "hook", "run")
-	cmd.Env = append(os.Environ(), "CWD="+loc.FullPath())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Dir = loc.FullPath()
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
