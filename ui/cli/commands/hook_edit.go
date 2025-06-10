@@ -11,7 +11,7 @@ import (
 
 func NewHookEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
-		Use:   "edit <hook-id>",
+		Use:   "edit [flags] <hook-id>",
 		Short: "Edit an existing hook (edit Lua script with $EDITOR)",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

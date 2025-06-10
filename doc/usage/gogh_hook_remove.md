@@ -3,7 +3,7 @@
 Remove a registered hook
 
 ```
-gogh hook remove <hook-id> [flags]
+gogh hook remove [flags] <hook-id>
 ```
 
 ### Options

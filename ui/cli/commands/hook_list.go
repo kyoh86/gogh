@@ -13,6 +13,7 @@ func NewHookListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List registered hooks",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			for h, err := range hook_list.NewUseCase(svc.HookService).Execute(ctx) {

@@ -10,7 +10,7 @@ import (
 
 func NewHookRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
-		Use:   "remove <hook-id>",
+		Use:   "remove [flags] <hook-id>",
 		Short: "Remove a registered hook",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

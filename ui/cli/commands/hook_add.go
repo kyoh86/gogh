@@ -19,7 +19,7 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 		repoPattern string
 	}
 	cmd := &cobra.Command{
-		Use:   "add <lua-script-path>",
+		Use:   "add [flags] <lua-script-path>",
 		Short: "Add an existing Lua script as hook",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

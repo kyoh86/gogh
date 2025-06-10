@@ -3,7 +3,7 @@
 Run a hook script forcely for a repository
 
 ```
-gogh hook apply <hook-id> [[<host>/]<owner>/]<name> [flags]
+gogh hook apply [flags] <hook-id> [[<host>/]<owner>/]<name>
 ```
 
 ### Options

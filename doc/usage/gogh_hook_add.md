@@ -3,7 +3,7 @@
 Add an existing Lua script as hook
 
 ```
-gogh hook add <lua-script-path> [flags]
+gogh hook add [flags] <lua-script-path>
 ```
 
 ### Options

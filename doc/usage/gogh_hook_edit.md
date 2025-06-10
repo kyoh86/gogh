@@ -3,7 +3,7 @@
 Edit an existing hook (edit Lua script with $EDITOR)
 
 ```
-gogh hook edit <hook-id> [flags]
+gogh hook edit [flags] <hook-id>
 ```
 
 ### Options

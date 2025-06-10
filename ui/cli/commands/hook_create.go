@@ -52,6 +52,7 @@ func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create a new hook (edit with $EDITOR)",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			tmpDir := os.TempDir()

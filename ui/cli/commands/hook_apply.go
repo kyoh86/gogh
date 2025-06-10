@@ -10,7 +10,7 @@ import (
 
 func NewHookApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
-		Use:   "apply <hook-id> [[<host>/]<owner>/]<name>",
+		Use:   "apply [flags] <hook-id> [[<host>/]<owner>/]<name>",
 		Short: "Run a hook script forcely for a repository",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
