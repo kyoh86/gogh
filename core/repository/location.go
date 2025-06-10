@@ -30,6 +30,11 @@ func (r *Location) Path() string {
 	return r.path
 }
 
+// Ref returns a reference to the repository location.
+func (r *Location) Ref() Reference {
+	return NewReference(r.host, r.owner, r.name)
+}
+
 // NewLocation will build a repository location with a full path, host, owner and name.
 func NewLocation(fullPath string, host, owner, name string) *Location {
 	return &Location{

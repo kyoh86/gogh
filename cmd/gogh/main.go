@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/gogh"
+	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/infra/filesystem"
@@ -93,6 +94,15 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("loading overlays: %w", err)
 	}
 
+	// hook
+	hookStore := config.NewHookStore()
+	hookService, err := hookStore.Load(ctx, func() hook.HookService {
+		return hook.NewHookService(config.NewHookContentStore())
+	})
+	if err != nil {
+		return fmt.Errorf("loading hooks: %w", err)
+	}
+
 	svc := &service.ServiceSet{
 		DefaultNameStore:   defaultNameStore,
 		DefaultNameService: defaultNameService,
@@ -105,6 +115,9 @@ func run(ctx context.Context) error {
 
 		OverlayStore:   overlayStore,
 		OverlayService: overlayService,
+
+		HookStore:   hookStore,
+		HookService: hookService,
 
 		FlagsStore: flagsStore,
 		Flags:      flags,

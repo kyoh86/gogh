@@ -9,21 +9,25 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/clone"
 	"github.com/kyoh86/gogh/v4/app/config"
-	"github.com/kyoh86/gogh/v4/app/overlay_apply"
-	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
-	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
-	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.CloneFlags
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
+	cloneUseCase := clone.NewUseCase(
+		svc.HostingService,
+		svc.WorkspaceService,
+		svc.FinderService,
+		svc.OverlayService,
+		svc.HookService,
+		svc.ReferenceParser,
+		svc.GitService,
+	)
 
 	checkFlags := func(ctx context.Context, args []string) ([]string, error) {
 		if len(args) != 0 {
@@ -51,7 +55,6 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 	}
 
 	runFunc := func(ctx context.Context, refs []string) error {
-		logger := log.FromContext(ctx)
 		if f.DryRun {
 			for _, ref := range refs {
 				fmt.Printf("git clone %q\n", ref)
@@ -73,46 +76,6 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		}
 		if err := eg.Wait(); err != nil {
 			return fmt.Errorf("cloning repositories: %w", err)
-		}
-		overlayFindUseCase := overlay_find.NewUseCase(
-			svc.ReferenceParser,
-			svc.OverlayService,
-		)
-		overlayApplyUseCase := overlay_apply.NewUseCase(
-			svc.WorkspaceService,
-			svc.FinderService,
-			svc.ReferenceParser,
-			svc.OverlayService,
-		)
-		var applied bool
-		for _, ref := range refs {
-			if f.DryRun {
-				fmt.Printf("Apply overlay for %q\n", ref)
-			}
-			if err := view.ProcessWithConfirmation(
-				ctx,
-				typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(ov *overlay_find.Overlay) (bool, error) {
-					return !ov.ForInit, nil
-				}),
-				func(ov *overlay_find.Overlay) string {
-					return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
-				},
-				func(ov *overlay_find.Overlay) error {
-					if err := overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath); err != nil {
-						return err
-					}
-					applied = true
-					return nil
-				},
-			); err != nil {
-				if errors.Is(err, view.ErrQuit) {
-					return nil
-				}
-				return err
-			}
-			if applied {
-				logger.Infof("Applied overlay for %s", ref)
-			}
 		}
 		return nil
 	}

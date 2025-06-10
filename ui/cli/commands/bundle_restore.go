@@ -3,18 +3,13 @@ package commands
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
-	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/clone"
 	"github.com/kyoh86/gogh/v4/app/config"
-	"github.com/kyoh86/gogh/v4/app/overlay_apply"
-	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
-	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
@@ -23,10 +18,17 @@ import (
 
 func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(svc.HostingService, svc.WorkspaceService, svc.OverlayService, svc.ReferenceParser, svc.GitService)
+	cloneUseCase := clone.NewUseCase(
+		svc.HostingService,
+		svc.WorkspaceService,
+		svc.FinderService,
+		svc.OverlayService,
+		svc.HookService,
+		svc.ReferenceParser,
+		svc.GitService,
+	)
 
 	runFunc := func(ctx context.Context) error {
-		logger := log.FromContext(ctx)
 		in := os.Stdin
 		if f.File != "" && f.File != "-" {
 			f, err := os.Open(f.File)
@@ -59,47 +61,6 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		}
 		if err := eg.Wait(); err != nil {
 			return fmt.Errorf("cloning repositories: %w", err)
-		}
-
-		overlayFindUseCase := overlay_find.NewUseCase(
-			svc.ReferenceParser,
-			svc.OverlayService,
-		)
-		overlayApplyUseCase := overlay_apply.NewUseCase(
-			svc.WorkspaceService,
-			svc.FinderService,
-			svc.ReferenceParser,
-			svc.OverlayService,
-		)
-		for _, ref := range refs {
-			if f.DryRun {
-				fmt.Printf("Apply overlay for %q\n", ref)
-			}
-			var applied bool
-			if err := view.ProcessWithConfirmation(
-				ctx,
-				typ.FilterE(overlayFindUseCase.Execute(ctx, ref), func(ov *overlay_find.Overlay) (bool, error) {
-					return !ov.ForInit, nil
-				}),
-				func(ov *overlay_find.Overlay) string {
-					return fmt.Sprintf("Apply overlay for %s (%s)", ref, ov.RelativePath)
-				},
-				func(ov *overlay_find.Overlay) error {
-					if err := overlayApplyUseCase.Execute(ctx, ref, ov.RepoPattern, ov.ForInit, ov.RelativePath); err != nil {
-						return err
-					}
-					applied = true
-					return nil
-				},
-			); err != nil {
-				if errors.Is(err, view.ErrQuit) {
-					return nil
-				}
-				return err
-			}
-			if applied {
-				logger.Infof("Applied overlay for %s", ref)
-			}
 		}
 		return nil
 	}

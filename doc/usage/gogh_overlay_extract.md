@@ -28,10 +28,11 @@ gogh overlay extract [flags] [[[<host>/]<owner>/]<name>...]
 ### Options
 
 ```
-      --for-init gogh create   Register the overlay for gogh create command
-      --force                  Do NOT confirm to extract for each file
-  -h, --help                   help for extract
-  -p, --repo-pattern string    Pattern to match repositories to apply the overlays to (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)
+      --file-pattern stringArray   Pattern like git-ignore to match files to extract; if empty, all excluded files are returned
+      --for-init gogh create       Register the overlay for gogh create command
+      --force                      Do NOT confirm to extract for each file
+  -h, --help                       help for extract
+      --repo-pattern string        Pattern to match repositories to apply the overlays to (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)
 ```
 
 ### SEE ALSO

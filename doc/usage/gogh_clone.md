@@ -29,7 +29,7 @@ gogh clone [flags] [[[<host>/]<owner>/]<name>[=<alias>]...]
 
 ```
   -t, --clone-retry-timeout duration   Timeout for each clone attempt (default 5m0s)
-      --dry-run[=false]                Displays the operations that would be performed using the specified command without actually running them
+      --dry-run                        Displays the operations that would be performed using the specified command without actually running them
   -h, --help                           help for clone
 ```
 

@@ -26,6 +26,10 @@ gogh overlay add [flags] <source-path> <repo-pattern> <target-path>
 
    This will copy the `deno.jsonc` file to the root of the repository only when you run `gogh create`
    if the repository matches the pattern `github.com/owner/deno-*`.
+
+   You can create overlay files that never be applied to the repository automatically,
+   (and only be applied manually by `gogh overlay apply` command),
+   you can set the `--repo-pattern` flag to never match any repository.
 ```
 
 ### Options

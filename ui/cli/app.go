@@ -62,6 +62,9 @@ func NewApp(
 			if err := svc.OverlayStore.Save(ctx, svc.OverlayService, false); err != nil {
 				return fmt.Errorf("saving overlays: %w", err)
 			}
+			if err := svc.HookStore.Save(ctx, svc.HookService, false); err != nil {
+				return fmt.Errorf("saving hooks: %w", err)
+			}
 			return nil
 		},
 	}
@@ -140,6 +143,23 @@ func NewApp(
 	}
 	overlayCommand.GroupID = groupConfig
 
+	hookCommand, err := cmdWithSubs(
+		ctx, svc,
+		commands.NewHookCommand,
+		nil,
+		commands.NewHookCreateCommand,
+		commands.NewHookAddCommand,
+		commands.NewHookListCommand,
+		commands.NewHookEditCommand,
+		commands.NewHookRemoveCommand,
+		commands.NewHookApplyCommand,
+		commands.NewHookRunCommand,
+	)
+	if err != nil {
+		return nil, err
+	}
+	hookCommand.GroupID = groupConfig
+
 	configAuthCommand := typ.Ptr(*authCommand)
 	configAuthCommand.GroupID = ""
 	configRootsCommand := typ.Ptr(*rootsCommand)
@@ -164,6 +184,7 @@ func NewApp(
 		bundleCommand,
 		rootsCommand,
 		overlayCommand,
+		hookCommand,
 	}
 	for _, sub := range []struct {
 		fn    func(context.Context, *service.ServiceSet) (*cobra.Command, error)

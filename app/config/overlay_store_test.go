@@ -49,7 +49,7 @@ func TestOverlayStore(t *testing.T) {
 	})
 
 	// Test 2: Test Load when file does not exist
-	t.Run("Load_FileNotExists", func(t *testing.T) {
+	t.Run("Load FileNotExists", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -71,13 +71,13 @@ func TestOverlayStore(t *testing.T) {
 	})
 
 	// Test 3: Test Save and Load
-	t.Run("Save_And_Load", func(t *testing.T) {
+	t.Run("Save And Load", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		// Create test overlays
-		testOverlays := []*overlay.Overlay{
+		testOverlays := []overlay.Overlay{
 			{
 				RepoPattern:     "github.com/kyoh86/gogh",
 				ForInit:         false,
@@ -99,8 +99,7 @@ func TestOverlayStore(t *testing.T) {
 		mockService.EXPECT().MarkSaved()
 
 		// Test saving overlays
-		err = store.Save(ctx, mockService, false)
-		if err != nil {
+		if err := store.Save(ctx, mockService, false); err != nil {
 			t.Fatalf("Save() failed: %v", err)
 		}
 
@@ -114,44 +113,8 @@ func TestOverlayStore(t *testing.T) {
 
 		// SetOverlays expects an iterator, not a slice
 		mockLoadService.EXPECT().
-			SetOverlays(gomock.Any()).
-			DoAndReturn(func(seq iter.Seq2[*overlay.Overlay, error]) error {
-				// Collect overlays from the iterator
-				var loadedOverlays []*overlay.Overlay
-				for ov, err := range seq {
-					if err != nil {
-						t.Errorf("Unexpected error in overlay iterator: %v", err)
-						return nil
-					}
-					loadedOverlays = append(loadedOverlays, ov)
-				}
-
-				// Verify loaded overlays match what we saved
-				if len(loadedOverlays) != len(testOverlays) {
-					t.Errorf("Load() returned %d overlays, want %d", len(loadedOverlays), len(testOverlays))
-					return nil
-				}
-
-				// Create copies of the slices and sort them for comparison
-				sortedLoaded := make([]*overlay.Overlay, len(loadedOverlays))
-				copy(sortedLoaded, loadedOverlays)
-				expectedOverlays := make([]*overlay.Overlay, len(testOverlays))
-				copy(expectedOverlays, testOverlays)
-
-				sortOverlays(sortedLoaded)
-				sortOverlays(expectedOverlays)
-
-				for i := range sortedLoaded {
-					if sortedLoaded[i].RepoPattern != expectedOverlays[i].RepoPattern ||
-						sortedLoaded[i].ForInit != expectedOverlays[i].ForInit ||
-						sortedLoaded[i].RelativePath != expectedOverlays[i].RelativePath ||
-						sortedLoaded[i].ContentLocation != expectedOverlays[i].ContentLocation {
-						t.Errorf("Overlay %d mismatch:\nGot: %+v\nWant: %+v",
-							i, sortedLoaded[i], expectedOverlays[i])
-					}
-				}
-				return nil
-			})
+			SetOverlays(testOverlays).
+			Return(nil)
 
 		mockLoadService.EXPECT().MarkSaved()
 
@@ -168,7 +131,7 @@ func TestOverlayStore(t *testing.T) {
 	})
 
 	// Test 4: Test Save with no changes and force=false
-	t.Run("Save_NoChanges", func(t *testing.T) {
+	t.Run("Save NoChanges", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -186,13 +149,13 @@ func TestOverlayStore(t *testing.T) {
 	})
 
 	// Test 5: Test Save with no changes but force=true
-	t.Run("Save_Force", func(t *testing.T) {
+	t.Run("Save Force", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		// Create test overlays
-		testOverlays := []*overlay.Overlay{
+		testOverlays := []overlay.Overlay{
 			{
 				RepoPattern:     "github.com/kyoh86/forced",
 				ForInit:         true,
@@ -224,7 +187,7 @@ func TestOverlayStore(t *testing.T) {
 	})
 
 	// Test 6: Test Load with invalid file content
-	t.Run("Load_InvalidFile", func(t *testing.T) {
+	t.Run("Load InvalidFile", func(t *testing.T) {
 		// Create an invalid TOML file
 		invalidContent := `
 		This is not valid TOML content
@@ -252,25 +215,12 @@ func TestOverlayStore(t *testing.T) {
 }
 
 // Helper function to create an iterator for overlays
-func makeOverlayIterator(overlays []*overlay.Overlay) iter.Seq2[*overlay.Overlay, error] {
+func makeOverlayIterator(overlays []overlay.Overlay) iter.Seq2[*overlay.Overlay, error] {
 	return func(yield func(*overlay.Overlay, error) bool) {
 		for _, ov := range overlays {
-			if !yield(ov, nil) {
+			ov := ov
+			if !yield(&ov, nil) {
 				break
-			}
-		}
-	}
-}
-
-// Helper function to sort overlays by RepoPattern for consistent comparison
-func sortOverlays(overlays []*overlay.Overlay) {
-	if overlays == nil {
-		return
-	}
-	for i := range overlays {
-		for j := i + 1; j < len(overlays); j++ {
-			if overlays[i].RepoPattern > overlays[j].RepoPattern {
-				overlays[i], overlays[j] = overlays[j], overlays[i]
 			}
 		}
 	}

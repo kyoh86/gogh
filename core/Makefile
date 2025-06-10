@@ -17,7 +17,9 @@ mocks: \
 	workspace_mock/gen_layout_service_mock.go \
 	workspace_mock/gen_workspace_service_mock.go \
 	overlay_mock/gen_store_mock.go \
-	overlay_mock/gen_service_mock.go
+	overlay_mock/gen_service_mock.go \
+	hook_mock/gen_store_mock.go \
+	hook_mock/gen_service_mock.go
 
 # Rules for each mock file
 auth_mock/gen_authenticate_service_mock.go: auth/authenticate_service.go
@@ -61,6 +63,12 @@ overlay_mock/gen_store_mock.go: overlay/store.go
 
 overlay_mock/gen_service_mock.go: overlay/service.go
 	$(MOCKGEN) -source $< -destination $@ -package overlay_mock
+
+hook_mock/gen_store_mock.go: hook/store.go
+	$(MOCKGEN) -source $< -destination $@ -package hook_mock
+
+hook_mock/gen_service_mock.go: hook/service.go
+	$(MOCKGEN) -source $< -destination $@ -package hook_mock
 
 # Clean target to remove all generated mocks
 .PHONY: clean

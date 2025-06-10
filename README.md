@@ -42,9 +42,9 @@ You can also do:
 - Delete a repository (`gogh delete`).
 - List remote repositories (`gogh repos`).
 - Show the current working directory's repository (`gogh cwd`).
-- Manage [overlay files](#overlay-feature) (`gogh overlay`).
+- Manage [overlay files](#overlay-feature) (`gogh overlay`) and [hooks](#hook-feature).
 
-See [#Available commands](#available-commands) and [#Overlay Feature](#overlay-feature) for more information.
+See [#Available commands](#available-commands), [#Overlay Feature](#overlay-feature) and [#Hook Feature](#hook-feature) for more information.
 
 ## Install
 
@@ -99,12 +99,13 @@ See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 
 ### Configurations
 
-| Command   | Description                      |
-| --        | --                               |
-| `auth`    | Manage tokens                    |
-| `config`  | Show / Change configurations     |
-| `overlay` | Migrate repository overlay files |
-| `roots`   | Manage roots                     |
+| Command   | Description                     |
+| --        | --                              |
+| `auth`    | Manage tokens                   |
+| `config`  | Show / Change configurations    |
+| `overlay` | Manage repository overlay files |
+| `hook`    | Manage hook scripts             |
+| `roots`   | Manage roots                    |
 
 ### Others
 
@@ -137,7 +138,10 @@ Or see the manual in [doc/usage/gogh.md](./doc/usage/gogh.md).
     - Default: `${XDG_CACHE_HOME}/gogh/tokens.v4.toml`
 - `GOGH_OVERLAY_PATH`
     - The path to store overlay files.
-    - Default: `${XDG_CONFIG_HOME}/gogh/overlay/`
+    - Default: `${XDG_CONFIG_HOME}/gogh/overlay.v4/`
+- `GOGH_HOOK_PATH`
+    - The path to store hook scripts.
+    - Default: `${XDG_CONFIG_HOME}/gogh/hook.v4/`
 - `GOGH_WORKSPACE_PATH`
     - The path for the workspaces.
     - Default: `${XDG_CONFIG_HOME}/gogh/workspace.v4.toml`
@@ -227,7 +231,8 @@ Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo
 
 ### What are Overlays?
 
-Overlays are a powerful feature in Gogh that allow you to automatically place custom files into repositories. They're particularly useful for:
+Overlays are a powerful feature in Gogh that allow you to automatically place custom files into repositories.
+They're particularly useful for:
 
 - Adding untracked files (like editor configurations or scripts)
 - Applying consistent settings across multiple repositories
@@ -235,7 +240,8 @@ Overlays are a powerful feature in Gogh that allow you to automatically place cu
 
 ### How Overlays Work
 
-When you run commands like `gogh create`, `gogh clone`, or `gogh fork`, Gogh can automatically copy overlay files into the repository based on your configuration.
+When you run commands like `gogh create`, `gogh clone`, or `gogh fork`,
+Gogh can automatically copy overlay files into the repository based on your configuration.
 
 ### Use Cases
 
@@ -246,51 +252,35 @@ When you run commands like `gogh create`, `gogh clone`, or `gogh fork`, Gogh can
 
 ### Basic Overlay Commands
 
-#### Adding an Overlay
+Example commands to manage overlays:
+See each `--help` for more details.
 
-```sh
-gogh overlay add <source-path> <repo-pattern> <target-path>
+```console
+# gogh overlay add <source-path> <repo-pattern> <target-path>
+$ gogh overlay add /path/to/source/vscode/settings.json "github.com/owner/repo" .vscode/settings.json
+$ gogh overlay list
+# gogh overlay remove <repo-pattern> <target-path>
+$ gogh overlay remove "github.com/owner/repo" .vscode/settings.json
+# gogh overlay apply [repo-refs...]
+$ gogh overlay apply "github.com/owner/repo" "github.com/owner/another-repo"
 ```
 
-For example:
-```sh
-gogh overlay add /path/to/source/vscode/settings.json "github.com/owner/repo" .vscode/settings.json
-```
-
-#### Listing Overlays
-
-```sh
-gogh overlay list
-```
-
-#### Removing an Overlay
-
-```sh
-gogh overlay remove <repo-pattern> <target-path>
-```
-
-#### Manually Applying Overlays
-
-```sh
-gogh overlay apply [repo-refs...]
-```
-
-### Advanced Features
+### Practical Usages
 
 #### Template Files for New Projects
 
 You can create templates that only apply when initializing a new repository:
 
-```sh
-gogh overlay add --for-init /path/to/source/deno.jsonc "github.com/owner/deno-*" deno.jsonc
+```console
+$ gogh overlay add --for-init /path/to/source/deno.jsonc "github.com/owner/deno-*" deno.jsonc
 ```
 
 #### Extracting Untracked Files as Overlays
 
 Extract files from a repository that aren't tracked by git:
 
-```sh
-gogh overlay extract [repo-refs...]
+```console
+$ gogh overlay extract [repo-refs...]
 ```
 
 #### Repository Pattern Matching
@@ -304,11 +294,128 @@ You can use patterns to match repositories:
 
 View the content of registered overlays:
 
-```sh
-gogh overlay show
+```console
+$ gogh overlay show
 ```
 
-Overlays can be applied automatically on repository operations or manually when needed, giving you complete control over your repository setup.
+#### Overlays Never Match
+
+Overlays can be applied manually when needed, giving you complete control over your repository setup.
+You can use the patterns to not match any repository, effectively disabling the automatic application of overlays:
+
+```console
+$ gogh overlay add /path/to/source/never-match.txt "kyoh86.dev/never-match/1" never-match.txt
+```
+
+kyoh86.dev is MY domain, so it will never match any repository in Gogh.
+You can use your own domain or any other pattern that doesn't match your repositories.
+
+## Hook Feature
+
+### What are Hooks?
+
+Hooks in Gogh are scripts that run automatically at specific points in the repository lifecycle.
+
+They allow you to automate tasks like:
+
+- Running tests after cloning a repository
+- Setting up variables in the template files
+- etc.
+
+### How Hooks Work
+
+Hooks are defined in the configuration file and can be triggered by various Gogh commands.
+
+- Commands
+    - `gogh clone`
+    - `gogh create`
+    - `gogh fork`
+- Events
+    - After cloning a repository
+    - After overlay files are applied
+
+Commands and events can be combined to create complex workflows.
+
+### Basic Hook Commands
+
+- `gogh hook add`: Register an existing Lua script as a hook
+- `gogh hook apply`: Run a hook script manually for a specific repository
+- `gogh hook create`: Create a new hook script using your configured editor
+- `gogh hook edit`: Modify an existing hook script
+- `gogh hook list`: View all registered hooks
+- `gogh hook remove`: Delete a registered hook
+
+Example commands to manage hooks:
+
+```console
+# gogh hook add [flags] <lua-script-path>
+$ gogh hook add --repo-pattern "github.com/owner/*" /path/to/myscript.lua
+# gogh hook create [flags]
+$ gogh hook create --repo-pattern "github.com/owner/*" --use-case "create" --event "after-clone"
+$ gogh hook list
+# gogh hook remove <hook-id>
+$ gogh hook remove f8be36a27fa682b7b8d3c4117086851c74e47142705eba633cd91715c315d96b
+# gogh hook apply <hook-id> [[<host>/]<owner>/]<name>
+$ gogh hook apply f8be36a27fa682b7b8d3c4117086851c74e47142705eba633cd91715c315d96b github.com/owner/repo
+# gogh hook edit <hook-id>
+$ gogh hook edit f8be36a27fa682b7b8d3c4117086851c74e47142705eba633cd91715c315d96b
+```
+
+### Hook Configuration
+
+Hooks can be configured with these parameters:
+
+- **Repository Pattern**: Controls which repositories the hook applies to
+  - Works like overlay patterns: `github.com/owner/*`, exact matches, etc.
+- **Use Case**: When the hook should run automatically
+  - `clone`: When cloning a repository
+  - `create`: When creating a new repository
+  - `fork`: When forking a repository
+  - `never`: Only run manually (default)
+- **Event**: The specific point in the process to run the hook
+  - `after-clone`: After the repository is cloned
+  - `after-overlay`: After overlay files are applied
+
+### Writing Lua Hook Scripts
+
+Hooks are run by Gogh with the working directory set to the repository's root directory.
+Hooks are written in Lua and have access to variables through the `gogh` global table:
+
+```lua
+-- Available variables
+gogh.repo.host      -- e.g., "github.com"
+gogh.repo.owner     -- e.g., "kyoh86" 
+gogh.repo.name      -- e.g., "gogh"
+gogh.repo.path      -- Repository path relative to workspace
+gogh.repo.full_path -- Full absolute path to the repository
+
+-- Example hook script
+print("Setting up repository: " .. gogh.repo.owner .. "/" .. gogh.repo.name)
+os.execute("npm install")
+```
+
+### Practical Examples
+
+#### Setting Up Dependencies
+
+```lua
+-- setup-deps.lua
+if os.execute("test -f ./package.json") == 0 then
+  print("Installing Node.js dependencies...")
+  os.execute("npm install")
+elseif os.execute("test -f ./go.mod") == 0 then
+  print("Downloading Go dependencies...")
+  os.execute("go mod download")
+end
+```
+
+#### Custom Git Configuration
+
+```lua
+-- project-git-config.lua
+print("Setting repository-specific Git configuration...")
+os.execute("git config user.email 'work@example.com'")
+```
 
 # LICENSE
 
