@@ -19,7 +19,13 @@ Manage repository overlay files
      gogh overlay add --for-init /path/to/source/deno.jsonc "github.com/owner/deno-*" deno.jsonc
 
    This will copy the `deno.jsonc` file to the root of the repository only when you run `gogh create`
-	 if the repository matches the pattern `github.com/owner/deno-*`.
+   if the repository matches the pattern `github.com/owner/deno-*`.
+
+   And then you can use the `gogh overlay apply` command to apply the overlay files manually.
+
+   You can create overlay files that never be applied to the repository automatically,
+   (and only be applied manually by `gogh overlay apply` command),
+   you can set the `--repo-pattern` flag to never match any repository.
 ```
 
 ### Options
@@ -32,7 +38,7 @@ Manage repository overlay files
 
 * [gogh](gogh.md)	 - GO GitHub local repository manager
 * [gogh overlay add](gogh_overlay_add.md)	 - Add an overlay file
-* [gogh overlay apply](gogh_overlay_apply.md)	 - Target overlays to a repository
+* [gogh overlay apply](gogh_overlay_apply.md)	 - Apply overlays to specified repositories
 * [gogh overlay extract](gogh_overlay_extract.md)	 - Extract untracked files as overlays
 * [gogh overlay list](gogh_overlay_list.md)	 - List overlays
 * [gogh overlay remove](gogh_overlay_remove.md)	 - Remove an overlay

@@ -1,6 +1,6 @@
 ## gogh overlay apply
 
-Target overlays to a repository
+Apply overlays to specified repositories
 
 ```
 gogh overlay apply [flags] [[[<host>/]<owner>/]<name>...]
@@ -28,7 +28,9 @@ gogh overlay apply [flags] [[[<host>/]<owner>/]<name>...]
 ### Options
 
 ```
-  -h, --help   help for apply
+      --for-init gogh create   Apply overlays only for gogh create command (useful for templates)
+  -h, --help                   help for apply
+      --repo-pattern string    Force apply overlays having this pattern, ignoring automatic repository name matching (useful for applying specific overlays or templates that would not normally match)
 ```
 
 ### SEE ALSO

@@ -9,8 +9,8 @@ gogh roots add [flags] <directory>
 ### Options
 
 ```
-      --as-primary[=false]   Set as primary root
-  -h, --help                 help for add
+      --as-primary   Set as primary root
+  -h, --help         help for add
 ```
 
 ### SEE ALSO

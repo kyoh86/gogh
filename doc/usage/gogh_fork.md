@@ -19,7 +19,7 @@ gogh fork [flags] [<host>/]<owner>/<name>
 ```
       --clone-retry-limit int          The number of retries to clone a repository (default 3)
   -t, --clone-retry-timeout duration   Timeout for each clone attempt (default 5m0s)
-      --default-branch-only[=false]    Only fork the default branch
+      --default-branch-only            Only fork the default branch
   -h, --help                           help for fork
       --to string                      Fork to the specified repository. It accepts a notation like '<owner>/<name>' or '<owner>/<name>=<alias>'. If not specified, it will be forked to the default owner and same name as the original repository. If the alias is specified, it will be set as the local repository name
 ```
