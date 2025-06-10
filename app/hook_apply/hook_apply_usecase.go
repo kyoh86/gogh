@@ -81,13 +81,14 @@ func (uc *UseCase) Execute(ctx context.Context, hookID string, refWithAlias stri
 	if err != nil {
 		return err
 	}
-	defer stdin.Close()
 
 	var eg errgroup.Group
 	eg.SetLimit(2)
 
 	eg.Go(func() error {
+		gob.Register(map[string]any{})
 		enc := gob.NewEncoder(stdin)
+		defer stdin.Close()
 
 		return enc.Encode(hook_run.Script{
 			Code:    string(code),

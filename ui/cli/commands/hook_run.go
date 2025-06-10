@@ -20,6 +20,7 @@ func NewHookRunCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			var script hook_run.Script
+			gob.Register(map[string]any{})
 			dec := gob.NewDecoder(os.Stdin)
 			if err := dec.Decode(&script); err != nil {
 				return fmt.Errorf("decoding script from stdin: %w", err)

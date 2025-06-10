@@ -6,10 +6,40 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/cli/safeexec"
+	shellquote "github.com/kballard/go-shellquote"
 	"github.com/kyoh86/gogh/v4/app/hook_create"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
+
+func lookPath(name string) ([]string, error) {
+	exe, err := safeexec.LookPath(name)
+	if err != nil {
+		return nil, err
+	}
+	return []string{exe}, nil
+}
+
+func edit(editor, fileName string) error {
+	words, err := shellquote.Split(editor)
+	if err != nil {
+		return err
+	}
+	words = append(words, fileName)
+	editorExe, err := lookPath(words[0])
+	if err != nil {
+		return err
+	}
+	words = append(editorExe, words[1:]...)
+
+	cmdEdit := exec.Command(words[0], words[1:]...)
+	cmdEdit.Env = os.Environ()
+	cmdEdit.Stdin = os.Stdin
+	cmdEdit.Stdout = os.Stdout
+	cmdEdit.Stderr = os.Stderr
+	return cmdEdit.Run()
+}
 
 func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
@@ -34,15 +64,7 @@ func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			}
 			defer os.Remove(file.Name())
 
-			editor := os.Getenv("EDITOR")
-			if editor == "" {
-				editor = "vi"
-			}
-			cmdEdit := exec.Command(editor, file.Name())
-			cmdEdit.Stdin = os.Stdin
-			cmdEdit.Stdout = os.Stdout
-			cmdEdit.Stderr = os.Stderr
-			if err := cmdEdit.Run(); err != nil {
+			if err := edit(os.Getenv("EDITOR"), file.Name()); err != nil {
 				return err
 			}
 			// Reopen the file to read the content after editing

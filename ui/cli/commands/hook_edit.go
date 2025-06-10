@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"os"
-	"os/exec"
 
 	"github.com/kyoh86/gogh/v4/app/hook_edit"
 	"github.com/kyoh86/gogh/v4/app/service"
@@ -30,15 +29,7 @@ func NewHookEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 			}
 			tmpFile.Close()
 
-			editor := os.Getenv("EDITOR")
-			if editor == "" {
-				editor = "vi"
-			}
-			editCmd := exec.Command(editor, tmpFile.Name())
-			editCmd.Stdin = os.Stdin
-			editCmd.Stdout = os.Stdout
-			editCmd.Stderr = os.Stderr
-			if err := editCmd.Run(); err != nil {
+			if err := edit(os.Getenv("EDITOR"), tmpFile.Name()); err != nil {
 				return err
 			}
 
