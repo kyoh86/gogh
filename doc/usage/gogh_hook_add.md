@@ -9,7 +9,6 @@ gogh hook add [flags] <lua-script-path>
 ### Options
 
 ```
-      --description string    Description
       --event string          event to hook automatically; it can accept "", "clone", "fork", "create" or "never" (default "never")
   -h, --help                  help for add
       --name string           Name of the hook

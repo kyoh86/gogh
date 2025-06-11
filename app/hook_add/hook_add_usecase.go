@@ -10,7 +10,6 @@ import (
 
 type Options struct {
 	Name        string
-	Description string
 	RepoPattern string
 	UseCase     string
 	Event       string
@@ -26,9 +25,8 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 
 func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader) error {
 	h := hook.Hook{
-		ID:          uuid.NewString(),
-		Name:        opts.Name,
-		Description: opts.Description,
+		ID:   uuid.NewString(),
+		Name: opts.Name,
 		Target: hook.Target{
 			RepoPattern: opts.RepoPattern,
 			UseCase:     hook.UseCase(opts.UseCase),

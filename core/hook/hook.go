@@ -65,9 +65,8 @@ func (t Target) Match(ref repository.Reference, useCase UseCase, event Event) (b
 }
 
 type Hook struct {
-	ID          string
-	Name        string
-	Description string
+	ID   string
+	Name string
 
 	Target Target
 

@@ -9,7 +9,6 @@ gogh hook create [flags]
 ### Options
 
 ```
-      --description string    Description
       --event string          event to hook automatically; it can accept "", "clone", "fork", "create" or "never" (default "never")
   -h, --help                  help for create
       --name string           Name of the hook

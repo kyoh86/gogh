@@ -44,7 +44,6 @@ func edit(editor, fileName string) error {
 func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		name        string
-		description string
 		useCase     string
 		event       string
 		repoPattern string
@@ -77,7 +76,6 @@ func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 
 			opts := hook_create.Options{
 				Name:        f.name,
-				Description: f.description,
 				UseCase:     f.useCase,
 				Event:       f.event,
 				RepoPattern: f.repoPattern,
@@ -86,7 +84,6 @@ func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		},
 	}
 	cmd.Flags().StringVar(&f.name, "name", "", "Name of the hook")
-	cmd.Flags().StringVar(&f.description, "description", "", "Description")
 
 	if err := enumFlag(cmd, &f.useCase, "use-case", "never", "Use case to hook automatically", "", "clone", "fork", "create", "never"); err != nil {
 		return nil, fmt.Errorf("registering use-case flag: %w", err)

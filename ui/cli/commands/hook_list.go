@@ -20,7 +20,7 @@ func NewHookListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 				if err != nil {
 					return err
 				}
-				fmt.Printf("* [%s] %s (%s): %s\n", h.ID, h.Name, h.Target, h.Description)
+				fmt.Printf("* [%s] %s (%s)\n", h.ID, h.Name, h.Target)
 			}
 			return nil
 		},
