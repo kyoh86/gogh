@@ -154,6 +154,7 @@ func NewApp(
 		commands.NewHookRemoveCommand,
 		commands.NewHookApplyCommand,
 		commands.NewHookRunCommand,
+		commands.NewHookDescribeCommand,
 	)
 	if err != nil {
 		return nil, err
