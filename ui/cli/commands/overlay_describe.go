@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/overlay_list"
@@ -15,7 +14,7 @@ import (
 	"golang.org/x/term"
 )
 
-func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+func NewOverlayDescribeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		repoPattern  string
 		forInit      bool
@@ -53,7 +52,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		var selected []overlay_list.Overlay
 		if err := huh.NewForm(huh.NewGroup(
 			huh.NewMultiSelect[overlay_list.Overlay]().
-				Title("Overlays to show").
+				Title("Overlays to describe").
 				Options(opts...).
 				Value(&selected),
 		)).Run(); err != nil {
@@ -62,10 +61,10 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		return selected, nil
 	}
 
-	var width = 60
+	width := 60
 	cmd := &cobra.Command{
-		Use:   "show",
-		Short: "Show overlays",
+		Use:   "describe",
+		Short: "Describe overlays",
 		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -76,15 +75,13 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			if w, _, err := term.GetSize(int(os.Stdout.Fd())); err == nil {
 				width = w
 			}
-			overlayShowUseCase := overlay_show.NewUseCase(svc.OverlayService)
+			overlayShowUseCase := overlay_show.NewUseCaseContent(svc.OverlayService, cmd.OutOrStdout(), width)
 			for i, ov := range overlays {
 				if i > 0 {
 					fmt.Println()
 				}
-				name := ov.String()
-				fmt.Printf("%s %s\n", name, strings.Repeat("-", width-len(name)-1))
-				if err := overlayShowUseCase.Execute(ctx, ov.RepoPattern, ov.ForInit, ov.RelativePath); err != nil {
-					return fmt.Errorf("showing overlay %s: %w", ov.RelativePath, err)
+				if err := overlayShowUseCase.Execute(ctx, &ov); err != nil {
+					return fmt.Errorf("describing overlay %s: %w", ov.RelativePath, err)
 				}
 			}
 			return nil

@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"os"
 	"testing"
 
 	testtarget "github.com/kyoh86/gogh/v4/app/overlay_show"
@@ -70,26 +69,15 @@ func TestUseCase_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 標準出力をキャプチャ
-			oldStdout := os.Stdout
-			_, w, _ := os.Pipe()
-			os.Stdout = w
-
-			// テスト完了後に元に戻す
-			defer func() {
-				os.Stdout = oldStdout
-			}()
-
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockService := overlay_mock.NewMockOverlayService(ctrl)
 			content, _ := tt.mockSetup(mockService)
 
-			uc := testtarget.NewUseCase(mockService)
-			err := uc.Execute(context.Background(), tt.repoPattern, tt.forInit, tt.relativePath)
-
-			w.Close()
+			w := &bytes.Buffer{}
+			uc := testtarget.NewUseCaseContent(mockService, w, 60)
+			err := uc.Execute(context.Background(), &overlay.Overlay{RepoPattern: tt.repoPattern, ForInit: tt.forInit, RelativePath: tt.relativePath})
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UseCase.Execute() error = %v, wantErr %v", err, tt.wantErr)
