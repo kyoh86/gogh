@@ -48,7 +48,7 @@ See [#Available commands](#available-commands), [#Overlay Feature](#overlay-feat
 
 ## Install
 
-### For Golang developers
+### For Go developers
 
 Ensure you have Go installed before running the following commands.
 
@@ -69,6 +69,42 @@ $ gogh completion zsh > $fpath[1]/_gogh
 $ brew tap kyoh86/tap
 $ brew update
 $ brew install kyoh86/tap/gogh
+```
+
+### Shell completions
+
+You can generate the autocompletion script for your shell with the following command:
+
+```console
+$ gogh completion <shell>
+```
+
+If you want to use the generated script, you can save it to a file and source it in your shell configuration file.
+For example, to generate the autocompletion script for `bash` and save it to `~/.gogh-completion.bash`, you can run:
+
+```console
+$ gogh completion bash > ~/.gogh-completion.bash
+```
+
+Then, add the following line to your `~/.bashrc` or `~/.bash_profile`:
+
+```bash
+source ~/.gogh-completion.bash
+```
+
+Or, if you want to use `zsh`, you can run:
+
+```console
+$ gogh completion zsh > ~/.config/zsh/completions/_gogh.zsh
+```
+
+Then, add the following line to your `~/.zshrc`:
+(zsh completions are loaded from `fpath`)
+
+```zsh
+fpath=("~/.config/zsh/completions" $fpath)
+
+autoload -Uz compinit && compinit
 ```
 
 ## Setup
