@@ -7,7 +7,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/overlay_add"
-	"github.com/kyoh86/gogh/v4/app/overlay_list"
 	"github.com/kyoh86/gogh/v4/app/overlay_remove"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
@@ -38,32 +37,6 @@ func NewOverlayCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
    You can create overlay files that never be applied to the repository automatically,
    (and only be applied manually by ` + "`gogh overlay apply`" + ` command),
    you can set the ` + "`--repo-pattern`" + ` flag to never match any repository.`,
-	}
-	return cmd, nil
-}
-
-func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	cmd := &cobra.Command{
-		Use:     "list",
-		Aliases: []string{"ls"},
-		Args:    cobra.NoArgs,
-		Short:   "List overlays",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := cmd.Context()
-			for overlay, err := range overlay_list.NewUseCase(svc.OverlayService).Execute(ctx) {
-				if err != nil {
-					return fmt.Errorf("listing overlay: %w", err)
-				}
-				fmt.Printf("- ")
-				fmt.Printf("Repository pattern: %s\n", overlay.RepoPattern)
-				if overlay.ForInit {
-					fmt.Printf("  For Init: Yes\n")
-				}
-				fmt.Printf("  Overlay path: %s\n", overlay.RelativePath)
-			}
-
-			return nil
-		},
 	}
 	return cmd, nil
 }

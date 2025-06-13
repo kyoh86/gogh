@@ -9,10 +9,10 @@ import (
 
 // Overlay represents the metadata for an overlay entry.
 type Overlay struct {
-	RepoPattern     string
-	ForInit         bool
-	RelativePath    string
-	ContentLocation string
+	RepoPattern     string `json:"repoPattern"`     // Repository pattern (glob)
+	ForInit         bool   `json:"forInit"`         // Whether the overlay is for initialization only
+	RelativePath    string `json:"relativePath"`    // Relative path in the repository where the overlay file will be placed
+	ContentLocation string `json:"contentLocation"` // Location of the content to be copied
 }
 
 func (ov Overlay) ID() string {

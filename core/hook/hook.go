@@ -28,9 +28,9 @@ const (
 
 // Target defines the target for the hook, including repository pattern, use case, and event
 type Target struct {
-	RepoPattern string // Repository pattern (glob)
-	UseCase     UseCase
-	Event       Event
+	RepoPattern string  `json:"repoPattern"` // Repository pattern (glob)
+	UseCase     UseCase `json:"useCase"`
+	Event       Event   `json:"event"`
 }
 
 func (t Target) eventString() string {
@@ -65,12 +65,12 @@ func (t Target) Match(ref repository.Reference, useCase UseCase, event Event) (b
 }
 
 type Hook struct {
-	ID   string
-	Name string
+	ID   string `json:"id"`
+	Name string `json:"name"`
 
-	Target Target
+	Target Target `json:"target"`
 
-	ScriptPath string
+	ScriptPath string `json:"scriptPath"`
 }
 
 func (h Hook) Match(ref repository.Reference, useCase UseCase, event Event) (bool, error) {
