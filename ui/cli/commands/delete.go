@@ -9,7 +9,6 @@ import (
 	"github.com/kyoh86/gogh/v4/app/delete"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
-	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
 
@@ -139,9 +138,9 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			return nil
 		},
 	}
-	flags.BoolVarP(cmd, &f.local, "local", "", true, "Delete local repository")
-	flags.BoolVarP(cmd, &f.remote, "remote", "", false, "Delete remote repository")
-	flags.BoolVarP(cmd, &f.force, "force", "", false, "Do NOT confirm to delete")
-	flags.BoolVarP(cmd, &f.dryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
+	cmd.Flags().BoolVarP(&f.local, "local", "", true, "Delete local repository")
+	cmd.Flags().BoolVarP(&f.remote, "remote", "", false, "Delete remote repository")
+	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to delete")
+	cmd.Flags().BoolVarP(&f.dryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	return cmd, nil
 }
