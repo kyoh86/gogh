@@ -15,13 +15,16 @@ type JSONUseCase struct {
 	enc *json.Encoder
 }
 
+// Overlay represents the overlay type
+type Overlay = overlay.Overlay
+
 // NewUseCaseJSON creates a new use case for showing overlays in JSON format
 func NewUseCaseJSON(writer io.Writer) *JSONUseCase {
 	return &JSONUseCase{enc: json.NewEncoder(writer)}
 }
 
 // Execute executes the use case to show an overlay in JSON format
-func (uc *JSONUseCase) Execute(ctx context.Context, ov *overlay.Overlay) error {
+func (uc *JSONUseCase) Execute(ctx context.Context, ov *Overlay) error {
 	return uc.enc.Encode(ov)
 }
 
@@ -43,7 +46,7 @@ func NewUseCaseText(
 }
 
 // Execute executes the use case to show an overlay in text format
-func (uc *TextUseCase) Execute(ctx context.Context, ov *overlay.Overlay) error {
+func (uc *TextUseCase) Execute(ctx context.Context, ov *Overlay) error {
 	fmt.Fprintf(uc.writer, "Repository pattern: %s\n", ov.RepoPattern)
 	if ov.ForInit {
 		fmt.Fprintln(uc.writer, "For Init: Yes")
@@ -73,7 +76,7 @@ func NewUseCaseContent(
 }
 
 // Execute executes the use case to show overlay content
-func (uc *ContentUseCase) Execute(ctx context.Context, ov *overlay.Overlay) error {
+func (uc *ContentUseCase) Execute(ctx context.Context, ov *Overlay) error {
 	fmt.Fprintf(uc.writer, "Repository pattern: %s\n", ov.RepoPattern)
 	if ov.ForInit {
 		fmt.Fprintln(uc.writer, "For Init: Yes")

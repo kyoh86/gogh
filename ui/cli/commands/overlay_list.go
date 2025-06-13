@@ -8,7 +8,6 @@ import (
 	"github.com/kyoh86/gogh/v4/app/overlay_list"
 	"github.com/kyoh86/gogh/v4/app/overlay_show"
 	"github.com/kyoh86/gogh/v4/app/service"
-	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -29,7 +28,7 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 				width = w
 			}
 			var showUseCase interface {
-				Execute(ctx context.Context, ov *overlay.Overlay) error
+				Execute(ctx context.Context, ov *overlay_show.Overlay) error
 			}
 			if f.json {
 				showUseCase = overlay_show.NewUseCaseJSON(cmd.OutOrStdout())
