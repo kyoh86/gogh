@@ -58,22 +58,23 @@ func (s *hookServiceImpl) Add(ctx context.Context, h Hook, content io.Reader) er
 func (s *hookServiceImpl) Update(ctx context.Context, h Hook, content io.Reader) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for i, hook := range s.hooks {
-		if hook.ID == h.ID {
-			if hook.ScriptPath != "" {
-				_ = s.content.RemoveScript(ctx, hook.ScriptPath)
-			}
-			scriptPath, err := s.content.SaveScript(ctx, h, content)
-			if err != nil {
-				return err
-			}
-			h.ScriptPath = scriptPath
-			s.hooks[i] = &h
-			s.dirty = true
-			return nil
-		}
+	i, _, err := s.find(h.ID)
+	if err != nil {
+		return err
 	}
-	return errors.New("hook not found")
+	if content != nil {
+		if h.ScriptPath != "" {
+			_ = s.content.RemoveScript(ctx, h.ScriptPath)
+		}
+		scriptPath, err := s.content.SaveScript(ctx, h, content)
+		if err != nil {
+			return err
+		}
+		h.ScriptPath = scriptPath
+	}
+	s.hooks[i] = &h
+	s.dirty = true
+	return nil
 }
 
 // find searches for a hook by its ID and returns its index and the hook itself.

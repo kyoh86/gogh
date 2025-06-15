@@ -151,6 +151,7 @@ func NewApp(
 		commands.NewHookAddCommand,
 		commands.NewHookListCommand,
 		commands.NewHookEditCommand,
+		commands.NewHookUpdateCommand,
 		commands.NewHookRemoveCommand,
 		commands.NewHookApplyCommand,
 		commands.NewHookRunCommand,
