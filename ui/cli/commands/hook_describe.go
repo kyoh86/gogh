@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/kyoh86/gogh/v4/app/hook_describe"
@@ -38,7 +37,9 @@ func NewHookDescribeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				fmt.Printf("-- Target Repository Pattern: %s\n", hook.Target.RepoPattern)
 			}
 			fmt.Println(strings.Repeat("-", 80))
-			os.Stdout.Write(code)
+			if _, err := cmd.OutOrStdout().Write(code); err != nil {
+				return fmt.Errorf("write hook code: %w", err)
+			}
 			return nil
 		},
 	}

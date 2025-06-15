@@ -19,7 +19,7 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		Short:   "Export current local repository list",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			out := os.Stdout
+			out := cmd.OutOrStdout()
 			if f.File != "" && f.File != "-" {
 				file, err := os.OpenFile(
 					f.File,
