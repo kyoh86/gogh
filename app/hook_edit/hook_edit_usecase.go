@@ -2,9 +2,7 @@ package hook_edit
 
 import (
 	"context"
-	"errors"
 	"io"
-	"slices"
 
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
@@ -19,20 +17,7 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 
 // ExtractScript extracts the script of a hook by its ID and writes it to the provided writer.
 func (uc *UseCase) ExtractScript(ctx context.Context, hookID string, w io.Writer) error {
-	var found *hook.Hook
-	for h, err := range uc.hookService.ListHooks() {
-		if err != nil {
-			return err
-		}
-		if h.ID == hookID {
-			found = h
-			break
-		}
-	}
-	if found == nil {
-		return errors.New("hook not found")
-	}
-	r, err := uc.hookService.OpenHookScript(ctx, *found)
+	r, err := uc.hookService.Open(ctx, hookID)
 	if err != nil {
 		return err
 	}
@@ -41,28 +26,11 @@ func (uc *UseCase) ExtractScript(ctx context.Context, hookID string, w io.Writer
 	return err
 }
 
-// ApplyScript applies a new script to a hook identified by its ID.
-func (uc *UseCase) ApplyScript(ctx context.Context, hookID string, r io.Reader) error {
-	var found *hook.Hook
-	hooks := slices.Clone(collectHooks(uc.hookService))
-	for _, h := range hooks {
-		if h.ID == hookID {
-			found = h
-			break
-		}
+// UpdateScript applies a new script to a hook identified by its ID.
+func (uc *UseCase) UpdateScript(ctx context.Context, hookID string, r io.Reader) error {
+	found, err := uc.hookService.Get(ctx, hookID)
+	if err != nil {
+		return err
 	}
-	if found == nil {
-		return errors.New("hook not found")
-	}
-	return uc.hookService.UpdateHook(ctx, *found, r)
-}
-
-func collectHooks(svc hook.HookService) []*hook.Hook {
-	var out []*hook.Hook
-	for h, err := range svc.ListHooks() {
-		if err == nil {
-			out = append(out, h)
-		}
-	}
-	return out
+	return uc.hookService.Update(ctx, *found, r)
 }

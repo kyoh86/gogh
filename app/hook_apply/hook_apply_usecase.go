@@ -48,11 +48,7 @@ func (uc *UseCase) Execute(ctx context.Context, hookID string, refWithAlias stri
 		return fmt.Errorf("find repository location: %w", err)
 	}
 
-	hook, err := uc.hookService.GetHookByID(ctx, hookID)
-	if err != nil {
-		return fmt.Errorf("get hook by ID: %w", err)
-	}
-	src, err := uc.hookService.OpenHookScript(ctx, *hook)
+	src, err := uc.hookService.Open(ctx, hookID)
 	if err != nil {
 		return fmt.Errorf("open hook script: %w", err)
 	}

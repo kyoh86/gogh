@@ -45,7 +45,7 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, useCase hoo
 	if err != nil {
 		return fmt.Errorf("parsing reference '%s': %w", refWithAlias, err)
 	}
-	for h, err := range uc.hookService.ListHooks() {
+	for h, err := range uc.hookService.List() {
 		if err != nil {
 			return fmt.Errorf("list hooks error: %w", err)
 		}

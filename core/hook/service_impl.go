@@ -26,8 +26,8 @@ func NewHookService(content HookScriptStore) HookService {
 	}
 }
 
-// ListHooks returns an iterator for all registered hooks.
-func (s *hookServiceImpl) ListHooks() iter.Seq2[*Hook, error] {
+// List returns an iterator for all registered hooks.
+func (s *hookServiceImpl) List() iter.Seq2[*Hook, error] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return func(yield func(*Hook, error) bool) {
@@ -39,8 +39,8 @@ func (s *hookServiceImpl) ListHooks() iter.Seq2[*Hook, error] {
 	}
 }
 
-// AddHook registers a new hook and stores its script content.
-func (s *hookServiceImpl) AddHook(ctx context.Context, h Hook, content io.Reader) error {
+// Add registers a new hook and stores its script content.
+func (s *hookServiceImpl) Add(ctx context.Context, h Hook, content io.Reader) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	scriptPath, err := s.content.SaveScript(ctx, h, content)
@@ -53,8 +53,8 @@ func (s *hookServiceImpl) AddHook(ctx context.Context, h Hook, content io.Reader
 	return nil
 }
 
-// UpdateHook updates the script content of an existing hook (by ID).
-func (s *hookServiceImpl) UpdateHook(ctx context.Context, h Hook, content io.Reader) error {
+// Update updates the script content of an existing hook (by ID).
+func (s *hookServiceImpl) Update(ctx context.Context, h Hook, content io.Reader) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i, hook := range s.hooks {
@@ -75,8 +75,8 @@ func (s *hookServiceImpl) UpdateHook(ctx context.Context, h Hook, content io.Rea
 	return errors.New("hook not found")
 }
 
-// GetHookByID retrieves a hook by its ID.
-func (s *hookServiceImpl) GetHookByID(ctx context.Context, id string) (*Hook, error) {
+// Get retrieves a hook by its ID.
+func (s *hookServiceImpl) Get(ctx context.Context, id string) (*Hook, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, h := range s.hooks {
@@ -87,8 +87,8 @@ func (s *hookServiceImpl) GetHookByID(ctx context.Context, id string) (*Hook, er
 	return nil, errors.New("hook not found")
 }
 
-// RemoveHook removes a hook and its script content by ID.
-func (s *hookServiceImpl) RemoveHook(ctx context.Context, id string) error {
+// Remove removes a hook and its script content by ID.
+func (s *hookServiceImpl) Remove(ctx context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i, h := range s.hooks {
@@ -104,18 +104,19 @@ func (s *hookServiceImpl) RemoveHook(ctx context.Context, id string) error {
 	return errors.New("hook not found")
 }
 
-// OpenHookScript opens the script content for a given hook.
-func (s *hookServiceImpl) OpenHookScript(ctx context.Context, h Hook) (io.ReadCloser, error) {
+// Open opens the script content for a given hook.
+func (s *hookServiceImpl) Open(ctx context.Context, hookID string) (io.ReadCloser, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	if h.ScriptPath == "" {
-		return nil, errors.New("hook has no script path")
+	hook, err := s.Get(ctx, hookID)
+	if err != nil {
+		return nil, err
 	}
-	return s.content.OpenScript(ctx, h.ScriptPath)
+	return s.content.OpenScript(ctx, hook.ScriptPath)
 }
 
-// SetHooks replaces the list of hooks (used for loading from persistent storage).
-func (s *hookServiceImpl) SetHooks(seq iter.Seq2[*Hook, error]) error {
+// Set replaces the list of hooks (used for loading from persistent storage).
+func (s *hookServiceImpl) Set(seq iter.Seq2[*Hook, error]) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var hooks []*Hook

@@ -53,7 +53,7 @@ func (s *HookStore) Load(ctx context.Context, initial func() hook.HookService) (
 		return nil, fmt.Errorf("decode hook store: %w", err)
 	}
 	svc := initial()
-	if err := svc.SetHooks(typ.WithNilError(slices.Values(data.Hooks))); err != nil {
+	if err := svc.Set(typ.WithNilError(slices.Values(data.Hooks))); err != nil {
 		return nil, fmt.Errorf("set hooks: %w", err)
 	}
 	svc.MarkSaved()
@@ -69,7 +69,7 @@ func (s *HookStore) Save(ctx context.Context, svc hook.HookService, force bool) 
 		return fmt.Errorf("get hook store source: %w", err)
 	}
 	data := tomlHookStore{}
-	for h, err := range svc.ListHooks() {
+	for h, err := range svc.List() {
 		if err != nil {
 			return fmt.Errorf("list hooks: %w", err)
 		}

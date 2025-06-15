@@ -15,5 +15,5 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 }
 
 func (uc *UseCase) Execute(ctx context.Context, hookID string) error {
-	return uc.hookService.RemoveHook(ctx, hookID)
+	return uc.hookService.Remove(ctx, hookID)
 }

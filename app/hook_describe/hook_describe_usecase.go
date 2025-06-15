@@ -22,11 +22,11 @@ func NewUseCase(
 }
 
 func (uc *UseCase) Execute(ctx context.Context, hookID string) (*hook.Hook, []byte, error) {
-	hook, err := uc.hookService.GetHookByID(ctx, hookID)
+	hook, err := uc.hookService.Get(ctx, hookID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get hook by ID: %w", err)
 	}
-	src, err := uc.hookService.OpenHookScript(ctx, *hook)
+	src, err := uc.hookService.Open(ctx, hookID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("open hook script: %w", err)
 	}

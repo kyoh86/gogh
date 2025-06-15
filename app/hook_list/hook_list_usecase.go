@@ -16,5 +16,5 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 }
 
 func (uc *UseCase) Execute(ctx context.Context) iter.Seq2[*hook.Hook, error] {
-	return uc.hookService.ListHooks()
+	return uc.hookService.List()
 }
