@@ -38,7 +38,7 @@ func NewHookEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 				return err
 			}
 			defer edited.Close()
-			return hook_edit.NewUseCase(svc.HookService).ApplyScript(ctx, hookID, edited)
+			return hook_edit.NewUseCase(svc.HookService).UpdateScript(ctx, hookID, edited)
 		},
 	}
 	return cmd, nil
