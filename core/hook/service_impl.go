@@ -6,6 +6,7 @@ import (
 	"io"
 	"iter"
 	"slices"
+	"strings"
 	"sync"
 )
 
@@ -75,40 +76,62 @@ func (s *hookServiceImpl) Update(ctx context.Context, h Hook, content io.Reader)
 	return errors.New("hook not found")
 }
 
+// find searches for a hook by its ID and returns its index and the hook itself.
+// If an exact match is found, it returns that hook. If no exact match exists but a single
+// hook ID matches the prefix, it returns that hook. Returns an error if the ID is empty,
+// multiple hooks match the prefix, or no matching hook is found.
+func (s *hookServiceImpl) find(id string) (int, *Hook, error) {
+	// NOTE: this function is internal and should not be locked externally.
+	if len(id) == 0 {
+		return -1, nil, errors.New("hook ID cannot be empty")
+	}
+	matched := -1
+	for i, h := range s.hooks {
+		if h.ID == id {
+			return i, h, nil
+		}
+		if strings.HasPrefix(h.ID, id) {
+			if matched >= 0 {
+				return -1, nil, errors.New("multiple hooks found with similar ID")
+			}
+			matched = i
+		}
+	}
+	if matched >= 0 {
+		return matched, s.hooks[matched], nil
+	}
+	return -1, nil, errors.New("hook not found")
+}
+
 // Get retrieves a hook by its ID.
 func (s *hookServiceImpl) Get(ctx context.Context, id string) (*Hook, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for _, h := range s.hooks {
-		if h.ID == id {
-			return h, nil
-		}
-	}
-	return nil, errors.New("hook not found")
+	_, h, err := s.find(id)
+	return h, err
 }
 
 // Remove removes a hook and its script content by ID.
 func (s *hookServiceImpl) Remove(ctx context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for i, h := range s.hooks {
-		if h.ID == id {
-			if h.ScriptPath != "" {
-				_ = s.content.RemoveScript(ctx, h.ScriptPath)
-			}
-			s.hooks = slices.Delete(s.hooks, i, i+1)
-			s.dirty = true
-			return nil
-		}
+	i, h, err := s.find(id)
+	if err != nil {
+		return err
 	}
-	return errors.New("hook not found")
+	if h.ScriptPath != "" {
+		_ = s.content.RemoveScript(ctx, h.ScriptPath)
+	}
+	s.hooks = slices.Delete(s.hooks, i, i+1)
+	s.dirty = true
+	return nil
 }
 
 // Open opens the script content for a given hook.
-func (s *hookServiceImpl) Open(ctx context.Context, hookID string) (io.ReadCloser, error) {
+func (s *hookServiceImpl) Open(ctx context.Context, id string) (io.ReadCloser, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	hook, err := s.Get(ctx, hookID)
+	_, hook, err := s.find(id)
 	if err != nil {
 		return nil, err
 	}

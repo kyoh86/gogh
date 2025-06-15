@@ -80,7 +80,12 @@ func NewHookCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				Event:       f.event,
 				RepoPattern: f.repoPattern,
 			}
-			return hook_create.NewUseCase(svc.HookService).Execute(ctx, opts, content)
+			hook, err := hook_create.NewUseCase(svc.HookService).Execute(ctx, opts, content)
+			if err != nil {
+				return fmt.Errorf("create hook: %w", err)
+			}
+			fmt.Printf("Hook created: %s\n", hook.ID)
+			return nil
 		},
 	}
 	cmd.Flags().StringVar(&f.name, "name", "", "Name of the hook")

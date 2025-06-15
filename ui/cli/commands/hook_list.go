@@ -19,12 +19,12 @@ func NewHookListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			useCase := hook_show.NewUseCase(cmd.OutOrStdout(), f.json)
+			showUseCase := hook_show.NewUseCase(cmd.OutOrStdout(), f.json)
 			for h, err := range hook_list.NewUseCase(svc.HookService).Execute(ctx) {
 				if err != nil {
 					return err
 				}
-				if err := useCase.Execute(ctx, h); err != nil {
+				if err := showUseCase.Execute(ctx, h); err != nil {
 					return err
 				}
 			}

@@ -25,7 +25,7 @@ func NewUseCase(w io.Writer, asJSON bool) *UseCase {
 	}
 	return &UseCase{
 		writer: func(ctx context.Context, h *hook.Hook) error {
-			fmt.Printf("* [%s] %s (%s) @ %s\n", h.ID, h.Name, h.Target, h.UpdatedAt.Format("2006-01-02 15:04:05"))
+			fmt.Printf("* [%s] %s (%s) @ %s\n", h.ID[:8], h.Name, h.Target, h.UpdatedAt.Format("2006-01-02 15:04:05"))
 			return nil
 		},
 	}

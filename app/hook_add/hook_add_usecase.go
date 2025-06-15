@@ -23,7 +23,7 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 	return &UseCase{hookService: hookService}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader) error {
+func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader) (*hook.Hook, error) {
 	h := hook.Hook{
 		ID:   uuid.NewString(),
 		Name: opts.Name,
@@ -34,5 +34,5 @@ func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader)
 		},
 	}
 	h.CreatedNow()
-	return uc.hookService.Add(ctx, h, content)
+	return &h, uc.hookService.Add(ctx, h, content)
 }
