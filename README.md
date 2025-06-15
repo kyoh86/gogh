@@ -430,6 +430,32 @@ print("Setting up repository: " .. gogh.repo.owner .. "/" .. gogh.repo.name)
 os.execute("npm install")
 ```
 
+If you are using the [lua-language-server](https://luals.github.io),
+you can use the following configuration to get autocompletion and type checking for the `gogh` global table:
+
+```lua
+{
+  settings = {
+    Lua = {
+      runtime = {
+        version = 'LuaJIT',
+      },
+      diagnostics = {
+        globals = { 'gogh' }, -- Add 'gogh' to the list of global variables
+      },
+      workspace = {
+        library = { <path-to-gogh>lua/gogh.lua }, -- Path to Gogh's Lua library
+      },
+      completion = {
+        callSnippet = "Replace",
+      },
+    },
+  },
+}
+```
+
+The lua library is located at `lua/gogh.lua` in this repository.
+
 ### Practical Examples
 
 #### Setting Up Dependencies
