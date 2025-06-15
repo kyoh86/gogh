@@ -81,7 +81,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 		return nil, fmt.Errorf("initializing format flag: %w", err)
 	}
 
-	var relationAccepts = []string{
+	relationAccepts := []string{
 		"owner",
 		"organization-member",
 		"collaborator",
