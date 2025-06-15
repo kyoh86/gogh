@@ -34,9 +34,9 @@ func NewHookUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				}
 				c, err := os.Open(f.scriptPath)
 				if err != nil {
-					content = c
 					return err
 				}
+				content = c
 				defer c.Close()
 			}
 			if err := hook_update.NewUseCase(svc.HookService).Execute(ctx, hookID, f.name, f.useCase, f.event, f.repoPattern, content); err != nil {
