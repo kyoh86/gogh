@@ -22,5 +22,5 @@ type Overlay = overlay.Overlay
 
 // Execute lists all overlay patterns and their files
 func (uc *UseCase) Execute(ctx context.Context) iter.Seq2[*Overlay, error] {
-	return uc.overlayService.ListOverlays()
+	return uc.overlayService.List()
 }

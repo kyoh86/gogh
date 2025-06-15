@@ -96,7 +96,7 @@ func TestExecute_NoMatchingOverlays(t *testing.T) {
 
 	// Set up empty overlays list
 	mockService.EXPECT().
-		ListOverlays().
+		List().
 		Return(func(yield func(*overlay.Overlay, error) bool) {
 			// Return no overlays
 		})
@@ -164,7 +164,7 @@ func TestExecute_WithMatchingOverlays(t *testing.T) {
 
 	// Set up mock to return all overlays
 	mockService.EXPECT().
-		ListOverlays().
+		List().
 		Return(func(yield func(*overlay.Overlay, error) bool) {
 			for _, ov := range overlays {
 				if !yield(ov, nil) {
@@ -223,7 +223,7 @@ func TestExecute_WithErrorInOverlays(t *testing.T) {
 
 	// Set up mock to return an error
 	mockService.EXPECT().
-		ListOverlays().
+		List().
 		Return(func(yield func(*overlay.Overlay, error) bool) {
 			// Return one overlay, then an error
 			overlay1 := &overlay.Overlay{

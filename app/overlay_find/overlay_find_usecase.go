@@ -34,7 +34,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string) iter.Seq2[*Overlay,
 			yield(nil, fmt.Errorf("parsing reference '%s': %w", refs, err))
 			return
 		}
-		for overlay, err := range overlay.ForReference(uc.overlayService.ListOverlays(), refWithAlias.Local()) {
+		for overlay, err := range overlay.ForReference(uc.overlayService.List(), refWithAlias.Local()) {
 			if !yield(overlay, err) {
 				return
 			}

@@ -95,7 +95,7 @@ func TestOverlayStore(t *testing.T) {
 		// Create a mock OverlayService for saving
 		mockService := overlay_mock.NewMockOverlayService(ctrl)
 		mockService.EXPECT().HasChanges().Return(true)
-		mockService.EXPECT().ListOverlays().Return(makeOverlayIterator(testOverlays))
+		mockService.EXPECT().List().Return(makeOverlayIterator(testOverlays))
 		mockService.EXPECT().MarkSaved()
 
 		// Test saving overlays
@@ -113,7 +113,7 @@ func TestOverlayStore(t *testing.T) {
 
 		// SetOverlays expects an iterator, not a slice
 		mockLoadService.EXPECT().
-			SetOverlays(testOverlays).
+			Set(testOverlays).
 			Return(nil)
 
 		mockLoadService.EXPECT().MarkSaved()
@@ -167,7 +167,7 @@ func TestOverlayStore(t *testing.T) {
 		// Create a mock OverlayService
 		mockService := overlay_mock.NewMockOverlayService(ctrl)
 		mockService.EXPECT().HasChanges().Return(false) // Force=true still checks HasChanges
-		mockService.EXPECT().ListOverlays().Return(makeOverlayIterator(testOverlays))
+		mockService.EXPECT().List().Return(makeOverlayIterator(testOverlays))
 		mockService.EXPECT().MarkSaved()
 
 		// Test saving with force=true

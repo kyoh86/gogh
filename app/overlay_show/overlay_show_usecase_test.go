@@ -41,7 +41,7 @@ func TestUseCase_Execute(t *testing.T) {
 				content := &readCloserMock{
 					Reader: bytes.NewReader([]byte("overlay content")),
 				}
-				m.EXPECT().OpenOverlayContent(gomock.Any(), overlay.Overlay{
+				m.EXPECT().Open(gomock.Any(), overlay.Overlay{
 					RepoPattern:  "example/repo",
 					ForInit:      false,
 					RelativePath: "path/to/file",
@@ -56,7 +56,7 @@ func TestUseCase_Execute(t *testing.T) {
 			forInit:      true,
 			relativePath: "file.txt",
 			mockSetup: func(m *overlay_mock.MockOverlayService) (io.ReadCloser, error) {
-				m.EXPECT().OpenOverlayContent(gomock.Any(), overlay.Overlay{
+				m.EXPECT().Open(gomock.Any(), overlay.Overlay{
 					RepoPattern:  "error/repo",
 					ForInit:      true,
 					RelativePath: "file.txt",

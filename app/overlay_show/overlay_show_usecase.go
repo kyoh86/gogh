@@ -83,7 +83,7 @@ func (uc *ContentUseCase) Execute(ctx context.Context, ov *Overlay) error {
 	}
 	fmt.Fprintf(uc.writer, "Overlay path: %s\n", ov.RelativePath)
 	// Open the overlay content
-	content, err := uc.overlayService.OpenOverlayContent(ctx, *ov)
+	content, err := uc.overlayService.Open(ctx, *ov)
 	if err != nil {
 		return fmt.Errorf("opening overlay for repo-pattern '%s': %w", ov.RepoPattern, err)
 	}

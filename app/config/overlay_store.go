@@ -55,7 +55,7 @@ func (s *OverlayStore) Load(ctx context.Context, initial func() overlay.OverlayS
 		return nil, fmt.Errorf("decode overlay store: %w", err)
 	}
 	svc := initial()
-	if err := svc.SetOverlays(data.Overlays); err != nil {
+	if err := svc.Set(data.Overlays); err != nil {
 		return nil, fmt.Errorf("set overlays: %w", err)
 	}
 	svc.MarkSaved()
@@ -71,7 +71,7 @@ func (s *OverlayStore) Save(ctx context.Context, svc overlay.OverlayService, for
 		return fmt.Errorf("get overlay store source: %w", err)
 	}
 	data := tomlOverlayStore{}
-	for ov, err := range svc.ListOverlays() {
+	for ov, err := range svc.List() {
 		if err != nil {
 			return fmt.Errorf("list overlays: %w", err)
 		}

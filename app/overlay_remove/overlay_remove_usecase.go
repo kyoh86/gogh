@@ -19,7 +19,7 @@ func NewUseCase(overlayService overlay.OverlayService) *UseCase {
 }
 
 func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath, repoPattern string) error {
-	if err := uc.overlayService.RemoveOverlay(ctx, overlay.Overlay{
+	if err := uc.overlayService.Remove(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

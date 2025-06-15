@@ -26,7 +26,7 @@ func TestUseCase_Execute(t *testing.T) {
 			relativePath: "path/to/file",
 			repoPattern:  "example/repo",
 			mockSetup: func(m *overlay_mock.MockOverlayService) error {
-				m.EXPECT().RemoveOverlay(gomock.Any(), overlay.Overlay{
+				m.EXPECT().Remove(gomock.Any(), overlay.Overlay{
 					RepoPattern:  "example/repo",
 					ForInit:      false,
 					RelativePath: "path/to/file",
@@ -41,7 +41,7 @@ func TestUseCase_Execute(t *testing.T) {
 			relativePath: "config.yaml",
 			repoPattern:  "example/repo",
 			mockSetup: func(m *overlay_mock.MockOverlayService) error {
-				m.EXPECT().RemoveOverlay(gomock.Any(), overlay.Overlay{
+				m.EXPECT().Remove(gomock.Any(), overlay.Overlay{
 					RepoPattern:  "example/repo",
 					ForInit:      true,
 					RelativePath: "config.yaml",
@@ -56,7 +56,7 @@ func TestUseCase_Execute(t *testing.T) {
 			relativePath: "non-existent.txt",
 			repoPattern:  "error/repo",
 			mockSetup: func(m *overlay_mock.MockOverlayService) error {
-				m.EXPECT().RemoveOverlay(gomock.Any(), overlay.Overlay{
+				m.EXPECT().Remove(gomock.Any(), overlay.Overlay{
 					RepoPattern:  "error/repo",
 					ForInit:      false,
 					RelativePath: "non-existent.txt",

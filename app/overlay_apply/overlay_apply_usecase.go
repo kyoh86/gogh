@@ -49,7 +49,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, repoPattern string,
 	targetPath := filepath.Join(match.FullPath(), relativePath)
 
 	// Open the overlay source
-	source, err := uc.overlayService.OpenOverlayContent(ctx, overlay.Overlay{
+	source, err := uc.overlayService.Open(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,

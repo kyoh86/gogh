@@ -24,7 +24,7 @@ func NewOverlayService(contentStore ContentStore) OverlayService {
 	}
 }
 
-func (s *serviceImpl) ListOverlays() iter.Seq2[*Overlay, error] {
+func (s *serviceImpl) List() iter.Seq2[*Overlay, error] {
 	return func(yield func(*Overlay, error) bool) {
 		for ov := range s.overlays.Iter() {
 			ov := ov
@@ -35,7 +35,7 @@ func (s *serviceImpl) ListOverlays() iter.Seq2[*Overlay, error] {
 	}
 }
 
-func (s *serviceImpl) AddOverlay(ctx context.Context, ov Overlay, content io.Reader) error {
+func (s *serviceImpl) Add(ctx context.Context, ov Overlay, content io.Reader) error {
 	location, err := s.contentStore.SaveContent(ctx, ov, content)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func (s *serviceImpl) AddOverlay(ctx context.Context, ov Overlay, content io.Rea
 	return nil
 }
 
-func (s *serviceImpl) RemoveOverlay(ctx context.Context, ov Overlay) error {
+func (s *serviceImpl) Remove(ctx context.Context, ov Overlay) error {
 	id := ov.ID()
 	found, exists := s.overlays.GetByID(id)
 	if !exists {
@@ -57,7 +57,7 @@ func (s *serviceImpl) RemoveOverlay(ctx context.Context, ov Overlay) error {
 	return s.contentStore.RemoveContent(ctx, found.ContentLocation)
 }
 
-func (s *serviceImpl) OpenOverlayContent(ctx context.Context, ov Overlay) (io.ReadCloser, error) {
+func (s *serviceImpl) Open(ctx context.Context, ov Overlay) (io.ReadCloser, error) {
 	found, exists := s.overlays.GetByID(ov.ID())
 	if exists {
 		return s.contentStore.OpenContent(ctx, found.ContentLocation)
@@ -73,7 +73,7 @@ func (s *serviceImpl) MarkSaved() {
 	s.changed = false
 }
 
-func (s *serviceImpl) SetOverlays(overlays []Overlay) error {
+func (s *serviceImpl) Set(overlays []Overlay) error {
 	newSet := typ.NewSet(overlays...)
 	s.overlays = newSet
 	s.changed = true

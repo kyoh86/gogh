@@ -52,7 +52,7 @@ func TestExecute_Success(t *testing.T) {
 
 	// Set expectations - using gomock matchers
 	mockService.EXPECT().
-		AddOverlay(ctx, overlay.Overlay{
+		Add(ctx, overlay.Overlay{
 			RepoPattern:  repoPattern,
 			ForInit:      forInit,
 			RelativePath: relativePath,
@@ -121,7 +121,7 @@ func TestExecute_AddOverlayError(t *testing.T) {
 	// Simulate an error when adding overlay
 	expectedErr := errors.New("overlay add error")
 	mockService.EXPECT().
-		AddOverlay(ctx, overlay.Overlay{
+		Add(ctx, overlay.Overlay{
 			RepoPattern:  repoPattern,
 			ForInit:      forInit,
 			RelativePath: relativePath,

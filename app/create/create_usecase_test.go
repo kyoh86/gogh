@@ -102,7 +102,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 				// Overlay application
 				mockOverlay.EXPECT().
-					ListOverlays().Return(func(yield func(*overlay.Overlay, error) bool) {})
+					List().Return(func(yield func(*overlay.Overlay, error) bool) {})
 				// Hook application
 				mockHook.EXPECT().
 					List().Return(func(yield func(*hook.Hook, error) bool) {}).Times(2)

@@ -88,7 +88,7 @@ func TestUseCase_Execute(t *testing.T) {
 				content := &readCloserMock{
 					Reader: bytes.NewReader([]byte("overlay content")),
 				}
-				overlaySvc.EXPECT().OpenOverlayContent(gomock.Any(), overlay.Overlay{
+				overlaySvc.EXPECT().Open(gomock.Any(), overlay.Overlay{
 					RepoPattern:  "example/repo",
 					ForInit:      false,
 					RelativePath: "config/settings.yaml",
@@ -177,7 +177,7 @@ func TestUseCase_Execute(t *testing.T) {
 				)
 				finderSvc.EXPECT().FindByReference(gomock.Any(), workspaceSvc, ref).Return(repo, nil)
 
-				overlaySvc.EXPECT().OpenOverlayContent(gomock.Any(), overlay.Overlay{
+				overlaySvc.EXPECT().Open(gomock.Any(), overlay.Overlay{
 					RepoPattern:  "error/repo",
 					ForInit:      true,
 					RelativePath: "config.yaml",

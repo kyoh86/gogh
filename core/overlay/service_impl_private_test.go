@@ -41,7 +41,7 @@ func TestListOverlays(t *testing.T) {
 	service := NewOverlayService(store).(*serviceImpl)
 
 	// Empty list
-	overlays := service.ListOverlays()
+	overlays := service.List()
 	count := 0
 	for ov, err := range overlays {
 		if err != nil {
@@ -61,14 +61,14 @@ func TestListOverlays(t *testing.T) {
 	}
 
 	for _, ov := range testOverlays {
-		err := service.AddOverlay(context.Background(), ov, strings.NewReader("content"))
+		err := service.Add(context.Background(), ov, strings.NewReader("content"))
 		if err != nil {
 			t.Fatalf("failed to add overlay: %v", err)
 		}
 	}
 
 	// Check list again
-	resultOverlays, err := typ.CollectWithError(service.ListOverlays())
+	resultOverlays, err := typ.CollectWithError(service.List())
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -94,7 +94,7 @@ func TestAddOverlay(t *testing.T) {
 	// Test successful add
 	ov := Overlay{RepoPattern: "repo1", RelativePath: "path1", ForInit: true}
 	content := "test content"
-	err := service.AddOverlay(ctx, ov, strings.NewReader(content))
+	err := service.Add(ctx, ov, strings.NewReader(content))
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -131,12 +131,12 @@ func TestAddOverlay(t *testing.T) {
 
 	// Test add with nil content
 
-	if err := service.AddOverlay(ctx, ov, nil); err == nil {
+	if err := service.Add(ctx, ov, nil); err == nil {
 		t.Error("expected error when adding nil content")
 	}
 
 	// Test adding duplicate overlay
-	if err := service.AddOverlay(ctx, ov, strings.NewReader("duplicate content")); err != nil {
+	if err := service.Add(ctx, ov, strings.NewReader("duplicate content")); err != nil {
 		t.Errorf("unexpected error adding duplicate overlay: %v", err)
 	}
 	if service.overlays.Len() != 1 {
@@ -158,7 +158,7 @@ func TestRemoveOverlay(t *testing.T) {
 
 	locations := make([]string, 0, len(overlays))
 	for _, ov := range overlays {
-		err := service.AddOverlay(ctx, ov, strings.NewReader("content"))
+		err := service.Add(ctx, ov, strings.NewReader("content"))
 		if err != nil {
 			t.Fatalf("failed to add overlay: %v", err)
 		}
@@ -168,7 +168,7 @@ func TestRemoveOverlay(t *testing.T) {
 	service.changed = false // Reset for testing
 
 	// Remove existing overlay (the middle one)
-	err := service.RemoveOverlay(ctx, overlays[1])
+	err := service.Remove(ctx, overlays[1])
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -197,7 +197,7 @@ func TestRemoveOverlay(t *testing.T) {
 	// Remove non-existent overlay
 	nonExistent := Overlay{RepoPattern: "non", RelativePath: "existent", ForInit: false}
 	service.changed = false // Reset for testing
-	err = service.RemoveOverlay(ctx, nonExistent)
+	err = service.Remove(ctx, nonExistent)
 	if err != nil {
 		t.Errorf("unexpected error removing non-existent overlay: %v", err)
 	}
@@ -219,13 +219,13 @@ func TestOpenOverlayContent(t *testing.T) {
 	// Add test overlay
 	ov := Overlay{RepoPattern: "repo1", RelativePath: "path1", ForInit: true}
 	expectedContent := "test content"
-	err := service.AddOverlay(ctx, ov, strings.NewReader(expectedContent))
+	err := service.Add(ctx, ov, strings.NewReader(expectedContent))
 	if err != nil {
 		t.Fatalf("failed to add overlay: %v", err)
 	}
 
 	// Open existing overlay
-	reader, err := service.OpenOverlayContent(ctx, ov)
+	reader, err := service.Open(ctx, ov)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -242,7 +242,7 @@ func TestOpenOverlayContent(t *testing.T) {
 
 	// Open non-existent overlay
 	nonExistent := Overlay{RepoPattern: "non", RelativePath: "existent", ForInit: false}
-	reader, err = service.OpenOverlayContent(ctx, nonExistent)
+	reader, err = service.Open(ctx, nonExistent)
 	if err == nil {
 		t.Error("expected error for non-existent overlay, got nil")
 		if reader != nil {
@@ -263,7 +263,7 @@ func TestHasChanges(t *testing.T) {
 
 	// After adding overlay
 	ov := Overlay{RepoPattern: "repo", RelativePath: "path", ForInit: true}
-	err := service.AddOverlay(ctx, ov, strings.NewReader("content"))
+	err := service.Add(ctx, ov, strings.NewReader("content"))
 	if err != nil {
 		t.Fatalf("failed to add overlay: %v", err)
 	}
@@ -300,7 +300,7 @@ func TestSetOverlays(t *testing.T) {
 	}
 
 	// Set overlays
-	err := service.SetOverlays(testOverlays)
+	err := service.Set(testOverlays)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}

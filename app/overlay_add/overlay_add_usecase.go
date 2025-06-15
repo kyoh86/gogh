@@ -25,7 +25,7 @@ func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath strin
 		return fmt.Errorf("opening source file '%s': %w", sourceFile, err)
 	}
 	defer content.Close()
-	if err := uc.overlayService.AddOverlay(ctx, overlay.Overlay{
+	if err := uc.overlayService.Add(ctx, overlay.Overlay{
 		RepoPattern:  repoPattern,
 		ForInit:      forInit,
 		RelativePath: relativePath,
