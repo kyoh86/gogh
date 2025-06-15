@@ -8,10 +8,10 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
+	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/overlay_apply"
 	"github.com/kyoh86/gogh/v4/app/overlay_find"
 	"github.com/kyoh86/gogh/v4/app/overlay_list"
-	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
@@ -20,6 +20,7 @@ import (
 
 func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
+		allRepos    bool
 		repoPattern string
 		forInit     bool
 	}
@@ -28,14 +29,30 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 		if len(args) != 0 {
 			return args, nil
 		}
+		listOpts := list.Options{
+			Primary: false,
+			ListOptions: list.ListOptions{
+				Limit: 0,
+			},
+		}
+		if f.allRepos {
+			var ret []string
+			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, listOpts) {
+				if err != nil {
+					return nil, fmt.Errorf("listing up repositories: %w", err)
+				}
+				ret = append(ret, repo.Path())
+			}
+			return ret, nil
+		}
 		var opts []huh.Option[string]
-		for repo, err := range repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{}) {
+		for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, listOpts) {
 			if err != nil {
 				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}
 			opts = append(opts, huh.Option[string]{
-				Key:   repo.Ref.String(),
-				Value: repo.Ref.String(),
+				Key:   repo.Path(),
+				Value: repo.Path(),
 			})
 		}
 		var selected []string
@@ -54,7 +71,10 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 		Use:   "apply [flags] [[[<host>/]<owner>/]<name>...]",
 		Short: "Apply overlays to specified repositories",
 		Args:  cobra.ArbitraryArgs,
-		Example: `  It accepts a short notation for a repository
+		Example: `  If you want to apply overlays to all repositories in the workspace,
+  use --all-repositories flag.
+
+  It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.
     - "<name>": e.g. "example"; 
     - "<owner>/<name>": e.g. "kyoh86/example"
@@ -125,6 +145,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			return nil
 		},
 	}
+	cmd.Flags().BoolVarP(&f.allRepos, "all-repositories", "", false, "Apply overlays to all repositories in the workspace")
 	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "", "", "Force apply overlays having this pattern, ignoring automatic repository name matching (useful for applying specific overlays or templates that would not normally match)")
 	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Apply overlays only for `gogh create` command (useful for templates)")
 	return cmd, nil
