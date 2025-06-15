@@ -1,6 +1,8 @@
 package hook
 
 import (
+	"time"
+
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
@@ -71,6 +73,20 @@ type Hook struct {
 	Target Target `json:"target"`
 
 	ScriptPath string `json:"scriptPath"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+func (h *Hook) CreatedNow() {
+	if h.CreatedAt.IsZero() {
+		h.CreatedAt = time.Now()
+		h.UpdatedAt = h.CreatedAt
+	}
+}
+
+func (h *Hook) UpdatedNow() {
+	h.UpdatedAt = time.Now()
 }
 
 func (h Hook) Match(ref repository.Reference, useCase UseCase, event Event) (bool, error) {

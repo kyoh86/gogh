@@ -33,5 +33,6 @@ func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader)
 			Event:       hook.Event(opts.Event),
 		},
 	}
+	h.CreatedNow()
 	return uc.hookService.Add(ctx, h, content)
 }

@@ -32,5 +32,6 @@ func (uc *UseCase) UpdateScript(ctx context.Context, hookID string, r io.Reader)
 	if err != nil {
 		return err
 	}
+	found.UpdatedNow()
 	return uc.hookService.Update(ctx, *found, r)
 }
