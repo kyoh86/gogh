@@ -13,8 +13,8 @@ type OverlayService interface {
 	store.Content
 
 	List() iter.Seq2[*Overlay, error]
-	Add(ctx context.Context, ov Overlay, content io.Reader) error
-	Remove(ctx context.Context, ov Overlay) error
-	Open(ctx context.Context, ov Overlay) (io.ReadCloser, error)
-	Set([]Overlay) error
+	Add(ctx context.Context, name, relativePath string, content io.Reader) (id string, _ error)
+	Remove(ctx context.Context, id string) error
+	Open(ctx context.Context, id string) (io.ReadCloser, error)
+	Load(iter.Seq2[*Overlay, error]) error
 }

@@ -28,7 +28,7 @@ func (uc *UseCase) Execute(ctx context.Context, hookID, name, useCase, event, re
 		found.Target.UseCase = hook.UseCase(useCase)
 	}
 	if event != "" {
-		found.Target.Event = hook.Event(event)
+		found.Target.TriggerEvent = hook.Event(event)
 	}
 	if repoPattern != "" {
 		found.Target.RepoPattern = repoPattern

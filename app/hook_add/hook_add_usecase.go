@@ -28,9 +28,9 @@ func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader)
 		ID:   uuid.NewString(),
 		Name: opts.Name,
 		Target: hook.Target{
-			RepoPattern: opts.RepoPattern,
-			UseCase:     hook.UseCase(opts.UseCase),
-			Event:       hook.Event(opts.Event),
+			RepoPattern:  opts.RepoPattern,
+			UseCase:      hook.UseCase(opts.UseCase),
+			TriggerEvent: hook.Event(opts.Event),
 		},
 	}
 	h.CreatedNow()

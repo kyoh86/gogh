@@ -3,27 +3,26 @@ package hook
 import (
 	"context"
 	"errors"
-	"io"
 	"iter"
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 // hookServiceImpl is the concrete implementation of HookService.
 type hookServiceImpl struct {
-	mu      sync.RWMutex
-	hooks   []*Hook
-	content HookScriptStore
-	dirty   bool
+	mu    sync.RWMutex
+	hooks []*Hook
+	dirty bool
 }
 
 // NewHookService creates a new HookService with the given content store.
-func NewHookService(content HookScriptStore) HookService {
+func NewHookService() HookService {
 	return &hookServiceImpl{
-		hooks:   []*Hook{},
-		content: content,
-		dirty:   false,
+		hooks: []*Hook{},
+		dirty: false,
 	}
 }
 
@@ -33,7 +32,8 @@ func (s *hookServiceImpl) List() iter.Seq2[*Hook, error] {
 	defer s.mu.RUnlock()
 	return func(yield func(*Hook, error) bool) {
 		for _, h := range s.hooks {
-			if !yield(h, nil) {
+			el := *h
+			if !yield(&el, nil) {
 				break
 			}
 		}
@@ -41,39 +41,65 @@ func (s *hookServiceImpl) List() iter.Seq2[*Hook, error] {
 }
 
 // Add registers a new hook and stores its script content.
-func (s *hookServiceImpl) Add(ctx context.Context, h Hook, content io.Reader) error {
+func (s *hookServiceImpl) Add(
+	ctx context.Context,
+	name string,
+	repoPattern string,
+	triggerEvent Event,
+	operationType OperationType,
+	operationID string,
+) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	scriptPath, err := s.content.SaveScript(ctx, h, content)
-	if err != nil {
-		return err
+	hook := &Hook{
+		ID:            uuid.NewString(),
+		Name:          name,
+		RepoPattern:   repoPattern,
+		TriggerEvent:  triggerEvent,
+		OperationType: operationType,
+		OperationID:   operationID,
 	}
-	h.ScriptPath = scriptPath
-	s.hooks = append(s.hooks, &h)
+	s.hooks = append(s.hooks, hook)
 	s.dirty = true
-	return nil
+	return hook.ID, nil
 }
 
 // Update updates the script content of an existing hook (by ID).
-func (s *hookServiceImpl) Update(ctx context.Context, h Hook, content io.Reader) error {
+func (s *hookServiceImpl) Update(
+	ctx context.Context,
+	id string,
+	name string,
+	repoPattern string,
+	triggerEvent Event,
+	operationType OperationType,
+	operationID string,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	i, _, err := s.find(h.ID)
+	_, hook, err := s.find(id)
 	if err != nil {
 		return err
 	}
-	if content != nil {
-		if h.ScriptPath != "" {
-			_ = s.content.RemoveScript(ctx, h.ScriptPath)
-		}
-		scriptPath, err := s.content.SaveScript(ctx, h, content)
-		if err != nil {
-			return err
-		}
-		h.ScriptPath = scriptPath
+	if name != "" {
+		hook.Name = name
+		s.dirty = true
 	}
-	s.hooks[i] = &h
-	s.dirty = true
+	if repoPattern != "" {
+		hook.RepoPattern = repoPattern
+		s.dirty = true
+	}
+	if triggerEvent != "" {
+		hook.TriggerEvent = triggerEvent
+		s.dirty = true
+	}
+	if operationType != "" {
+		hook.OperationType = operationType
+		s.dirty = true
+	}
+	if operationID != "" {
+		hook.OperationID = operationID
+		s.dirty = true
+	}
 	return nil
 }
 
@@ -116,31 +142,17 @@ func (s *hookServiceImpl) Get(ctx context.Context, id string) (*Hook, error) {
 func (s *hookServiceImpl) Remove(ctx context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	i, h, err := s.find(id)
+	i, _, err := s.find(id)
 	if err != nil {
 		return err
-	}
-	if h.ScriptPath != "" {
-		_ = s.content.RemoveScript(ctx, h.ScriptPath)
 	}
 	s.hooks = slices.Delete(s.hooks, i, i+1)
 	s.dirty = true
 	return nil
 }
 
-// Open opens the script content for a given hook.
-func (s *hookServiceImpl) Open(ctx context.Context, id string) (io.ReadCloser, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	_, hook, err := s.find(id)
-	if err != nil {
-		return nil, err
-	}
-	return s.content.OpenScript(ctx, hook.ScriptPath)
-}
-
-// Set replaces the list of hooks (used for loading from persistent storage).
-func (s *hookServiceImpl) Set(seq iter.Seq2[*Hook, error]) error {
+// Load replaces the list of hooks (used for loading from persistent storage).
+func (s *hookServiceImpl) Load(seq iter.Seq2[*Hook, error]) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var hooks []*Hook

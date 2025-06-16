@@ -30,8 +30,8 @@ func NewHookDescribeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			if hook.Target.UseCase != "" {
 				fmt.Printf("-- Target Use Case: %s\n", hook.Target.UseCase)
 			}
-			if hook.Target.Event != "" {
-				fmt.Printf("-- Target Event: %s\n", hook.Target.Event)
+			if hook.Target.TriggerEvent != "" {
+				fmt.Printf("-- Target Event: %s\n", hook.Target.TriggerEvent)
 			}
 			if hook.Target.RepoPattern != "" {
 				fmt.Printf("-- Target Repository Pattern: %s\n", hook.Target.RepoPattern)
