@@ -25,7 +25,7 @@ type ServiceSet struct {
 	FlagsStore store.Saver[*config.Flags]
 	Flags      *config.Flags
 
-	OverlayStore   overlay.OverlayStore
+	OverlayStore   store.Saver[overlay.OverlayService]
 	OverlayService overlay.OverlayService
 
 	HookStore   store.Saver[hook.HookService]

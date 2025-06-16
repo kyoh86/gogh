@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/overlay"
+	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -95,4 +96,4 @@ func (s *OverlayStore) Save(ctx context.Context, svc overlay.OverlayService, for
 	return nil
 }
 
-var _ overlay.OverlayStore = (*OverlayStore)(nil)
+var _ store.Store[overlay.OverlayService] = (*OverlayStore)(nil)
