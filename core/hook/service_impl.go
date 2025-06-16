@@ -2,38 +2,35 @@ package hook
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"iter"
-	"slices"
-	"strings"
 	"sync"
 
-	"github.com/google/uuid"
+	"github.com/kyoh86/gogh/v4/core/set"
 )
 
-// hookServiceImpl is the concrete implementation of HookService.
-type hookServiceImpl struct {
+// serviceImpl is the concrete implementation of HookService.
+type serviceImpl struct {
 	mu    sync.RWMutex
-	hooks []*Hook
+	hooks *set.Set[hookElement]
 	dirty bool
 }
 
 // NewHookService creates a new HookService with the given content store.
 func NewHookService() HookService {
-	return &hookServiceImpl{
-		hooks: []*Hook{},
+	return &serviceImpl{
+		hooks: set.NewSet[hookElement](),
 		dirty: false,
 	}
 }
 
 // List returns an iterator for all registered hooks.
-func (s *hookServiceImpl) List() iter.Seq2[*Hook, error] {
+func (s *serviceImpl) List() iter.Seq2[Hook, error] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return func(yield func(*Hook, error) bool) {
-		for _, h := range s.hooks {
-			el := *h
-			if !yield(&el, nil) {
+	return func(yield func(Hook, error) bool) {
+		for h := range s.hooks.Iter() {
+			if !yield(h, nil) {
 				break
 			}
 		}
@@ -41,126 +38,90 @@ func (s *hookServiceImpl) List() iter.Seq2[*Hook, error] {
 }
 
 // Add registers a new hook and stores its script content.
-func (s *hookServiceImpl) Add(
-	ctx context.Context,
-	name string,
-	repoPattern string,
-	triggerEvent Event,
-	operationType OperationType,
-	operationID string,
-) (string, error) {
+func (s *serviceImpl) Add(ctx context.Context, entry Entry) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	hook := &Hook{
-		ID:            uuid.NewString(),
-		Name:          name,
-		RepoPattern:   repoPattern,
-		TriggerEvent:  triggerEvent,
-		OperationType: operationType,
-		OperationID:   operationID,
-	}
-	s.hooks = append(s.hooks, hook)
+	hook := NewHook(entry).(hookElement)
+	s.hooks.Add(hook)
 	s.dirty = true
-	return hook.ID, nil
+	return hook.ID(), nil
 }
 
 // Update updates the script content of an existing hook (by ID).
-func (s *hookServiceImpl) Update(
-	ctx context.Context,
-	id string,
-	name string,
-	repoPattern string,
-	triggerEvent Event,
-	operationType OperationType,
-	operationID string,
-) error {
+func (s *serviceImpl) Update(ctx context.Context, idlike string, entry Entry) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, hook, err := s.find(id)
+	hook, err := s.hooks.GetBy(idlike)
 	if err != nil {
-		return err
+		return fmt.Errorf("hook not found: %w", err)
 	}
-	if name != "" {
-		hook.Name = name
-		s.dirty = true
+	dirty := false
+	if entry.Name != "" {
+		hook.name = entry.Name
+		dirty = true
 	}
-	if repoPattern != "" {
-		hook.RepoPattern = repoPattern
-		s.dirty = true
+	if entry.RepoPattern != "" {
+		hook.repoPattern = entry.RepoPattern
+		dirty = true
 	}
-	if triggerEvent != "" {
-		hook.TriggerEvent = triggerEvent
-		s.dirty = true
+	if entry.TriggerEvent != "" {
+		hook.triggerEvent = entry.TriggerEvent
+		dirty = true
 	}
-	if operationType != "" {
-		hook.OperationType = operationType
-		s.dirty = true
+	if entry.OperationType != "" {
+		hook.operationType = entry.OperationType
+		dirty = true
 	}
-	if operationID != "" {
-		hook.OperationID = operationID
+	if entry.OperationID != "" {
+		hook.operationID = entry.OperationID
+		dirty = true
+	}
+	if dirty {
+		s.hooks.Set(hook)
 		s.dirty = true
 	}
 	return nil
 }
 
-// find searches for a hook by its ID and returns its index and the hook itself.
-// If an exact match is found, it returns that hook. If no exact match exists but a single
-// hook ID matches the prefix, it returns that hook. Returns an error if the ID is empty,
-// multiple hooks match the prefix, or no matching hook is found.
-func (s *hookServiceImpl) find(id string) (int, *Hook, error) {
-	// NOTE: this function is internal and should not be locked externally.
-	if len(id) == 0 {
-		return -1, nil, errors.New("hook ID cannot be empty")
-	}
-	matched := -1
-	for i, h := range s.hooks {
-		if h.ID == id {
-			return i, h, nil
-		}
-		if strings.HasPrefix(h.ID, id) {
-			if matched >= 0 {
-				return -1, nil, errors.New("multiple hooks found with similar ID")
-			}
-			matched = i
-		}
-	}
-	if matched >= 0 {
-		return matched, s.hooks[matched], nil
-	}
-	return -1, nil, errors.New("hook not found")
-}
-
-// Get retrieves a hook by its ID.
-func (s *hookServiceImpl) Get(ctx context.Context, id string) (*Hook, error) {
+// Get retrieves a script by its ID.
+func (s *serviceImpl) Get(ctx context.Context, idlike string) (Hook, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, h, err := s.find(id)
-	return h, err
+	return s.hooks.GetBy(idlike)
 }
 
-// Remove removes a hook and its script content by ID.
-func (s *hookServiceImpl) Remove(ctx context.Context, id string) error {
+// Remove removes a hook and its hook content by ID.
+func (s *serviceImpl) Remove(ctx context.Context, idlike string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	i, _, err := s.find(id)
+	hook, err := s.hooks.GetBy(idlike)
 	if err != nil {
 		return err
 	}
-	s.hooks = slices.Delete(s.hooks, i, i+1)
+	if err := s.hooks.Remove(hook); err != nil {
+		return fmt.Errorf("remove hook: %w", err)
+	}
 	s.dirty = true
 	return nil
 }
 
 // Load replaces the list of hooks (used for loading from persistent storage).
-func (s *hookServiceImpl) Load(seq iter.Seq2[*Hook, error]) error {
+func (s *serviceImpl) Load(seq iter.Seq2[Hook, error]) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	var hooks []*Hook
+	hooks := set.NewSet[hookElement]()
 	for h, err := range seq {
 		if err != nil {
 			return err
 		}
-		hooks = append(hooks, h)
+		hooks.Add(hookElement{
+			id:            h.UUID(),
+			name:          h.Name(),
+			repoPattern:   h.RepoPattern(),
+			triggerEvent:  h.TriggerEvent(),
+			operationType: h.OperationType(),
+			operationID:   h.OperationID(),
+		})
 	}
 	s.hooks = hooks
 	s.dirty = true
@@ -168,17 +129,17 @@ func (s *hookServiceImpl) Load(seq iter.Seq2[*Hook, error]) error {
 }
 
 // HasChanges returns true if there are unsaved changes.
-func (s *hookServiceImpl) HasChanges() bool {
+func (s *serviceImpl) HasChanges() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.dirty
 }
 
 // MarkSaved marks the current state as saved (no unsaved changes).
-func (s *hookServiceImpl) MarkSaved() {
+func (s *serviceImpl) MarkSaved() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.dirty = false
 }
 
-var _ HookService = (*hookServiceImpl)(nil)
+var _ HookService = (*serviceImpl)(nil)

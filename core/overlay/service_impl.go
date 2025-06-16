@@ -2,101 +2,141 @@ package overlay
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"io"
 	"iter"
-	"slices"
-	"strings"
 	"sync"
 
-	"github.com/google/uuid"
+	"github.com/kyoh86/gogh/v4/core/set"
 )
 
 // serviceImpl is the default implementation of OverlayService.
 // It manages overlays in memory and delegates content storage to ContentStore.
 type serviceImpl struct {
-	mu           sync.RWMutex
-	overlays     []*Overlay
-	contentStore ContentStore
-	dirty        bool
+	mu       sync.RWMutex
+	overlays *set.Set[overlayElement]
+	content  ContentStore
+	dirty    bool
 }
 
 // NewOverlayService creates a new OverlayService with the given ContentStore.
-func NewOverlayService(contentStore ContentStore) OverlayService {
+func NewOverlayService(content ContentStore) OverlayService {
 	return &serviceImpl{
-		contentStore: contentStore,
+		overlays: set.NewSet[overlayElement](),
+		content:  content,
+		dirty:    false,
 	}
 }
 
-func (s *serviceImpl) List() iter.Seq2[*Overlay, error] {
-	return func(yield func(*Overlay, error) bool) {
-		for _, ov := range s.overlays {
-			el := *ov
-			if !yield(&el, nil) {
+func (s *serviceImpl) List() iter.Seq2[Overlay, error] {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return func(yield func(Overlay, error) bool) {
+		for ov := range s.overlays.Iter() {
+			if !yield(ov, nil) {
 				return
 			}
 		}
 	}
 }
 
-func (s *serviceImpl) Add(
-	ctx context.Context,
-	name string,
-	relativePath string,
-	content io.Reader,
-) (string, error) {
-	ov := &Overlay{
-		ID:           uuid.NewString(),
-		Name:         name,
-		RelativePath: relativePath,
-	}
-	if err := s.contentStore.Save(ctx, ov.ID, content); err != nil {
+// Add registers a new overlay and stores its content.
+func (s *serviceImpl) Add(ctx context.Context, entry Entry) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	overlay := NewOverlay(entry).(overlayElement)
+	if err := s.content.Save(ctx, overlay.ID(), entry.Content); err != nil {
 		return "", err
 	}
-	s.overlays = append(s.overlays, ov)
+	s.overlays.Add(overlay)
 	s.dirty = true
-	return ov.ID, nil
+	return overlay.ID(), nil
 }
 
-// find searches for a overlay by its ID and returns its index and the overlay itself.
-// If an exact match is found, it returns that overlay. If no exact match exists but a single
-// overlay ID matches the prefix, it returns that overlay. Returns an error if the ID is empty,
-// multiple overlays match the prefix, or no matching overlay is found.
-func (s *serviceImpl) find(id string) (int, *Overlay, error) {
-	// NOTE: this function is internal and should not be locked externally.
-	if len(id) == 0 {
-		return -1, nil, errors.New("overlay ID cannot be empty")
+// Update the overlay content of an existing overlay (by ID).
+func (s *serviceImpl) Update(ctx context.Context, idlike string, entry Entry) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	overlay, err := s.overlays.GetBy(idlike)
+	if err != nil {
+		return fmt.Errorf("overlay not found: %w", err)
 	}
-	matched := -1
-	for i, h := range s.overlays {
-		if h.ID == id {
-			return i, h, nil
+	dirty := false
+	if entry.Content != nil {
+		if err := s.content.Save(ctx, overlay.ID(), entry.Content); err != nil {
+			return err
 		}
-		if strings.HasPrefix(h.ID, id) {
-			if matched >= 0 {
-				return -1, nil, errors.New("multiple overlays found with similar ID")
-			}
-			matched = i
-		}
+		dirty = true
 	}
-	if matched >= 0 {
-		return matched, s.overlays[matched], nil
+	if entry.Name != "" {
+		overlay.name = entry.Name
+		dirty = true
 	}
-	return -1, nil, errors.New("overlay not found")
+	if entry.RelativePath != "" {
+		overlay.relativePath = entry.RelativePath
+		dirty = true
+	}
+	if dirty {
+		s.overlays.Set(overlay)
+		s.dirty = true
+	}
+	return nil
 }
 
-func (s *serviceImpl) Remove(ctx context.Context, overlayID string) error {
-	i, _, err := s.find(overlayID)
+// Get retrieves a script by its ID.
+func (s *serviceImpl) Get(ctx context.Context, idlike string) (Overlay, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.overlays.GetBy(idlike)
+}
+
+// Remove removes a overlay and its overlay content by ID.
+func (s *serviceImpl) Remove(ctx context.Context, idlike string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	overlay, err := s.overlays.GetBy(idlike)
 	if err != nil {
 		return err
 	}
-	s.overlays = slices.Delete(s.overlays, i, i+1)
+	if err := s.content.Remove(ctx, overlay.ID()); err != nil {
+		return err
+	}
+	if err := s.overlays.Remove(overlay); err != nil {
+		return fmt.Errorf("remove overlay: %w", err)
+	}
 	s.dirty = true
 	return nil
 }
 
-func (s *serviceImpl) Open(ctx context.Context, overlayID string) (io.ReadCloser, error) {
-	return s.contentStore.Open(ctx, overlayID)
+// Open retrieves the content of an overlay by its ID.
+func (s *serviceImpl) Open(ctx context.Context, idlike string) (io.ReadCloser, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	overlay, err := s.overlays.GetBy(idlike)
+	if err != nil {
+		return nil, err
+	}
+	return s.content.Open(ctx, overlay.ID())
+}
+
+// Load replaces the list of overlays (used for loading from persistent storage).
+func (s *serviceImpl) Load(seq iter.Seq2[Overlay, error]) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	overlays := set.NewSet[overlayElement]()
+	for h, err := range seq {
+		if err != nil {
+			return err
+		}
+		overlays.Add(overlayElement{
+			id:           h.UUID(),
+			name:         h.Name(),
+			relativePath: h.RelativePath(),
+		})
+	}
+	s.overlays = overlays
+	s.dirty = true
+	return nil
 }
 
 func (s *serviceImpl) HasChanges() bool {
@@ -105,22 +145,6 @@ func (s *serviceImpl) HasChanges() bool {
 
 func (s *serviceImpl) MarkSaved() {
 	s.dirty = false
-}
-
-// Load replaces the list of overlays (used for loading from persistent storage).
-func (s *serviceImpl) Load(seq iter.Seq2[*Overlay, error]) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	var overlays []*Overlay
-	for h, err := range seq {
-		if err != nil {
-			return err
-		}
-		overlays = append(overlays, h)
-	}
-	s.overlays = overlays
-	s.dirty = true
-	return nil
 }
 
 var _ OverlayService = (*serviceImpl)(nil)

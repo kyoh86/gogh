@@ -3,7 +3,6 @@ package overlay
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"path/filepath"
 
@@ -14,51 +13,50 @@ import (
 type MockContentStore struct {
 	fs      afero.Fs
 	baseDir string
-	nextID  int
 }
 
 func NewMockContentStore() *MockContentStore {
 	return &MockContentStore{
 		fs:      afero.NewMemMapFs(),
 		baseDir: "/content",
-		nextID:  1,
 	}
 }
 
-func (a *MockContentStore) SaveContent(ctx context.Context, ov Overlay, content io.Reader) (string, error) {
+func (a *MockContentStore) Save(ctx context.Context, overlayID string, content io.Reader) error {
 	if content == nil {
-		return "", errors.New("content is nil")
+		return errors.New("content is nil")
 	}
 
 	// Create base directory if it doesn't exist
 	if err := a.fs.MkdirAll(a.baseDir, 0755); err != nil {
-		return "", err
+		return err
 	}
 
 	// Generate a unique location
-	location := filepath.Join(a.baseDir, fmt.Sprintf("content-%d", a.nextID))
-	a.nextID++
+	location := filepath.Join(a.baseDir, overlayID)
 
 	// Create the file
 	file, err := a.fs.Create(location)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer file.Close()
 
 	// Copy content to file
 	_, err = io.Copy(file, content)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return location, nil
+	return nil
 }
 
-func (a *MockContentStore) OpenContent(ctx context.Context, location string) (io.ReadCloser, error) {
+func (a *MockContentStore) Open(ctx context.Context, overlayID string) (io.ReadCloser, error) {
+	location := filepath.Join(a.baseDir, overlayID)
 	return a.fs.Open(location)
 }
 
-func (a *MockContentStore) RemoveContent(ctx context.Context, location string) error {
+func (a *MockContentStore) Remove(ctx context.Context, overlayID string) error {
+	location := filepath.Join(a.baseDir, overlayID)
 	return a.fs.Remove(location)
 }

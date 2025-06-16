@@ -44,25 +44,25 @@ func (m *MockScriptService) EXPECT() *MockScriptServiceMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockScriptService) Add(ctx context.Context, name string, content io.Reader) (string, error) {
+func (m *MockScriptService) Add(ctx context.Context, entry script.Entry) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", ctx, name, content)
+	ret := m.ctrl.Call(m, "Add", ctx, entry)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Add indicates an expected call of Add.
-func (mr *MockScriptServiceMockRecorder) Add(ctx, name, content any) *gomock.Call {
+func (mr *MockScriptServiceMockRecorder) Add(ctx, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockScriptService)(nil).Add), ctx, name, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockScriptService)(nil).Add), ctx, entry)
 }
 
 // Get mocks base method.
-func (m *MockScriptService) Get(ctx context.Context, id string) (*script.Script, error) {
+func (m *MockScriptService) Get(ctx context.Context, id string) (script.Script, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, id)
-	ret0, _ := ret[0].(*script.Script)
+	ret0, _ := ret[0].(script.Script)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -88,10 +88,10 @@ func (mr *MockScriptServiceMockRecorder) HasChanges() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockScriptService) List() iter.Seq2[*script.Script, error] {
+func (m *MockScriptService) List() iter.Seq2[script.Script, error] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List")
-	ret0, _ := ret[0].(iter.Seq2[*script.Script, error])
+	ret0, _ := ret[0].(iter.Seq2[script.Script, error])
 	return ret0
 }
 
@@ -102,7 +102,7 @@ func (mr *MockScriptServiceMockRecorder) List() *gomock.Call {
 }
 
 // Load mocks base method.
-func (m *MockScriptService) Load(arg0 iter.Seq2[*script.Script, error]) error {
+func (m *MockScriptService) Load(arg0 iter.Seq2[script.Script, error]) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Load", arg0)
 	ret0, _ := ret[0].(error)
@@ -157,15 +157,15 @@ func (mr *MockScriptServiceMockRecorder) Remove(ctx, id any) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockScriptService) Update(ctx context.Context, id, name string, content io.Reader) error {
+func (m *MockScriptService) Update(ctx context.Context, id string, entry script.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, name, content)
+	ret := m.ctrl.Call(m, "Update", ctx, id, entry)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockScriptServiceMockRecorder) Update(ctx, id, name, content any) *gomock.Call {
+func (mr *MockScriptServiceMockRecorder) Update(ctx, id, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockScriptService)(nil).Update), ctx, id, name, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockScriptService)(nil).Update), ctx, id, entry)
 }

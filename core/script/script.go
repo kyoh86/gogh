@@ -1,29 +1,63 @@
 package script
 
 import (
+	"io"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Script struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+type Entry struct {
+	Name    string
+	Content io.Reader
 }
 
-func (h *Script) init() {
-	if h.ID == "" {
-		h.ID = uuid.NewString()
-	}
-	if h.CreatedAt.IsZero() {
-		h.CreatedAt = time.Now()
-		h.UpdatedAt = h.CreatedAt
+type Script interface {
+	ID() string
+	UUID() uuid.UUID
+	Name() string
+	CreatedAt() time.Time
+	UpdatedAt() time.Time
+}
+
+func NewScript(entry Entry) Script {
+	now := time.Now()
+	return scriptElement{
+		id:        uuid.Must(uuid.NewRandom()),
+		name:      entry.Name,
+		createdAt: now,
+		updatedAt: now,
 	}
 }
 
-func (h *Script) update() {
-	h.UpdatedAt = time.Now()
+type scriptElement struct {
+	id   uuid.UUID
+	name string
+
+	createdAt time.Time
+	updatedAt time.Time
+}
+
+func (h scriptElement) ID() string {
+	return h.id.String()
+}
+
+func (h scriptElement) UUID() uuid.UUID {
+	return h.id
+}
+
+func (h scriptElement) Name() string {
+	return h.name
+}
+
+func (h scriptElement) CreatedAt() time.Time {
+	return h.createdAt
+}
+
+func (h scriptElement) UpdatedAt() time.Time {
+	return h.updatedAt
+}
+
+func (h *scriptElement) update() {
+	h.updatedAt = time.Now()
 }
