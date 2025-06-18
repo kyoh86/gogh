@@ -15,7 +15,7 @@ func TestNewOverlayShowCommand(t *testing.T) {
 	serviceSet := &service.ServiceSet{Flags: &config.Flags{}}
 
 	// Execute and verify no error occurs
-	_, err := commands.NewOverlayDescribeCommand(ctx, serviceSet)
+	_, err := commands.NewOverlayShowCommand(ctx, serviceSet)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}

@@ -25,7 +25,12 @@ func NewUseCaseJSON(writer io.Writer) *UseCaseJSON {
 
 // Execute executes the use case to show a script in JSON format
 func (uc *UseCaseJSON) Execute(ctx context.Context, s Script) error {
-	return uc.enc.Encode(s) // TODO: Encoding script
+	return uc.enc.Encode(map[string]any{
+		"id":         s.ID(),
+		"name":       s.Name(),
+		"created_at": s.CreatedAt(),
+		"updated_at": s.UpdatedAt(),
+	})
 }
 
 // UseCaseOneLine represents the use case for showing scripts in a single line format

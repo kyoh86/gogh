@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -22,9 +22,16 @@ func ScriptDir() (string, error) {
 	return path, nil
 }
 
+type tomlScript struct {
+	ID   uuid.UUID `toml:"id"`
+	Name string    `toml:"name"`
+
+	CreatedAt time.Time `toml:"created-at"`
+	UpdatedAt time.Time `toml:"updated-at"`
+}
+
 type tomlScriptStore struct {
-	Scripts []script.Script `toml:"scripts"`
-	// TODO: script.Script is not marshalable by toml
+	Scripts []tomlScript `toml:"scripts"`
 }
 
 type ScriptStore struct{}
@@ -55,7 +62,18 @@ func (s *ScriptStore) Load(ctx context.Context, initial func() script.ScriptServ
 		return nil, fmt.Errorf("decode script store: %w", err)
 	}
 	svc := initial()
-	if err := svc.Load(typ.WithNilError(slices.Values(data.Scripts))); err != nil {
+	if err := svc.Load(func(yield func(script.Script, error) bool) {
+		for _, s := range data.Scripts {
+			if !yield(script.ConcreteScript(
+				s.ID,
+				s.Name,
+				s.CreatedAt,
+				s.UpdatedAt,
+			), nil) {
+				return
+			}
+		}
+	}); err != nil {
 		return nil, fmt.Errorf("set scripts: %w", err)
 	}
 	svc.MarkSaved()
@@ -75,7 +93,12 @@ func (s *ScriptStore) Save(ctx context.Context, svc script.ScriptService, force 
 		if err != nil {
 			return fmt.Errorf("list scripts: %w", err)
 		}
-		data.Scripts = append(data.Scripts, h)
+		data.Scripts = append(data.Scripts, tomlScript{
+			ID:        h.UUID(),
+			Name:      h.Name(),
+			CreatedAt: h.CreatedAt(),
+			UpdatedAt: h.UpdatedAt(),
+		})
 	}
 	if err := os.MkdirAll(filepath.Dir(src), 0755); err != nil {
 		return fmt.Errorf("create script store directory: %w", err)

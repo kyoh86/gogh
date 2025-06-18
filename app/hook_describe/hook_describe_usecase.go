@@ -24,7 +24,14 @@ func NewUseCaseJSON(writer io.Writer) *UseCaseJSON {
 
 // Execute executes the use case to show a hook in JSON format
 func (uc *UseCaseJSON) Execute(ctx context.Context, s Hook) error {
-	return uc.enc.Encode(s) // TODO: Encoding hook
+	return uc.enc.Encode(map[string]any{
+		"id":             s.ID(),
+		"name":           s.Name(),
+		"repo_pattern":   s.RepoPattern(),
+		"trigger_event":  s.TriggerEvent(),
+		"operation_type": s.OperationType(),
+		"operation_id":   s.OperationID(),
+	})
 }
 
 // UseCaseOneLine represents the use case for showing hooks in a single line format

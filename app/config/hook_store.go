@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 
+	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -22,9 +21,19 @@ func HookDir() (string, error) {
 	return path, nil
 }
 
+type tomlHook struct {
+	ID   uuid.UUID `toml:"id"`
+	Name string    `toml:"name"`
+
+	RepoPattern  string `toml:"repo-pattern"`
+	TriggerEvent string `toml:"trigger-event"`
+
+	OperationType string `toml:"operation-type"`
+	OperationID   string `toml:"operation-id"`
+}
+
 type tomlHookStore struct {
-	Hooks []hook.Hook `toml:"hooks"`
-	// TODO: hook.Hook is not marshalable by toml
+	Hooks []tomlHook `toml:"hooks"`
 }
 
 type HookStore struct{}
@@ -55,7 +64,20 @@ func (s *HookStore) Load(ctx context.Context, initial func() hook.HookService) (
 		return nil, fmt.Errorf("decode hook store: %w", err)
 	}
 	svc := initial()
-	if err := svc.Load(typ.WithNilError(slices.Values(data.Hooks))); err != nil {
+	if err := svc.Load(func(yield func(hook.Hook, error) bool) {
+		for _, h := range data.Hooks {
+			if !yield(hook.ConcreteHook(
+				h.ID,
+				h.Name,
+				h.RepoPattern,
+				h.TriggerEvent,
+				h.OperationType,
+				h.OperationID,
+			), nil) {
+				return
+			}
+		}
+	}); err != nil {
 		return nil, fmt.Errorf("set hooks: %w", err)
 	}
 	svc.MarkSaved()
@@ -75,7 +97,14 @@ func (s *HookStore) Save(ctx context.Context, svc hook.HookService, force bool) 
 		if err != nil {
 			return fmt.Errorf("list hooks: %w", err)
 		}
-		data.Hooks = append(data.Hooks, h)
+		data.Hooks = append(data.Hooks, tomlHook{
+			ID:            h.UUID(),
+			Name:          h.Name(),
+			RepoPattern:   h.RepoPattern(),
+			TriggerEvent:  string(h.TriggerEvent()),
+			OperationType: string(h.OperationType()),
+			OperationID:   h.OperationID(),
+		})
 	}
 	if err := os.MkdirAll(filepath.Dir(src), 0755); err != nil {
 		return fmt.Errorf("create hook store directory: %w", err)

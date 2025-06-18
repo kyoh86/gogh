@@ -20,6 +20,7 @@ type Script interface {
 	UpdatedAt() time.Time
 }
 
+// NewScript creates a new Script with the given entry.
 func NewScript(entry Entry) Script {
 	now := time.Now()
 	return scriptElement{
@@ -27,6 +28,16 @@ func NewScript(entry Entry) Script {
 		name:      entry.Name,
 		createdAt: now,
 		updatedAt: now,
+	}
+}
+
+// ConcreteScript creates a Script with the given parameters.
+func ConcreteScript(id uuid.UUID, name string, createdAt, updatedAt time.Time) Script {
+	return &scriptElement{
+		id:        id,
+		name:      name,
+		createdAt: createdAt,
+		updatedAt: updatedAt,
 	}
 }
 

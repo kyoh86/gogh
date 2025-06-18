@@ -57,6 +57,25 @@ func NewHook(entry Entry) Hook {
 	}
 }
 
+// ConcreteHook creates a Hook with the given parameters.
+func ConcreteHook(
+	id uuid.UUID,
+	name string,
+	repoPattern string,
+	triggerEvent string,
+	operationType string,
+	operationID string,
+) Hook {
+	return hookElement{
+		id:            id,
+		name:          name,
+		repoPattern:   repoPattern,
+		triggerEvent:  Event(triggerEvent),
+		operationType: OperationType(operationType),
+		operationID:   operationID,
+	}
+}
+
 type hookElement struct {
 	id   uuid.UUID
 	name string

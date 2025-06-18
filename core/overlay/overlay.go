@@ -20,6 +20,19 @@ type Overlay interface {
 	RelativePath() string
 }
 
+// ConcreteOverlay creates an Overlay with the given parameters.
+func ConcreteOverlay(
+	id uuid.UUID,
+	name string,
+	relativePath string,
+) Overlay {
+	return overlayElement{
+		id:           id,
+		name:         name,
+		relativePath: relativePath,
+	}
+}
+
 func NewOverlay(entry Entry) Overlay {
 	return overlayElement{
 		id:           uuid.Must(uuid.NewRandom()),

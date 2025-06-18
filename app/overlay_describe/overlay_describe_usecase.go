@@ -25,7 +25,11 @@ func NewUseCaseJSON(writer io.Writer) *UseCaseJSON {
 
 // Execute executes the use case to show a overlay in JSON format
 func (uc *UseCaseJSON) Execute(ctx context.Context, s Overlay) error {
-	return uc.enc.Encode(s) // TODO: Encoding overlay
+	return uc.enc.Encode(map[string]any{
+		"id":            s.ID(),
+		"name":          s.Name(),
+		"relative_path": s.RelativePath(),
+	})
 }
 
 // UseCaseOneLine represents the use case for showing overlays in a single line format

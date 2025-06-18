@@ -108,7 +108,7 @@ func TestOverlayStore(t *testing.T) {
 
 		// SetOverlays expects an iterator, not a slice
 		mockLoadService.EXPECT().
-			Load(testOverlays).
+			Load(gomock.Any()).
 			Return(nil)
 
 		mockLoadService.EXPECT().MarkSaved()
@@ -205,11 +205,11 @@ func TestOverlayStore(t *testing.T) {
 }
 
 // Helper function to create an iterator for overlays
-func makeOverlayIterator(overlays []overlay.Overlay) iter.Seq2[*overlay.Overlay, error] {
-	return func(yield func(*overlay.Overlay, error) bool) {
+func makeOverlayIterator(overlays []overlay.Overlay) iter.Seq2[overlay.Overlay, error] {
+	return func(yield func(overlay.Overlay, error) bool) {
 		for _, ov := range overlays {
 			ov := ov
-			if !yield(&ov, nil) {
+			if !yield(ov, nil) {
 				break
 			}
 		}
