@@ -64,7 +64,9 @@ func (s *serviceImpl) Add(ctx context.Context, entry Entry) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	hook := NewHook(entry).(hookElement)
-	s.hooks.Add(hook)
+	if err := s.hooks.Add(hook); err != nil {
+		return "", fmt.Errorf("add hook: %w", err)
+	}
 	s.dirty = true
 	return hook.ID(), nil
 }
@@ -136,14 +138,16 @@ func (s *serviceImpl) Load(seq iter.Seq2[Hook, error]) error {
 		if err != nil {
 			return err
 		}
-		hooks.Add(hookElement{
+		if err := hooks.Add(hookElement{
 			id:            h.UUID(),
 			name:          h.Name(),
 			repoPattern:   h.RepoPattern(),
 			triggerEvent:  h.TriggerEvent(),
 			operationType: h.OperationType(),
 			operationID:   h.OperationID(),
-		})
+		}); err != nil {
+			return fmt.Errorf("load hook: %w", err)
+		}
 	}
 	s.hooks = hooks
 	s.dirty = true

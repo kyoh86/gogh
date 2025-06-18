@@ -48,7 +48,9 @@ func (s *serviceImpl) Add(ctx context.Context, entry Entry) (string, error) {
 	if err := s.content.Save(ctx, script.ID(), entry.Content); err != nil {
 		return "", err
 	}
-	s.scripts.Add(script)
+	if err := s.scripts.Add(script); err != nil {
+		return "", fmt.Errorf("add script: %w", err)
+	}
 	s.dirty = true
 	return script.ID(), nil
 }
@@ -125,12 +127,14 @@ func (s *serviceImpl) Load(seq iter.Seq2[Script, error]) error {
 		if err != nil {
 			return err
 		}
-		scripts.Add(scriptElement{
+		if err := scripts.Add(scriptElement{
 			id:        h.UUID(),
 			name:      h.Name(),
 			createdAt: h.CreatedAt(),
 			updatedAt: h.UpdatedAt(),
-		})
+		}); err != nil {
+			return fmt.Errorf("load script: %w", err)
+		}
 	}
 	s.scripts = scripts
 	s.dirty = true

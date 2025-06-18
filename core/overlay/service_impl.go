@@ -48,7 +48,9 @@ func (s *serviceImpl) Add(ctx context.Context, entry Entry) (string, error) {
 	if err := s.content.Save(ctx, overlay.ID(), entry.Content); err != nil {
 		return "", err
 	}
-	s.overlays.Add(overlay)
+	if err := s.overlays.Add(overlay); err != nil {
+		return "", fmt.Errorf("add overlay: %w", err)
+	}
 	s.dirty = true
 	return overlay.ID(), nil
 }
@@ -128,11 +130,13 @@ func (s *serviceImpl) Load(seq iter.Seq2[Overlay, error]) error {
 		if err != nil {
 			return err
 		}
-		overlays.Add(overlayElement{
+		if err := overlays.Add(overlayElement{
 			id:           h.UUID(),
 			name:         h.Name(),
 			relativePath: h.RelativePath(),
-		})
+		}); err != nil {
+			return fmt.Errorf("add overlay: %w", err)
+		}
 	}
 	s.overlays = overlays
 	s.dirty = true

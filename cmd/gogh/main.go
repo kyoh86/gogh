@@ -104,9 +104,7 @@ func run(ctx context.Context) error {
 	}
 
 	hookStore := config.NewHookStore()
-	hookService, err := hookStore.Load(ctx, func() hook.HookService {
-		return hook.NewHookService()
-	})
+	hookService, err := hookStore.Load(ctx, hook.NewHookService)
 	if err != nil {
 		return fmt.Errorf("loading hooks: %w", err)
 	}

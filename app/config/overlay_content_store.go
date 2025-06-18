@@ -2,9 +2,6 @@ package config
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -17,16 +14,6 @@ type OverlayContentStore struct{}
 
 func NewOverlayContentStore() *OverlayContentStore {
 	return &OverlayContentStore{}
-}
-
-// overlayKey generates a unique hash string from Overlay struct content.
-func overlayKey(ov overlay.Overlay) (string, error) {
-	b, err := json.Marshal(ov)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal overlay: %w", err)
-	}
-	sum := sha256.Sum256(b)
-	return hex.EncodeToString(sum[:]), nil // 64 chars
 }
 
 func (cs *OverlayContentStore) Save(ctx context.Context, overlayID string, content io.Reader) error {
