@@ -14,12 +14,12 @@ import (
 type serviceImpl struct {
 	mu      sync.RWMutex
 	scripts *set.Set[scriptElement]
-	content ScriptStore
+	content ScriptSourceStore
 	dirty   bool
 }
 
 // NewScriptService creates a new HookService with the given content store.
-func NewScriptService(content ScriptStore) ScriptService {
+func NewScriptService(content ScriptSourceStore) ScriptService {
 	return &serviceImpl{
 		scripts: set.NewSet[scriptElement](),
 		content: content,

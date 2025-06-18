@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
@@ -17,7 +18,6 @@ import (
 
 func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
-		repoPattern string
 		filePattern []string
 		forInit     bool
 		force       bool
@@ -98,15 +98,16 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 						return fmt.Sprintf("Extract %q from %q", result.FilePath, ref)
 					},
 					func(result *overlay_extract.ExtractResult) error {
-						repoPattern := f.repoPattern
-						// Determine repo-pattern to use
-						if repoPattern == "" {
-							repoPattern = result.Reference.String()
+						file, err := os.Open(result.FilePath)
+						if err != nil {
+							return fmt.Errorf("failed to open extracted file %s: %w", result.FilePath, err)
 						}
-						if err := overlayAddUseCase.Execute(ctx, f.forInit, result.RelativePath, repoPattern, result.FilePath); err != nil {
+						defer file.Close()
+						id, err := overlayAddUseCase.Execute(ctx, "", result.RelativePath, file)
+						if err != nil {
 							return fmt.Errorf("failed to register overlay for %s: %w", result.FilePath, err)
 						}
-						logger.Infof("Registered %q from %q as overlay\n", result.FilePath, ref)
+						logger.Infof("Registered %q from %q as overlay: %s\n", result.FilePath, ref, id)
 						return nil
 					},
 				); err != nil {
@@ -120,7 +121,6 @@ func NewOverlayExtractCommand(_ context.Context, svc *service.ServiceSet) (*cobr
 		},
 	}
 
-	cmd.Flags().StringVarP(&f.repoPattern, "repo-pattern", "", "", "Pattern to match repositories to apply the overlays to (e.g., 'github.com/owner/repo', '**/gogh'; default: repository reference)")
 	cmd.Flags().StringArrayVarP(&f.filePattern, "file-pattern", "", nil, "Pattern like git-ignore to match files to extract; if empty, all excluded files are returned")
 	cmd.Flags().BoolVarP(&f.force, "force", "", false, "Do NOT confirm to extract for each file")
 	cmd.Flags().BoolVarP(&f.forInit, "for-init", "", false, "Register the overlay for `gogh create` command")

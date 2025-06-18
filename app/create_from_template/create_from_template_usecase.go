@@ -4,15 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/app/hook_apply_all"
-	"github.com/kyoh86/gogh/v4/app/overlay_apply"
-	"github.com/kyoh86/gogh/v4/app/overlay_find"
+	"github.com/kyoh86/gogh/v4/app/hook_invoke"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
@@ -22,6 +21,7 @@ type UseCase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	overlayService   overlay.OverlayService
+	scriptService    script.ScriptService
 	hookService      hook.HookService
 	referenceParser  repository.ReferenceParser
 	gitService       git.GitService
@@ -32,6 +32,7 @@ func NewUseCase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	overlayService overlay.OverlayService,
+	scriptService script.ScriptService,
 	hookService hook.HookService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
@@ -41,6 +42,7 @@ func NewUseCase(
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		overlayService:   overlayService,
+		scriptService:    scriptService,
 		hookService:      hookService,
 		referenceParser:  referenceParser,
 		gitService:       gitService,
@@ -62,12 +64,6 @@ func (uc *UseCase) Execute(
 	template repository.Reference,
 	opts CreateFromTemplateOptions,
 ) error {
-	hookApplyAllUseCase := hook_apply_all.NewUseCase(
-		uc.hookService,
-		uc.referenceParser,
-		uc.workspaceService,
-		uc.finderService,
-	)
 	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
 	if err != nil {
 		return fmt.Errorf("invalid reference: %w", err)
@@ -80,28 +76,15 @@ func (uc *UseCase) Execute(
 	if err := tryCloneUseCase.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
-	if err := hookApplyAllUseCase.Execute(ctx, refWithAlias, hook.UseCaseClone, hook.EventAfterClone); err != nil {
-		return fmt.Errorf("applying hooks after clone: %w", err)
-	}
-	overlayApplyUseCase := overlay_apply.NewUseCase(
+	if err := hook_invoke.NewUseCase(
 		uc.workspaceService,
 		uc.finderService,
-		uc.referenceParser,
+		uc.hookService,
 		uc.overlayService,
-	)
-	for ov, err := range overlay_find.NewUseCase(
+		uc.scriptService,
 		uc.referenceParser,
-		uc.overlayService,
-	).Execute(ctx, refWithAlias) {
-		if err != nil {
-			return fmt.Errorf("finding overlay: %w", err)
-		}
-		if err := overlayApplyUseCase.Execute(ctx, refWithAlias, ov.RepoPattern, ov.ForInit, ov.RelativePath); err != nil {
-			return err
-		}
-	}
-	if err := hookApplyAllUseCase.Execute(ctx, refWithAlias, hook.UseCaseClone, hook.EventAfterOverlay); err != nil {
-		return fmt.Errorf("applying hooks after overlay: %w", err)
+	).InvokeFor(ctx, hook_invoke.EventPostCreate, refWithAlias); err != nil {
+		return fmt.Errorf("invoking hooks after creation: %w", err)
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package overlay_apply
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -34,28 +35,34 @@ func NewUseCase(
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, refs string, repoPattern string, forInit bool, relativePath string) error {
-	refWithAlias, err := uc.referenceParser.ParseWithAlias(refs)
+func (uc *UseCase) Execute(ctx context.Context, refStr string, overlayID string) error {
+	refWithAlias, err := uc.referenceParser.ParseWithAlias(refStr)
 	if err != nil {
-		return fmt.Errorf("parsing reference '%s': %w", refs, err)
+		return fmt.Errorf("parsing reference '%s': %w", refStr, err)
 	}
 	match, err := uc.finderService.FindByReference(ctx, uc.workspaceService, refWithAlias.Local())
 	if err != nil {
-		return fmt.Errorf("finding repository by reference '%s': %w", refs, err)
+		return fmt.Errorf("finding repository by reference '%s': %w", refWithAlias.Local().String(), err)
 	}
-	if match == nil {
-		return fmt.Errorf("repository not found for reference '%s'", refs)
+	return uc.Apply(ctx, match, overlayID)
+}
+
+func (uc *UseCase) Apply(ctx context.Context, location *repository.Location, overlayID string) error {
+	if location == nil {
+		return errors.New("repository not found")
 	}
-	targetPath := filepath.Join(match.FullPath(), relativePath)
+
+	overlay, err := uc.overlayService.Get(ctx, overlayID)
+	if err != nil {
+		return fmt.Errorf("getting overlay with ID '%s': %w", overlayID, err)
+	}
+
+	targetPath := filepath.Join(location.FullPath(), overlay.RelativePath())
 
 	// Open the overlay source
-	source, err := uc.overlayService.Open(ctx, overlay.Overlay{
-		RepoPattern:  repoPattern,
-		ForInit:      forInit,
-		RelativePath: relativePath,
-	})
+	source, err := uc.overlayService.Open(ctx, overlayID)
 	if err != nil {
-		return fmt.Errorf("opening overlay for repo-pattern '%s': %w", repoPattern, err)
+		return fmt.Errorf("opening overlay with ID '%s': %w", overlayID, err)
 	}
 	defer source.Close()
 

@@ -5,11 +5,13 @@ import (
 	"iter"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
+	"github.com/kyoh86/gogh/v4/typ"
 	"go.uber.org/mock/gomock"
 )
 
@@ -37,7 +39,6 @@ func TestOverlayStore(t *testing.T) {
 	ctx := context.Background()
 	store := config.NewOverlayStore()
 
-	// Test 1: Test Source() method
 	t.Run("Source", func(t *testing.T) {
 		source, err := store.Source()
 		if err != nil {
@@ -48,7 +49,6 @@ func TestOverlayStore(t *testing.T) {
 		}
 	})
 
-	// Test 2: Test Load when file does not exist
 	t.Run("Load FileNotExists", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
@@ -70,7 +70,6 @@ func TestOverlayStore(t *testing.T) {
 		}
 	})
 
-	// Test 3: Test Save and Load
 	t.Run("Save And Load", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
@@ -78,24 +77,20 @@ func TestOverlayStore(t *testing.T) {
 
 		// Create test overlays
 		testOverlays := []overlay.Overlay{
-			{
-				RepoPattern:     "github.com/kyoh86/gogh",
-				ForInit:         false,
-				RelativePath:    "path1",
-				ContentLocation: "location1",
-			},
-			{
-				RepoPattern:     "github.com/kyoh86/another",
-				ForInit:         true,
-				RelativePath:    "path2",
-				ContentLocation: "location2",
-			},
+			overlay.NewOverlay(overlay.Entry{
+				Name:         "overlay1",
+				RelativePath: "path1",
+			}),
+			overlay.NewOverlay(overlay.Entry{
+				Name:         "overlay2",
+				RelativePath: "path2",
+			}),
 		}
 
 		// Create a mock OverlayService for saving
 		mockService := overlay_mock.NewMockOverlayService(ctrl)
 		mockService.EXPECT().HasChanges().Return(true)
-		mockService.EXPECT().List().Return(makeOverlayIterator(testOverlays))
+		mockService.EXPECT().List().Return(typ.WithNilError(slices.Values(testOverlays)))
 		mockService.EXPECT().MarkSaved()
 
 		// Test saving overlays
@@ -113,7 +108,7 @@ func TestOverlayStore(t *testing.T) {
 
 		// SetOverlays expects an iterator, not a slice
 		mockLoadService.EXPECT().
-			Set(testOverlays).
+			Load(testOverlays).
 			Return(nil)
 
 		mockLoadService.EXPECT().MarkSaved()
@@ -130,7 +125,6 @@ func TestOverlayStore(t *testing.T) {
 		}
 	})
 
-	// Test 4: Test Save with no changes and force=false
 	t.Run("Save NoChanges", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
@@ -148,7 +142,6 @@ func TestOverlayStore(t *testing.T) {
 		// No additional expectations - the function should return early
 	})
 
-	// Test 5: Test Save with no changes but force=true
 	t.Run("Save Force", func(t *testing.T) {
 		// Create a mock controller
 		ctrl := gomock.NewController(t)
@@ -156,12 +149,10 @@ func TestOverlayStore(t *testing.T) {
 
 		// Create test overlays
 		testOverlays := []overlay.Overlay{
-			{
-				RepoPattern:     "github.com/kyoh86/forced",
-				ForInit:         true,
-				RelativePath:    "path3",
-				ContentLocation: "location3",
-			},
+			overlay.NewOverlay(overlay.Entry{
+				Name:         "overlay3",
+				RelativePath: "path3",
+			}),
 		}
 
 		// Create a mock OverlayService
@@ -186,7 +177,6 @@ func TestOverlayStore(t *testing.T) {
 		}
 	})
 
-	// Test 6: Test Load with invalid file content
 	t.Run("Load InvalidFile", func(t *testing.T) {
 		// Create an invalid TOML file
 		invalidContent := `

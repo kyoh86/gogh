@@ -14,6 +14,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/infra/filesystem"
 	"github.com/kyoh86/gogh/v4/infra/git"
 	"github.com/kyoh86/gogh/v4/infra/github"
@@ -94,10 +95,17 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("loading overlays: %w", err)
 	}
 
-	// hook
+	scriptStore := config.NewScriptStore()
+	scriptService, err := scriptStore.Load(ctx, func() script.ScriptService {
+		return script.NewScriptService(config.NewScriptSourceStore())
+	})
+	if err != nil {
+		return fmt.Errorf("loading scripts: %w", err)
+	}
+
 	hookStore := config.NewHookStore()
 	hookService, err := hookStore.Load(ctx, func() hook.HookService {
-		return hook.NewHookService(config.NewHookContentStore())
+		return hook.NewHookService()
 	})
 	if err != nil {
 		return fmt.Errorf("loading hooks: %w", err)
@@ -115,6 +123,9 @@ func run(ctx context.Context) error {
 
 		OverlayStore:   overlayStore,
 		OverlayService: overlayService,
+
+		ScriptStore:   scriptStore,
+		ScriptService: scriptService,
 
 		HookStore:   hookStore,
 		HookService: hookService,

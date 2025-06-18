@@ -1,4 +1,4 @@
-package hook_run
+package script_run
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	lua "github.com/Shopify/go-lua"
 )
 
-// UseCase for running hook scripts
+// UseCase for running script scripts
 type UseCase struct{}
 
 func NewUseCase() *UseCase {

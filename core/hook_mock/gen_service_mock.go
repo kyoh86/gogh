@@ -15,6 +15,7 @@ import (
 	reflect "reflect"
 
 	hook "github.com/kyoh86/gogh/v4/core/hook"
+	repository "github.com/kyoh86/gogh/v4/core/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -98,6 +99,20 @@ func (m *MockHookService) List() iter.Seq2[hook.Hook, error] {
 func (mr *MockHookServiceMockRecorder) List() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockHookService)(nil).List))
+}
+
+// ListFor mocks base method.
+func (m *MockHookService) ListFor(reference repository.Reference, event hook.Event) iter.Seq2[hook.Hook, error] {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListFor", reference, event)
+	ret0, _ := ret[0].(iter.Seq2[hook.Hook, error])
+	return ret0
+}
+
+// ListFor indicates an expected call of ListFor.
+func (mr *MockHookServiceMockRecorder) ListFor(reference, event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFor", reflect.TypeOf((*MockHookService)(nil).ListFor), reference, event)
 }
 
 // Load mocks base method.

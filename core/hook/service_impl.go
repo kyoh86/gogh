@@ -6,6 +6,7 @@ import (
 	"iter"
 	"sync"
 
+	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/set"
 )
 
@@ -30,6 +31,27 @@ func (s *serviceImpl) List() iter.Seq2[Hook, error] {
 	defer s.mu.RUnlock()
 	return func(yield func(Hook, error) bool) {
 		for h := range s.hooks.Iter() {
+			if !yield(h, nil) {
+				break
+			}
+		}
+	}
+}
+
+// ListFor returns an iterator for hooks that match the given repository reference.
+func (s *serviceImpl) ListFor(reference repository.Reference, event Event) iter.Seq2[Hook, error] {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return func(yield func(Hook, error) bool) {
+		for h := range s.hooks.Iter() {
+			match, err := h.Match(reference, event)
+			if err != nil {
+				yield(h, err)
+				return
+			}
+			if !match {
+				continue
+			}
 			if !yield(h, nil) {
 				break
 			}

@@ -44,8 +44,7 @@ func TestUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name         string
 		refs         string
-		repoPattern  string
-		forInit      bool
+		id           string
 		relativePath string
 		mockSetup    func(*gomock.Controller) (
 			*workspace_mock.MockWorkspaceService,
@@ -59,8 +58,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:         "Success: Apply overlay to repository",
 			refs:         "kyoh86/example",
-			repoPattern:  "example/repo",
-			forInit:      false,
+			id:           "overlay1",
 			relativePath: "config/settings.yaml",
 			mockSetup: func(ctrl *gomock.Controller) (
 				*workspace_mock.MockWorkspaceService,
@@ -88,22 +86,20 @@ func TestUseCase_Execute(t *testing.T) {
 				content := &readCloserMock{
 					Reader: bytes.NewReader([]byte("overlay content")),
 				}
-				overlaySvc.EXPECT().Open(gomock.Any(), overlay.Overlay{
-					RepoPattern:  "example/repo",
-					ForInit:      false,
-					RelativePath: "config/settings.yaml",
-				}).Return(content, nil)
+				ov := overlay.NewOverlay(overlay.Entry{
+					Name:         "overlay-name 1",
+					RelativePath: "overlay/path/1",
+				})
+				overlaySvc.EXPECT().Get(gomock.Any(), "overlay1").Return(ov, nil)
+				overlaySvc.EXPECT().Open(gomock.Any(), "overlay1").Return(content, nil)
 
 				return workspaceSvc, finderSvc, refParser, overlaySvc, content
 			},
 			wantErr: false,
 		},
 		{
-			name:         "Error: Failed to parse reference",
-			refs:         "invalid/ref/format",
-			repoPattern:  "example/repo",
-			forInit:      false,
-			relativePath: "config.yaml",
+			name: "Error: Failed to parse reference",
+			refs: "invalid/ref/format",
 			mockSetup: func(ctrl *gomock.Controller) (
 				*workspace_mock.MockWorkspaceService,
 				*workspace_mock.MockFinderService,
@@ -123,11 +119,8 @@ func TestUseCase_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:         "Error: Repository not found",
-			refs:         "nonexistent/repo",
-			repoPattern:  "example/repo",
-			forInit:      false,
-			relativePath: "config.yaml",
+			name: "Error: Repository not found",
+			refs: "nonexistent/repo",
 			mockSetup: func(ctrl *gomock.Controller) (
 				*workspace_mock.MockWorkspaceService,
 				*workspace_mock.MockFinderService,
@@ -151,8 +144,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:         "Error: Failed to open overlay content",
 			refs:         "kyoh86/example",
-			repoPattern:  "error/repo",
-			forInit:      true,
+			id:           "overlay4",
 			relativePath: "config.yaml",
 			mockSetup: func(ctrl *gomock.Controller) (
 				*workspace_mock.MockWorkspaceService,
@@ -177,11 +169,12 @@ func TestUseCase_Execute(t *testing.T) {
 				)
 				finderSvc.EXPECT().FindByReference(gomock.Any(), workspaceSvc, ref).Return(repo, nil)
 
-				overlaySvc.EXPECT().Open(gomock.Any(), overlay.Overlay{
-					RepoPattern:  "error/repo",
-					ForInit:      true,
-					RelativePath: "config.yaml",
-				}).Return(nil, errors.New("overlay not found"))
+				ov := overlay.NewOverlay(overlay.Entry{
+					Name:         "overlay-name 1",
+					RelativePath: "overlay/path/1",
+				})
+				overlaySvc.EXPECT().Get(gomock.Any(), "overlay4").Return(ov, nil)
+				overlaySvc.EXPECT().Open(gomock.Any(), "overlay4").Return(nil, errors.New("overlay not found"))
 
 				return workspaceSvc, finderSvc, refParser, overlaySvc, nil
 			},
@@ -197,7 +190,7 @@ func TestUseCase_Execute(t *testing.T) {
 			workspaceSvc, finderSvc, refParser, overlaySvc, content := tt.mockSetup(ctrl)
 
 			uc := testtarget.NewUseCase(workspaceSvc, finderSvc, refParser, overlaySvc)
-			err := uc.Execute(context.Background(), tt.refs, tt.repoPattern, tt.forInit, tt.relativePath)
+			err := uc.Execute(context.Background(), tt.refs, tt.id)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UseCase.Execute() error = %v, wantErr %v", err, tt.wantErr)

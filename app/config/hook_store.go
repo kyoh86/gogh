@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/kyoh86/gogh/v4/core/hook"
+	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/typ"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -22,7 +23,8 @@ func HookDir() (string, error) {
 }
 
 type tomlHookStore struct {
-	Hooks []*hook.Hook `toml:"hooks"`
+	Hooks []hook.Hook `toml:"hooks"`
+	// TODO: hook.Hook is not marshalable by toml
 }
 
 type HookStore struct{}
@@ -53,7 +55,7 @@ func (s *HookStore) Load(ctx context.Context, initial func() hook.HookService) (
 		return nil, fmt.Errorf("decode hook store: %w", err)
 	}
 	svc := initial()
-	if err := svc.Set(typ.WithNilError(slices.Values(data.Hooks))); err != nil {
+	if err := svc.Load(typ.WithNilError(slices.Values(data.Hooks))); err != nil {
 		return nil, fmt.Errorf("set hooks: %w", err)
 	}
 	svc.MarkSaved()
@@ -89,3 +91,5 @@ func (s *HookStore) Save(ctx context.Context, svc hook.HookService, force bool) 
 	svc.MarkSaved()
 	return nil
 }
+
+var _ store.Store[hook.HookService] = (*HookStore)(nil)

@@ -13,15 +13,15 @@ type Reference struct {
 }
 
 // Host is a hostname (e.g.: "github.com")
-func (r *Reference) Host() string { return r.host }
+func (r Reference) Host() string { return r.host }
 
 // Owner is a owner name (e.g.: "kyoh86")
-func (r *Reference) Owner() string { return r.owner }
+func (r Reference) Owner() string { return r.owner }
 
 // Name of the repository (e.g.: "gogh")
-func (r *Reference) Name() string { return r.name }
+func (r Reference) Name() string { return r.name }
 
-func (r *Reference) String() string {
+func (r Reference) String() string {
 	return path.Join(r.host, r.owner, r.name)
 }
 

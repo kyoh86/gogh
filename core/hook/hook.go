@@ -18,9 +18,10 @@ type Entry struct {
 type Event string
 
 const (
-	EventClone  Event = "post-clone"
-	EventFork   Event = "post-fork"
-	EventCreate Event = "post-create"
+	EventAny        Event = ""
+	EventPostClone  Event = "post-clone"
+	EventPostFork   Event = "post-fork"
+	EventPostCreate Event = "post-create"
 )
 
 // OperationType defines the type of operation that the hook performs
@@ -96,7 +97,7 @@ func (h hookElement) OperationID() string {
 }
 
 func (h hookElement) Match(ref repository.Reference, event Event) (bool, error) {
-	if h.triggerEvent != event {
+	if h.triggerEvent != EventAny && h.triggerEvent != event {
 		return false, nil
 	}
 	if h.repoPattern == "" {

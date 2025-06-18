@@ -3,6 +3,8 @@ package clone
 import (
 	"context"
 	"errors"
+	"io"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -18,6 +20,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
+	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
 	"go.uber.org/mock/gomock"
 )
@@ -33,11 +36,11 @@ func TestUseCase_Execute(t *testing.T) {
 			mockFinder *workspace_mock.MockFinderService,
 			mockLayout *workspace_mock.MockLayoutService,
 			mockOverlay *overlay_mock.MockOverlayService,
+			mockScript *script_mock.MockScriptService,
 			mockHook *hook_mock.MockHookService,
 			mockRefParser *repository_mock.MockReferenceParser,
 			mockGit *git_mock.MockGitService,
 		)
-		expectedError bool
 		errorContains string
 	}{
 		{
@@ -49,10 +52,12 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
+				tmpDir := t.TempDir()
 				ref := repository.NewReference("github.com", "kyoh86", "gogh")
 				// Parse reference
 				mockRefParser.EXPECT().
@@ -79,7 +84,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockHosting.EXPECT().
 					GetTokenFor(gomock.Any(), "github.com", "kyoh86").Return("kyoh86", auth.Token{}, nil)
 
-				pseudoPath := "/path/to/workspace/github.com/kyoh86/gogh"
+				pseudoPath := filepath.Join(tmpDir, "github.com/kyoh86/gogh")
 				// Get primary layout to clone into
 				mockLayout.EXPECT().PathFor(ref).Return(pseudoPath)
 				mockWorkspace.EXPECT().GetPrimaryLayout().Return(mockLayout)
@@ -91,13 +96,44 @@ func TestUseCase_Execute(t *testing.T) {
 				mockGit.EXPECT().Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockGit.EXPECT().SetDefaultRemotes(gomock.Any(), pseudoPath, []string{pseudoCloneURL}).Return(nil)
 
-				// Overlay application
-				mockOverlay.EXPECT().
-					List().Return(func(yield func(*overlay.Overlay, error) bool) {})
+				// Hook finds the repository by reference
+				mockFinder.EXPECT().
+					FindByReference(gomock.Any(), gomock.Any(), ref).
+					Return(repository.NewLocation(
+						pseudoPath,
+						"github.com",
+						"kyoh86",
+						"gogh",
+					), nil)
 				mockHook.EXPECT().
-					List().Return(func(yield func(*hook.Hook, error) bool) {}).Times(2)
+					ListFor(ref, hook.EventPostClone).Return(func(yield func(hook.Hook, error) bool) {
+					if !yield(hook.NewHook(hook.Entry{
+						Name:          "post-clone-example",
+						OperationType: hook.OperationTypeOverlay,
+						OperationID:   "overlay-id",
+					}), nil) {
+						return
+					}
+					if !yield(hook.NewHook(hook.Entry{
+						Name:          "post-clone-example",
+						OperationType: hook.OperationTypeScript,
+						OperationID:   "script-id",
+					}), nil) {
+						return
+					}
+				})
+				mockOverlay.EXPECT().
+					Get(gomock.Any(), "overlay-id").Return(overlay.NewOverlay(overlay.Entry{
+					Name:         "example-overlay",
+					RelativePath: "path/to/overlay",
+				}), nil)
+				mockOverlay.EXPECT().
+					Open(gomock.Any(), "overlay-id").Return(io.NopCloser(strings.NewReader("overlay content")), nil)
+				// Script cannot be run in this test, so we just return error
+				mockScript.EXPECT().
+					Open(gomock.Any(), "script-id").Return(nil, errors.New("script error"))
 			},
-			expectedError: false,
+			errorContains: "script error",
 		},
 		{
 			name:         "Error: Reference parsing error",
@@ -108,6 +144,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
@@ -117,7 +154,6 @@ func TestUseCase_Execute(t *testing.T) {
 					ParseWithAlias("invalid-reference").
 					Return(&repository.ReferenceWithAlias{}, errors.New("invalid reference format"))
 			},
-			expectedError: true,
 			errorContains: "invalid reference format",
 		},
 		{
@@ -129,6 +165,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
@@ -146,7 +183,6 @@ func TestUseCase_Execute(t *testing.T) {
 					GetRepository(gomock.Any(), repository.NewReference("github.com", "kyoh86", "not-found")).
 					Return(&hosting.Repository{}, errors.New("repository not found"))
 			},
-			expectedError: true,
 			errorContains: "repository not found",
 		},
 	}
@@ -163,15 +199,16 @@ func TestUseCase_Execute(t *testing.T) {
 			mockFinder := workspace_mock.NewMockFinderService(ctrl)
 			mockLayout := workspace_mock.NewMockLayoutService(ctrl)
 			mockOverlay := overlay_mock.NewMockOverlayService(ctrl)
+			mockScript := script_mock.NewMockScriptService(ctrl)
 			mockHook := hook_mock.NewMockHookService(ctrl)
 			mockRefParser := repository_mock.NewMockReferenceParser(ctrl)
 			mockGit := git_mock.NewMockGitService(ctrl)
 
 			// Setup mocks
-			tt.setupMocks(mockHosting, mockWorkspace, mockFinder, mockLayout, mockOverlay, mockHook, mockRefParser, mockGit)
+			tt.setupMocks(mockHosting, mockWorkspace, mockFinder, mockLayout, mockOverlay, mockScript, mockHook, mockRefParser, mockGit)
 
 			// Create UseCase to test
-			useCase := NewUseCase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockHook, mockRefParser, mockGit)
+			useCase := NewUseCase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockScript, mockHook, mockRefParser, mockGit)
 
 			// Execute test
 			err := useCase.Execute(context.Background(), tt.refWithAlias, Options{
@@ -179,16 +216,10 @@ func TestUseCase_Execute(t *testing.T) {
 			})
 
 			// Verify results
-			if tt.expectedError {
-				if err == nil {
-					t.Errorf("Expected an error but got none")
-				} else if tt.errorContains != "" && !strings.Contains(err.Error(), tt.errorContains) && errors.Unwrap(err) == nil {
-					t.Errorf("Expected error containing: %v, got: %v", tt.errorContains, err)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Unexpected error: %v", err)
-				}
+			if err == nil {
+				t.Errorf("Expected an error but got none")
+			} else if tt.errorContains != "" && !strings.Contains(err.Error(), tt.errorContains) && errors.Unwrap(err) == nil {
+				t.Errorf("Expected error containing: %v, got: %v", tt.errorContains, err)
 			}
 		})
 	}

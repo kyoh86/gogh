@@ -131,31 +131,47 @@ func NewApp(
 		ctx, svc,
 		commands.NewOverlayCommand,
 		nil,
-		commands.NewOverlayRemoveCommand,
 		commands.NewOverlayAddCommand,
-		commands.NewOverlayListCommand,
-		commands.NewOverlayExtractCommand,
 		commands.NewOverlayApplyCommand,
-		commands.NewOverlayDescribeCommand,
+		commands.NewOverlayEditCommand,
+		commands.NewOverlayExtractCommand,
+		commands.NewOverlayListCommand,
+		commands.NewOverlayRemoveCommand,
+		commands.NewOverlayShowCommand,
+		commands.NewOverlayUpdateCommand,
 	)
 	if err != nil {
 		return nil, err
 	}
 	overlayCommand.GroupID = groupConfig
 
+	scriptCommand, err := cmdWithSubs(
+		ctx, svc,
+		commands.NewScriptCommand,
+		nil,
+		commands.NewScriptAddCommand,
+		commands.NewScriptInvokeCommand,
+		commands.NewScriptEditCommand,
+		commands.NewScriptListCommand,
+		commands.NewScriptRemoveCommand,
+		commands.NewScriptShowCommand,
+		commands.NewScriptUpdateCommand,
+	)
+	if err != nil {
+		return nil, err
+	}
+	scriptCommand.GroupID = groupConfig
+
 	hookCommand, err := cmdWithSubs(
 		ctx, svc,
 		commands.NewHookCommand,
 		nil,
-		commands.NewHookCreateCommand,
 		commands.NewHookAddCommand,
+		commands.NewHookInvokeCommand,
 		commands.NewHookListCommand,
-		commands.NewHookEditCommand,
-		commands.NewHookUpdateCommand,
 		commands.NewHookRemoveCommand,
-		commands.NewHookApplyCommand,
-		commands.NewHookRunCommand,
-		commands.NewHookDescribeCommand,
+		commands.NewHookShowCommand,
+		commands.NewHookUpdateCommand,
 	)
 	if err != nil {
 		return nil, err
@@ -186,6 +202,7 @@ func NewApp(
 		bundleCommand,
 		rootsCommand,
 		overlayCommand,
+		scriptCommand,
 		hookCommand,
 	}
 	for _, sub := range []struct {
