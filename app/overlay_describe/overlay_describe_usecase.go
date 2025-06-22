@@ -44,7 +44,7 @@ func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
 
 // Execute executes the use case to show a overlay in a single line format
 func (uc *UseCaseOneLine) Execute(ctx context.Context, s overlay.Overlay) error {
-	_, err := fmt.Fprintf(uc.writer, "* [%s] %s for %s\n", s.ID()[:8], s.Name(), s.RelativePath())
+	_, err := fmt.Fprintf(uc.writer, "[%s] %s for %s\n", s.ID()[:8], s.Name(), s.RelativePath())
 	return err
 }
 

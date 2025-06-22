@@ -48,7 +48,7 @@ func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
 func (uc *UseCaseOneLine) Execute(ctx context.Context, s hook.Hook) error {
 	_, err := fmt.Fprintf(
 		uc.writer,
-		"* [%s] %s for %s @ %s: %s(%s)\n",
+		"[%s] %s for %s @ %s: %s(%s)\n",
 		s.ID()[:8],
 		s.Name(),
 		s.RepoPattern(),

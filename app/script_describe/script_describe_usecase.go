@@ -45,7 +45,7 @@ func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
 
 // Execute executes the use case to show a script in a single line format
 func (uc *UseCaseOneLine) Execute(ctx context.Context, s script.Script) error {
-	_, err := fmt.Fprintf(uc.writer, "* [%s] %s @ %s\n", s.ID()[:8], s.Name(), s.UpdatedAt().Format("2006-01-02 15:04:05"))
+	_, err := fmt.Fprintf(uc.writer, "[%s] %s @ %s\n", s.ID()[:8], s.Name(), s.UpdatedAt().Format("2006-01-02 15:04:05"))
 	return err
 }
 
