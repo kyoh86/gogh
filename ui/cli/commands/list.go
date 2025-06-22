@@ -31,8 +31,8 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 			opts := list.Options{
 				Primary: f.Primary,
 				ListOptions: list.ListOptions{
-					Query: f.Query,
-					Limit: f.Limit,
+					Limit:    f.Limit,
+					Patterns: f.Patterns,
 				},
 			}
 			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, opts) {
@@ -55,7 +55,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 		},
 	}
 	cmd.Flags().IntVarP(&f.Limit, "limit", "", svc.Flags.List.Limit, "Max number of repositories to list. -1 means unlimited")
-	cmd.Flags().StringVarP(&f.Query, "query", "q", "", "Query for selecting repositories")
+	cmd.Flags().StringSliceVarP(&f.Patterns, "pattern", "p", nil, "Patterns for selecting repositories")
 	cmd.Flags().BoolVarP(&f.Primary, "primary", "", svc.Flags.List.Primary, "List up repositories in just a primary root")
 	if err := flags.LocationFormatFlag(cmd, &format, svc.Flags.List.Format); err != nil {
 		return nil, fmt.Errorf("initializing format flag: %s", err)

@@ -90,10 +90,10 @@ type ReposFlags struct {
 
 // ListFlags is a struct that contains flags for listing repositories.
 type ListFlags struct {
-	Limit   int    `yaml:"limit,omitempty" toml:"limit,omitempty"`
-	Query   string `yaml:"-" toml:"-"`
-	Format  string `yaml:"format,omitempty" toml:"format,omitempty"`
-	Primary bool   `yaml:"primary,omitempty" toml:"primary,omitempty"`
+	Limit    int      `yaml:"limit,omitempty" toml:"limit,omitempty"`
+	Patterns []string `yaml:"-" toml:"-"`
+	Format   string   `yaml:"format,omitempty" toml:"format,omitempty"`
+	Primary  bool     `yaml:"primary,omitempty" toml:"primary,omitempty"`
 }
 
 // ForkFlags is a struct that contains flags for forking a repository.

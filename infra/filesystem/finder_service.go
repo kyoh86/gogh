@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -101,9 +102,6 @@ func (f *FinderService) ListAllRepository(ctx context.Context, ws workspace.Work
 					yield(nil, err)
 					return
 				}
-				if ref == nil {
-					continue
-				}
 				if !yield(ref, nil) {
 					return
 				}
@@ -135,6 +133,16 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 			case errors.Is(err, workspace.ErrNotMatched):
 				// Ignore directories that do not match the layout
 			case err == nil:
+				if ref == nil {
+					return filepath.SkipDir
+				}
+				match, err := matchPattern(opts.Patterns, *ref)
+				if err != nil {
+					return err
+				}
+				if !match {
+					return filepath.SkipDir
+				}
 				if !yield(repository.NewLocation(
 					p,
 					ref.Host(),
@@ -157,6 +165,20 @@ func (f *FinderService) ListRepositoryInRoot(ctx context.Context, l workspace.La
 			return
 		}
 	}
+}
+
+func matchPattern(patterns []string, ref repository.Reference) (bool, error) {
+	if len(patterns) == 0 {
+		return true, nil
+	}
+	for _, pattern := range patterns {
+		if match, err := doublestar.Match(pattern, ref.String()); err != nil {
+			return false, err
+		} else if match {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 var _ workspace.FinderService = (*FinderService)(nil)

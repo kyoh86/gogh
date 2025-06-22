@@ -9,11 +9,12 @@ import (
 
 // ListOptions is the options for repository search
 type ListOptions struct {
-	// Query is the search query
-	Query string
 	// Limit is the maximum number of repositories to return
 	// If 0, all repositories will be returned
 	Limit int
+	// Patterns to match repository paths
+	// If empty, all repositories will be returned
+	Patterns []string
 }
 
 // FinderService is a service for searching repositories

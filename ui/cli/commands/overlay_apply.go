@@ -15,13 +15,15 @@ import (
 func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
 		allRepositories bool
+		patterns        []string
 	}
 	cmd := &cobra.Command{
 		Use:   "apply [flags] <overlay-id> [[<host>/]<owner>/]<name>",
 		Short: "Apply an overlay to a repository",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.MinimumNArgs(1),
 		Example: `  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
   invoke [flags] <overlay-id> --all
+  invoke [flags] <overlay-id> --pattern <pattern> [--pattern <pattern>]...
 
   It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.
@@ -48,16 +50,19 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				svc.ReferenceParser,
 				svc.OverlayService,
 			)
-			if f.allRepositories {
+			if f.allRepositories || len(f.patterns) > 0 {
 				if len(refs) > 0 {
-					return errors.New("cannot specify repositories when --all flag is set")
+					return errors.New("cannot specify repositories when --all or --pattern flag is set")
 				}
 
 				// If --all flag is set, apply the script to all repositories in the workspace
 				for repo, err := range list.NewUseCase(
 					svc.WorkspaceService,
 					svc.FinderService,
-				).Execute(ctx, list.Options{ListOptions: list.ListOptions{Limit: 0}}) {
+				).Execute(ctx, list.Options{ListOptions: list.ListOptions{
+					Limit:    0,
+					Patterns: f.patterns,
+				}}) {
 					if err != nil {
 						return fmt.Errorf("listing repositories: %w", err)
 					}
@@ -74,5 +79,6 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 		},
 	}
 	cmd.Flags().BoolVarP(&f.allRepositories, "all", "", false, "Apply to all repositories in the workspace")
+	cmd.Flags().StringSliceVarP(&f.patterns, "pattern", "p", nil, "Patterns for selecting repositories")
 	return cmd, nil
 }
