@@ -62,6 +62,9 @@ func NewApp(
 			if err := svc.OverlayStore.Save(ctx, svc.OverlayService, false); err != nil {
 				return fmt.Errorf("saving overlays: %w", err)
 			}
+			if err := svc.ScriptStore.Save(ctx, svc.ScriptService, false); err != nil {
+				return fmt.Errorf("saving scripts: %w", err)
+			}
 			if err := svc.HookStore.Save(ctx, svc.HookService, false); err != nil {
 				return fmt.Errorf("saving hooks: %w", err)
 			}
