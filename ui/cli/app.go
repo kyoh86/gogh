@@ -158,6 +158,7 @@ func NewApp(
 		commands.NewScriptListCommand,
 		commands.NewScriptRemoveCommand,
 		commands.NewScriptShowCommand,
+		commands.NewScriptRunCommand,
 		commands.NewScriptUpdateCommand,
 	)
 	if err != nil {
