@@ -19,9 +19,10 @@ GO GitHub local repository manager
 * [gogh cwd](gogh_cwd.md)	 - Print the local repository which the current working directory belongs to
 * [gogh delete](gogh_delete.md)	 - Delete local and remote repository
 * [gogh fork](gogh_fork.md)	 - Fork a repository
-* [gogh hook](gogh_hook.md)	 - Manage repository hooks (Lua scripts)
+* [gogh hook](gogh_hook.md)	 - Manage repository hooks
 * [gogh list](gogh_list.md)	 - List local repositories
 * [gogh overlay](gogh_overlay.md)	 - Manage repository overlay files
 * [gogh repos](gogh_repos.md)	 - List remote repositories
 * [gogh roots](gogh_roots.md)	 - Manage roots
+* [gogh script](gogh_script.md)	 - Manage repository script files
 

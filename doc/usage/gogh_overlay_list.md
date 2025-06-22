@@ -1,6 +1,6 @@
 ## gogh overlay list
 
-List overlays
+List registered overlays
 
 ```
 gogh overlay list [flags]
@@ -9,7 +9,9 @@ gogh overlay list [flags]
 ### Options
 
 ```
-  -h, --help   help for list
+  -h, --help     help for list
+      --json     Output in JSON format
+      --source   Output with source code
 ```
 
 ### SEE ALSO

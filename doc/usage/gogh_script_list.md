@@ -1,9 +1,9 @@
-## gogh hook list
+## gogh script list
 
-List registered hooks
+List registered scripts
 
 ```
-gogh hook list [flags]
+gogh script list [flags]
 ```
 
 ### Options
@@ -16,5 +16,5 @@ gogh hook list [flags]
 
 ### SEE ALSO
 
-* [gogh hook](gogh_hook.md)	 - Manage repository hooks
+* [gogh script](gogh_script.md)	 - Manage repository script files
 

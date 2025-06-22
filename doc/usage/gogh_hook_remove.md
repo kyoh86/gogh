@@ -14,5 +14,5 @@ gogh hook remove [flags] <hook-id>
 
 ### SEE ALSO
 
-* [gogh hook](gogh_hook.md)	 - Manage repository hooks (Lua scripts)
+* [gogh hook](gogh_hook.md)	 - Manage repository hooks
 

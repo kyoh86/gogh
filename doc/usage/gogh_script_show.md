@@ -1,9 +1,9 @@
-## gogh overlay show
+## gogh script show
 
-Show an overlay
+Show a script
 
 ```
-gogh overlay show [flags] <overlay-id>
+gogh script show [flags] <script-id>
 ```
 
 ### Options
@@ -16,5 +16,5 @@ gogh overlay show [flags] <overlay-id>
 
 ### SEE ALSO
 
-* [gogh overlay](gogh_overlay.md)	 - Manage repository overlay files
+* [gogh script](gogh_script.md)	 - Manage repository script files
 

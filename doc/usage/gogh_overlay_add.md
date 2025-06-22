@@ -3,33 +3,22 @@
 Add an overlay file
 
 ```
-gogh overlay add [flags] <source-path> <repo-pattern> <target-path>
+gogh overlay add [flags] <name> <target-path> <source-path>
 ```
 
 ### Examples
 
 ```
    Add an overlay file to a repository.
-   The <source-path> is the path to the file you want to add as an overlay.
-   The <repo-pattern> is the pattern of the repository you want to add the overlay to.
+   The <name> is the name of the overlay, which is used to identify it.
    The <target-path> is the path where the overlay file will be copied to in the repository.
+   The <source-path> is the path to the file you want to add as an overlay.
 
    For example, to add a custom VSCode settings file to a repository, you can run:
 
-     gogh overlay add /path/to/source/vscode/settings.json "github.com/owner/repo" .vscode/settings.json
+     gogh overlay add vsc-setting /path/to/source/vscode/settings.json .vscode/settings.json
 
-   The overlay file will be copied to the repository when you run `gogh create`, `gogh clone` or `gogh fork`.
-
-   You can also apply template files only for the `gogh create` command by using the `--for-init` flag:
-
-     gogh overlay add --for-init /path/to/source/deno.jsonc "github.com/owner/deno-*" deno.jsonc
-
-   This will copy the `deno.jsonc` file to the root of the repository only when you run `gogh create`
-   if the repository matches the pattern `github.com/owner/deno-*`.
-
-   You can create overlay files that never be applied to the repository automatically,
-   (and only be applied manually by `gogh overlay apply` command),
-   you can set the `--repo-pattern` flag to never match any repository.
+   The overlay file will be copied to the repository when you run `gogh overlay apply`.
 ```
 
 ### Options

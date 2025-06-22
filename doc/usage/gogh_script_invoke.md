@@ -1,16 +1,16 @@
-## gogh overlay apply
+## gogh script invoke
 
-Apply an overlay to a repository
+Invoke an script in a repository
 
 ```
-gogh overlay apply [flags] <overlay-id> [[<host>/]<owner>/]<name>
+gogh script invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
 ```
 
 ### Examples
 
 ```
-  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
-  invoke [flags] <overlay-id> --all
+  invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
+  invoke [flags] <script-id> --all
 
   It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.
@@ -32,10 +32,10 @@ gogh overlay apply [flags] <overlay-id> [[<host>/]<owner>/]<name>
 
 ```
       --all    Apply to all repositories in the workspace
-  -h, --help   help for apply
+  -h, --help   help for invoke
 ```
 
 ### SEE ALSO
 
-* [gogh overlay](gogh_overlay.md)	 - Manage repository overlay files
+* [gogh script](gogh_script.md)	 - Manage repository script files
 

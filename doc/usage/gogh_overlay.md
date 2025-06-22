@@ -38,9 +38,11 @@ Manage repository overlay files
 
 * [gogh](gogh.md)	 - GO GitHub local repository manager
 * [gogh overlay add](gogh_overlay_add.md)	 - Add an overlay file
-* [gogh overlay apply](gogh_overlay_apply.md)	 - Apply overlays to specified repositories
+* [gogh overlay apply](gogh_overlay_apply.md)	 - Apply an overlay to a repository
+* [gogh overlay edit](gogh_overlay_edit.md)	 - Edit an existing overlay (with $EDITOR)
 * [gogh overlay extract](gogh_overlay_extract.md)	 - Extract untracked files as overlays
-* [gogh overlay list](gogh_overlay_list.md)	 - List overlays
+* [gogh overlay list](gogh_overlay_list.md)	 - List registered overlays
 * [gogh overlay remove](gogh_overlay_remove.md)	 - Remove an overlay
-* [gogh overlay show](gogh_overlay_show.md)	 - Show overlays
+* [gogh overlay show](gogh_overlay_show.md)	 - Show an overlay
+* [gogh overlay update](gogh_overlay_update.md)	 - Update an existing overlay
 
