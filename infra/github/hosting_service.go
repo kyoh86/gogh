@@ -149,9 +149,7 @@ func (s *HostingService) ParseURL(u *url.URL) (*repository.Reference, error) {
 	return typ.Ptr(repository.NewReference(u.Host, words[0], strings.TrimSuffix(words[1], ".git"))), nil
 }
 
-var (
-	ErrTokenNotFound = errors.New("no token found")
-)
+var ErrTokenNotFound = errors.New("no token found")
 
 // GetTokenFor cache requested token for the host and owner
 func (s *HostingService) GetTokenFor(ctx context.Context, host, owner string) (string, auth.Token, error) {
@@ -507,10 +505,10 @@ func (s *HostingService) ForkRepository(
 			return nil, fmt.Errorf("requesting fork: %w", err)
 		}
 	}
-	return convertRepository(ref, fork)
+	return convertRepository(target, fork)
 }
 
-func convertRepository(ref repository.Reference, repo *github.Repository) (*hosting.Repository, error) {
+func convertRepository(target repository.Reference, repo *github.Repository) (*hosting.Repository, error) {
 	var parent *hosting.ParentRepository
 	if raw := repo.GetParent(); raw != nil {
 		u, err := url.Parse(raw.GetHTMLURL())
@@ -528,7 +526,7 @@ func convertRepository(ref repository.Reference, repo *github.Repository) (*host
 		}
 	}
 	return &hosting.Repository{
-		Ref:         ref,
+		Ref:         target,
 		URL:         repo.GetHTMLURL(),
 		Parent:      parent,
 		CloneURL:    repo.GetCloneURL(),
@@ -542,6 +540,7 @@ func convertRepository(ref repository.Reference, repo *github.Repository) (*host
 		UpdatedAt:   repo.GetUpdatedAt().Time,
 	}, nil
 }
+
 func convertRepositoryFragment(host string, f githubv4.RepositoryFragment) hosting.Repository {
 	parentOwner := f.GetParent().Owner
 	parentName := f.GetParent().Name
