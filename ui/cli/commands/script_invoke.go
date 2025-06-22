@@ -2,19 +2,28 @@ package commands
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/script_invoke"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 
 func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+	var f struct {
+		allRepositories bool
+	}
 	cmd := &cobra.Command{
-		Use:   "invoke [flags] <script-id> [[<host>/]<owner>/]<name>",
+		Use:   "invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]",
 		Short: "Invoke an script in a repository",
-		Args:  cobra.ExactArgs(2),
-		Example: `  It accepts a short notation for each repository
+		Args:  cobra.MinimumNArgs(1),
+		Example: `  invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
+  invoke [flags] <script-id> --all
+
+  It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.
     - "<name>": e.g. "example"; 
     - "<owner>/<name>": e.g. "kyoh86/example"
@@ -32,19 +41,38 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
 			scriptID := args[0]
-			ref := args[1]
+			refs := args[1:]
 			scriptInvokeUseCase := script_invoke.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ScriptService,
 				svc.ReferenceParser,
 			)
-			if err := scriptInvokeUseCase.Execute(ctx, ref, scriptID, map[string]any{}); err != nil {
-				return err
+			if f.allRepositories {
+				if len(refs) > 0 {
+					return errors.New("cannot specify repositories when --all flag is set")
+				}
+
+				// If --all flag is set, apply the script to all repositories in the workspace
+				for repo, err := range list.NewUseCase(
+					svc.WorkspaceService,
+					svc.FinderService,
+				).Execute(ctx, list.Options{ListOptions: list.ListOptions{Limit: 0}}) {
+					if err != nil {
+						return fmt.Errorf("listing repositories: %w", err)
+					}
+					refs = append(refs, repo.Ref().String())
+				}
 			}
-			logger.Infof("Applied script %s to %s", scriptID, ref)
+			for _, ref := range refs {
+				if err := scriptInvokeUseCase.Execute(ctx, ref, scriptID, map[string]any{}); err != nil {
+					return err
+				}
+				logger.Infof("Applied script %s to %s", scriptID, ref)
+			}
 			return nil
 		},
 	}
+	cmd.Flags().BoolVarP(&f.allRepositories, "all", "", false, "Apply to all repositories in the workspace")
 	return cmd, nil
 }

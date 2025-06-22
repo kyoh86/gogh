@@ -2,19 +2,28 @@ package commands
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/overlay_apply"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 
 func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+	var f struct {
+		allRepositories bool
+	}
 	cmd := &cobra.Command{
 		Use:   "apply [flags] <overlay-id> [[<host>/]<owner>/]<name>",
 		Short: "Apply an overlay to a repository",
 		Args:  cobra.ExactArgs(2),
-		Example: `  It accepts a short notation for each repository
+		Example: `  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
+  invoke [flags] <overlay-id> --all
+
+  It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.
     - "<name>": e.g. "example"; 
     - "<owner>/<name>": e.g. "kyoh86/example"
@@ -32,19 +41,38 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			ctx := cmd.Context()
 			logger := log.FromContext(ctx)
 			overlayID := args[0]
-			ref := args[1]
+			refs := args[1:]
 			overlayApplyUseCase := overlay_apply.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,
 				svc.OverlayService,
 			)
-			if err := overlayApplyUseCase.Execute(ctx, ref, overlayID); err != nil {
-				return err
+			if f.allRepositories {
+				if len(refs) > 0 {
+					return errors.New("cannot specify repositories when --all flag is set")
+				}
+
+				// If --all flag is set, apply the script to all repositories in the workspace
+				for repo, err := range list.NewUseCase(
+					svc.WorkspaceService,
+					svc.FinderService,
+				).Execute(ctx, list.Options{ListOptions: list.ListOptions{Limit: 0}}) {
+					if err != nil {
+						return fmt.Errorf("listing repositories: %w", err)
+					}
+					refs = append(refs, repo.Ref().String())
+				}
 			}
-			logger.Infof("Applied overlay %s to %s", overlayID, ref)
+			for _, ref := range refs {
+				if err := overlayApplyUseCase.Execute(ctx, ref, overlayID); err != nil {
+					return err
+				}
+				logger.Infof("Applied overlay %s to %s", overlayID, ref)
+			}
 			return nil
 		},
 	}
+	cmd.Flags().BoolVarP(&f.allRepositories, "all", "", false, "Apply to all repositories in the workspace")
 	return cmd, nil
 }
