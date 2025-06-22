@@ -2,38 +2,59 @@ package hook_describe
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
-// UseCase for running hook scripts
-type UseCase struct {
-	hookService hook.HookService
+// Hook represents the hook type
+type Hook = hook.Hook
+
+// UseCaseJSON represents the use case for showing hooks in JSON format
+type UseCaseJSON struct {
+	enc *json.Encoder
 }
 
-func NewUseCase(
-	hookService hook.HookService,
-) *UseCase {
-	return &UseCase{
-		hookService: hookService,
-	}
+// NewUseCaseJSON creates a new use case for showing hooks in JSON format
+func NewUseCaseJSON(writer io.Writer) *UseCaseJSON {
+	return &UseCaseJSON{enc: json.NewEncoder(writer)}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, hookID string) (*hook.Hook, []byte, error) {
-	hook, err := uc.hookService.Get(ctx, hookID)
-	if err != nil {
-		return nil, nil, fmt.Errorf("get hook by ID: %w", err)
-	}
-	src, err := uc.hookService.Open(ctx, hookID)
-	if err != nil {
-		return nil, nil, fmt.Errorf("open hook script: %w", err)
-	}
-	defer src.Close()
-	code, err := io.ReadAll(src)
-	if err != nil {
-		return nil, nil, fmt.Errorf("read script: %w", err)
-	}
-	return hook, code, nil
+// Execute executes the use case to show a hook in JSON format
+func (uc *UseCaseJSON) Execute(ctx context.Context, s Hook) error {
+	return uc.enc.Encode(map[string]any{
+		"id":             s.ID(),
+		"name":           s.Name(),
+		"repo_pattern":   s.RepoPattern(),
+		"trigger_event":  s.TriggerEvent(),
+		"operation_type": s.OperationType(),
+		"operation_id":   s.OperationID(),
+	})
+}
+
+// UseCaseOneLine represents the use case for showing hooks in a single line format
+type UseCaseOneLine struct {
+	writer io.Writer
+}
+
+// NewUseCaseOneline creates a new use case for showing overlays in text format
+func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
+	return &UseCaseOneLine{writer: writer}
+}
+
+// Execute executes the use case to show a hook in a single line format
+func (uc *UseCaseOneLine) Execute(ctx context.Context, s hook.Hook) error {
+	_, err := fmt.Fprintf(
+		uc.writer,
+		"* [%s] %s for %s @ %s: %s(%s)\n",
+		s.ID()[:8],
+		s.Name(),
+		s.RepoPattern(),
+		s.TriggerEvent(),
+		s.OperationType(),
+		s.OperationID(),
+	)
+	return err
 }

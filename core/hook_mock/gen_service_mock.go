@@ -11,11 +11,11 @@ package hook_mock
 
 import (
 	context "context"
-	io "io"
 	iter "iter"
 	reflect "reflect"
 
 	hook "github.com/kyoh86/gogh/v4/core/hook"
+	repository "github.com/kyoh86/gogh/v4/core/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -44,24 +44,25 @@ func (m *MockHookService) EXPECT() *MockHookServiceMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockHookService) Add(ctx context.Context, h hook.Hook, content io.Reader) error {
+func (m *MockHookService) Add(ctx context.Context, entry hook.Entry) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", ctx, h, content)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Add", ctx, entry)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Add indicates an expected call of Add.
-func (mr *MockHookServiceMockRecorder) Add(ctx, h, content any) *gomock.Call {
+func (mr *MockHookServiceMockRecorder) Add(ctx, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockHookService)(nil).Add), ctx, h, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockHookService)(nil).Add), ctx, entry)
 }
 
 // Get mocks base method.
-func (m *MockHookService) Get(ctx context.Context, id string) (*hook.Hook, error) {
+func (m *MockHookService) Get(ctx context.Context, id string) (hook.Hook, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, id)
-	ret0, _ := ret[0].(*hook.Hook)
+	ret0, _ := ret[0].(hook.Hook)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -87,10 +88,10 @@ func (mr *MockHookServiceMockRecorder) HasChanges() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockHookService) List() iter.Seq2[*hook.Hook, error] {
+func (m *MockHookService) List() iter.Seq2[hook.Hook, error] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List")
-	ret0, _ := ret[0].(iter.Seq2[*hook.Hook, error])
+	ret0, _ := ret[0].(iter.Seq2[hook.Hook, error])
 	return ret0
 }
 
@@ -98,6 +99,34 @@ func (m *MockHookService) List() iter.Seq2[*hook.Hook, error] {
 func (mr *MockHookServiceMockRecorder) List() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockHookService)(nil).List))
+}
+
+// ListFor mocks base method.
+func (m *MockHookService) ListFor(reference repository.Reference, event hook.Event) iter.Seq2[hook.Hook, error] {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListFor", reference, event)
+	ret0, _ := ret[0].(iter.Seq2[hook.Hook, error])
+	return ret0
+}
+
+// ListFor indicates an expected call of ListFor.
+func (mr *MockHookServiceMockRecorder) ListFor(reference, event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFor", reflect.TypeOf((*MockHookService)(nil).ListFor), reference, event)
+}
+
+// Load mocks base method.
+func (m *MockHookService) Load(arg0 iter.Seq2[hook.Hook, error]) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Load", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Load indicates an expected call of Load.
+func (mr *MockHookServiceMockRecorder) Load(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockHookService)(nil).Load), arg0)
 }
 
 // MarkSaved mocks base method.
@@ -110,21 +139,6 @@ func (m *MockHookService) MarkSaved() {
 func (mr *MockHookServiceMockRecorder) MarkSaved() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkSaved", reflect.TypeOf((*MockHookService)(nil).MarkSaved))
-}
-
-// Open mocks base method.
-func (m *MockHookService) Open(ctx context.Context, id string) (io.ReadCloser, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Open", ctx, id)
-	ret0, _ := ret[0].(io.ReadCloser)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Open indicates an expected call of Open.
-func (mr *MockHookServiceMockRecorder) Open(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Open", reflect.TypeOf((*MockHookService)(nil).Open), ctx, id)
 }
 
 // Remove mocks base method.
@@ -141,30 +155,16 @@ func (mr *MockHookServiceMockRecorder) Remove(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockHookService)(nil).Remove), ctx, id)
 }
 
-// Set mocks base method.
-func (m *MockHookService) Set(arg0 iter.Seq2[*hook.Hook, error]) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Set indicates an expected call of Set.
-func (mr *MockHookServiceMockRecorder) Set(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockHookService)(nil).Set), arg0)
-}
-
 // Update mocks base method.
-func (m *MockHookService) Update(ctx context.Context, h hook.Hook, content io.Reader) error {
+func (m *MockHookService) Update(ctx context.Context, id string, entry hook.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, h, content)
+	ret := m.ctrl.Call(m, "Update", ctx, id, entry)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockHookServiceMockRecorder) Update(ctx, h, content any) *gomock.Call {
+func (mr *MockHookServiceMockRecorder) Update(ctx, id, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockHookService)(nil).Update), ctx, h, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockHookService)(nil).Update), ctx, id, entry)
 }

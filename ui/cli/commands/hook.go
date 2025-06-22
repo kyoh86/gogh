@@ -10,7 +10,7 @@ import (
 func NewHookCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "hook",
-		Short: "Manage repository hooks (Lua scripts)",
+		Short: "Manage repository hooks",
 	}
 	return cmd, nil
 }

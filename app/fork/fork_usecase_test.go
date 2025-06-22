@@ -3,6 +3,9 @@ package fork_test
 import (
 	"context"
 	"errors"
+	"io"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -18,6 +21,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
+	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
 	"go.uber.org/mock/gomock"
 )
@@ -33,12 +37,12 @@ func TestUseCase_Execute(t *testing.T) {
 			mockFinder *workspace_mock.MockFinderService,
 			mockLayout *workspace_mock.MockLayoutService,
 			mockOverlay *overlay_mock.MockOverlayService,
+			mockScript *script_mock.MockScriptService,
 			mockHook *hook_mock.MockHookService,
 			mockDefaultName *repository_mock.MockDefaultNameService,
 			mockReferenceParser *repository_mock.MockReferenceParser,
 			mockGit *git_mock.MockGitService,
 		)
-		expectErr     bool
 		expectErrText string
 	}{
 		{
@@ -51,11 +55,13 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockDefaultName *repository_mock.MockDefaultNameService,
 				mockReferenceParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
+				tmpDir := t.TempDir()
 				sourceRef := repository.NewReference("github.com", "source", "repo")
 				targetRef := repository.NewReference("github.com", "target", "repo")
 				targetRefWithAlias := &repository.ReferenceWithAlias{
@@ -90,21 +96,52 @@ func TestUseCase_Execute(t *testing.T) {
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).
 					Return(nil)
 
+				pseudoPath := filepath.Join(tmpDir, "github.com/target/repo")
 				mockLayout.EXPECT().
 					PathFor(targetRef).
-					Return("/path/to/repo")
+					Return(pseudoPath)
 				mockWorkspace.EXPECT().
 					GetPrimaryLayout().
 					Return(mockLayout)
 
-				// Overlay application
-				mockOverlay.EXPECT().
-					List().Return(func(yield func(*overlay.Overlay, error) bool) {})
-				// Hook application
+				// Hook finds the repository by reference
+				mockFinder.EXPECT().
+					FindByReference(gomock.Any(), gomock.Any(), targetRef).
+					Return(repository.NewLocation(
+						pseudoPath,
+						"github.com",
+						"target",
+						"repo",
+					), nil)
 				mockHook.EXPECT().
-					List().Return(func(yield func(*hook.Hook, error) bool) {}).Times(2)
+					ListFor(targetRef, hook.EventPostFork).Return(func(yield func(hook.Hook, error) bool) {
+					if !yield(hook.NewHook(hook.Entry{
+						Name:          "post-fork-example",
+						OperationType: hook.OperationTypeOverlay,
+						OperationID:   "overlay-id",
+					}), nil) {
+						return
+					}
+					if !yield(hook.NewHook(hook.Entry{
+						Name:          "post-fork-example",
+						OperationType: hook.OperationTypeScript,
+						OperationID:   "script-id",
+					}), nil) {
+						return
+					}
+				})
+				mockOverlay.EXPECT().
+					Get(gomock.Any(), "overlay-id").Return(overlay.NewOverlay(overlay.Entry{
+					Name:         "example-overlay",
+					RelativePath: "path/to/overlay",
+				}), nil)
+				mockOverlay.EXPECT().
+					Open(gomock.Any(), "overlay-id").Return(io.NopCloser(strings.NewReader("overlay content")), nil)
+				// Script cannot be run in this test, so we just return error
+				mockScript.EXPECT().
+					Open(gomock.Any(), "script-id").Return(nil, errors.New("script error"))
 			},
-			expectErr: false,
+			expectErrText: "script error",
 		},
 		{
 			name:   "invalid source reference",
@@ -115,6 +152,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockDefaultName *repository_mock.MockDefaultNameService,
 				mockReferenceParser *repository_mock.MockReferenceParser,
@@ -124,7 +162,6 @@ func TestUseCase_Execute(t *testing.T) {
 					Parse("invalid-source").
 					Return(nil, errors.New("invalid source reference"))
 			},
-			expectErr:     true,
 			expectErrText: "invalid source",
 		},
 		{
@@ -137,11 +174,13 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockDefaultName *repository_mock.MockDefaultNameService,
 				mockReferenceParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
+				tmpDir := t.TempDir()
 				sourceRef := repository.NewReference("github.com", "source", "repo")
 				mockReferenceParser.EXPECT().
 					Parse("github.com/source/repo").
@@ -178,21 +217,52 @@ func TestUseCase_Execute(t *testing.T) {
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).
 					Return(nil)
 
+				pseudoPath := filepath.Join(tmpDir, "github.com/target/repo")
 				mockLayout.EXPECT().
 					PathFor(defaultRef).
-					Return("/path/to/repo")
+					Return(pseudoPath)
 				mockWorkspace.EXPECT().
 					GetPrimaryLayout().
 					Return(mockLayout)
 
-				// Overlay application
-				mockOverlay.EXPECT().
-					List().Return(func(yield func(*overlay.Overlay, error) bool) {})
-				// Hook application
+				// Hook finds the repository by reference
+				mockFinder.EXPECT().
+					FindByReference(gomock.Any(), gomock.Any(), defaultRef).
+					Return(repository.NewLocation(
+						pseudoPath,
+						"github.com",
+						"default-owner",
+						"repo",
+					), nil)
 				mockHook.EXPECT().
-					List().Return(func(yield func(*hook.Hook, error) bool) {}).Times(2)
+					ListFor(defaultRef, hook.EventPostFork).Return(func(yield func(hook.Hook, error) bool) {
+					if !yield(hook.NewHook(hook.Entry{
+						Name:          "post-fork-example",
+						OperationType: hook.OperationTypeOverlay,
+						OperationID:   "overlay-id",
+					}), nil) {
+						return
+					}
+					if !yield(hook.NewHook(hook.Entry{
+						Name:          "post-fork-example",
+						OperationType: hook.OperationTypeScript,
+						OperationID:   "script-id",
+					}), nil) {
+						return
+					}
+				})
+				mockOverlay.EXPECT().
+					Get(gomock.Any(), "overlay-id").Return(overlay.NewOverlay(overlay.Entry{
+					Name:         "example-overlay",
+					RelativePath: "path/to/overlay",
+				}), nil)
+				mockOverlay.EXPECT().
+					Open(gomock.Any(), "overlay-id").Return(io.NopCloser(strings.NewReader("overlay content")), nil)
+				// Script cannot be run in this test, so we just return error
+				mockScript.EXPECT().
+					Open(gomock.Any(), "script-id").Return(nil, errors.New("script error"))
 			},
-			expectErr: false,
+			expectErrText: "script error",
 		},
 		{
 			name:   "fork error",
@@ -204,6 +274,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockDefaultName *repository_mock.MockDefaultNameService,
 				mockReferenceParser *repository_mock.MockReferenceParser,
@@ -228,7 +299,6 @@ func TestUseCase_Execute(t *testing.T) {
 					ForkRepository(gomock.Any(), sourceRef, targetRef, gomock.Any()).
 					Return(nil, errors.New("fork error"))
 			},
-			expectErr:     true,
 			expectErrText: "requesting fork",
 		},
 		{
@@ -241,6 +311,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockFinder *workspace_mock.MockFinderService,
 				mockLayout *workspace_mock.MockLayoutService,
 				mockOverlay *overlay_mock.MockOverlayService,
+				mockScript *script_mock.MockScriptService,
 				mockHook *hook_mock.MockHookService,
 				mockDefaultName *repository_mock.MockDefaultNameService,
 				mockReferenceParser *repository_mock.MockReferenceParser,
@@ -286,50 +357,63 @@ func TestUseCase_Execute(t *testing.T) {
 					GetPrimaryLayout().
 					Return(mockLayout)
 			},
-			expectErr:     true,
 			expectErrText: "cloning forked repository",
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+		t.Run(
+			tc.name,
+			func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				defer ctrl.Finish()
 
-			mockHostingService := hosting_mock.NewMockHostingService(ctrl)
-			mockWorkspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
-			mockFinderService := workspace_mock.NewMockFinderService(ctrl)
-			mockOverlayService := overlay_mock.NewMockOverlayService(ctrl)
-			mockHookService := hook_mock.NewMockHookService(ctrl)
-			mockLayoutService := workspace_mock.NewMockLayoutService(ctrl)
-			mockDefaultNameService := repository_mock.NewMockDefaultNameService(ctrl)
-			mockReferenceParser := repository_mock.NewMockReferenceParser(ctrl)
-			mockGitService := git_mock.NewMockGitService(ctrl)
+				mockHostingService := hosting_mock.NewMockHostingService(ctrl)
+				mockWorkspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
+				mockFinderService := workspace_mock.NewMockFinderService(ctrl)
+				mockOverlayService := overlay_mock.NewMockOverlayService(ctrl)
+				mockScriptService := script_mock.NewMockScriptService(ctrl)
+				mockHookService := hook_mock.NewMockHookService(ctrl)
+				mockLayoutService := workspace_mock.NewMockLayoutService(ctrl)
+				mockDefaultNameService := repository_mock.NewMockDefaultNameService(ctrl)
+				mockReferenceParser := repository_mock.NewMockReferenceParser(ctrl)
+				mockGitService := git_mock.NewMockGitService(ctrl)
 
-			tc.setupMocks(mockHostingService, mockWorkspaceService, mockFinderService, mockLayoutService, mockOverlayService, mockHookService, mockDefaultNameService, mockReferenceParser, mockGitService)
+				tc.setupMocks(
+					mockHostingService,
+					mockWorkspaceService,
+					mockFinderService,
+					mockLayoutService,
+					mockOverlayService,
+					mockScriptService,
+					mockHookService,
+					mockDefaultNameService,
+					mockReferenceParser,
+					mockGitService,
+				)
 
-			useCase := fork.NewUseCase(
-				mockHostingService,
-				mockWorkspaceService,
-				mockFinderService,
-				mockOverlayService,
-				mockHookService,
-				mockDefaultNameService,
-				mockReferenceParser,
-				mockGitService,
-			)
+				useCase := fork.NewUseCase(
+					mockHostingService,
+					mockWorkspaceService,
+					mockFinderService,
+					mockOverlayService,
+					mockScriptService,
+					mockHookService,
+					mockDefaultNameService,
+					mockReferenceParser,
+					mockGitService,
+				)
 
-			opts := fork.Options{
-				TryCloneOptions: try_clone.Options{
-					Timeout: 30 * time.Second,
-					Notify:  func(msg try_clone.Status) error { return nil },
-				},
-				Target: tc.target,
-			}
+				opts := fork.Options{
+					TryCloneOptions: try_clone.Options{
+						Timeout: 30 * time.Second,
+						Notify:  func(msg try_clone.Status) error { return nil },
+					},
+					Target: tc.target,
+				}
 
-			err := useCase.Execute(context.Background(), tc.source, opts)
+				err := useCase.Execute(context.Background(), tc.source, opts)
 
-			if tc.expectErr {
 				if err == nil {
 					t.Fatalf("Expected error but got nil")
 				}
@@ -338,10 +422,8 @@ func TestUseCase_Execute(t *testing.T) {
 						t.Fatalf("Expected error to contain %q but got %q", tc.expectErrText, msg)
 					}
 				}
-			} else if err != nil {
-				t.Fatalf("Expected no error but got: %v", err)
-			}
-		})
+			},
+		)
 	}
 }
 

@@ -22,6 +22,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 		svc.WorkspaceService,
 		svc.FinderService,
 		svc.OverlayService,
+		svc.ScriptService,
 		svc.HookService,
 		svc.ReferenceParser,
 		svc.GitService,

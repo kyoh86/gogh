@@ -8,6 +8,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
@@ -27,6 +28,9 @@ type ServiceSet struct {
 
 	OverlayStore   store.Saver[overlay.OverlayService]
 	OverlayService overlay.OverlayService
+
+	ScriptStore   store.Saver[script.ScriptService]
+	ScriptService script.ScriptService
 
 	HookStore   store.Saver[hook.HookService]
 	HookService hook.HookService

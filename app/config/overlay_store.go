@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/pelletier/go-toml/v2"
@@ -20,9 +21,16 @@ func OverlayDir() (string, error) {
 	return path, nil
 }
 
+// tomlOverlay is used for (un)marshaling overlays to/from TOML.
+type tomlOverlay struct {
+	ID           uuid.UUID `toml:"id"`
+	Name         string    `toml:"name"`
+	RelativePath string    `toml:"relative-path"`
+}
+
 // tomlOverlayStore is used for (un)marshaling overlays to/from TOML.
 type tomlOverlayStore struct {
-	Overlays []overlay.Overlay `toml:"overlays"`
+	Overlays []tomlOverlay `toml:"overlays"`
 }
 
 // OverlayStore implements overlay.OverlayStore and persists overlays as TOML.
@@ -56,7 +64,16 @@ func (s *OverlayStore) Load(ctx context.Context, initial func() overlay.OverlayS
 		return nil, fmt.Errorf("decode overlay store: %w", err)
 	}
 	svc := initial()
-	if err := svc.Set(data.Overlays); err != nil {
+	if err := svc.Load(func(yield func(overlay overlay.Overlay, err error) bool) {
+		if err != nil {
+			return
+		}
+		for _, o := range data.Overlays {
+			if !yield(overlay.ConcreteOverlay(o.ID, o.Name, o.RelativePath), nil) {
+				return
+			}
+		}
+	}); err != nil {
 		return nil, fmt.Errorf("set overlays: %w", err)
 	}
 	svc.MarkSaved()
@@ -76,11 +93,13 @@ func (s *OverlayStore) Save(ctx context.Context, svc overlay.OverlayService, for
 		if err != nil {
 			return fmt.Errorf("list overlays: %w", err)
 		}
-		if ov == nil {
-			continue
-		}
-		data.Overlays = append(data.Overlays, *ov)
+		data.Overlays = append(data.Overlays, tomlOverlay{
+			ID:           ov.UUID(),
+			Name:         ov.Name(),
+			RelativePath: ov.RelativePath(),
+		})
 	}
+
 	if err := os.MkdirAll(filepath.Dir(src), 0755); err != nil {
 		return fmt.Errorf("create overlay store directory: %w", err)
 	}

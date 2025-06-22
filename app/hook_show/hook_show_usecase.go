@@ -2,35 +2,44 @@ package hook_show
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 
+	"github.com/kyoh86/gogh/v4/app/hook_describe"
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
-// UseCase for running hook scripts
+// UseCase for running hook hooks
 type UseCase struct {
-	writer func(ctx context.Context, h *hook.Hook) error
+	hookService hook.HookService
+	writer      io.Writer
 }
 
-func NewUseCase(w io.Writer, asJSON bool) *UseCase {
-	if asJSON {
-		enc := json.NewEncoder(w)
-		return &UseCase{
-			writer: func(ctx context.Context, h *hook.Hook) error {
-				return enc.Encode(h)
-			},
-		}
-	}
+func NewUseCase(
+	hookService hook.HookService,
+	writer io.Writer,
+) *UseCase {
 	return &UseCase{
-		writer: func(ctx context.Context, h *hook.Hook) error {
-			fmt.Printf("* [%s] %s (%s) @ %s\n", h.ID[:8], h.Name, h.Target, h.UpdatedAt.Format("2006-01-02 15:04:05"))
-			return nil
-		},
+		hookService: hookService,
+		writer:      writer,
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, h *hook.Hook) error {
-	return uc.writer(ctx, h)
+func (uc *UseCase) Execute(ctx context.Context, hookID string, asJSON bool) error {
+	hook, err := uc.hookService.Get(ctx, hookID)
+	if err != nil {
+		return fmt.Errorf("get hook by ID: %w", err)
+	}
+	var useCase interface {
+		Execute(ctx context.Context, s hook_describe.Hook) error
+	}
+	if asJSON {
+		useCase = hook_describe.NewUseCaseJSON(uc.writer)
+	} else {
+		useCase = hook_describe.NewUseCaseOneLine(uc.writer)
+	}
+	if err := useCase.Execute(ctx, hook); err != nil {
+		return fmt.Errorf("execute dehookion: %w", err)
+	}
+	return nil
 }

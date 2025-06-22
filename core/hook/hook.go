@@ -1,94 +1,126 @@
 package hook
 
 import (
-	"time"
-
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
-// Event defines the timing of hook execution
+type Entry struct {
+	Name          string
+	RepoPattern   string
+	TriggerEvent  Event
+	OperationType OperationType
+	OperationID   string
+}
+
+// Event defines the trigger of the hook, such as post-clone, post-fork, or post-create
 type Event string
 
 const (
-	EventAny          Event = ""
-	EventAfterClone   Event = "after-clone"
-	EventAfterOverlay Event = "after-overlay"
-	EventNever        Event = "never"
+	EventAny        Event = ""
+	EventPostClone  Event = "post-clone"
+	EventPostFork   Event = "post-fork"
+	EventPostCreate Event = "post-create"
 )
 
-// UseCase defines the type of use case for the hook
-type UseCase string
+// OperationType defines the type of operation that the hook performs
+type OperationType string
 
 const (
-	UseCaseAny    UseCase = ""
-	UseCaseClone  UseCase = "clone"
-	UseCaseFork   UseCase = "fork"
-	UseCaseCreate UseCase = "create"
-	UseCaseNever  UseCase = "never"
+	OperationTypeOverlay OperationType = "overlay"
+	OperationTypeScript  OperationType = "script"
 )
 
-// Target defines the target for the hook, including repository pattern, use case, and event
-type Target struct {
-	RepoPattern string  `json:"repoPattern"` // Repository pattern (glob)
-	UseCase     UseCase `json:"useCase"`
-	Event       Event   `json:"event"`
+type Hook interface {
+	ID() string
+	UUID() uuid.UUID
+	Name() string
+
+	RepoPattern() string
+	TriggerEvent() Event
+
+	OperationType() OperationType
+	OperationID() string
+
+	Match(ref repository.Reference, event Event) (bool, error)
 }
 
-func (t Target) eventString() string {
-	if t.UseCase == UseCaseAny {
-		return "*:" + string(t.Event)
+func NewHook(entry Entry) Hook {
+	return hookElement{
+		id:            uuid.Must(uuid.NewRandom()),
+		name:          entry.Name,
+		repoPattern:   entry.RepoPattern,
+		triggerEvent:  entry.TriggerEvent,
+		operationType: entry.OperationType,
+		operationID:   entry.OperationID,
 	}
-	return string(t.UseCase) + ":" + string(t.Event)
 }
 
-func (t Target) String() string {
-	if t.RepoPattern == "" {
-		return t.eventString() + ":*"
+// ConcreteHook creates a Hook with the given parameters.
+func ConcreteHook(
+	id uuid.UUID,
+	name string,
+	repoPattern string,
+	triggerEvent string,
+	operationType string,
+	operationID string,
+) Hook {
+	return hookElement{
+		id:            id,
+		name:          name,
+		repoPattern:   repoPattern,
+		triggerEvent:  Event(triggerEvent),
+		operationType: OperationType(operationType),
+		operationID:   operationID,
 	}
-	return t.eventString() + ":" + t.RepoPattern
 }
 
-func (t Target) MatchEvent(useCase UseCase, event Event) bool {
-	if t.UseCase == UseCaseAny || useCase == UseCaseAny {
-		return t.Event == event
-	}
-	return t.UseCase == useCase && t.Event == event
+type hookElement struct {
+	id   uuid.UUID
+	name string
+
+	repoPattern  string
+	triggerEvent Event
+
+	operationType OperationType
+	operationID   string
 }
 
-func (t Target) Match(ref repository.Reference, useCase UseCase, event Event) (bool, error) {
-	if !t.MatchEvent(useCase, event) {
+func (h hookElement) ID() string {
+	return h.id.String()
+}
+
+func (h hookElement) UUID() uuid.UUID {
+	return h.id
+}
+
+func (h hookElement) Name() string {
+	return h.name
+}
+
+func (h hookElement) RepoPattern() string {
+	return h.repoPattern
+}
+
+func (h hookElement) TriggerEvent() Event {
+	return h.triggerEvent
+}
+
+func (h hookElement) OperationType() OperationType {
+	return h.operationType
+}
+
+func (h hookElement) OperationID() string {
+	return h.operationID
+}
+
+func (h hookElement) Match(ref repository.Reference, event Event) (bool, error) {
+	if h.triggerEvent != EventAny && h.triggerEvent != event {
 		return false, nil
 	}
-	if t.RepoPattern == "" {
+	if h.repoPattern == "" {
 		return true, nil
 	}
-	return doublestar.Match(t.RepoPattern, ref.String())
-}
-
-type Hook struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-
-	Target Target `json:"target"`
-
-	ScriptPath string `json:"scriptPath"`
-
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-func (h *Hook) CreatedNow() {
-	if h.CreatedAt.IsZero() {
-		h.CreatedAt = time.Now()
-		h.UpdatedAt = h.CreatedAt
-	}
-}
-
-func (h *Hook) UpdatedNow() {
-	h.UpdatedAt = time.Now()
-}
-
-func (h Hook) Match(ref repository.Reference, useCase UseCase, event Event) (bool, error) {
-	return h.Target.Match(ref, useCase, event)
+	return doublestar.Match(h.repoPattern, ref.String())
 }

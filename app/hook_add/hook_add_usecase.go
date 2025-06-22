@@ -2,17 +2,16 @@ package hook_add
 
 import (
 	"context"
-	"io"
 
-	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
 type Options struct {
-	Name        string
-	RepoPattern string
-	UseCase     string
-	Event       string
+	Name          string
+	RepoPattern   string
+	TriggerEvent  string
+	OperationType string
+	OperationID   string
 }
 
 type UseCase struct {
@@ -23,16 +22,13 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 	return &UseCase{hookService: hookService}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, opts Options, content io.Reader) (*hook.Hook, error) {
-	h := hook.Hook{
-		ID:   uuid.NewString(),
-		Name: opts.Name,
-		Target: hook.Target{
-			RepoPattern: opts.RepoPattern,
-			UseCase:     hook.UseCase(opts.UseCase),
-			Event:       hook.Event(opts.Event),
-		},
+func (uc *UseCase) Execute(ctx context.Context, opts Options) (string, error) {
+	h := hook.Entry{
+		Name:          opts.Name,
+		RepoPattern:   opts.RepoPattern,
+		TriggerEvent:  hook.Event(opts.TriggerEvent),
+		OperationType: hook.OperationType(opts.OperationType),
+		OperationID:   opts.OperationID,
 	}
-	h.CreatedNow()
-	return &h, uc.hookService.Add(ctx, h, content)
+	return uc.hookService.Add(ctx, h)
 }

@@ -2,37 +2,56 @@ package hook
 
 import (
 	"context"
-	"errors"
-	"io"
+	"fmt"
 	"iter"
-	"slices"
-	"strings"
 	"sync"
+
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/set"
 )
 
-// hookServiceImpl is the concrete implementation of HookService.
-type hookServiceImpl struct {
-	mu      sync.RWMutex
-	hooks   []*Hook
-	content HookScriptStore
-	dirty   bool
+// serviceImpl is the concrete implementation of HookService.
+type serviceImpl struct {
+	mu    sync.RWMutex
+	hooks *set.Set[hookElement]
+	dirty bool
 }
 
 // NewHookService creates a new HookService with the given content store.
-func NewHookService(content HookScriptStore) HookService {
-	return &hookServiceImpl{
-		hooks:   []*Hook{},
-		content: content,
-		dirty:   false,
+func NewHookService() HookService {
+	return &serviceImpl{
+		hooks: set.NewSet[hookElement](),
+		dirty: false,
 	}
 }
 
 // List returns an iterator for all registered hooks.
-func (s *hookServiceImpl) List() iter.Seq2[*Hook, error] {
+func (s *serviceImpl) List() iter.Seq2[Hook, error] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return func(yield func(*Hook, error) bool) {
-		for _, h := range s.hooks {
+	return func(yield func(Hook, error) bool) {
+		for h := range s.hooks.Iter() {
+			if !yield(h, nil) {
+				break
+			}
+		}
+	}
+}
+
+// ListFor returns an iterator for hooks that match the given repository reference.
+func (s *serviceImpl) ListFor(reference repository.Reference, event Event) iter.Seq2[Hook, error] {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return func(yield func(Hook, error) bool) {
+		for h := range s.hooks.Iter() {
+			match, err := h.Match(reference, event)
+			if err != nil {
+				yield(h, err)
+				return
+			}
+			if !match {
+				continue
+			}
 			if !yield(h, nil) {
 				break
 			}
@@ -41,114 +60,94 @@ func (s *hookServiceImpl) List() iter.Seq2[*Hook, error] {
 }
 
 // Add registers a new hook and stores its script content.
-func (s *hookServiceImpl) Add(ctx context.Context, h Hook, content io.Reader) error {
+func (s *serviceImpl) Add(ctx context.Context, entry Entry) (string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	scriptPath, err := s.content.SaveScript(ctx, h, content)
-	if err != nil {
-		return err
+	hook := NewHook(entry).(hookElement)
+	if err := s.hooks.Add(hook); err != nil {
+		return "", fmt.Errorf("add hook: %w", err)
 	}
-	h.ScriptPath = scriptPath
-	s.hooks = append(s.hooks, &h)
 	s.dirty = true
-	return nil
+	return hook.ID(), nil
 }
 
 // Update updates the script content of an existing hook (by ID).
-func (s *hookServiceImpl) Update(ctx context.Context, h Hook, content io.Reader) error {
+func (s *serviceImpl) Update(ctx context.Context, idlike string, entry Entry) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	i, _, err := s.find(h.ID)
+	hook, err := s.hooks.GetBy(idlike)
+	if err != nil {
+		return fmt.Errorf("hook not found: %w", err)
+	}
+	dirty := false
+	if entry.Name != "" {
+		hook.name = entry.Name
+		dirty = true
+	}
+	if entry.RepoPattern != "" {
+		hook.repoPattern = entry.RepoPattern
+		dirty = true
+	}
+	if entry.TriggerEvent != "" {
+		hook.triggerEvent = entry.TriggerEvent
+		dirty = true
+	}
+	if entry.OperationType != "" {
+		hook.operationType = entry.OperationType
+		dirty = true
+	}
+	if entry.OperationID != "" {
+		hook.operationID = entry.OperationID
+		dirty = true
+	}
+	if dirty {
+		s.hooks.Set(hook)
+		s.dirty = true
+	}
+	return nil
+}
+
+// Get retrieves a script by its ID.
+func (s *serviceImpl) Get(ctx context.Context, idlike string) (Hook, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.hooks.GetBy(idlike)
+}
+
+// Remove removes a hook and its hook content by ID.
+func (s *serviceImpl) Remove(ctx context.Context, idlike string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	hook, err := s.hooks.GetBy(idlike)
 	if err != nil {
 		return err
 	}
-	if content != nil {
-		if h.ScriptPath != "" {
-			_ = s.content.RemoveScript(ctx, h.ScriptPath)
-		}
-		scriptPath, err := s.content.SaveScript(ctx, h, content)
-		if err != nil {
-			return err
-		}
-		h.ScriptPath = scriptPath
+	if err := s.hooks.Remove(hook); err != nil {
+		return fmt.Errorf("remove hook: %w", err)
 	}
-	s.hooks[i] = &h
 	s.dirty = true
 	return nil
 }
 
-// find searches for a hook by its ID and returns its index and the hook itself.
-// If an exact match is found, it returns that hook. If no exact match exists but a single
-// hook ID matches the prefix, it returns that hook. Returns an error if the ID is empty,
-// multiple hooks match the prefix, or no matching hook is found.
-func (s *hookServiceImpl) find(id string) (int, *Hook, error) {
-	// NOTE: this function is internal and should not be locked externally.
-	if len(id) == 0 {
-		return -1, nil, errors.New("hook ID cannot be empty")
-	}
-	matched := -1
-	for i, h := range s.hooks {
-		if h.ID == id {
-			return i, h, nil
-		}
-		if strings.HasPrefix(h.ID, id) {
-			if matched >= 0 {
-				return -1, nil, errors.New("multiple hooks found with similar ID")
-			}
-			matched = i
-		}
-	}
-	if matched >= 0 {
-		return matched, s.hooks[matched], nil
-	}
-	return -1, nil, errors.New("hook not found")
-}
-
-// Get retrieves a hook by its ID.
-func (s *hookServiceImpl) Get(ctx context.Context, id string) (*Hook, error) {
+// Load replaces the list of hooks (used for loading from persistent storage).
+func (s *serviceImpl) Load(seq iter.Seq2[Hook, error]) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, h, err := s.find(id)
-	return h, err
-}
-
-// Remove removes a hook and its script content by ID.
-func (s *hookServiceImpl) Remove(ctx context.Context, id string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	i, h, err := s.find(id)
-	if err != nil {
-		return err
-	}
-	if h.ScriptPath != "" {
-		_ = s.content.RemoveScript(ctx, h.ScriptPath)
-	}
-	s.hooks = slices.Delete(s.hooks, i, i+1)
-	s.dirty = true
-	return nil
-}
-
-// Open opens the script content for a given hook.
-func (s *hookServiceImpl) Open(ctx context.Context, id string) (io.ReadCloser, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	_, hook, err := s.find(id)
-	if err != nil {
-		return nil, err
-	}
-	return s.content.OpenScript(ctx, hook.ScriptPath)
-}
-
-// Set replaces the list of hooks (used for loading from persistent storage).
-func (s *hookServiceImpl) Set(seq iter.Seq2[*Hook, error]) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	var hooks []*Hook
+	hooks := set.NewSet[hookElement]()
 	for h, err := range seq {
 		if err != nil {
 			return err
 		}
-		hooks = append(hooks, h)
+		if err := hooks.Add(hookElement{
+			id:            h.UUID(),
+			name:          h.Name(),
+			repoPattern:   h.RepoPattern(),
+			triggerEvent:  h.TriggerEvent(),
+			operationType: h.OperationType(),
+			operationID:   h.OperationID(),
+		}); err != nil {
+			return fmt.Errorf("load hook: %w", err)
+		}
 	}
 	s.hooks = hooks
 	s.dirty = true
@@ -156,17 +155,17 @@ func (s *hookServiceImpl) Set(seq iter.Seq2[*Hook, error]) error {
 }
 
 // HasChanges returns true if there are unsaved changes.
-func (s *hookServiceImpl) HasChanges() bool {
+func (s *serviceImpl) HasChanges() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.dirty
 }
 
 // MarkSaved marks the current state as saved (no unsaved changes).
-func (s *hookServiceImpl) MarkSaved() {
+func (s *serviceImpl) MarkSaved() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.dirty = false
 }
 
-var _ HookService = (*hookServiceImpl)(nil)
+var _ HookService = (*serviceImpl)(nil)

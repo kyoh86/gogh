@@ -2,8 +2,7 @@ package overlay_add
 
 import (
 	"context"
-	"fmt"
-	"os"
+	"io"
 
 	"github.com/kyoh86/gogh/v4/core/overlay"
 )
@@ -19,18 +18,11 @@ func NewUseCase(overlayService overlay.OverlayService) *UseCase {
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, forInit bool, relativePath string, repoPattern string, sourceFile string) error {
-	content, err := os.Open(sourceFile)
-	if err != nil {
-		return fmt.Errorf("opening source file '%s': %w", sourceFile, err)
-	}
-	defer content.Close()
-	if err := uc.overlayService.Add(ctx, overlay.Overlay{
-		RepoPattern:  repoPattern,
-		ForInit:      forInit,
+func (uc *UseCase) Execute(ctx context.Context, name, relativePath string, content io.Reader) (string, error) {
+	e := overlay.Entry{
+		Name:         name,
 		RelativePath: relativePath,
-	}, content); err != nil {
-		return fmt.Errorf("adding repo-pattern %s: %w", repoPattern, err)
+		Content:      content,
 	}
-	return nil
+	return uc.overlayService.Add(ctx, e)
 }

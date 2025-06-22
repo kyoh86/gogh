@@ -1,28 +1,64 @@
 package overlay
 
 import (
-	"fmt"
+	"io"
 
-	doublestar "github.com/bmatcuk/doublestar/v4"
-	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/google/uuid"
 )
 
+type Entry struct {
+	Name         string
+	RelativePath string
+	Content      io.Reader
+}
+
 // Overlay represents the metadata for an overlay entry.
-type Overlay struct {
-	RepoPattern     string `json:"repoPattern"`     // Repository pattern (glob)
-	ForInit         bool   `json:"forInit"`         // Whether the overlay is for initialization only
-	RelativePath    string `json:"relativePath"`    // Relative path in the repository where the overlay file will be placed
-	ContentLocation string `json:"contentLocation"` // Location of the content to be copied
+type Overlay interface {
+	ID() string
+	UUID() uuid.UUID
+	Name() string
+	RelativePath() string
 }
 
-func (ov Overlay) ID() string {
-	return fmt.Sprintf("%q%v%q", ov.RepoPattern, ov.ForInit, ov.RelativePath)
+// ConcreteOverlay creates an Overlay with the given parameters.
+func ConcreteOverlay(
+	id uuid.UUID,
+	name string,
+	relativePath string,
+) Overlay {
+	return overlayElement{
+		id:           id,
+		name:         name,
+		relativePath: relativePath,
+	}
 }
 
-func (ov Overlay) String() string {
-	return ov.RelativePath + "@" + ov.RepoPattern
+func NewOverlay(entry Entry) Overlay {
+	return overlayElement{
+		id:           uuid.Must(uuid.NewRandom()),
+		name:         entry.Name,
+		relativePath: entry.RelativePath,
+	}
 }
 
-func (ov Overlay) Match(ref repository.Reference) (bool, error) {
-	return doublestar.Match(ov.RepoPattern, ref.String())
+type overlayElement struct {
+	id           uuid.UUID
+	name         string
+	relativePath string
+}
+
+func (o overlayElement) ID() string {
+	return o.id.String()
+}
+
+func (o overlayElement) UUID() uuid.UUID {
+	return o.id
+}
+
+func (o overlayElement) Name() string {
+	return o.name
+}
+
+func (o overlayElement) RelativePath() string {
+	return o.relativePath
 }

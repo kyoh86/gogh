@@ -12,9 +12,11 @@ import (
 type OverlayService interface {
 	store.Content
 
-	List() iter.Seq2[*Overlay, error]
-	Add(ctx context.Context, ov Overlay, content io.Reader) error
-	Remove(ctx context.Context, ov Overlay) error
-	Open(ctx context.Context, ov Overlay) (io.ReadCloser, error)
-	Set([]Overlay) error
+	List() iter.Seq2[Overlay, error]
+	Add(ctx context.Context, entry Entry) (id string, _ error)
+	Get(ctx context.Context, idlike string) (Overlay, error)
+	Update(ctx context.Context, idlike string, entry Entry) error
+	Remove(ctx context.Context, idlike string) error
+	Open(ctx context.Context, idlike string) (io.ReadCloser, error)
+	Load(iter.Seq2[Overlay, error]) error
 }

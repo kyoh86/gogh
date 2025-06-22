@@ -44,17 +44,33 @@ func (m *MockOverlayService) EXPECT() *MockOverlayServiceMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockOverlayService) Add(ctx context.Context, ov overlay.Overlay, content io.Reader) error {
+func (m *MockOverlayService) Add(ctx context.Context, entry overlay.Entry) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", ctx, ov, content)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Add", ctx, entry)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Add indicates an expected call of Add.
-func (mr *MockOverlayServiceMockRecorder) Add(ctx, ov, content any) *gomock.Call {
+func (mr *MockOverlayServiceMockRecorder) Add(ctx, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockOverlayService)(nil).Add), ctx, ov, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockOverlayService)(nil).Add), ctx, entry)
+}
+
+// Get mocks base method.
+func (m *MockOverlayService) Get(ctx context.Context, idlike string) (overlay.Overlay, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, idlike)
+	ret0, _ := ret[0].(overlay.Overlay)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockOverlayServiceMockRecorder) Get(ctx, idlike any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockOverlayService)(nil).Get), ctx, idlike)
 }
 
 // HasChanges mocks base method.
@@ -72,10 +88,10 @@ func (mr *MockOverlayServiceMockRecorder) HasChanges() *gomock.Call {
 }
 
 // List mocks base method.
-func (m *MockOverlayService) List() iter.Seq2[*overlay.Overlay, error] {
+func (m *MockOverlayService) List() iter.Seq2[overlay.Overlay, error] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List")
-	ret0, _ := ret[0].(iter.Seq2[*overlay.Overlay, error])
+	ret0, _ := ret[0].(iter.Seq2[overlay.Overlay, error])
 	return ret0
 }
 
@@ -83,6 +99,20 @@ func (m *MockOverlayService) List() iter.Seq2[*overlay.Overlay, error] {
 func (mr *MockOverlayServiceMockRecorder) List() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockOverlayService)(nil).List))
+}
+
+// Load mocks base method.
+func (m *MockOverlayService) Load(arg0 iter.Seq2[overlay.Overlay, error]) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Load", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Load indicates an expected call of Load.
+func (mr *MockOverlayServiceMockRecorder) Load(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockOverlayService)(nil).Load), arg0)
 }
 
 // MarkSaved mocks base method.
@@ -98,44 +128,44 @@ func (mr *MockOverlayServiceMockRecorder) MarkSaved() *gomock.Call {
 }
 
 // Open mocks base method.
-func (m *MockOverlayService) Open(ctx context.Context, ov overlay.Overlay) (io.ReadCloser, error) {
+func (m *MockOverlayService) Open(ctx context.Context, idlike string) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Open", ctx, ov)
+	ret := m.ctrl.Call(m, "Open", ctx, idlike)
 	ret0, _ := ret[0].(io.ReadCloser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Open indicates an expected call of Open.
-func (mr *MockOverlayServiceMockRecorder) Open(ctx, ov any) *gomock.Call {
+func (mr *MockOverlayServiceMockRecorder) Open(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Open", reflect.TypeOf((*MockOverlayService)(nil).Open), ctx, ov)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Open", reflect.TypeOf((*MockOverlayService)(nil).Open), ctx, idlike)
 }
 
 // Remove mocks base method.
-func (m *MockOverlayService) Remove(ctx context.Context, ov overlay.Overlay) error {
+func (m *MockOverlayService) Remove(ctx context.Context, idlike string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Remove", ctx, ov)
+	ret := m.ctrl.Call(m, "Remove", ctx, idlike)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Remove indicates an expected call of Remove.
-func (mr *MockOverlayServiceMockRecorder) Remove(ctx, ov any) *gomock.Call {
+func (mr *MockOverlayServiceMockRecorder) Remove(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockOverlayService)(nil).Remove), ctx, ov)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockOverlayService)(nil).Remove), ctx, idlike)
 }
 
-// Set mocks base method.
-func (m *MockOverlayService) Set(arg0 []overlay.Overlay) error {
+// Update mocks base method.
+func (m *MockOverlayService) Update(ctx context.Context, idlike string, entry overlay.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", arg0)
+	ret := m.ctrl.Call(m, "Update", ctx, idlike, entry)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Set indicates an expected call of Set.
-func (mr *MockOverlayServiceMockRecorder) Set(arg0 any) *gomock.Call {
+// Update indicates an expected call of Update.
+func (mr *MockOverlayServiceMockRecorder) Update(ctx, idlike, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockOverlayService)(nil).Set), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockOverlayService)(nil).Update), ctx, idlike, entry)
 }
