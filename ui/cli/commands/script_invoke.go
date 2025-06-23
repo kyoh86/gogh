@@ -73,7 +73,7 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				if err := scriptInvokeUseCase.Execute(ctx, ref, scriptID, map[string]any{}); err != nil {
 					return err
 				}
-				logger.Infof("Applied script %s to %s", scriptID, ref)
+				logger.Infof("Invoked script %s in %s", scriptID, ref)
 			}
 			return nil
 		},
