@@ -37,6 +37,9 @@ make install
 
 # Run a single test
 go test -v -run TestName ./path/to/package
+
+# Format Go files with gofumpt (handles formatting and trailing newlines)
+go run mvdan.cc/gofumpt@latest -w path/to/file.go
 ```
 
 ## Testing Conventions
