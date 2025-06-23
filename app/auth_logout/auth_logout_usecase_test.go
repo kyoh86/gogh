@@ -11,7 +11,7 @@ import (
 )
 
 func TestUseCase_Execute(t *testing.T) {
-	// テストケースの定義
+	// Define test cases
 	testCases := []struct {
 		name        string
 		host        string
@@ -20,7 +20,7 @@ func TestUseCase_Execute(t *testing.T) {
 		expectError bool
 	}{
 		{
-			name:  "正常系: トークンが正しく削除される",
+			name:  "Normal case: Token is deleted correctly",
 			host:  "github.com",
 			owner: "kyoh86",
 			setupMock: func(mockService *auth_mock.MockTokenService) {
@@ -29,7 +29,7 @@ func TestUseCase_Execute(t *testing.T) {
 			expectError: false,
 		},
 		{
-			name:  "異常系: トークン削除でエラーが発生",
+			name:  "Error case: Error occurs during token deletion",
 			host:  "github.com",
 			owner: "kyoh86",
 			setupMock: func(mockService *auth_mock.MockTokenService) {
@@ -39,29 +39,29 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 	}
 
-	// 各テストケースを実行
+	// Execute each test case
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// モックコントローラのセットアップ
+			// Set up mock controller
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			// TokenServiceのモックを作成
+			// Create TokenService mock
 			mockTokenService := auth_mock.NewMockTokenService(ctrl)
 			tc.setupMock(mockTokenService)
 
-			// テスト対象のUseCaseを作成
+			// Create UseCase under test
 			useCase := testtarget.NewUseCase(mockTokenService)
 
-			// Execute実行
+			// Execute
 			err := useCase.Execute(context.Background(), tc.host, tc.owner)
 
-			// 結果検証
+			// Verify result
 			if tc.expectError && err == nil {
-				t.Error("エラーが期待されましたが、エラーは発生しませんでした")
+				t.Error("Expected error but got none")
 			}
 			if !tc.expectError && err != nil {
-				t.Errorf("エラーは期待されませんでしたが、エラーが発生しました: %v", err)
+				t.Errorf("Expected no error but got: %v", err)
 			}
 		})
 	}

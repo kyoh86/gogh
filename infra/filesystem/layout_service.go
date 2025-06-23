@@ -15,7 +15,7 @@ type LayoutService struct {
 	root workspace.Root
 }
 
-// NewLayoutService creates a new instance of Layout
+// NewLayoutService creates a new instance of LayoutService
 func NewLayoutService(root workspace.Root) *LayoutService {
 	return &LayoutService{root: root}
 }
@@ -78,5 +78,5 @@ func (l *LayoutService) DeleteRepository(ref repository.Reference) error {
 	return os.RemoveAll(path)
 }
 
-// Ensure Layout implements workspace.Layout
+// Ensure LayoutService implements workspace.LayoutService
 var _ workspace.LayoutService = (*LayoutService)(nil)

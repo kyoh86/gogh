@@ -17,7 +17,7 @@ type StdoutLogHandler struct {
 }
 
 // HandleLog implements log.Handler.
-// It filters out error logs.
+// It filters out error level logs and above, allowing only info/debug logs to pass through to stdout.
 func (h *StdoutLogHandler) HandleLog(e *log.Entry) error {
 	if e.Level >= log.ErrorLevel {
 		return nil

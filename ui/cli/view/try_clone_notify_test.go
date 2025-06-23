@@ -13,7 +13,7 @@ import (
 
 func TestTryCloneNotify(t *testing.T) {
 	t.Run("StatusEmpty", func(t *testing.T) {
-		// ログ出力をキャプチャするためのバッファを設定
+		// Set up buffer to capture log output
 		var buf bytes.Buffer
 		logger := &log.Logger{
 			Handler: text.New(&buf),
@@ -21,7 +21,7 @@ func TestTryCloneNotify(t *testing.T) {
 		}
 		ctx := log.NewContext(context.Background(), logger)
 
-		// 呼び出し確認用のモックnotify関数
+		// Mock notify function to verify call
 		var called bool
 		mockNotify := func(status try_clone.Status) error {
 			called = true
@@ -29,18 +29,18 @@ func TestTryCloneNotify(t *testing.T) {
 			return nil
 		}
 
-		// テスト対象の関数を実行
+		// Execute the function under test
 		notify := TryCloneNotify(ctx, mockNotify)
 		err := notify(try_clone.StatusEmpty)
 
-		// 検証
+		// Verify
 		assert.NoError(t, err)
-		assert.True(t, called, "元のnotify関数が呼び出されること")
+		assert.True(t, called, "original notify function should be called")
 		assert.Contains(t, buf.String(), "created empty repository")
 	})
 
 	t.Run("StatusRetry", func(t *testing.T) {
-		// ログ出力をキャプチャするためのバッファを設定
+		// Set up buffer to capture log output
 		var buf bytes.Buffer
 		logger := &log.Logger{
 			Handler: text.New(&buf),
@@ -48,7 +48,7 @@ func TestTryCloneNotify(t *testing.T) {
 		}
 		ctx := log.NewContext(context.Background(), logger)
 
-		// 呼び出し確認用のモックnotify関数
+		// Mock notify function to verify call
 		var called bool
 		mockNotify := func(status try_clone.Status) error {
 			called = true
@@ -56,24 +56,24 @@ func TestTryCloneNotify(t *testing.T) {
 			return nil
 		}
 
-		// テスト対象の関数を実行
+		// Execute the function under test
 		notify := TryCloneNotify(ctx, mockNotify)
 		err := notify(try_clone.StatusRetry)
 
-		// 検証
+		// Verify
 		assert.NoError(t, err)
-		assert.True(t, called, "元のnotify関数が呼び出されること")
+		assert.True(t, called, "original notify function should be called")
 		assert.Contains(t, buf.String(), "waiting the remote repository is ready")
 	})
 
 	t.Run("NilNotify", func(t *testing.T) {
 		ctx := context.Background()
 
-		// nilのnotify関数でテスト
+		// Test with nil notify function
 		notify := TryCloneNotify(ctx, nil)
 		err := notify(try_clone.StatusEmpty)
 
-		// エラーが発生しないことを確認
+		// Verify no error occurs
 		assert.NoError(t, err)
 	})
 }
