@@ -1,0 +1,150 @@
+package extra_save
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/kyoh86/gogh/v4/app/hook_add"
+	"github.com/kyoh86/gogh/v4/core/extra"
+	"github.com/kyoh86/gogh/v4/core/git"
+	"github.com/kyoh86/gogh/v4/core/hook"
+	"github.com/kyoh86/gogh/v4/core/overlay"
+	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/workspace"
+)
+
+// UseCase for saving auto-apply extra
+type UseCase struct {
+	workspaceService workspace.WorkspaceService
+	finderService    workspace.FinderService
+	gitService       git.GitService
+	overlayService   overlay.OverlayService
+	hookService      hook.HookService
+	extraService     extra.ExtraService
+	referenceParser  repository.ReferenceParser
+}
+
+// NewUseCase creates a new extra save use case
+func NewUseCase(
+	workspaceService workspace.WorkspaceService,
+	finderService workspace.FinderService,
+	gitService git.GitService,
+	overlayService overlay.OverlayService,
+	hookService hook.HookService,
+	extraService extra.ExtraService,
+	referenceParser repository.ReferenceParser,
+) *UseCase {
+	return &UseCase{
+		workspaceService: workspaceService,
+		finderService:    finderService,
+		gitService:       gitService,
+		overlayService:   overlayService,
+		hookService:      hookService,
+		extraService:     extraService,
+		referenceParser:  referenceParser,
+	}
+}
+
+// Execute saves excluded files as auto-apply extra
+func (uc *UseCase) Execute(ctx context.Context, repoStr string) error {
+	// Parse repository reference
+	ref, err := uc.referenceParser.Parse(repoStr)
+	if err != nil {
+		return fmt.Errorf("parsing repository reference: %w", err)
+	}
+
+	// Find repository location
+	location, err := uc.finderService.FindByReference(ctx, uc.workspaceService, *ref)
+	if err != nil {
+		return fmt.Errorf("finding repository: %w", err)
+	}
+	if location == nil {
+		return fmt.Errorf("repository not found: %s", repoStr)
+	}
+
+	// Check if auto extra already exists
+	existing, err := uc.extraService.GetAutoExtra(ctx, *ref)
+	if err == nil && existing != nil {
+		return fmt.Errorf("auto extra already exists for %s, use 'extras clear' first", repoStr)
+	}
+
+	// Get excluded files
+	var excludedFiles []string
+	for file, err := range uc.gitService.ListExcludedFiles(ctx, location.FullPath(), nil) {
+		if err != nil {
+			return fmt.Errorf("listing excluded files: %w", err)
+		}
+		excludedFiles = append(excludedFiles, file)
+	}
+
+	if len(excludedFiles) == 0 {
+		return fmt.Errorf("no excluded files found in %s", repoStr)
+	}
+
+	// Create overlay and hook for each excluded file
+	var items []extra.Item
+	for _, file := range excludedFiles {
+		fullPath := filepath.Join(location.FullPath(), file)
+
+		// Read file content
+		content, err := os.ReadFile(fullPath)
+		if err != nil {
+			return fmt.Errorf("reading file %s: %w", file, err)
+		}
+
+		// Create overlay
+		overlayID, err := uc.overlayService.Add(ctx, overlay.Entry{
+			Name:         fmt.Sprintf("Auto extra: %s", file),
+			RelativePath: file,
+			Content:      bytes.NewReader(content),
+		})
+		if err != nil {
+			// Rollback created overlays
+			for _, item := range items {
+				_ = uc.overlayService.Remove(ctx, item.OverlayID)
+				_ = uc.hookService.Remove(ctx, item.HookID)
+			}
+			return fmt.Errorf("creating overlay for %s: %w", file, err)
+		}
+
+		// Create post-clone hook for this overlay
+		hookAddUC := hook_add.NewUseCase(uc.hookService)
+		hookID, err := hookAddUC.Execute(ctx, hook_add.Options{
+			Name:          fmt.Sprintf("Auto extra for %s: %s", ref.String(), file),
+			RepoPattern:   ref.String(),
+			TriggerEvent:  string(hook.EventPostClone),
+			OperationType: string(hook.OperationTypeOverlay),
+			OperationID:   overlayID,
+		})
+		if err != nil {
+			// Rollback
+			_ = uc.overlayService.Remove(ctx, overlayID)
+			for _, item := range items {
+				_ = uc.overlayService.Remove(ctx, item.OverlayID)
+				_ = uc.hookService.Remove(ctx, item.HookID)
+			}
+			return fmt.Errorf("creating hook for %s: %w", file, err)
+		}
+
+		items = append(items, extra.Item{
+			OverlayID: overlayID,
+			HookID:    hookID,
+		})
+	}
+
+	// Save auto extra
+	_, err = uc.extraService.AddAutoExtra(ctx, *ref, *ref, items)
+	if err != nil {
+		// Rollback
+		for _, item := range items {
+			_ = uc.overlayService.Remove(ctx, item.OverlayID)
+			_ = uc.hookService.Remove(ctx, item.HookID)
+		}
+		return fmt.Errorf("saving auto extra: %w", err)
+	}
+
+	return nil
+}

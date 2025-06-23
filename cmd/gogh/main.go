@@ -10,6 +10,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/core/auth"
+	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/gogh"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/overlay"
@@ -109,6 +110,12 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("loading hooks: %w", err)
 	}
 
+	extraStore := config.NewExtraStore()
+	extraService, err := extraStore.Load(ctx, extra.NewExtraService)
+	if err != nil {
+		return fmt.Errorf("loading extra: %w", err)
+	}
+
 	svc := &service.ServiceSet{
 		DefaultNameStore:   defaultNameStore,
 		DefaultNameService: defaultNameService,
@@ -127,6 +134,9 @@ func run(ctx context.Context) error {
 
 		HookStore:   hookStore,
 		HookService: hookService,
+
+		ExtraStore:   extraStore,
+		ExtraService: extraService,
 
 		FlagsStore: flagsStore,
 		Flags:      flags,

@@ -65,13 +65,15 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		eg, egCtx := errgroup.WithContext(ctx)
 		eg.SetLimit(5)
 		for _, ref := range refs {
+			ref := ref // capture loop variable
 			eg.Go(func() error {
-				return cloneUseCase.Execute(egCtx, ref, clone.Options{
+				err := cloneUseCase.Execute(egCtx, ref, clone.Options{
 					TryCloneOptions: try_clone.Options{
 						Notify:  try_clone.RetryLimit(1, nil),
 						Timeout: f.CloneRetryTimeout,
 					},
 				})
+				return err
 			})
 		}
 		if err := eg.Wait(); err != nil {

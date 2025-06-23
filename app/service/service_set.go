@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/auth"
+	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hosting"
@@ -34,6 +35,9 @@ type ServiceSet struct {
 
 	HookStore   store.Saver[hook.HookService]
 	HookService hook.HookService
+
+	ExtraStore   *config.ExtraStore
+	ExtraService extra.ExtraService
 
 	ReferenceParser     repository.ReferenceParser
 	HostingService      hosting.HostingService

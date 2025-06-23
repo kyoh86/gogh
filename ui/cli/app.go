@@ -68,6 +68,9 @@ func NewApp(
 			if err := svc.HookStore.Save(ctx, svc.HookService, false); err != nil {
 				return fmt.Errorf("saving hooks: %w", err)
 			}
+			if err := svc.ExtraStore.Save(ctx, svc.ExtraService, false); err != nil {
+				return fmt.Errorf("saving extra: %w", err)
+			}
 			return nil
 		},
 	}
@@ -142,7 +145,6 @@ func NewApp(
 		commands.NewOverlayAddCommand,
 		commands.NewOverlayApplyCommand,
 		commands.NewOverlayEditCommand,
-		commands.NewOverlayExtractCommand,
 		commands.NewOverlayListCommand,
 		commands.NewOverlayRemoveCommand,
 		commands.NewOverlayShowCommand,
@@ -189,6 +191,22 @@ func NewApp(
 	}
 	hookCommand.GroupID = groupAutomation
 
+	extraCommand, err := cmdWithSubs(
+		ctx, svc,
+		commands.NewExtraCommand,
+		nil,
+		commands.NewExtraSaveCommand,
+		commands.NewExtraCreateCommand,
+		commands.NewExtraListCommand,
+		commands.NewExtraShowCommand,
+		commands.NewExtraRemoveCommand,
+		commands.NewExtraApplyCommand,
+	)
+	if err != nil {
+		return nil, err
+	}
+	extraCommand.GroupID = groupAutomation
+
 	configAuthCommand := typ.Ptr(*authCommand)
 	configAuthCommand.GroupID = ""
 	configRootsCommand := typ.Ptr(*rootsCommand)
@@ -215,6 +233,7 @@ func NewApp(
 		overlayCommand,
 		scriptCommand,
 		hookCommand,
+		extraCommand,
 	}
 	for _, sub := range []struct {
 		fn    func(context.Context, *service.ServiceSet) (*cobra.Command, error)

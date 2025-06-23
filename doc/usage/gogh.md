@@ -18,6 +18,7 @@ GO GitHub local repository manager
 * [gogh create](gogh_create.md)	 - Create a new local and remote repository
 * [gogh cwd](gogh_cwd.md)	 - Print the local repository which the current working directory belongs to
 * [gogh delete](gogh_delete.md)	 - Delete local and remote repository
+* [gogh extra](gogh_extra.md)	 - Manage repository extra files
 * [gogh fork](gogh_fork.md)	 - Fork a repository
 * [gogh hook](gogh_hook.md)	 - Manage repository hooks
 * [gogh list](gogh_list.md)	 - List local repositories

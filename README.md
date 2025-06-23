@@ -42,9 +42,9 @@ You can also do:
 - Delete a repository (`gogh delete`).
 - List remote repositories (`gogh repos`).
 - Show the current working directory's repository (`gogh cwd`).
-- Manage [overlay files](#overlay-feature) (`gogh overlay`), [scripts](#script-feature) (`gogh script`), and [hooks](#hook-feature) (`gogh hook`).
+- Manage [overlay files](#overlay-feature) (`gogh overlay`), [scripts](#script-feature) (`gogh script`), [hooks](#hook-feature) (`gogh hook`), and [extras](#extra-feature) (`gogh extra`).
 
-See [#Available commands](#available-commands), [#Overlay Feature](#overlay-feature), [#Script Feature](#script-feature), and [#Hook Feature](#hook-feature) for more information.
+See [#Available commands](#available-commands), [#Overlay Feature](#overlay-feature), [#Script Feature](#script-feature), [#Hook Feature](#hook-feature), and [#Extra Feature](#extra-feature) for more information.
 
 ## Install
 
@@ -128,11 +128,12 @@ See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 
 ### Automation
 
-| Command   | Description                               |
-| --        | --                                        |
-| `hook`    | Manage repository automation hooks        |
-| `overlay` | Manage repository overlay files           |
-| `script`  | Manage Lua scripts for repository actions |
+| Command   | Description                                   |
+| --        | --                                            |
+| `extra`   | Manage overlay-hook packages (extras)         |
+| `hook`    | Manage repository automation hooks            |
+| `overlay` | Manage repository overlay files               |
+| `script`  | Manage Lua scripts for repository actions     |
 
 ### Configurations
 
@@ -484,6 +485,95 @@ $ gogh hook add --name "apply-templates" \
   --trigger-event "post-create" \
   --operation-type "overlay" \
   --operation-id "<overlay-id>"
+```
+
+## Extra Feature
+
+### What are Extras?
+
+Extras are higher-level configurations that combine overlays and hooks into reusable packages. They simplify the process of managing repository templates and automation.
+
+### Types of Extras
+
+1. **Auto-apply Extras**: Automatically applied to specific repositories when cloned
+   - Created from existing repositories with their ignored files
+   - Applied automatically via hooks when the repository is cloned
+
+2. **Named Extras**: Reusable templates that can be applied to any repository
+   - Created with custom names for easy reference
+   - Applied manually using the `extra apply` command
+
+### How Extras Work
+
+Each extra contains:
+- One or more overlay-hook pairs
+- Metadata about the source and creation time
+- Type information (auto-apply or named)
+
+When you save an extra from a repository, it:
+1. Extracts all untracked files as overlays
+2. Creates hooks to apply these overlays
+3. Bundles them together as a single extra
+
+### Basic Extra Commands
+
+```console
+# Save a repository's untracked files as an auto-apply extra
+$ gogh extra save github.com/owner/repo
+
+# Create a named extra from a specific repository
+$ gogh extra create my-template --source github.com/owner/repo --overlay <overlay-name>
+
+# List all extras
+$ gogh extra list
+
+# Show details of an extra
+$ gogh extra show <extra-id-or-name>
+
+# Apply a named extra to repositories
+$ gogh extra apply <extra-name> [[host/]owner/]repo...
+
+# Remove an extra
+$ gogh extra remove <extra-id-or-name>
+```
+
+### Practical Examples
+
+#### Auto-apply Repository Configuration
+
+Save your local development environment setup to be automatically restored when cloning:
+
+```console
+# Save untracked files from a repository as auto-apply extra
+$ gogh extra save github.com/owner/repo
+# Now when you clone this repository again, all untracked files will be restored
+```
+
+#### Create Reusable Project Templates
+
+Create a template from a well-configured repository:
+
+```console
+# Create a template with common development files
+$ gogh extra create python-template github.com/myorg/python-starter
+
+# Apply it to new projects
+$ gogh extra apply python-template github.com/myorg/new-python-project
+```
+
+#### Managing Extras
+
+View and manage your extras:
+
+```console
+# List all extras with their types
+$ gogh extra list --type all
+
+# Show detailed information about an extra
+$ gogh extra show my-template
+
+# Remove an extra that's no longer needed
+$ gogh extra remove old-template
 ```
 
 # LICENSE
