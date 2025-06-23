@@ -12,7 +12,7 @@ gogh hook add [flags]
   -h, --help                   help for add
       --name string            Name of the hook
       --repo-pattern string    Repository pattern
-      --trigger-event string   event to hook automatically; it can accept "", "clone", "fork", "add" or "never" (default "never")
+      --trigger-event string   event that triggers the hook; it can accept "", "post-clone", "post-fork" or "post-create"
 ```
 
 ### SEE ALSO

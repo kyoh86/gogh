@@ -9,9 +9,9 @@ gogh script invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
 ### Examples
 
 ```
-  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
-  invoke [flags] <overlay-id> --all
-  invoke [flags] <overlay-id> --pattern <pattern> [--pattern <pattern>]...
+  invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
+  invoke [flags] <script-id> --all
+  invoke [flags] <script-id> --pattern <pattern> [--pattern <pattern>]...
 
   It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.

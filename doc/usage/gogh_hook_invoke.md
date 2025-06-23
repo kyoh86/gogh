@@ -1,6 +1,6 @@
 ## gogh hook invoke
 
-Run a hook script forcely for a repository
+Manually invoke a hook for a repository
 
 ```
 gogh hook invoke [flags] <hook-id> [[<host>/]<owner>/]<name>

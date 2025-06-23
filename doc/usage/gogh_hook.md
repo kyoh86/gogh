@@ -12,7 +12,7 @@ Manage repository hooks
 
 * [gogh](gogh.md)	 - GO GitHub local repository manager
 * [gogh hook add](gogh_hook_add.md)	 - Add a new hook
-* [gogh hook invoke](gogh_hook_invoke.md)	 - Run a hook script forcely for a repository
+* [gogh hook invoke](gogh_hook_invoke.md)	 - Manually invoke a hook for a repository
 * [gogh hook list](gogh_hook_list.md)	 - List registered hooks
 * [gogh hook remove](gogh_hook_remove.md)	 - Remove a registered hook
 * [gogh hook show](gogh_hook_show.md)	 - Show a hook

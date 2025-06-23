@@ -11,7 +11,7 @@ import (
 func NewHookInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "invoke [flags] <hook-id> [[<host>/]<owner>/]<name>",
-		Short: "Run a hook script forcely for a repository",
+		Short: "Manually invoke a hook for a repository",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

@@ -21,9 +21,9 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 		Use:   "invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]",
 		Short: "Invoke an script in a repository",
 		Args:  cobra.MinimumNArgs(1),
-		Example: `  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
-  invoke [flags] <overlay-id> --all
-  invoke [flags] <overlay-id> --pattern <pattern> [--pattern <pattern>]...
+		Example: `  invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
+  invoke [flags] <script-id> --all
+  invoke [flags] <script-id> --pattern <pattern> [--pattern <pattern>]...
 
   It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.

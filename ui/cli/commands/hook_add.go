@@ -36,7 +36,7 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 	}
 	cmd.Flags().StringVar(&f.name, "name", "", "Name of the hook")
 
-	if err := enumFlag(cmd, &f.triggerEvent, "trigger-event", "never", "event to hook automatically", "", "clone", "fork", "add", "never"); err != nil {
+	if err := enumFlag(cmd, &f.triggerEvent, "trigger-event", "", "event that triggers the hook", "", "post-clone", "post-fork", "post-create"); err != nil {
 		return nil, fmt.Errorf("registering event flag: %w", err)
 	}
 
