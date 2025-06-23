@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	lua "github.com/Shopify/go-lua"
+	libs "github.com/vadv/gopher-lua-libs"
+	lua "github.com/yuin/gopher-lua"
 )
 
 // UseCase for running script scripts
@@ -18,28 +19,27 @@ func NewUseCase() *UseCase {
 type Globals map[string]any
 
 // ToLuaTable converts the Globals map to a Lua table on the given state
-func (g Globals) ToLuaTable(l *lua.State) {
-	l.NewTable()
+func (g Globals) ToLuaTable(l *lua.LState) *lua.LTable {
+	table := l.NewTable()
 	for key, value := range g {
-		l.PushString(key)
 		switch v := value.(type) {
 		case string:
-			l.PushString(v)
+			table.RawSetString(key, lua.LString(v))
 		case int:
-			l.PushInteger(v)
+			table.RawSetString(key, lua.LNumber(v))
 		case float64:
-			l.PushNumber(v)
+			table.RawSetString(key, lua.LNumber(v))
 		case bool:
-			l.PushBoolean(v)
+			table.RawSetString(key, lua.LBool(v))
 		case map[string]any:
 			// Recursively convert nested maps
-			Globals(v).ToLuaTable(l)
+			table.RawSetString(key, Globals(v).ToLuaTable(l))
 		default:
 			// For complex types, convert to a simple representation
-			l.PushString(fmt.Sprintf("%v", v))
+			table.RawSetString(key, lua.LString(fmt.Sprintf("%v", v)))
 		}
-		l.SetTable(-3)
 	}
+	return table
 }
 
 type Script struct {
@@ -49,14 +49,16 @@ type Script struct {
 
 func (uc *UseCase) Execute(ctx context.Context, script Script) error {
 	l := lua.NewState()
-	lua.OpenLibraries(l)
+	defer l.Close()
+
+	// Load standard libraries
+	libs.Preload(l)
 
 	// Set up the global 'gogh' table
-	l.NewTable()
-	script.Globals.ToLuaTable(l)
-	l.SetGlobal("gogh")
+	goghTable := script.Globals.ToLuaTable(l)
+	l.SetGlobal("gogh", goghTable)
 
-	if err := lua.DoString(l, script.Code); err != nil {
+	if err := l.DoString(script.Code); err != nil {
 		return fmt.Errorf("run Lua: %w", err)
 	}
 	return nil
