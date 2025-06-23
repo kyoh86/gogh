@@ -9,8 +9,9 @@ gogh script invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
 ### Examples
 
 ```
-  invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
-  invoke [flags] <script-id> --all
+  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
+  invoke [flags] <overlay-id> --all
+  invoke [flags] <overlay-id> --pattern <pattern> [--pattern <pattern>]...
 
   It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.
@@ -31,8 +32,9 @@ gogh script invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
 ### Options
 
 ```
-      --all    Apply to all repositories in the workspace
-  -h, --help   help for invoke
+      --all               Apply to all repositories in the workspace
+  -h, --help              help for invoke
+  -p, --pattern strings   Patterns for selecting repositories
 ```
 
 ### SEE ALSO

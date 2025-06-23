@@ -11,6 +11,7 @@ gogh overlay apply [flags] <overlay-id> [[<host>/]<owner>/]<name>
 ```
   invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
   invoke [flags] <overlay-id> --all
+  invoke [flags] <overlay-id> --pattern <pattern> [--pattern <pattern>]...
 
   It accepts a short notation for each repository
   (for example, "github.com/kyoh86/example") like below.
@@ -31,8 +32,9 @@ gogh overlay apply [flags] <overlay-id> [[<host>/]<owner>/]<name>
 ### Options
 
 ```
-      --all    Apply to all repositories in the workspace
-  -h, --help   help for apply
+      --all               Apply to all repositories in the workspace
+  -h, --help              help for apply
+  -p, --pattern strings   Patterns for selecting repositories
 ```
 
 ### SEE ALSO
