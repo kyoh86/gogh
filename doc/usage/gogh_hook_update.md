@@ -14,7 +14,7 @@ gogh hook update [flags] <hook-id>
       --operation-id string     Operation resource ID
       --operation-type string   Operation type; it can accept "overlay" or "script"
       --repo-pattern string     Repository pattern
-      --trigger-event string    event to hook automatically; it can accept "post-clone", "post-fork" or "post-create" (default "never")
+      --trigger-event string    event to hook automatically; it can accept "post-clone", "post-fork" or "post-create"
 ```
 
 ### SEE ALSO

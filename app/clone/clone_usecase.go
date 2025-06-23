@@ -72,6 +72,15 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	if err := tryCloneUseCase.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
 		return err
 	}
+	globals := make(map[string]any)
+	if repo.Parent != nil {
+		globals["parent"] = map[string]any{
+			"host":      repo.Parent.Ref.Host(),
+			"owner":     repo.Parent.Ref.Owner(),
+			"name":      repo.Parent.Ref.Name(),
+			"clone_url": repo.Parent.CloneURL,
+		}
+	}
 	if err := hook_invoke.NewUseCase(
 		uc.workspaceService,
 		uc.finderService,
@@ -79,7 +88,7 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 		uc.overlayService,
 		uc.scriptService,
 		uc.referenceParser,
-	).InvokeFor(ctx, hook_invoke.EventPostClone, refWithAlias); err != nil {
+	).InvokeForWithGlobals(ctx, hook_invoke.EventPostClone, refWithAlias, globals); err != nil {
 		return fmt.Errorf("invoking hooks after clone: %w", err)
 	}
 	return nil

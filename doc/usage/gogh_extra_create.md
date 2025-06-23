@@ -7,7 +7,6 @@ Create a named extra template
 Create a named extra template from overlays.
 
 This creates a reusable template that can be applied to any repository later.
-By default, it uses the current directory's repository as the source.
 
 ```
 gogh extra create <name> [flags]
@@ -18,7 +17,7 @@ gogh extra create <name> [flags]
 ```
   -h, --help              help for create
   -o, --overlay strings   Overlay names to include in the extra
-  -s, --source string     Source repository (default: current directory)
+  -s, --source string     Source repository
 ```
 
 ### SEE ALSO

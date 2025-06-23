@@ -136,8 +136,8 @@ func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr
 				"id":            h.ID(),
 				"name":          h.Name(),
 				"repoPattern":   h.RepoPattern(),
-				"triggerEvent":  h.TriggerEvent(),
-				"operationType": h.OperationType(),
+				"triggerEvent":  string(h.TriggerEvent()),
+				"operationType": string(h.OperationType()),
 				"operationId":   h.OperationID(),
 			}
 			if err := scriptApplyUseCase.Invoke(ctx, match, h.OperationID(), g); err != nil {

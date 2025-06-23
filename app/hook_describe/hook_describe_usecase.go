@@ -39,19 +39,23 @@ type UseCaseOneLine struct {
 	writer io.Writer
 }
 
-// NewUseCaseOneline creates a new use case for showing overlays in text format
+// NewUseCaseOneLine creates a new use case for showing overlays in text format
 func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
 	return &UseCaseOneLine{writer: writer}
 }
 
 // Execute executes the use case to show a hook in a single line format
 func (uc *UseCaseOneLine) Execute(ctx context.Context, s hook.Hook) error {
+	pattern := s.RepoPattern()
+	if pattern == "" {
+		pattern = "*"
+	}
 	_, err := fmt.Fprintf(
 		uc.writer,
-		"[%s] %s for %s @ %s: %s(%s)\n",
+		"[%s] %s for repos(%s) @%s: %s(%s)\n",
 		s.ID()[:8],
 		s.Name(),
-		s.RepoPattern(),
+		pattern,
 		s.TriggerEvent(),
 		s.OperationType(),
 		s.OperationID(),

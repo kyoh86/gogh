@@ -11,9 +11,11 @@ import (
 
 func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f struct {
-		name         string
-		triggerEvent string
-		repoPattern  string
+		name          string
+		triggerEvent  string
+		repoPattern   string
+		operationType string
+		operationID   string
 	}
 	cmd := &cobra.Command{
 		Use:   "add",
@@ -22,9 +24,11 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			opts := hook_add.Options{
-				Name:         f.name,
-				TriggerEvent: f.triggerEvent,
-				RepoPattern:  f.repoPattern,
+				Name:          f.name,
+				TriggerEvent:  f.triggerEvent,
+				RepoPattern:   f.repoPattern,
+				OperationType: f.operationType,
+				OperationID:   f.operationID,
 			}
 			id, err := hook_add.NewUseCase(svc.HookService).Execute(ctx, opts)
 			if err != nil {
@@ -41,5 +45,11 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 	}
 
 	cmd.Flags().StringVar(&f.repoPattern, "repo-pattern", "", "Repository pattern")
+	if err := enumFlag(cmd, &f.operationType, "operation-type", "", "Operation type", "overlay", "script"); err != nil {
+		return nil, fmt.Errorf("registering operation-type flag: %w", err)
+	}
+	cmd.MarkFlagRequired("operation-type")
+	cmd.Flags().StringVar(&f.operationID, "operation-id", "", "Operation resource ID")
+	cmd.MarkFlagRequired("operation-id")
 	return cmd, nil
 }

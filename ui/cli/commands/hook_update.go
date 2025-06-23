@@ -39,7 +39,7 @@ func NewHookUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	}
 	cmd.Flags().StringVar(&f.name, "name", "", "Name of the hook")
 	cmd.Flags().StringVar(&f.repoPattern, "repo-pattern", "", "Repository pattern")
-	if err := enumFlag(cmd, &f.triggerEvent, "trigger-event", "never", "event to hook automatically", "post-clone", "post-fork", "post-create"); err != nil {
+	if err := enumFlag(cmd, &f.triggerEvent, "trigger-event", "", "event to hook automatically", "post-clone", "post-fork", "post-create"); err != nil {
 		return nil, fmt.Errorf("registering trigger-event flag: %w", err)
 	}
 	if err := enumFlag(cmd, &f.operationType, "operation-type", "", "Operation type", "overlay", "script"); err != nil {
