@@ -90,6 +90,11 @@ func (uc *UseCase) Invoke(ctx context.Context, hookID, refStr string) error {
 
 // InvokeFor executes all hooks that match the repository and the event
 func (uc *UseCase) InvokeFor(ctx context.Context, event Event, refStr string) error {
+	return uc.InvokeForWithGlobals(ctx, event, refStr, nil)
+}
+
+// InvokeForWithGlobals executes all hooks that match the repository and the event with additional globals
+func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr string, globals map[string]any) error {
 	refWithAlias, err := uc.referenceParser.ParseWithAlias(refStr)
 	if err != nil {
 		return fmt.Errorf("parsing repository reference: %w", err)
@@ -123,16 +128,19 @@ func (uc *UseCase) InvokeFor(ctx context.Context, event Event, refStr string) er
 				return fmt.Errorf("applying overlay for the hook %s: %w", h.ID(), err)
 			}
 		case hook.OperationTypeScript:
-			if err := scriptApplyUseCase.Invoke(ctx, match, h.OperationID(), map[string]any{
-				"hook": map[string]any{
-					"id":            h.ID(),
-					"name":          h.Name(),
-					"repoPattern":   h.RepoPattern(),
-					"triggerEvent":  h.TriggerEvent(),
-					"operationType": h.OperationType(),
-					"operationId":   h.OperationID(),
-				},
-			}); err != nil {
+			g := make(map[string]any)
+			for k, v := range globals {
+				g[k] = v
+			}
+			g["hook"] = map[string]any{
+				"id":            h.ID(),
+				"name":          h.Name(),
+				"repoPattern":   h.RepoPattern(),
+				"triggerEvent":  h.TriggerEvent(),
+				"operationType": h.OperationType(),
+				"operationId":   h.OperationID(),
+			}
+			if err := scriptApplyUseCase.Invoke(ctx, match, h.OperationID(), g); err != nil {
 				return fmt.Errorf("invoking script for the hook %s: %w", h.ID(), err)
 			}
 		}
