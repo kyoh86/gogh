@@ -165,7 +165,6 @@ func TestRemove(t *testing.T) {
 func TestRemoveBy(t *testing.T) {
 	id := uuid.New()
 	item := TestItem{id: id, name: "test"}
-	
 	t.Run("Remove by full UUID", func(t *testing.T) {
 		s := set.NewSet(item)
 		err := s.RemoveBy(id.String())

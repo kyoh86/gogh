@@ -61,7 +61,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := overlay_list.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -104,7 +103,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := overlay_list.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, true, false)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -146,7 +144,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := overlay_list.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, false, true)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -181,7 +178,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := overlay_list.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
