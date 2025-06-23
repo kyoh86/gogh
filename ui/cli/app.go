@@ -75,6 +75,7 @@ func NewApp(
 	const (
 		groupShow       = "show"
 		groupManipulate = "manipulate"
+		groupAutomation = "automation"
 		groupConfig     = "config"
 	)
 	appCommand.AddGroup(
@@ -85,6 +86,10 @@ func NewApp(
 		&cobra.Group{
 			ID:    groupManipulate,
 			Title: "Manipulate repositories",
+		},
+		&cobra.Group{
+			ID:    groupAutomation,
+			Title: "Automation",
 		},
 		&cobra.Group{
 			ID:    groupConfig,
@@ -146,7 +151,7 @@ func NewApp(
 	if err != nil {
 		return nil, err
 	}
-	overlayCommand.GroupID = groupConfig
+	overlayCommand.GroupID = groupAutomation
 
 	scriptCommand, err := cmdWithSubs(
 		ctx, svc,
@@ -164,7 +169,7 @@ func NewApp(
 	if err != nil {
 		return nil, err
 	}
-	scriptCommand.GroupID = groupConfig
+	scriptCommand.GroupID = groupAutomation
 
 	hookCommand, err := cmdWithSubs(
 		ctx, svc,
@@ -180,7 +185,7 @@ func NewApp(
 	if err != nil {
 		return nil, err
 	}
-	hookCommand.GroupID = groupConfig
+	hookCommand.GroupID = groupAutomation
 
 	configAuthCommand := typ.Ptr(*authCommand)
 	configAuthCommand.GroupID = ""

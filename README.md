@@ -126,16 +126,21 @@ See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 | `delete` | Delete local and remote repository       |
 | `fork`   | Fork a repository                        |
 
+### Automation
+
+| Command   | Description                               |
+| --        | --                                        |
+| `hook`    | Manage repository automation hooks        |
+| `overlay` | Manage repository overlay files           |
+| `script`  | Manage Lua scripts for repository actions |
+
 ### Configurations
 
 | Command   | Description                               |
 | --        | --                                        |
 | `auth`    | Manage authentication tokens              |
 | `config`  | Show / Change configurations              |
-| `hook`    | Manage repository automation hooks        |
-| `overlay` | Manage repository overlay files           |
 | `roots`   | Manage root directories                   |
-| `script`  | Manage Lua scripts for repository actions |
 
 ### Others
 
