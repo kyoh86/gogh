@@ -158,6 +158,7 @@ func NewApp(
 		commands.NewScriptCommand,
 		nil,
 		commands.NewScriptAddCommand,
+		commands.NewScriptCreateCommand,
 		commands.NewScriptInvokeCommand,
 		commands.NewScriptEditCommand,
 		commands.NewScriptListCommand,

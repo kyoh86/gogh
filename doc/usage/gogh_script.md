@@ -12,6 +12,7 @@ Manage repository script files
 
 * [gogh](gogh.md)	 - GO GitHub local repository manager
 * [gogh script add](gogh_script_add.md)	 - Add an existing Lua script as script
+* [gogh script create](gogh_script_create.md)	 - Create a new script (with $EDITOR)
 * [gogh script edit](gogh_script_edit.md)	 - Edit an existing script (with $EDITOR)
 * [gogh script invoke](gogh_script_invoke.md)	 - Invoke an script in a repository
 * [gogh script list](gogh_script_list.md)	 - List registered scripts
