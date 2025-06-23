@@ -42,7 +42,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := hook_add.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, opts)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -79,7 +78,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := hook_add.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, opts)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

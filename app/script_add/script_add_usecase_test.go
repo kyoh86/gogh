@@ -37,7 +37,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := script_add.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, "test-script", content)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -67,7 +66,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := script_add.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, "", content)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

@@ -25,7 +25,7 @@ func TestUseCase_Execute(t *testing.T) {
 		expectedLocation := repository.NewLocation(
 			"/home/user/repos/github.com/owner/repo",
 			"github.com",
-			"owner", 
+			"owner",
 			"repo",
 		)
 
@@ -35,7 +35,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
 		result, err := uc.Execute(ctx, expectedPath)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -77,7 +76,6 @@ func TestUseCase_Execute(t *testing.T) {
 
 		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
 		result, err := uc.Execute(ctx, currentPath)
-
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
