@@ -34,8 +34,12 @@ This creates a reusable template that can be applied to any repository later.`,
 
 	cmd.Flags().StringVarP(&opts.SourceRepo, "source", "s", "", "Source repository")
 	cmd.Flags().StringSliceVarP(&opts.OverlayNames, "overlay", "o", nil, "Overlay names to include in the extra")
-	_ = cmd.MarkFlagRequired("source")
-	_ = cmd.MarkFlagRequired("overlay")
+	if err := cmd.MarkFlagRequired("source"); err != nil {
+		return nil, err
+	}
+	if err := cmd.MarkFlagRequired("overlay"); err != nil {
+		return nil, err
+	}
 
 	return cmd, nil
 }

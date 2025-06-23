@@ -48,8 +48,12 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 	if err := enumFlag(cmd, &f.operationType, "operation-type", "", "Operation type", "overlay", "script"); err != nil {
 		return nil, fmt.Errorf("registering operation-type flag: %w", err)
 	}
-	cmd.MarkFlagRequired("operation-type")
+	if err := cmd.MarkFlagRequired("operation-type"); err != nil {
+		return nil, fmt.Errorf("marking operation-type flag required: %w", err)
+	}
 	cmd.Flags().StringVar(&f.operationID, "operation-id", "", "Operation resource ID")
-	cmd.MarkFlagRequired("operation-id")
+	if err := cmd.MarkFlagRequired("operation-id"); err != nil {
+		return nil, fmt.Errorf("marking operation-id flag required: %w", err)
+	}
 	return cmd, nil
 }
