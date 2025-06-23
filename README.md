@@ -308,6 +308,8 @@ $ gogh overlay list
 $ gogh overlay remove f8be36a27fa682b7b8d3c4117086851c74e47142705eba633cd91715c315d96b
 # gogh overlay apply <overlay-id> [[host/]owner/]repo...
 $ gogh overlay apply f8be36a27fa682b7b8d3c4117086851c74e47142705eba633cd91715c315d96b github.com/owner/repo
+# Apply to current directory repository
+$ gogh overlay apply f8be36a27fa682b7b8d3c4117086851c74e47142705eba633cd91715c315d96b .
 ```
 
 ### Practical Usages
@@ -370,6 +372,8 @@ $ gogh script list
 
 # Invoke a script in repositories
 $ gogh script invoke <script-id> [[host/]owner/]repo...
+# Invoke in current directory repository
+$ gogh script invoke <script-id> .
 
 # Edit a script
 $ gogh script edit <script-id>
@@ -448,6 +452,8 @@ $ gogh hook list
 
 # Manually invoke a hook
 $ gogh hook invoke <hook-id> [[host/]owner/]repo
+# Invoke for current directory repository
+$ gogh hook invoke <hook-id> .
 
 # Remove a hook
 $ gogh hook remove <hook-id>
@@ -546,6 +552,8 @@ Save your local development environment setup to be automatically restored when 
 ```console
 # Save untracked files from a repository as auto-apply extra
 $ gogh extra save github.com/owner/repo
+# Save from current directory repository
+$ gogh extra save .
 # Now when you clone this repository again, all untracked files will be restored
 ```
 

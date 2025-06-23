@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/script_invoke"
 	"github.com/kyoh86/gogh/v4/app/service"
@@ -27,6 +28,7 @@ func NewScriptInvokeInstantCommand(_ context.Context, svc *service.ServiceSet) (
 		Example: `  invoke-instant --file script.lua repo1 repo2
   invoke-instant --file - repo1 < script.lua
   echo 'print(gogh.repo.name)' | gogh script invoke-instant --file - repo1
+  invoke-instant --file script.lua .  # Use current directory repository
   invoke-instant --file script.lua --all
   invoke-instant --file script.lua --pattern <pattern>
 
@@ -34,6 +36,7 @@ func NewScriptInvokeInstantCommand(_ context.Context, svc *service.ServiceSet) (
   (for example, "github.com/kyoh86/example") like below.
     - "<name>": e.g. "example"; 
     - "<owner>/<name>": e.g. "kyoh86/example"
+    - "." for the current directory repository
   They'll be completed with the default host and owner set by "config set-default{-host|-owner}".`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -82,6 +85,15 @@ func NewScriptInvokeInstantCommand(_ context.Context, svc *service.ServiceSet) (
 
 			// Execute script for each repository
 			for _, ref := range refs {
+				// Use current directory if reference is "."
+				if ref == "." {
+					repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+					if err != nil {
+						return fmt.Errorf("finding repository from current directory: %w", err)
+					}
+					ref = repo.Ref().String()
+				}
+
 				refWithAlias, err := svc.ReferenceParser.ParseWithAlias(ref)
 				if err != nil {
 					return fmt.Errorf("parsing repository reference: %w", err)

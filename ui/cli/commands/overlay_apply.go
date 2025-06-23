@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/overlay_apply"
 	"github.com/kyoh86/gogh/v4/app/service"
@@ -29,6 +30,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
   (for example, "github.com/kyoh86/example") like below.
     - "<name>": e.g. "example"; 
     - "<owner>/<name>": e.g. "kyoh86/example"
+    - "." for the current directory repository
   They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
 
   It also accepts an alias for each repository.
@@ -70,6 +72,15 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				}
 			}
 			for _, ref := range refs {
+				// Use current directory if reference is "."
+				if ref == "." {
+					repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+					if err != nil {
+						return fmt.Errorf("finding repository from current directory: %w", err)
+					}
+					ref = repo.Ref().String()
+				}
+
 				if err := overlayApplyUseCase.Execute(ctx, ref, overlayID); err != nil {
 					return err
 				}

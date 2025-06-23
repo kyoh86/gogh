@@ -12,6 +12,7 @@ gogh script invoke-instant [flags] [[[<host>/]<owner>/]<name>...]
   invoke-instant --file script.lua repo1 repo2
   invoke-instant --file - repo1 < script.lua
   echo 'print(gogh.repo.name)' | gogh script invoke-instant --file - repo1
+  invoke-instant --file script.lua .  # Use current directory repository
   invoke-instant --file script.lua --all
   invoke-instant --file script.lua --pattern <pattern>
 
@@ -19,6 +20,7 @@ gogh script invoke-instant [flags] [[[<host>/]<owner>/]<name>...]
   (for example, "github.com/kyoh86/example") like below.
     - "<name>": e.g. "example"; 
     - "<owner>/<name>": e.g. "kyoh86/example"
+    - "." for the current directory repository
   They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
 ```
 

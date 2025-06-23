@@ -21,7 +21,6 @@ func TestUseCase_Execute(t *testing.T) {
 		mockWorkspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
 		mockFinderService := workspace_mock.NewMockFinderService(ctrl)
 
-		expectedPath := "/home/user/repos/owner/repo"
 		expectedLocation := repository.NewLocation(
 			"/home/user/repos/github.com/owner/repo",
 			"github.com",
@@ -29,12 +28,13 @@ func TestUseCase_Execute(t *testing.T) {
 			"repo",
 		)
 
+		// os.Getwd() will be called internally, so we expect FindByPath to be called with the actual working directory
 		mockFinderService.EXPECT().
-			FindByPath(ctx, mockWorkspaceService, expectedPath).
+			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(expectedLocation, nil)
 
 		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
-		result, err := uc.Execute(ctx, expectedPath)
+		result, err := uc.Execute(ctx)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -62,7 +62,6 @@ func TestUseCase_Execute(t *testing.T) {
 		mockWorkspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
 		mockFinderService := workspace_mock.NewMockFinderService(ctrl)
 
-		currentPath := "."
 		expectedLocation := repository.NewLocation(
 			"/home/user/repos/github.com/user/project",
 			"github.com",
@@ -70,12 +69,13 @@ func TestUseCase_Execute(t *testing.T) {
 			"project",
 		)
 
+		// os.Getwd() will be called internally
 		mockFinderService.EXPECT().
-			FindByPath(ctx, mockWorkspaceService, currentPath).
+			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(expectedLocation, nil)
 
 		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
-		result, err := uc.Execute(ctx, currentPath)
+		result, err := uc.Execute(ctx)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -91,15 +91,15 @@ func TestUseCase_Execute(t *testing.T) {
 		mockWorkspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
 		mockFinderService := workspace_mock.NewMockFinderService(ctrl)
 
-		nonRepoPath := "/home/user/documents"
 		expectedErr := errors.New("not a repository")
 
+		// os.Getwd() will be called internally
 		mockFinderService.EXPECT().
-			FindByPath(ctx, mockWorkspaceService, nonRepoPath).
+			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(nil, expectedErr)
 
 		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
-		result, err := uc.Execute(ctx, nonRepoPath)
+		result, err := uc.Execute(ctx)
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
@@ -119,15 +119,15 @@ func TestUseCase_Execute(t *testing.T) {
 		mockWorkspaceService := workspace_mock.NewMockWorkspaceService(ctrl)
 		mockFinderService := workspace_mock.NewMockFinderService(ctrl)
 
-		testPath := "/some/path"
 		expectedErr := errors.New("finder error")
 
+		// os.Getwd() will be called internally
 		mockFinderService.EXPECT().
-			FindByPath(ctx, mockWorkspaceService, testPath).
+			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(nil, expectedErr)
 
 		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
-		result, err := uc.Execute(ctx, testPath)
+		result, err := uc.Execute(ctx)
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

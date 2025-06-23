@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/config"
@@ -28,13 +27,9 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command
 			}
 
 			ctx := cmd.Context()
-			wd, err := os.Getwd()
+			repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
 			if err != nil {
-				return fmt.Errorf("getting working directory: %w", err)
-			}
-			repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, wd)
-			if err != nil {
-				return fmt.Errorf("finding a repository contains %s: %w", wd, err)
+				return fmt.Errorf("finding repository in current directory: %w", err)
 			}
 			str, err := formatter.Format(*repo)
 			if err != nil {

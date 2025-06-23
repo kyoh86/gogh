@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
+	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/script_invoke"
 	"github.com/kyoh86/gogh/v4/app/service"
@@ -29,6 +30,7 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
   (for example, "github.com/kyoh86/example") like below.
     - "<name>": e.g. "example"; 
     - "<owner>/<name>": e.g. "kyoh86/example"
+    - "." for the current directory repository
   They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
 
   It also accepts an alias for each repository.
@@ -70,7 +72,18 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				}
 			}
 			for _, ref := range refs {
-				if err := scriptInvokeUseCase.Execute(ctx, ref, scriptID, map[string]any{}); err != nil {
+				resolvedRef := ref
+
+				// Use current directory if reference is "."
+				if ref == "." {
+					repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+					if err != nil {
+						return fmt.Errorf("finding repository from current directory: %w", err)
+					}
+					resolvedRef = repo.Ref().String()
+				}
+
+				if err := scriptInvokeUseCase.Execute(ctx, resolvedRef, scriptID, map[string]any{}); err != nil {
 					return err
 				}
 				logger.Infof("Invoked script %s in %s", scriptID, ref)

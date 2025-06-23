@@ -2,6 +2,8 @@ package cwd
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -24,7 +26,11 @@ func NewUseCase(
 	}
 }
 
-// Execute retrieves a list of repository locations under the specified workspace roots
-func (uc *UseCase) Execute(ctx context.Context, path string) (*repository.Location, error) {
-	return uc.finderService.FindByPath(ctx, uc.workspaceService, path)
+// Execute retrieves the repository location for the current working directory
+func (uc *UseCase) Execute(ctx context.Context) (*repository.Location, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("getting working directory: %w", err)
+	}
+	return uc.finderService.FindByPath(ctx, uc.workspaceService, wd)
 }
