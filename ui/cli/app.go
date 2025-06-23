@@ -165,6 +165,7 @@ func NewApp(
 		commands.NewScriptRemoveCommand,
 		commands.NewScriptShowCommand,
 		commands.NewScriptRunCommand,
+		commands.NewScriptInvokeInstantCommand,
 		commands.NewScriptUpdateCommand,
 	)
 	if err != nil {
