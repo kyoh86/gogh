@@ -45,6 +45,7 @@ go test -v -run TestName ./path/to/package
 - Private function tests: `*_private_test.go` in same package
 - Mock files: Place in separate `*_mock/` directories
 - Use `go.uber.org/mock` for mock generation
+- **DO NOT use testify package** - use standard library testing only
 
 ## Key Components
 
