@@ -1,11 +1,11 @@
-package auth_list_test
+package list_test
 
 import (
 	"context"
 	"reflect"
 	"testing"
 
-	"github.com/kyoh86/gogh/v4/app/auth_list"
+	testtarget "github.com/kyoh86/gogh/v4/app/auth/list"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/auth_mock"
 	"go.uber.org/mock/gomock"
@@ -56,7 +56,7 @@ func TestUseCase_Execute(t *testing.T) {
 			mockTokenService := auth_mock.NewMockTokenService(ctrl)
 			tt.setup(mockTokenService)
 
-			uc := auth_list.NewUseCase(mockTokenService)
+			uc := testtarget.NewUseCase(mockTokenService)
 			got, err := uc.Execute(context.Background())
 
 			if (err != nil) != tt.wantErr {

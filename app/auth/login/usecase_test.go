@@ -1,11 +1,11 @@
-package auth_login_test
+package login_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v4/app/auth_login"
+	testtarget "github.com/kyoh86/gogh/v4/app/auth/login"
 	"github.com/kyoh86/gogh/v4/core/auth_mock"
 	"github.com/kyoh86/gogh/v4/core/hosting_mock"
 	"go.uber.org/mock/gomock"

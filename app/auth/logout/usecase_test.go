@@ -1,11 +1,11 @@
-package auth_logout_test
+package logout_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v4/app/auth_logout"
+	testtarget "github.com/kyoh86/gogh/v4/app/auth/logout"
 	"github.com/kyoh86/gogh/v4/core/auth_mock"
 	"go.uber.org/mock/gomock"
 )

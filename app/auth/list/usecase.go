@@ -1,4 +1,4 @@
-package auth_logout
+package list
 
 import (
 	"context"
@@ -16,6 +16,7 @@ func NewUseCase(tokenService auth.TokenService) *UseCase {
 	}
 }
 
-func (uc *UseCase) Execute(_ context.Context, host, owner string) error {
-	return uc.tokenService.Delete(host, owner)
+func (uc *UseCase) Execute(_ context.Context) ([]auth.TokenEntry, error) {
+	tokens := uc.tokenService.Entries()
+	return tokens, nil
 }
