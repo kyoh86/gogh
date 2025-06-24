@@ -1,4 +1,4 @@
-package script_run
+package run
 
 import (
 	"context"

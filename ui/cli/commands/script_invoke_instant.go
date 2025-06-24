@@ -10,7 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/list"
-	"github.com/kyoh86/gogh/v4/app/script_invoke"
+	"github.com/kyoh86/gogh/v4/app/script/invoke"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -106,7 +106,7 @@ func NewScriptInvokeInstantCommand(_ context.Context, svc *service.ServiceSet) (
 					return fmt.Errorf("repository not found: %s", ref)
 				}
 
-				if err := script_invoke.InvokeInstant(ctx, match, string(scriptContent), map[string]any{}); err != nil {
+				if err := invoke.InvokeInstant(ctx, match, string(scriptContent), map[string]any{}); err != nil {
 					return fmt.Errorf("running script in %s: %w", ref, err)
 				}
 				logger.Infof("Ran instant script in %s", ref)

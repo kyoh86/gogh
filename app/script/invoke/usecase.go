@@ -1,4 +1,4 @@
-package script_invoke
+package invoke
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/kyoh86/gogh/v4/app/script_run"
+	"github.com/kyoh86/gogh/v4/app/script/run"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -93,7 +93,7 @@ func (uc *UseCase) Invoke(ctx context.Context, location *repository.Location, sc
 		enc := gob.NewEncoder(stdin)
 		defer stdin.Close()
 
-		return enc.Encode(script_run.Script{
+		return enc.Encode(run.Script{
 			Code:    string(code),
 			Globals: g,
 		})

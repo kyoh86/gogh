@@ -1,4 +1,4 @@
-package script_list_test
+package list_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/script_list"
+	testtarget "github.com/kyoh86/gogh/v4/app/script/list"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
@@ -216,7 +216,7 @@ func TestUseCase_Execute(t *testing.T) {
 			tc.setupMock(mockScriptService)
 
 			var buf bytes.Buffer
-			uc := script_list.NewUseCase(mockScriptService, &buf)
+			uc := testtarget.NewUseCase(mockScriptService, &buf)
 
 			err := uc.Execute(ctx, tc.asJSON, tc.withSource)
 			if (err != nil) != tc.wantErr {

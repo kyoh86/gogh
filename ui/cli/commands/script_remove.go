@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v4/app/script_remove"
+	"github.com/kyoh86/gogh/v4/app/script/remove"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -20,7 +20,7 @@ func NewScriptRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			logger := log.FromContext(ctx)
 
 			scriptID := args[0]
-			if err := script_remove.NewUseCase(svc.ScriptService).Execute(ctx, scriptID); err != nil {
+			if err := remove.NewUseCase(svc.ScriptService).Execute(ctx, scriptID); err != nil {
 				return err
 			}
 

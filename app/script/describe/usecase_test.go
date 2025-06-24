@@ -1,4 +1,4 @@
-package script_describe_test
+package describe_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/script_describe"
+	testtarget "github.com/kyoh86/gogh/v4/app/script/describe"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
@@ -29,7 +29,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	s := script.ConcreteScript(scriptUUID, scriptName, createdAt, updatedAt)
 
 	var buf bytes.Buffer
-	uc := script_describe.NewUseCaseJSON(&buf)
+	uc := testtarget.NewUseCaseJSON(&buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 	s := script.ConcreteScript(scriptUUID, scriptName, createdAt, updatedAt)
 
 	var buf bytes.Buffer
-	uc := script_describe.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewUseCaseOneLine(&buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -95,7 +95,7 @@ func TestUseCaseJSONWithSource_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := script_describe.NewUseCaseJSONWithSource(mockScriptService, &buf)
+	uc := testtarget.NewUseCaseJSONWithSource(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -137,7 +137,7 @@ func TestUseCaseJSONWithSource_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := script_describe.NewUseCaseJSONWithSource(mockScriptService, &buf)
+	uc := testtarget.NewUseCaseJSONWithSource(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err == nil {
@@ -168,7 +168,7 @@ func TestUseCaseDetail_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := script_describe.NewUseCaseDetail(mockScriptService, &buf)
+	uc := testtarget.NewUseCaseDetail(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -212,7 +212,7 @@ func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := script_describe.NewUseCaseDetail(mockScriptService, &buf)
+	uc := testtarget.NewUseCaseDetail(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err == nil {
@@ -245,7 +245,7 @@ func TestUseCaseDetail_Execute_ReadError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := script_describe.NewUseCaseDetail(mockScriptService, &buf)
+	uc := testtarget.NewUseCaseDetail(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err == nil {

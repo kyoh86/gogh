@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/app/script_add"
+	"github.com/kyoh86/gogh/v4/app/script/add"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -55,7 +55,7 @@ func NewScriptCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			defer content.Close()
 
 			// Add the script
-			h, err := script_add.NewUseCase(svc.ScriptService).Execute(ctx, f.name, content)
+			h, err := add.NewUseCase(svc.ScriptService).Execute(ctx, f.name, content)
 			if err != nil {
 				return fmt.Errorf("adding script: %w", err)
 			}

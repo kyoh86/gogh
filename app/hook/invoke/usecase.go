@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/kyoh86/gogh/v4/app/overlay/apply"
-	"github.com/kyoh86/gogh/v4/app/script_invoke"
+	scriptinvoke "github.com/kyoh86/gogh/v4/app/script/invoke"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
@@ -68,7 +68,7 @@ func (uc *UseCase) Invoke(ctx context.Context, hookID, refStr string) error {
 		)
 		return overlayApplyUseCase.Execute(ctx, refStr, h.OperationID())
 	case hook.OperationTypeScript:
-		scriptApplyUseCase := script_invoke.NewUseCase(
+		scriptApplyUseCase := scriptinvoke.NewUseCase(
 			uc.workspaceService,
 			uc.finderService,
 			uc.scriptService,
@@ -112,7 +112,7 @@ func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr
 		uc.referenceParser,
 		uc.overlayService,
 	)
-	scriptApplyUseCase := script_invoke.NewUseCase(
+	scriptApplyUseCase := scriptinvoke.NewUseCase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.scriptService,

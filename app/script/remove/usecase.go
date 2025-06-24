@@ -1,4 +1,4 @@
-package script_remove
+package remove
 
 import (
 	"context"

@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v4/app/script_show"
+	"github.com/kyoh86/gogh/v4/app/script/show"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -20,7 +20,7 @@ func NewScriptShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			scriptID := args[0]
-			return script_show.NewUseCase(svc.ScriptService, cmd.OutOrStdout()).Execute(ctx, scriptID, f.json, f.source)
+			return show.NewUseCase(svc.ScriptService, cmd.OutOrStdout()).Execute(ctx, scriptID, f.json, f.source)
 		},
 	}
 	cmd.Flags().BoolVarP(&f.json, "json", "", false, "Output in JSON format")

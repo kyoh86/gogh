@@ -1,4 +1,4 @@
-package script_update
+package update
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package script_add_test
+package add_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/script_add"
+	testtarget "github.com/kyoh86/gogh/v4/app/script/add"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
@@ -35,7 +35,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Get(ctx, testID.String()).
 			Return(expectedScript, nil)
 
-		uc := script_add.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, "test-script", content)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -64,7 +64,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Get(ctx, testID.String()).
 			Return(expectedScript, nil)
 
-		uc := script_add.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, "", content)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -89,7 +89,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Add(ctx, script.Entry{Name: "test-script", Content: content}).
 			Return("", expectedErr)
 
-		uc := script_add.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, "test-script", content)
 
 		if err == nil {
@@ -119,7 +119,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Get(ctx, testID.String()).
 			Return(nil, expectedErr)
 
-		uc := script_add.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		result, err := uc.Execute(ctx, "test-script", content)
 
 		if err == nil {

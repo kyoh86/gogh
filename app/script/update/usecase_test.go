@@ -1,4 +1,4 @@
-package script_update_test
+package update_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/script_update"
+	testtarget "github.com/kyoh86/gogh/v4/app/script/update"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
@@ -291,7 +291,7 @@ print("Special chars: \n\t\r\\")`,
 			defer ctrl.Finish()
 
 			ss := tc.setupMock(ctrl)
-			uc := script_update.NewUseCase(ss)
+			uc := testtarget.NewUseCase(ss)
 
 			err := uc.Execute(ctx, tc.scriptID, tc.scriptName, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -324,7 +324,7 @@ func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
 		},
 	)
 
-	uc := script_update.NewUseCase(ss)
+	uc := testtarget.NewUseCase(ss)
 	err := uc.Execute(ctx, uuid.New().String(), "test-script", customReader)
 	if err != nil {
 		t.Errorf("Execute() unexpected error = %v", err)
@@ -337,7 +337,7 @@ func TestUseCase_Execute_MultipleReaders(t *testing.T) {
 	defer ctrl.Finish()
 
 	ss := script_mock.NewMockScriptService(ctrl)
-	uc := script_update.NewUseCase(ss)
+	uc := testtarget.NewUseCase(ss)
 
 	// Test with different reader types
 	readers := []struct {

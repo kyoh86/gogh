@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/app/script_edit"
+	scriptedit "github.com/kyoh86/gogh/v4/app/script/edit"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +24,7 @@ func NewScriptEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			}
 			defer os.Remove(tmpFile.Name())
 
-			if err := script_edit.NewUseCase(svc.ScriptService).ExtractScript(ctx, scriptID, tmpFile); err != nil {
+			if err := scriptedit.NewUseCase(svc.ScriptService).ExtractScript(ctx, scriptID, tmpFile); err != nil {
 				return err
 			}
 			tmpFile.Close()
@@ -38,7 +38,7 @@ func NewScriptEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return err
 			}
 			defer edited.Close()
-			return script_edit.NewUseCase(svc.ScriptService).UpdateScript(ctx, scriptID, edited)
+			return scriptedit.NewUseCase(svc.ScriptService).UpdateScript(ctx, scriptID, edited)
 		},
 	}
 	return cmd, nil

@@ -1,10 +1,10 @@
-package script_list
+package list
 
 import (
 	"context"
 	"io"
 
-	"github.com/kyoh86/gogh/v4/app/script_describe"
+	"github.com/kyoh86/gogh/v4/app/script/describe"
 	"github.com/kyoh86/gogh/v4/core/script"
 )
 
@@ -25,19 +25,19 @@ func NewUseCase(
 
 func (uc *UseCase) Execute(ctx context.Context, asJSON, withSource bool) error {
 	var useCase interface {
-		Execute(ctx context.Context, s script_describe.Script) error
+		Execute(ctx context.Context, s describe.Script) error
 	}
 	if asJSON {
 		if withSource {
-			useCase = script_describe.NewUseCaseJSONWithSource(uc.scriptService, uc.writer)
+			useCase = describe.NewUseCaseJSONWithSource(uc.scriptService, uc.writer)
 		} else {
-			useCase = script_describe.NewUseCaseJSON(uc.writer)
+			useCase = describe.NewUseCaseJSON(uc.writer)
 		}
 	} else {
 		if withSource {
-			useCase = script_describe.NewUseCaseDetail(uc.scriptService, uc.writer)
+			useCase = describe.NewUseCaseDetail(uc.scriptService, uc.writer)
 		} else {
-			useCase = script_describe.NewUseCaseOneLine(uc.writer)
+			useCase = describe.NewUseCaseOneLine(uc.writer)
 		}
 	}
 	for s, err := range uc.scriptService.List() {

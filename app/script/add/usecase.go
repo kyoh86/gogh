@@ -1,4 +1,4 @@
-package script_add
+package add
 
 import (
 	"context"

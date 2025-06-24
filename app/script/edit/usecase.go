@@ -1,4 +1,4 @@
-package script_edit
+package edit
 
 import (
 	"context"

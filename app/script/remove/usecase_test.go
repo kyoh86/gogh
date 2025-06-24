@@ -1,11 +1,11 @@
-package script_remove_test
+package remove_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	"github.com/kyoh86/gogh/v4/app/script_remove"
+	testtarget "github.com/kyoh86/gogh/v4/app/script/remove"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
 )
@@ -24,7 +24,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Remove(ctx, scriptID).
 			Return(nil)
 
-		uc := script_remove.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		err := uc.Execute(ctx, scriptID)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -42,7 +42,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Remove(ctx, scriptID).
 			Return(nil)
 
-		uc := script_remove.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		err := uc.Execute(ctx, scriptID)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -61,7 +61,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Remove(ctx, scriptID).
 			Return(expectedErr)
 
-		uc := script_remove.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		err := uc.Execute(ctx, scriptID)
 
 		if err == nil {
@@ -84,7 +84,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Remove(ctx, scriptID).
 			Return(expectedErr)
 
-		uc := script_remove.NewUseCase(mockService)
+		uc := testtarget.NewUseCase(mockService)
 		err := uc.Execute(ctx, scriptID)
 
 		if err == nil {

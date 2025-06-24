@@ -1,4 +1,4 @@
-package script_edit_test
+package edit_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/script_edit"
+	testtarget "github.com/kyoh86/gogh/v4/app/script/edit"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
@@ -189,7 +189,7 @@ print('Single quotes with "nested" double')`,
 			defer ctrl.Finish()
 
 			ss := tc.setupMock(ctrl)
-			uc := script_edit.NewUseCase(ss)
+			uc := testtarget.NewUseCase(ss)
 
 			var buf bytes.Buffer
 			err := uc.ExtractScript(ctx, tc.scriptID, &buf)
@@ -391,7 +391,7 @@ print('Unicode: 🚀 ✨ 💻')`,
 			defer ctrl.Finish()
 
 			ss := tc.setupMock(ctrl)
-			uc := script_edit.NewUseCase(ss)
+			uc := testtarget.NewUseCase(ss)
 
 			err := uc.UpdateScript(ctx, tc.scriptID, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -412,7 +412,7 @@ func TestUseCase_ExtractScript_ReaderBehavior(t *testing.T) {
 
 	ss.EXPECT().Open(ctx, gomock.Any()).Return(reader, nil)
 
-	uc := script_edit.NewUseCase(ss)
+	uc := testtarget.NewUseCase(ss)
 	var buf bytes.Buffer
 	err := uc.ExtractScript(ctx, uuid.New().String(), &buf)
 	if err != nil {
@@ -443,7 +443,7 @@ func TestUseCase_UpdateScript_ReaderPassthrough(t *testing.T) {
 		},
 	)
 
-	uc := script_edit.NewUseCase(ss)
+	uc := testtarget.NewUseCase(ss)
 	err := uc.UpdateScript(ctx, uuid.New().String(), customReader)
 	if err != nil {
 		t.Errorf("UpdateScript() unexpected error = %v", err)

@@ -1,4 +1,4 @@
-package script_describe
+package describe
 
 import (
 	"context"

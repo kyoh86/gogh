@@ -8,7 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/list"
-	"github.com/kyoh86/gogh/v4/app/script_invoke"
+	"github.com/kyoh86/gogh/v4/app/script/invoke"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +46,7 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			logger := log.FromContext(ctx)
 			scriptID := args[0]
 			refs := args[1:]
-			scriptInvokeUseCase := script_invoke.NewUseCase(
+			scriptInvokeUseCase := invoke.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ScriptService,

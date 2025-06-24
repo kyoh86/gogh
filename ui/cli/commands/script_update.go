@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/app/script_update"
+	"github.com/kyoh86/gogh/v4/app/script/update"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -32,7 +32,7 @@ func NewScriptUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				defer c.Close()
 				content = c
 			}
-			if err := script_update.NewUseCase(svc.ScriptService).Execute(ctx, scriptID, f.name, content); err != nil {
+			if err := update.NewUseCase(svc.ScriptService).Execute(ctx, scriptID, f.name, content); err != nil {
 				return fmt.Errorf("updating script metadata: %w", err)
 			}
 			return nil

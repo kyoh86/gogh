@@ -1,4 +1,4 @@
-package script_show_test
+package show_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/script_show"
+	testtarget "github.com/kyoh86/gogh/v4/app/script/show"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
@@ -357,7 +357,7 @@ print("Special chars: \n\t\\")`
 
 			var buf bytes.Buffer
 			ss := tc.setupMock(ctrl)
-			uc := script_show.NewUseCase(ss, &buf)
+			uc := testtarget.NewUseCase(ss, &buf)
 
 			err := uc.Execute(ctx, tc.scriptID, tc.asJSON, tc.withSource)
 			if (err != nil) != tc.wantErr {
@@ -378,7 +378,7 @@ func TestUseCase_Execute_ServiceErrors(t *testing.T) {
 
 	var buf bytes.Buffer
 	ss := script_mock.NewMockScriptService(ctrl)
-	uc := script_show.NewUseCase(ss, &buf)
+	uc := testtarget.NewUseCase(ss, &buf)
 
 	// Test service returning unexpected error
 	ss.EXPECT().Get(ctx, "test-id").Return(nil, errors.New("database connection error"))
@@ -413,7 +413,7 @@ func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
 
 			var buf bytes.Buffer
 			ss := script_mock.NewMockScriptService(ctrl)
-			uc := script_show.NewUseCase(ss, &buf)
+			uc := testtarget.NewUseCase(ss, &buf)
 
 			scriptID := uuid.New()
 			s := script.ConcreteScript(
