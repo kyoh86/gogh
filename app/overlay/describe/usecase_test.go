@@ -1,4 +1,4 @@
-package overlay_describe_test
+package describe_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/overlay_describe"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/describe"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
@@ -27,7 +27,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	o := overlay.ConcreteOverlay(overlayUUID, overlayName, relativePath)
 
 	var buf bytes.Buffer
-	uc := overlay_describe.NewUseCaseJSON(&buf)
+	uc := testtarget.NewUseCaseJSON(&buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 	o := overlay.ConcreteOverlay(overlayUUID, overlayName, relativePath)
 
 	var buf bytes.Buffer
-	uc := overlay_describe.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewUseCaseOneLine(&buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -94,7 +94,7 @@ func TestUseCaseJSONWithContent_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := overlay_describe.NewUseCaseJSONWithContent(mockOverlayService, &buf)
+	uc := testtarget.NewUseCaseJSONWithContent(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -138,7 +138,7 @@ func TestUseCaseJSONWithContent_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := overlay_describe.NewUseCaseJSONWithContent(mockOverlayService, &buf)
+	uc := testtarget.NewUseCaseJSONWithContent(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err == nil {
@@ -168,7 +168,7 @@ func TestUseCaseDetail_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := overlay_describe.NewUseCaseDetail(mockOverlayService, &buf)
+	uc := testtarget.NewUseCaseDetail(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -210,7 +210,7 @@ func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := overlay_describe.NewUseCaseDetail(mockOverlayService, &buf)
+	uc := testtarget.NewUseCaseDetail(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err == nil {
@@ -242,7 +242,7 @@ func TestUseCaseDetail_Execute_ReadError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := overlay_describe.NewUseCaseDetail(mockOverlayService, &buf)
+	uc := testtarget.NewUseCaseDetail(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err == nil {

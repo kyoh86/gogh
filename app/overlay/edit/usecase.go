@@ -1,4 +1,4 @@
-package overlay_edit
+package edit
 
 import (
 	"context"

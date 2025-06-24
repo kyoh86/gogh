@@ -1,4 +1,4 @@
-package overlay_remove
+package remove
 
 import (
 	"context"

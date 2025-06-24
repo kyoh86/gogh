@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/app/overlay_apply"
+	"github.com/kyoh86/gogh/v4/app/overlay/apply"
 	"github.com/kyoh86/gogh/v4/app/script_invoke"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/overlay"
@@ -60,7 +60,7 @@ func (uc *UseCase) Invoke(ctx context.Context, hookID, refStr string) error {
 	}
 	switch h.OperationType() {
 	case hook.OperationTypeOverlay:
-		overlayApplyUseCase := overlay_apply.NewUseCase(
+		overlayApplyUseCase := apply.NewUseCase(
 			uc.workspaceService,
 			uc.finderService,
 			uc.referenceParser,
@@ -106,7 +106,7 @@ func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr
 	if match == nil {
 		return fmt.Errorf("repository not found for reference: %s", refStr)
 	}
-	overlayApplyUseCase := overlay_apply.NewUseCase(
+	overlayApplyUseCase := apply.NewUseCase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.referenceParser,

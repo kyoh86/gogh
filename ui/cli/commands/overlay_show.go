@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/app/overlay_show"
+	"github.com/kyoh86/gogh/v4/app/overlay/show"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			overlayID := args[0]
-			overlayShowUseCase := overlay_show.NewUseCase(svc.OverlayService, cmd.OutOrStdout())
+			overlayShowUseCase := show.NewUseCase(svc.OverlayService, cmd.OutOrStdout())
 			if err := overlayShowUseCase.Execute(ctx, overlayID, f.json, f.source); err != nil {
 				return fmt.Errorf("showing overlay %s: %w", overlayID, err)
 			}

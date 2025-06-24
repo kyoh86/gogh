@@ -1,4 +1,4 @@
-package overlay_list_test
+package list_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/overlay_list"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/list"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
@@ -59,7 +59,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := overlay_list.NewUseCase(mockService, buf)
+		uc := testtarget.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -101,7 +101,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := overlay_list.NewUseCase(mockService, buf)
+		uc := testtarget.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, true, false)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -142,7 +142,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Open(ctx, overlay1.id.String()).
 			Return(io.NopCloser(strings.NewReader("overlay content")), nil)
 
-		uc := overlay_list.NewUseCase(mockService, buf)
+		uc := testtarget.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, false, true)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -176,7 +176,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := overlay_list.NewUseCase(mockService, buf)
+		uc := testtarget.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -204,7 +204,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := overlay_list.NewUseCase(mockService, buf)
+		uc := testtarget.NewUseCase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
 
 		if err == nil {
@@ -237,7 +237,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := overlay_list.NewUseCase(mockService, failWriter)
+		uc := testtarget.NewUseCase(mockService, failWriter)
 		err := uc.Execute(ctx, false, false)
 
 		if err == nil {

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v4/app/overlay_add"
+	"github.com/kyoh86/gogh/v4/app/overlay/add"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +46,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return err
 			}
 			defer content.Close()
-			id, err := overlay_add.NewUseCase(svc.OverlayService).Execute(ctx, name, targetPath, content)
+			id, err := add.NewUseCase(svc.OverlayService).Execute(ctx, name, targetPath, content)
 			if err != nil {
 				return err
 			}

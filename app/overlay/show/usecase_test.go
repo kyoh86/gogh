@@ -1,4 +1,4 @@
-package overlay_show_test
+package show_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/overlay_show"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/show"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
@@ -319,7 +319,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 			var buf bytes.Buffer
 			os := tc.setupMock(ctrl)
-			uc := overlay_show.NewUseCase(os, &buf)
+			uc := testtarget.NewUseCase(os, &buf)
 
 			err := uc.Execute(ctx, tc.overlayID, tc.asJSON, tc.withSource)
 			if (err != nil) != tc.wantErr {
@@ -340,7 +340,7 @@ func TestUseCase_Execute_ServiceErrors(t *testing.T) {
 
 	var buf bytes.Buffer
 	os := overlay_mock.NewMockOverlayService(ctrl)
-	uc := overlay_show.NewUseCase(os, &buf)
+	uc := testtarget.NewUseCase(os, &buf)
 
 	// Test service returning unexpected error
 	os.EXPECT().Get(ctx, "test-id").Return(nil, errors.New("database connection error"))
@@ -375,7 +375,7 @@ func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
 
 			var buf bytes.Buffer
 			os := overlay_mock.NewMockOverlayService(ctrl)
-			uc := overlay_show.NewUseCase(os, &buf)
+			uc := testtarget.NewUseCase(os, &buf)
 
 			overlayID := uuid.New()
 			o := overlay.ConcreteOverlay(

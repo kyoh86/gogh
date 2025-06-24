@@ -1,4 +1,4 @@
-package overlay_apply_test
+package apply_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v4/app/overlay_apply"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/apply"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"

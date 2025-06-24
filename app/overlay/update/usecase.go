@@ -1,4 +1,4 @@
-package overlay_update
+package update
 
 import (
 	"context"

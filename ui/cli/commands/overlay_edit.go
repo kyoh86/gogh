@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/app/overlay_edit"
+	overlayedit "github.com/kyoh86/gogh/v4/app/overlay/edit"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +24,7 @@ func NewOverlayEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			}
 			defer os.Remove(tmpFile.Name())
 
-			if err := overlay_edit.NewUseCase(svc.OverlayService).ExtractOverlay(ctx, overlayID, tmpFile); err != nil {
+			if err := overlayedit.NewUseCase(svc.OverlayService).ExtractOverlay(ctx, overlayID, tmpFile); err != nil {
 				return err
 			}
 			tmpFile.Close()
@@ -38,7 +38,7 @@ func NewOverlayEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 				return err
 			}
 			defer edited.Close()
-			return overlay_edit.NewUseCase(svc.OverlayService).UpdateOverlay(ctx, overlayID, edited)
+			return overlayedit.NewUseCase(svc.OverlayService).UpdateOverlay(ctx, overlayID, edited)
 		},
 	}
 	return cmd, nil

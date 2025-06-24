@@ -1,4 +1,4 @@
-package overlay_add_test
+package add_test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/overlay_add"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/add"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
@@ -234,7 +234,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := overlay_add.NewUseCase(os)
+			uc := testtarget.NewUseCase(os)
 
 			id, err := uc.Execute(ctx, tc.overlayName, tc.relativePath, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -269,7 +269,7 @@ func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
 		},
 	)
 
-	uc := overlay_add.NewUseCase(os)
+	uc := testtarget.NewUseCase(os)
 	_, err := uc.Execute(ctx, "test", "test.txt", customReader)
 	if err != nil {
 		t.Errorf("Execute() unexpected error = %v", err)

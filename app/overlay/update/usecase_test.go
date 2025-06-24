@@ -1,4 +1,4 @@
-package overlay_update_test
+package update_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/overlay_update"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/update"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
@@ -332,7 +332,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := overlay_update.NewUseCase(os)
+			uc := testtarget.NewUseCase(os)
 
 			err := uc.Execute(ctx, tc.overlayID, tc.overlayName, tc.relativePath, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -368,7 +368,7 @@ func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
 		},
 	)
 
-	uc := overlay_update.NewUseCase(os)
+	uc := testtarget.NewUseCase(os)
 	err := uc.Execute(ctx, uuid.New().String(), "test-overlay", "test/path.txt", customReader)
 	if err != nil {
 		t.Errorf("Execute() unexpected error = %v", err)
@@ -381,7 +381,7 @@ func TestUseCase_Execute_MultipleReaders(t *testing.T) {
 	defer ctrl.Finish()
 
 	os := overlay_mock.NewMockOverlayService(ctrl)
-	uc := overlay_update.NewUseCase(os)
+	uc := testtarget.NewUseCase(os)
 
 	// Test with different reader types
 	readers := []struct {

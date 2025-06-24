@@ -1,11 +1,11 @@
-package overlay_show
+package show
 
 import (
 	"context"
 	"fmt"
 	"io"
 
-	"github.com/kyoh86/gogh/v4/app/overlay_describe"
+	"github.com/kyoh86/gogh/v4/app/overlay/describe"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 )
 
@@ -31,19 +31,19 @@ func (uc *UseCase) Execute(ctx context.Context, overlayID string, asJSON, withSo
 		return fmt.Errorf("get overlay by ID: %w", err)
 	}
 	var useCase interface {
-		Execute(ctx context.Context, s overlay_describe.Overlay) error
+		Execute(ctx context.Context, s describe.Overlay) error
 	}
 	if asJSON {
 		if withSource {
-			useCase = overlay_describe.NewUseCaseJSONWithContent(uc.overlayService, uc.writer)
+			useCase = describe.NewUseCaseJSONWithContent(uc.overlayService, uc.writer)
 		} else {
-			useCase = overlay_describe.NewUseCaseJSON(uc.writer)
+			useCase = describe.NewUseCaseJSON(uc.writer)
 		}
 	} else {
 		if withSource {
-			useCase = overlay_describe.NewUseCaseDetail(uc.overlayService, uc.writer)
+			useCase = describe.NewUseCaseDetail(uc.overlayService, uc.writer)
 		} else {
-			useCase = overlay_describe.NewUseCaseOneLine(uc.writer)
+			useCase = describe.NewUseCaseOneLine(uc.writer)
 		}
 	}
 	if err := useCase.Execute(ctx, overlay); err != nil {

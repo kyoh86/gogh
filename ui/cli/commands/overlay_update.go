@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/app/overlay_update"
+	"github.com/kyoh86/gogh/v4/app/overlay/update"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +33,7 @@ func NewOverlayUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 				defer c.Close()
 				content = c
 			}
-			if err := overlay_update.NewUseCase(svc.OverlayService).Execute(ctx, overlayID, f.name, f.relativePath, content); err != nil {
+			if err := update.NewUseCase(svc.OverlayService).Execute(ctx, overlayID, f.name, f.relativePath, content); err != nil {
 				return fmt.Errorf("updating overlay: %w", err)
 			}
 			return nil

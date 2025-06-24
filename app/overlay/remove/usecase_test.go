@@ -1,11 +1,11 @@
-package overlay_remove_test
+package remove_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v4/app/overlay_remove"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/remove"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
 )

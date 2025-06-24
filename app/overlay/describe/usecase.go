@@ -1,4 +1,4 @@
-package overlay_describe
+package describe
 
 import (
 	"context"

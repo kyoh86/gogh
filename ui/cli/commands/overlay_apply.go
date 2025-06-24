@@ -8,7 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/list"
-	"github.com/kyoh86/gogh/v4/app/overlay_apply"
+	"github.com/kyoh86/gogh/v4/app/overlay/apply"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +46,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			logger := log.FromContext(ctx)
 			overlayID := args[0]
 			refs := args[1:]
-			overlayApplyUseCase := overlay_apply.NewUseCase(
+			overlayApplyUseCase := apply.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,

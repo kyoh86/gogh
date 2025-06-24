@@ -1,4 +1,4 @@
-package overlay_edit_test
+package edit_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/overlay_edit"
+	testtarget "github.com/kyoh86/gogh/v4/app/overlay/edit"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"go.uber.org/mock/gomock"
@@ -143,7 +143,7 @@ func TestUseCase_ExtractOverlay(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := overlay_edit.NewUseCase(os)
+			uc := testtarget.NewUseCase(os)
 
 			var buf bytes.Buffer
 			err := uc.ExtractOverlay(ctx, tc.overlayID, &buf)
@@ -316,7 +316,7 @@ func TestUseCase_UpdateOverlay(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := overlay_edit.NewUseCase(os)
+			uc := testtarget.NewUseCase(os)
 
 			err := uc.UpdateOverlay(ctx, tc.overlayID, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -337,7 +337,7 @@ func TestUseCase_ExtractOverlay_ReaderBehavior(t *testing.T) {
 
 	os.EXPECT().Open(ctx, gomock.Any()).Return(reader, nil)
 
-	uc := overlay_edit.NewUseCase(os)
+	uc := testtarget.NewUseCase(os)
 	var buf bytes.Buffer
 	err := uc.ExtractOverlay(ctx, uuid.New().String(), &buf)
 	if err != nil {
@@ -368,7 +368,7 @@ func TestUseCase_UpdateOverlay_ReaderPassthrough(t *testing.T) {
 		},
 	)
 
-	uc := overlay_edit.NewUseCase(os)
+	uc := testtarget.NewUseCase(os)
 	err := uc.UpdateOverlay(ctx, uuid.New().String(), customReader)
 	if err != nil {
 		t.Errorf("UpdateOverlay() unexpected error = %v", err)

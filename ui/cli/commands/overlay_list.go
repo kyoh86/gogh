@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v4/app/overlay_list"
+	"github.com/kyoh86/gogh/v4/app/overlay/list"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +18,7 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		Short: "List registered overlays",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return overlay_list.NewUseCase(svc.OverlayService, cmd.OutOrStdout()).Execute(cmd.Context(), f.json, f.source)
+			return list.NewUseCase(svc.OverlayService, cmd.OutOrStdout()).Execute(cmd.Context(), f.json, f.source)
 		},
 	}
 	cmd.Flags().BoolVarP(&f.json, "json", "", false, "Output in JSON format")

@@ -1,4 +1,4 @@
-package overlay_add
+package add
 
 import (
 	"context"
