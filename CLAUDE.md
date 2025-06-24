@@ -35,8 +35,8 @@ make man
 # Build and install
 make install
 
-# Run a single test
-go test -v -run TestName ./path/to/package
+# Run a single test (always use -p 1 to limit parallel execution)
+go test -p 1 -v -run TestName ./path/to/package
 
 # Format Go files with gofumpt (handles formatting and trailing newlines)
 go run mvdan.cc/gofumpt@latest -w path/to/file.go
@@ -49,6 +49,7 @@ go run mvdan.cc/gofumpt@latest -w path/to/file.go
 - Mock files: Place in separate `*_mock/` directories
 - Use `go.uber.org/mock` for mock generation
 - **DO NOT use testify package** - use standard library testing only
+- **ALWAYS run tests with `-p 1` flag** to limit parallel execution (e.g., `go test -p 1 ./...`)
 
 ## Key Components
 
