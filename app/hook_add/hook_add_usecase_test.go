@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/hook_add"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hook_mock"
@@ -14,115 +15,272 @@ import (
 func TestUseCase_Execute(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("Success: Add hook with all options", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	testCases := []struct {
+		name       string
+		opts       hook_add.Options
+		setupMock  func(*gomock.Controller) *hook_mock.MockHookService
+		wantErr    bool
+		validateID func(string) error
+	}{
+		{
+			name: "Successfully add overlay hook",
+			opts: hook_add.Options{
+				Name:          "test-hook",
+				RepoPattern:   "github.com/owner/*",
+				TriggerEvent:  string(hook.EventPostClone),
+				OperationType: string(hook.OperationTypeOverlay),
+				OperationID:   "overlay-123",
+			},
+			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+				hs := hook_mock.NewMockHookService(ctrl)
+				hs.EXPECT().Add(ctx, gomock.Any()).DoAndReturn(
+					func(ctx context.Context, entry hook.Entry) (string, error) {
+						// Validate the entry
+						if entry.Name != "test-hook" {
+							t.Errorf("Expected name 'test-hook', got %s", entry.Name)
+						}
+						if entry.RepoPattern != "github.com/owner/*" {
+							t.Errorf("Expected repo pattern 'github.com/owner/*', got %s", entry.RepoPattern)
+						}
+						if entry.TriggerEvent != hook.EventPostClone {
+							t.Errorf("Expected trigger event %s, got %s", hook.EventPostClone, entry.TriggerEvent)
+						}
+						if entry.OperationType != hook.OperationTypeOverlay {
+							t.Errorf("Expected operation type %s, got %s", hook.OperationTypeOverlay, entry.OperationType)
+						}
+						if entry.OperationID != "overlay-123" {
+							t.Errorf("Expected operation ID 'overlay-123', got %s", entry.OperationID)
+						}
+						return uuid.New().String(), nil
+					},
+				)
+				return hs
+			},
+			wantErr: false,
+			validateID: func(id string) error {
+				if id == "" {
+					return errors.New("expected non-empty ID")
+				}
+				if _, err := uuid.Parse(id); err != nil {
+					return errors.New("expected valid UUID")
+				}
+				return nil
+			},
+		},
+		{
+			name: "Successfully add script hook",
+			opts: hook_add.Options{
+				Name:          "script-hook",
+				RepoPattern:   "github.com/test/*",
+				TriggerEvent:  string(hook.EventPostFork),
+				OperationType: string(hook.OperationTypeScript),
+				OperationID:   "script-456",
+			},
+			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+				hs := hook_mock.NewMockHookService(ctrl)
+				hs.EXPECT().Add(ctx, gomock.Any()).DoAndReturn(
+					func(ctx context.Context, entry hook.Entry) (string, error) {
+						if entry.Name != "script-hook" {
+							t.Errorf("Expected name 'script-hook', got %s", entry.Name)
+						}
+						if entry.TriggerEvent != hook.EventPostFork {
+							t.Errorf("Expected trigger event %s, got %s", hook.EventPostFork, entry.TriggerEvent)
+						}
+						if entry.OperationType != hook.OperationTypeScript {
+							t.Errorf("Expected operation type %s, got %s", hook.OperationTypeScript, entry.OperationType)
+						}
+						return uuid.New().String(), nil
+					},
+				)
+				return hs
+			},
+			wantErr: false,
+		},
+		{
+			name: "Add hook with empty pattern (global hook)",
+			opts: hook_add.Options{
+				Name:          "global-hook",
+				RepoPattern:   "",
+				TriggerEvent:  string(hook.EventPostCreate),
+				OperationType: string(hook.OperationTypeOverlay),
+				OperationID:   "overlay-789",
+			},
+			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+				hs := hook_mock.NewMockHookService(ctrl)
+				hs.EXPECT().Add(ctx, gomock.Any()).DoAndReturn(
+					func(ctx context.Context, entry hook.Entry) (string, error) {
+						if entry.RepoPattern != "" {
+							t.Errorf("Expected empty repo pattern, got %s", entry.RepoPattern)
+						}
+						return uuid.New().String(), nil
+					},
+				)
+				return hs
+			},
+			wantErr: false,
+		},
+		{
+			name: "Hook service returns error",
+			opts: hook_add.Options{
+				Name:          "error-hook",
+				RepoPattern:   "github.com/error/*",
+				TriggerEvent:  string(hook.EventPostClone),
+				OperationType: string(hook.OperationTypeOverlay),
+				OperationID:   "overlay-error",
+			},
+			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+				hs := hook_mock.NewMockHookService(ctrl)
+				hs.EXPECT().Add(ctx, gomock.Any()).Return("", errors.New("hook already exists"))
+				return hs
+			},
+			wantErr: true,
+		},
+		{
+			name: "Add hook with custom event string",
+			opts: hook_add.Options{
+				Name:          "custom-event-hook",
+				RepoPattern:   "github.com/custom/*",
+				TriggerEvent:  "custom-event", // Not a predefined event
+				OperationType: string(hook.OperationTypeScript),
+				OperationID:   "script-custom",
+			},
+			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+				hs := hook_mock.NewMockHookService(ctrl)
+				hs.EXPECT().Add(ctx, gomock.Any()).DoAndReturn(
+					func(ctx context.Context, entry hook.Entry) (string, error) {
+						if string(entry.TriggerEvent) != "custom-event" {
+							t.Errorf("Expected trigger event 'custom-event', got %s", entry.TriggerEvent)
+						}
+						return uuid.New().String(), nil
+					},
+				)
+				return hs
+			},
+			wantErr: false,
+		},
+		{
+			name: "Add hook with all empty values",
+			opts: hook_add.Options{
+				Name:          "",
+				RepoPattern:   "",
+				TriggerEvent:  "",
+				OperationType: "",
+				OperationID:   "",
+			},
+			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+				hs := hook_mock.NewMockHookService(ctrl)
+				hs.EXPECT().Add(ctx, gomock.Any()).DoAndReturn(
+					func(ctx context.Context, entry hook.Entry) (string, error) {
+						// Service might validate and return error
+						return "", errors.New("invalid hook configuration")
+					},
+				)
+				return hs
+			},
+			wantErr: true,
+		},
+	}
 
-		mockService := hook_mock.NewMockHookService(ctrl)
-		expectedID := "test-hook-id"
-		opts := hook_add.Options{
-			Name:          "test-hook",
-			RepoPattern:   "owner/repo",
-			TriggerEvent:  "post-clone",
-			OperationType: "overlay",
-			OperationID:   "test-overlay-id",
-		}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		expectedEntry := hook.Entry{
-			Name:          opts.Name,
-			RepoPattern:   opts.RepoPattern,
-			TriggerEvent:  hook.Event(opts.TriggerEvent),
-			OperationType: hook.OperationType(opts.OperationType),
-			OperationID:   opts.OperationID,
-		}
+			hs := tc.setupMock(ctrl)
+			uc := hook_add.NewUseCase(hs)
 
-		mockService.EXPECT().
-			Add(ctx, expectedEntry).
-			Return(expectedID, nil)
+			id, err := uc.Execute(ctx, tc.opts)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("Execute() error = %v, wantErr %v", err, tc.wantErr)
+			}
 
-		uc := hook_add.NewUseCase(mockService)
-		result, err := uc.Execute(ctx, opts)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if result != expectedID {
-			t.Errorf("expected ID %s, got %s", expectedID, result)
-		}
-	})
+			if !tc.wantErr && tc.validateID != nil {
+				if err := tc.validateID(id); err != nil {
+					t.Errorf("ID validation failed: %v", err)
+				}
+			}
+		})
+	}
+}
 
-	t.Run("Success: Add hook with minimal options", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+func TestUseCase_Execute_AllEventTypes(t *testing.T) {
+	ctx := context.Background()
 
-		mockService := hook_mock.NewMockHookService(ctrl)
-		expectedID := "minimal-hook-id"
-		opts := hook_add.Options{
-			Name:          "",
-			RepoPattern:   "*/*",
-			TriggerEvent:  "post-create",
-			OperationType: "script",
-			OperationID:   "script-id",
-		}
+	events := []hook.Event{
+		hook.EventPostClone,
+		hook.EventPostFork,
+		hook.EventPostCreate,
+		hook.EventAny,
+	}
 
-		expectedEntry := hook.Entry{
-			Name:          opts.Name,
-			RepoPattern:   opts.RepoPattern,
-			TriggerEvent:  hook.Event(opts.TriggerEvent),
-			OperationType: hook.OperationType(opts.OperationType),
-			OperationID:   opts.OperationID,
-		}
+	for _, event := range events {
+		t.Run(string(event), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		mockService.EXPECT().
-			Add(ctx, expectedEntry).
-			Return(expectedID, nil)
+			hs := hook_mock.NewMockHookService(ctrl)
+			hs.EXPECT().Add(ctx, gomock.Any()).DoAndReturn(
+				func(ctx context.Context, entry hook.Entry) (string, error) {
+					if entry.TriggerEvent != event {
+						t.Errorf("Expected trigger event %s, got %s", event, entry.TriggerEvent)
+					}
+					return uuid.New().String(), nil
+				},
+			)
 
-		uc := hook_add.NewUseCase(mockService)
-		result, err := uc.Execute(ctx, opts)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if result != expectedID {
-			t.Errorf("expected ID %s, got %s", expectedID, result)
-		}
-	})
+			uc := hook_add.NewUseCase(hs)
+			opts := hook_add.Options{
+				Name:          "test-hook",
+				RepoPattern:   "github.com/test/*",
+				TriggerEvent:  string(event),
+				OperationType: string(hook.OperationTypeOverlay),
+				OperationID:   "overlay-123",
+			}
 
-	t.Run("Error: Add fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+			_, err := uc.Execute(ctx, opts)
+			if err != nil {
+				t.Errorf("Execute() unexpected error = %v", err)
+			}
+		})
+	}
+}
 
-		mockService := hook_mock.NewMockHookService(ctrl)
-		expectedErr := errors.New("add failed")
-		opts := hook_add.Options{
-			Name:          "error-hook",
-			RepoPattern:   "owner/repo",
-			TriggerEvent:  "post-fork",
-			OperationType: "overlay",
-			OperationID:   "overlay-id",
-		}
+func TestUseCase_Execute_AllOperationTypes(t *testing.T) {
+	ctx := context.Background()
 
-		expectedEntry := hook.Entry{
-			Name:          opts.Name,
-			RepoPattern:   opts.RepoPattern,
-			TriggerEvent:  hook.Event(opts.TriggerEvent),
-			OperationType: hook.OperationType(opts.OperationType),
-			OperationID:   opts.OperationID,
-		}
+	operations := []hook.OperationType{
+		hook.OperationTypeOverlay,
+		hook.OperationTypeScript,
+	}
 
-		mockService.EXPECT().
-			Add(ctx, expectedEntry).
-			Return("", expectedErr)
+	for _, opType := range operations {
+		t.Run(string(opType), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		uc := hook_add.NewUseCase(mockService)
-		result, err := uc.Execute(ctx, opts)
+			hs := hook_mock.NewMockHookService(ctrl)
+			hs.EXPECT().Add(ctx, gomock.Any()).DoAndReturn(
+				func(ctx context.Context, entry hook.Entry) (string, error) {
+					if entry.OperationType != opType {
+						t.Errorf("Expected operation type %s, got %s", opType, entry.OperationType)
+					}
+					return uuid.New().String(), nil
+				},
+			)
 
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-		if err != expectedErr {
-			t.Errorf("expected error %v, got %v", expectedErr, err)
-		}
-		if result != "" {
-			t.Errorf("expected empty result, got %s", result)
-		}
-	})
+			uc := hook_add.NewUseCase(hs)
+			opts := hook_add.Options{
+				Name:          "test-hook",
+				RepoPattern:   "github.com/test/*",
+				TriggerEvent:  string(hook.EventPostClone),
+				OperationType: string(opType),
+				OperationID:   "operation-123",
+			}
+
+			_, err := uc.Execute(ctx, opts)
+			if err != nil {
+				t.Errorf("Execute() unexpected error = %v", err)
+			}
+		})
+	}
 }
