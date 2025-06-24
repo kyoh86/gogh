@@ -1,4 +1,4 @@
-package extra_show_test
+package show_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/extra_show"
+	testtarget "github.com/kyoh86/gogh/v4/app/extra/show"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/extra_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
@@ -290,7 +290,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 			var buf bytes.Buffer
 			es := tc.setupMock(ctrl)
-			uc := extra_show.NewUseCase(es, &buf)
+			uc := testtarget.NewUseCase(es, &buf)
 
 			err := uc.Execute(ctx, tc.identifier, tc.asJSON)
 			if (err != nil) != tc.wantErr {
@@ -311,7 +311,7 @@ func TestUseCase_Execute_ServiceErrors(t *testing.T) {
 
 	var buf bytes.Buffer
 	es := extra_mock.NewMockExtraService(ctrl)
-	uc := extra_show.NewUseCase(es, &buf)
+	uc := testtarget.NewUseCase(es, &buf)
 
 	// Test service returning unexpected error
 	es.EXPECT().Get(ctx, "test-id").Return(nil, errors.New("database connection error"))

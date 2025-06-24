@@ -1,11 +1,11 @@
-package extra_list
+package list
 
 import (
 	"context"
 	"io"
 	"iter"
 
-	"github.com/kyoh86/gogh/v4/app/extra_describe"
+	"github.com/kyoh86/gogh/v4/app/extra/describe"
 	"github.com/kyoh86/gogh/v4/core/extra"
 )
 
@@ -26,13 +26,13 @@ func NewUseCase(extraService extra.ExtraService, writer io.Writer) *UseCase {
 // Execute performs the extra list operation
 func (uc *UseCase) Execute(ctx context.Context, asJSON bool, extraType string) error {
 	var useCase interface {
-		Execute(ctx context.Context, e extra_describe.Extra) error
+		Execute(ctx context.Context, e describe.Extra) error
 	}
 
 	if asJSON {
-		useCase = extra_describe.NewUseCaseJSON(uc.writer)
+		useCase = describe.NewUseCaseJSON(uc.writer)
 	} else {
-		useCase = extra_describe.NewUseCaseOneLine(uc.writer)
+		useCase = describe.NewUseCaseOneLine(uc.writer)
 	}
 
 	var list iter.Seq2[*extra.Extra, error]

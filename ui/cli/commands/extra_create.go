@@ -3,13 +3,13 @@ package commands
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v4/app/extra_create"
+	"github.com/kyoh86/gogh/v4/app/extra/create"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 
 func NewExtraCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	useCase := extra_create.NewUseCase(
+	useCase := create.NewUseCase(
 		svc.WorkspaceService,
 		svc.FinderService,
 		svc.ExtraService,
@@ -17,7 +17,7 @@ func NewExtraCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		svc.ReferenceParser,
 	)
 
-	var opts extra_create.Options
+	var opts create.Options
 
 	cmd := &cobra.Command{
 		Use:   "create <name>",

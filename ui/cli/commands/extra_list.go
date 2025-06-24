@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/app/extra_list"
+	"github.com/kyoh86/gogh/v4/app/extra/list"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +26,7 @@ Use --type to filter by extra type (auto, named).
 Use --json to output in JSON format.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			useCase := extra_list.NewUseCase(svc.ExtraService, os.Stdout)
+			useCase := list.NewUseCase(svc.ExtraService, os.Stdout)
 			return useCase.Execute(cmd.Context(), asJSON, extraType)
 		},
 	}

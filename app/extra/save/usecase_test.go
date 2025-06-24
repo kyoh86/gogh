@@ -1,4 +1,4 @@
-package extra_save_test
+package save_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/extra_save"
+	testtarget "github.com/kyoh86/gogh/v4/app/extra/save"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/extra_mock"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -454,7 +454,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			ws, fs, gs, overlayService, hs, es, rp := tc.setupMock(t, ctrl)
-			uc := extra_save.NewUseCase(ws, fs, gs, overlayService, hs, es, rp)
+			uc := testtarget.NewUseCase(ws, fs, gs, overlayService, hs, es, rp)
 
 			err := uc.Execute(ctx, tc.repoStr)
 			if (err != nil) != tc.wantErr {

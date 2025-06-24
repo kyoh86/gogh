@@ -1,4 +1,4 @@
-package extra_list_test
+package list_test
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyoh86/gogh/v4/app/extra_list"
+	testtarget "github.com/kyoh86/gogh/v4/app/extra/list"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/extra_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
@@ -160,7 +160,7 @@ func TestUseCase_Execute(t *testing.T) {
 			tc.setupMock(mockExtraService)
 
 			var buf bytes.Buffer
-			uc := extra_list.NewUseCase(mockExtraService, &buf)
+			uc := testtarget.NewUseCase(mockExtraService, &buf)
 
 			err := uc.Execute(ctx, tc.asJSON, tc.extraType)
 			if (err != nil) != tc.wantErr {

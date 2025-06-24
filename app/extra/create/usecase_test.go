@@ -1,4 +1,4 @@
-package extra_create_test
+package create_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/extra_create"
+	testtarget "github.com/kyoh86/gogh/v4/app/extra/create"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/extra_mock"
 	"github.com/kyoh86/gogh/v4/core/overlay"
@@ -22,7 +22,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		opts      extra_create.Options
+		opts      testtarget.Options
 		setupMock func(*gomock.Controller) (
 			*workspace_mock.MockWorkspaceService,
 			*workspace_mock.MockFinderService,
@@ -34,7 +34,7 @@ func TestUseCase_Execute(t *testing.T) {
 	}{
 		{
 			name: "Successfully create named extra",
-			opts: extra_create.Options{
+			opts: testtarget.Options{
 				Name:         "my-extra",
 				SourceRepo:   "github.com/owner/repo",
 				OverlayNames: []string{"overlay1", "overlay2"},
@@ -93,7 +93,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Empty name error",
-			opts: extra_create.Options{
+			opts: testtarget.Options{
 				Name:         "",
 				SourceRepo:   "github.com/owner/repo",
 				OverlayNames: []string{"overlay1"},
@@ -117,7 +117,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Empty source repository error",
-			opts: extra_create.Options{
+			opts: testtarget.Options{
 				Name:         "my-extra",
 				SourceRepo:   "",
 				OverlayNames: []string{"overlay1"},
@@ -141,7 +141,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Invalid repository reference",
-			opts: extra_create.Options{
+			opts: testtarget.Options{
 				Name:         "my-extra",
 				SourceRepo:   "invalid-ref",
 				OverlayNames: []string{"overlay1"},
@@ -167,7 +167,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Overlay not found",
-			opts: extra_create.Options{
+			opts: testtarget.Options{
 				Name:         "my-extra",
 				SourceRepo:   "github.com/owner/repo",
 				OverlayNames: []string{"nonexistent"},
@@ -196,7 +196,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "AddNamedExtra fails",
-			opts: extra_create.Options{
+			opts: testtarget.Options{
 				Name:         "my-extra",
 				SourceRepo:   "github.com/owner/repo",
 				OverlayNames: []string{"overlay1"},
@@ -231,7 +231,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Create with no overlays",
-			opts: extra_create.Options{
+			opts: testtarget.Options{
 				Name:         "empty-extra",
 				SourceRepo:   "github.com/owner/repo",
 				OverlayNames: []string{},
@@ -273,7 +273,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			ws, fs, es, os, rp := tc.setupMock(ctrl)
-			uc := extra_create.NewUseCase(ws, fs, es, os, rp)
+			uc := testtarget.NewUseCase(ws, fs, es, os, rp)
 
 			err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {

@@ -3,18 +3,18 @@ package commands
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v4/app/extra_remove"
+	"github.com/kyoh86/gogh/v4/app/extra/remove"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 
 func NewExtraRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	useCase := extra_remove.NewUseCase(
+	useCase := remove.NewUseCase(
 		svc.ExtraService,
 		svc.ReferenceParser,
 	)
 
-	var opts extra_remove.Options
+	var opts remove.Options
 
 	cmd := &cobra.Command{
 		Use:     "remove",

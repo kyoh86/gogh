@@ -6,7 +6,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/cwd"
-	"github.com/kyoh86/gogh/v4/app/extra_save"
+	"github.com/kyoh86/gogh/v4/app/extra/save"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -42,7 +42,7 @@ These extra will be automatically applied when the repository is cloned.`,
 				repoStr = repo.Ref().String()
 			}
 
-			uc := extra_save.NewUseCase(
+			uc := save.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.GitService,

@@ -1,4 +1,4 @@
-package extra_remove
+package remove
 
 import (
 	"context"

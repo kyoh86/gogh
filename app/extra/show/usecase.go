@@ -1,11 +1,11 @@
-package extra_show
+package show
 
 import (
 	"context"
 	"fmt"
 	"io"
 
-	"github.com/kyoh86/gogh/v4/app/extra_describe"
+	"github.com/kyoh86/gogh/v4/app/extra/describe"
 	"github.com/kyoh86/gogh/v4/core/extra"
 )
 
@@ -36,13 +36,13 @@ func (uc *UseCase) Execute(ctx context.Context, identifier string, asJSON bool) 
 	}
 
 	var useCase interface {
-		Execute(ctx context.Context, e extra_describe.Extra) error
+		Execute(ctx context.Context, e describe.Extra) error
 	}
 
 	if asJSON {
-		useCase = extra_describe.NewUseCaseJSON(uc.writer)
+		useCase = describe.NewUseCaseJSON(uc.writer)
 	} else {
-		useCase = extra_describe.NewUseCaseDetail(uc.writer)
+		useCase = describe.NewUseCaseDetail(uc.writer)
 	}
 
 	return useCase.Execute(ctx, *e)

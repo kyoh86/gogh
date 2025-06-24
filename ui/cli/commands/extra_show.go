@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/kyoh86/gogh/v4/app/extra_show"
+	"github.com/kyoh86/gogh/v4/app/extra/show"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ You can specify either an extra ID or name (for named extras).
 Use --json to output in JSON format.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			useCase := extra_show.NewUseCase(svc.ExtraService, os.Stdout)
+			useCase := show.NewUseCase(svc.ExtraService, os.Stdout)
 			return useCase.Execute(cmd.Context(), args[0], asJSON)
 		},
 	}

@@ -1,4 +1,4 @@
-package extra_describe
+package describe
 
 import (
 	"context"

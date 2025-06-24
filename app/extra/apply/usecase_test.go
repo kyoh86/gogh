@@ -1,4 +1,4 @@
-package extra_apply_test
+package apply_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/extra_apply"
+	testtarget "github.com/kyoh86/gogh/v4/app/extra/apply"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/extra_mock"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
@@ -22,7 +22,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		opts      extra_apply.Options
+		opts      testtarget.Options
 		setupMock func(*gomock.Controller) (
 			*extra_mock.MockExtraService,
 			*overlay_mock.MockOverlayService,
@@ -34,7 +34,7 @@ func TestUseCase_Execute(t *testing.T) {
 	}{
 		{
 			name: "Empty name error",
-			opts: extra_apply.Options{
+			opts: testtarget.Options{
 				Name:       "",
 				TargetRepo: "github.com/owner/repo",
 			},
@@ -57,7 +57,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Named extra not found",
-			opts: extra_apply.Options{
+			opts: testtarget.Options{
 				Name:       "nonexistent",
 				TargetRepo: "github.com/owner/repo",
 			},
@@ -82,7 +82,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Invalid repository reference",
-			opts: extra_apply.Options{
+			opts: testtarget.Options{
 				Name:       "my-extra",
 				TargetRepo: "invalid-ref",
 			},
@@ -117,7 +117,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Repository not found",
-			opts: extra_apply.Options{
+			opts: testtarget.Options{
 				Name:       "my-extra",
 				TargetRepo: "github.com/owner/notfound",
 			},
@@ -154,7 +154,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Current directory not in repository",
-			opts: extra_apply.Options{
+			opts: testtarget.Options{
 				Name:       "my-extra",
 				TargetRepo: "",
 			},
@@ -189,7 +189,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Overlay not found",
-			opts: extra_apply.Options{
+			opts: testtarget.Options{
 				Name:       "my-extra",
 				TargetRepo: "github.com/owner/repo",
 			},
@@ -243,7 +243,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			es, os, ws, fs, rp := tc.setupMock(ctrl)
-			uc := extra_apply.NewUseCase(es, os, ws, fs, rp)
+			uc := testtarget.NewUseCase(es, os, ws, fs, rp)
 
 			err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {

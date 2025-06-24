@@ -1,4 +1,4 @@
-package extra_remove_test
+package remove_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/extra_remove"
+	testtarget "github.com/kyoh86/gogh/v4/app/extra/remove"
 	"github.com/kyoh86/gogh/v4/core/extra_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
@@ -18,14 +18,14 @@ func TestUseCase_Execute(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		opts      extra_remove.Options
+		opts      testtarget.Options
 		setupMock func(*gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser)
 		wantErr   bool
 		errMsg    string
 	}{
 		{
 			name: "Successfully remove extra by ID",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				ID: uuid.New().String(),
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -48,7 +48,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Remove extra by ID - not found",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				ID: uuid.New().String(),
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -64,7 +64,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Successfully remove named extra",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Name: "my-extra",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -79,7 +79,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Remove named extra - not found",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Name: "non-existent",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -95,7 +95,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Successfully remove auto extra",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Repository: "github.com/owner/repo",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -112,7 +112,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Remove auto extra - invalid repository reference",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Repository: "invalid-ref",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -128,7 +128,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Remove auto extra - not found",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Repository: "github.com/owner/repo",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -146,7 +146,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "No option specified",
-			opts: extra_remove.Options{},
+			opts: testtarget.Options{},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
 				es := extra_mock.NewMockExtraService(ctrl)
 				rp := repository_mock.NewMockReferenceParser(ctrl)
@@ -157,7 +157,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Multiple options specified (ID and Name)",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				ID:   uuid.New().String(),
 				Name: "my-extra",
 			},
@@ -174,7 +174,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Multiple options specified (Name and Repository)",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Name:       "my-extra",
 				Repository: "github.com/owner/repo",
 			},
@@ -191,7 +191,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Remove with empty ID",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				ID: "",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -204,7 +204,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Remove with empty name",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Name: "",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -217,7 +217,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Remove with empty repository",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Repository: "",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -230,7 +230,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Service returns unexpected error for ID",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				ID: uuid.New().String(),
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -246,7 +246,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Service returns unexpected error for named extra",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Name: "my-extra",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -262,7 +262,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Service returns unexpected error for auto extra",
-			opts: extra_remove.Options{
+			opts: testtarget.Options{
 				Repository: "github.com/owner/repo",
 			},
 			setupMock: func(ctrl *gomock.Controller) (*extra_mock.MockExtraService, *repository_mock.MockReferenceParser) {
@@ -286,7 +286,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			es, rp := tc.setupMock(ctrl)
-			uc := extra_remove.NewUseCase(es, rp)
+			uc := testtarget.NewUseCase(es, rp)
 
 			err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -314,10 +314,10 @@ func TestUseCase_Execute_PriorityOrder(t *testing.T) {
 
 	es := extra_mock.NewMockExtraService(ctrl)
 	rp := repository_mock.NewMockReferenceParser(ctrl)
-	uc := extra_remove.NewUseCase(es, rp)
+	uc := testtarget.NewUseCase(es, rp)
 
 	// Test priority: ID > Name > Repository
-	opts := extra_remove.Options{
+	opts := testtarget.Options{
 		ID:         uuid.New().String(),
 		Name:       "my-extra",
 		Repository: "github.com/owner/repo",

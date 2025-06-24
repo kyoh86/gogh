@@ -1,4 +1,4 @@
-package extra_describe_test
+package describe_test
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/extra_describe"
+	testtarget "github.com/kyoh86/gogh/v4/app/extra/describe"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
@@ -29,7 +29,7 @@ func TestUseCaseJSON_Execute_AutoExtra(t *testing.T) {
 	e := extra.NewAutoExtra(extraID, repo, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := extra_describe.NewUseCaseJSON(&buf)
+	uc := testtarget.NewUseCaseJSON(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -74,7 +74,7 @@ func TestUseCaseJSON_Execute_NamedExtra(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := extra_describe.NewUseCaseJSON(&buf)
+	uc := testtarget.NewUseCaseJSON(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -115,7 +115,7 @@ func TestUseCaseOneLine_Execute_AutoExtra(t *testing.T) {
 	e := extra.NewAutoExtra(extraID, repo, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := extra_describe.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewUseCaseOneLine(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -151,7 +151,7 @@ func TestUseCaseOneLine_Execute_NamedExtra(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := extra_describe.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewUseCaseOneLine(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -188,7 +188,7 @@ func TestUseCaseDetail_Execute_AutoExtra(t *testing.T) {
 	e := extra.NewAutoExtra(extraID, repo, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := extra_describe.NewUseCaseDetail(&buf)
+	uc := testtarget.NewUseCaseDetail(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -234,7 +234,7 @@ func TestUseCaseDetail_Execute_NamedExtra(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := extra_describe.NewUseCaseDetail(&buf)
+	uc := testtarget.NewUseCaseDetail(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -277,7 +277,7 @@ func TestUseCaseDetail_Execute_EmptyItems(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := extra_describe.NewUseCaseDetail(&buf)
+	uc := testtarget.NewUseCaseDetail(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
