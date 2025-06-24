@@ -10,7 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/cli/browser"
-	"github.com/kyoh86/gogh/v4/app/auth_login"
+	"github.com/kyoh86/gogh/v4/app/auth/login"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +38,7 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 				}
 			}
 
-			if err := auth_login.NewUseCase(svc.TokenService, svc.AuthenticateService, svc.HostingService).Execute(cmd.Context(), f.Host, func(ctx context.Context, res auth_login.DeviceAuthResponse) error {
+			if err := login.NewUseCase(svc.TokenService, svc.AuthenticateService, svc.HostingService).Execute(cmd.Context(), f.Host, func(ctx context.Context, res login.DeviceAuthResponse) error {
 				if errors.Is(browser.OpenURL(res.VerificationURI), exec.ErrNotFound) {
 					fmt.Fprintf(
 						os.Stderr,

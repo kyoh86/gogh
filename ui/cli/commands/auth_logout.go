@@ -8,20 +8,20 @@ import (
 
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
-	"github.com/kyoh86/gogh/v4/app/auth_list"
-	"github.com/kyoh86/gogh/v4/app/auth_logout"
+	"github.com/kyoh86/gogh/v4/app/auth/list"
+	"github.com/kyoh86/gogh/v4/app/auth/logout"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
 
 func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	logoutUseCase := auth_logout.NewUseCase(svc.TokenService)
+	logoutUseCase := logout.NewUseCase(svc.TokenService)
 
 	checkFlags := func(cmd *cobra.Command, args []string) ([]string, error) {
 		if len(args) > 0 {
 			return args, nil
 		}
-		entries, err := auth_list.NewUseCase(svc.TokenService).Execute(cmd.Context())
+		entries, err := list.NewUseCase(svc.TokenService).Execute(cmd.Context())
 		if err != nil {
 			return nil, fmt.Errorf("listing up tokens: %w", err)
 		}

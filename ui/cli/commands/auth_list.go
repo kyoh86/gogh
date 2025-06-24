@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/app/auth_list"
+	"github.com/kyoh86/gogh/v4/app/auth/list"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +17,7 @@ func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := cmd.Context()
-			entries, err := auth_list.NewUseCase(svc.TokenService).Execute(ctx)
+			entries, err := list.NewUseCase(svc.TokenService).Execute(ctx)
 			if err != nil {
 				return fmt.Errorf("listing up tokens: %w", err)
 			}
