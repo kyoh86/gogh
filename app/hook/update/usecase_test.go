@@ -1,4 +1,4 @@
-package hook_update_test
+package update_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/hook_update"
+	testtarget "github.com/kyoh86/gogh/v4/app/hook/update"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hook_mock"
 	"go.uber.org/mock/gomock"
@@ -18,14 +18,14 @@ func TestUseCase_Execute(t *testing.T) {
 	testCases := []struct {
 		name      string
 		hookID    string
-		opts      hook_update.Options
+		opts      testtarget.Options
 		setupMock func(*gomock.Controller) *hook_mock.MockHookService
 		wantErr   bool
 	}{
 		{
 			name:   "Successfully update hook with all fields",
 			hookID: uuid.New().String(),
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "updated-hook",
 				RepoPattern:   "github.com/updated/*",
 				TriggerEvent:  string(hook.EventPostClone),
@@ -66,7 +66,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Update hook with partial fields",
 			hookID: uuid.New().String(),
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "partial-update",
 				RepoPattern:   "",
 				TriggerEvent:  string(hook.EventPostFork),
@@ -102,7 +102,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Update hook changing operation type",
 			hookID: uuid.New().String(),
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "script-hook",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostCreate),
@@ -129,7 +129,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Update non-existent hook",
 			hookID: uuid.New().String(),
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "non-existent",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostClone),
@@ -146,7 +146,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Update with invalid hook ID",
 			hookID: "invalid-id",
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "test",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostClone),
@@ -163,7 +163,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Update with empty hook ID",
 			hookID: "",
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "test",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostClone),
@@ -180,7 +180,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Update with all empty values",
 			hookID: uuid.New().String(),
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "",
 				RepoPattern:   "",
 				TriggerEvent:  "",
@@ -202,7 +202,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Update with custom event string",
 			hookID: uuid.New().String(),
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "custom-event-hook",
 				RepoPattern:   "github.com/custom/*",
 				TriggerEvent:  "custom-event",
@@ -226,7 +226,7 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:   "Service returns unexpected error",
 			hookID: uuid.New().String(),
-			opts: hook_update.Options{
+			opts: testtarget.Options{
 				Name:          "test",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostClone),
@@ -248,7 +248,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			hs := tc.setupMock(ctrl)
-			uc := hook_update.NewUseCase(hs)
+			uc := testtarget.NewUseCase(hs)
 
 			err := uc.Execute(ctx, tc.hookID, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -283,8 +283,8 @@ func TestUseCase_Execute_AllEventTypes(t *testing.T) {
 				},
 			)
 
-			uc := hook_update.NewUseCase(hs)
-			opts := hook_update.Options{
+			uc := testtarget.NewUseCase(hs)
+			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(event),
@@ -323,8 +323,8 @@ func TestUseCase_Execute_AllOperationTypes(t *testing.T) {
 				},
 			)
 
-			uc := hook_update.NewUseCase(hs)
-			opts := hook_update.Options{
+			uc := testtarget.NewUseCase(hs)
+			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostClone),

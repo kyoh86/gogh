@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/app/hook_update"
+	"github.com/kyoh86/gogh/v4/app/hook/update"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -24,14 +24,14 @@ func NewHookUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			hookID := args[0]
-			opts := hook_update.Options{
+			opts := update.Options{
 				Name:          f.name,
 				RepoPattern:   f.repoPattern,
 				TriggerEvent:  f.triggerEvent,
 				OperationType: f.operationType,
 				OperationID:   f.operationID,
 			}
-			if err := hook_update.NewUseCase(svc.HookService).Execute(ctx, hookID, opts); err != nil {
+			if err := update.NewUseCase(svc.HookService).Execute(ctx, hookID, opts); err != nil {
 				return fmt.Errorf("updating hook metadata: %w", err)
 			}
 			return nil

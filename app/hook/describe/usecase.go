@@ -1,4 +1,4 @@
-package hook_describe
+package describe
 
 import (
 	"context"

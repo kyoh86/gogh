@@ -1,4 +1,4 @@
-package hook_remove_test
+package remove_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/hook_remove"
+	testtarget "github.com/kyoh86/gogh/v4/app/hook/remove"
 	"github.com/kyoh86/gogh/v4/core/hook_mock"
 	"go.uber.org/mock/gomock"
 )
@@ -86,7 +86,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			hs := tc.setupMock(ctrl)
-			uc := hook_remove.NewUseCase(hs)
+			uc := testtarget.NewUseCase(hs)
 
 			err := uc.Execute(ctx, tc.hookID)
 			if (err != nil) != tc.wantErr {
@@ -102,7 +102,7 @@ func TestUseCase_Execute_MultipleRemoves(t *testing.T) {
 	defer ctrl.Finish()
 
 	hs := hook_mock.NewMockHookService(ctrl)
-	uc := hook_remove.NewUseCase(hs)
+	uc := testtarget.NewUseCase(hs)
 
 	// Test removing multiple hooks in sequence
 	hookIDs := []string{
@@ -127,7 +127,7 @@ func TestUseCase_Execute_PartialFailure(t *testing.T) {
 	defer ctrl.Finish()
 
 	hs := hook_mock.NewMockHookService(ctrl)
-	uc := hook_remove.NewUseCase(hs)
+	uc := testtarget.NewUseCase(hs)
 
 	// First removal succeeds
 	successID := uuid.New().String()

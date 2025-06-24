@@ -1,4 +1,4 @@
-package hook_add
+package update
 
 import (
 	"context"
@@ -22,7 +22,7 @@ func NewUseCase(hookService hook.HookService) *UseCase {
 	return &UseCase{hookService: hookService}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, opts Options) (string, error) {
+func (uc *UseCase) Execute(ctx context.Context, id string, opts Options) error {
 	h := hook.Entry{
 		Name:          opts.Name,
 		RepoPattern:   opts.RepoPattern,
@@ -30,5 +30,5 @@ func (uc *UseCase) Execute(ctx context.Context, opts Options) (string, error) {
 		OperationType: hook.OperationType(opts.OperationType),
 		OperationID:   opts.OperationID,
 	}
-	return uc.hookService.Add(ctx, h)
+	return uc.hookService.Update(ctx, id, h)
 }

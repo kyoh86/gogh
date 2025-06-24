@@ -1,4 +1,4 @@
-package hook_invoke
+package invoke
 
 import (
 	"context"

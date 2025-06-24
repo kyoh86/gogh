@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/kyoh86/gogh/v4/app/cwd"
-	"github.com/kyoh86/gogh/v4/app/hook_invoke"
+	"github.com/kyoh86/gogh/v4/app/hook/invoke"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -40,7 +40,7 @@ func NewHookInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				repoRef = repo.Ref().String()
 			}
 
-			return hook_invoke.NewUseCase(
+			return invoke.NewUseCase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.HookService,

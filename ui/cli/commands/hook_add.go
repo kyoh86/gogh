@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/app/hook_add"
+	"github.com/kyoh86/gogh/v4/app/hook/add"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -23,14 +23,14 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			opts := hook_add.Options{
+			opts := add.Options{
 				Name:          f.name,
 				TriggerEvent:  f.triggerEvent,
 				RepoPattern:   f.repoPattern,
 				OperationType: f.operationType,
 				OperationID:   f.operationID,
 			}
-			id, err := hook_add.NewUseCase(svc.HookService).Execute(ctx, opts)
+			id, err := add.NewUseCase(svc.HookService).Execute(ctx, opts)
 			if err != nil {
 				return fmt.Errorf("add hook: %w", err)
 			}

@@ -1,10 +1,10 @@
-package hook_list
+package list
 
 import (
 	"context"
 	"io"
 
-	"github.com/kyoh86/gogh/v4/app/hook_describe"
+	"github.com/kyoh86/gogh/v4/app/hook/describe"
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
@@ -25,12 +25,12 @@ func NewUseCase(
 
 func (uc *UseCase) Execute(ctx context.Context, asJSON bool) error {
 	var useCase interface {
-		Execute(ctx context.Context, s hook_describe.Hook) error
+		Execute(ctx context.Context, s describe.Hook) error
 	}
 	if asJSON {
-		useCase = hook_describe.NewUseCaseJSON(uc.writer)
+		useCase = describe.NewUseCaseJSON(uc.writer)
 	} else {
-		useCase = hook_describe.NewUseCaseOneLine(uc.writer)
+		useCase = describe.NewUseCaseOneLine(uc.writer)
 	}
 	for s, err := range uc.hookService.List() {
 		if err != nil {

@@ -1,4 +1,4 @@
-package hook_remove
+package remove
 
 import (
 	"context"

@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/kyoh86/gogh/v4/app/hook_list"
+	"github.com/kyoh86/gogh/v4/app/hook/list"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +18,7 @@ func NewHookListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		Short: "List registered hooks",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			useCase := hook_list.NewUseCase(svc.HookService, cmd.OutOrStdout())
+			useCase := list.NewUseCase(svc.HookService, cmd.OutOrStdout())
 			return useCase.Execute(cmd.Context(), f.json)
 		},
 	}

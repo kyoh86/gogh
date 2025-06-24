@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/app/hook_invoke"
+	"github.com/kyoh86/gogh/v4/app/hook/invoke"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -76,14 +76,14 @@ func (uc *UseCase) Execute(
 	if err := tryCloneUseCase.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
-	if err := hook_invoke.NewUseCase(
+	if err := invoke.NewUseCase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.hookService,
 		uc.overlayService,
 		uc.scriptService,
 		uc.referenceParser,
-	).InvokeFor(ctx, hook_invoke.EventPostCreate, refWithAlias); err != nil {
+	).InvokeFor(ctx, invoke.EventPostCreate, refWithAlias); err != nil {
 		return fmt.Errorf("invoking hooks after creation: %w", err)
 	}
 	return nil

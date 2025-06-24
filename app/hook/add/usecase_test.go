@@ -1,4 +1,4 @@
-package hook_add_test
+package add_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/hook_add"
+	testtarget "github.com/kyoh86/gogh/v4/app/hook/add"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hook_mock"
 	"go.uber.org/mock/gomock"
@@ -17,14 +17,14 @@ func TestUseCase_Execute(t *testing.T) {
 
 	testCases := []struct {
 		name       string
-		opts       hook_add.Options
+		opts       testtarget.Options
 		setupMock  func(*gomock.Controller) *hook_mock.MockHookService
 		wantErr    bool
 		validateID func(string) error
 	}{
 		{
 			name: "Successfully add overlay hook",
-			opts: hook_add.Options{
+			opts: testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/owner/*",
 				TriggerEvent:  string(hook.EventPostClone),
@@ -69,7 +69,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Successfully add script hook",
-			opts: hook_add.Options{
+			opts: testtarget.Options{
 				Name:          "script-hook",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostFork),
@@ -98,7 +98,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Add hook with empty pattern (global hook)",
-			opts: hook_add.Options{
+			opts: testtarget.Options{
 				Name:          "global-hook",
 				RepoPattern:   "",
 				TriggerEvent:  string(hook.EventPostCreate),
@@ -121,7 +121,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Hook service returns error",
-			opts: hook_add.Options{
+			opts: testtarget.Options{
 				Name:          "error-hook",
 				RepoPattern:   "github.com/error/*",
 				TriggerEvent:  string(hook.EventPostClone),
@@ -137,7 +137,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Add hook with custom event string",
-			opts: hook_add.Options{
+			opts: testtarget.Options{
 				Name:          "custom-event-hook",
 				RepoPattern:   "github.com/custom/*",
 				TriggerEvent:  "custom-event", // Not a predefined event
@@ -160,7 +160,7 @@ func TestUseCase_Execute(t *testing.T) {
 		},
 		{
 			name: "Add hook with all empty values",
-			opts: hook_add.Options{
+			opts: testtarget.Options{
 				Name:          "",
 				RepoPattern:   "",
 				TriggerEvent:  "",
@@ -187,7 +187,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			hs := tc.setupMock(ctrl)
-			uc := hook_add.NewUseCase(hs)
+			uc := testtarget.NewUseCase(hs)
 
 			id, err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -228,8 +228,8 @@ func TestUseCase_Execute_AllEventTypes(t *testing.T) {
 				},
 			)
 
-			uc := hook_add.NewUseCase(hs)
-			opts := hook_add.Options{
+			uc := testtarget.NewUseCase(hs)
+			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(event),
@@ -268,8 +268,8 @@ func TestUseCase_Execute_AllOperationTypes(t *testing.T) {
 				},
 			)
 
-			uc := hook_add.NewUseCase(hs)
-			opts := hook_add.Options{
+			uc := testtarget.NewUseCase(hs)
+			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",
 				TriggerEvent:  string(hook.EventPostClone),

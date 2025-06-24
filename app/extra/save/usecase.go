@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kyoh86/gogh/v4/app/hook_add"
+	"github.com/kyoh86/gogh/v4/app/hook/add"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -111,8 +111,8 @@ func (uc *UseCase) Execute(ctx context.Context, repoStr string) error {
 		}
 
 		// Create post-clone hook for this overlay
-		hookAddUC := hook_add.NewUseCase(uc.hookService)
-		hookID, err := hookAddUC.Execute(ctx, hook_add.Options{
+		hookAddUC := add.NewUseCase(uc.hookService)
+		hookID, err := hookAddUC.Execute(ctx, add.Options{
 			Name:          fmt.Sprintf("Auto extra for %s: %s", ref.String(), file),
 			RepoPattern:   ref.String(),
 			TriggerEvent:  string(hook.EventPostClone),

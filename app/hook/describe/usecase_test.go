@@ -1,4 +1,4 @@
-package hook_describe_test
+package describe_test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/hook_describe"
+	testtarget "github.com/kyoh86/gogh/v4/app/hook/describe"
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
@@ -26,7 +26,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	h := hook.ConcreteHook(hookUUID, hookName, repoPattern, triggerEvent, operationType, operationID)
 
 	var buf bytes.Buffer
-	uc := hook_describe.NewUseCaseJSON(&buf)
+	uc := testtarget.NewUseCaseJSON(&buf)
 
 	err := uc.Execute(ctx, h)
 	if err != nil {
@@ -98,7 +98,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 			h := hook.ConcreteHook(hookUUID, tc.hookName, tc.repoPattern, tc.triggerEvent, tc.operationType, tc.operationID)
 
 			var buf bytes.Buffer
-			uc := hook_describe.NewUseCaseOneLine(&buf)
+			uc := testtarget.NewUseCaseOneLine(&buf)
 
 			err := uc.Execute(ctx, h)
 			if err != nil {
@@ -145,7 +145,7 @@ func TestUseCaseOneLine_Execute_AllEventTypes(t *testing.T) {
 			)
 
 			var buf bytes.Buffer
-			uc := hook_describe.NewUseCaseOneLine(&buf)
+			uc := testtarget.NewUseCaseOneLine(&buf)
 
 			err := uc.Execute(ctx, h)
 			if err != nil {
@@ -184,7 +184,7 @@ func TestUseCaseOneLine_Execute_AllOperationTypes(t *testing.T) {
 			)
 
 			var buf bytes.Buffer
-			uc := hook_describe.NewUseCaseOneLine(&buf)
+			uc := testtarget.NewUseCaseOneLine(&buf)
 
 			err := uc.Execute(ctx, h)
 			if err != nil {

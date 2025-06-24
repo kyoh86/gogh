@@ -1,4 +1,4 @@
-package hook_list_test
+package list_test
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kyoh86/gogh/v4/app/hook_list"
+	testtarget "github.com/kyoh86/gogh/v4/app/hook/list"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hook_mock"
 	"go.uber.org/mock/gomock"
@@ -154,7 +154,7 @@ func TestUseCase_Execute(t *testing.T) {
 			tc.setupMock(mockHookService)
 
 			var buf bytes.Buffer
-			uc := hook_list.NewUseCase(mockHookService, &buf)
+			uc := testtarget.NewUseCase(mockHookService, &buf)
 
 			err := uc.Execute(ctx, tc.asJSON)
 			if (err != nil) != tc.wantErr {
