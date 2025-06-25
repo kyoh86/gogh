@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -124,6 +125,9 @@ value = 42
 	})
 
 	t.Run("permission error", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("Permission tests are not reliable on Windows")
+		}
 		if os.Getuid() == 0 {
 			t.Skip("Cannot test permission errors as root")
 		}
@@ -179,6 +183,9 @@ func TestEnsureDirectoryExists(t *testing.T) {
 	})
 
 	t.Run("permission error", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("Permission tests are not reliable on Windows")
+		}
 		if os.Getuid() == 0 {
 			t.Skip("Cannot test permission errors as root")
 		}
@@ -245,6 +252,9 @@ func TestOpenFileForWrite(t *testing.T) {
 	})
 
 	t.Run("permission error", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("Permission tests are not reliable on Windows")
+		}
 		if os.Getuid() == 0 {
 			t.Skip("Cannot test permission errors as root")
 		}
