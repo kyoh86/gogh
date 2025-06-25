@@ -11,6 +11,22 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// instantCommandRunner is used to create exec.Cmd instances for InvokeInstant.
+// This can be overridden in tests to avoid actual subprocess execution.
+//
+//nolint:gocritic // unlambda: need to override in tests
+var instantCommandRunner = func(name string, args ...string) *exec.Cmd {
+	return exec.Command(name, args...)
+}
+
+// SetInstantCommandRunner allows tests to override the command runner.
+// Returns the previous command runner for restoration.
+func SetInstantCommandRunner(runner func(string, ...string) *exec.Cmd) func(string, ...string) *exec.Cmd {
+	prev := instantCommandRunner
+	instantCommandRunner = runner
+	return prev
+}
+
 // InvokeInstant executes a script directly without storing it
 func InvokeInstant(ctx context.Context, location *repository.Location, code string, globals map[string]any) error {
 	g := make(map[string]any, len(globals)+1)
@@ -32,7 +48,7 @@ func InvokeInstant(ctx context.Context, location *repository.Location, code stri
 		exePath = exe
 	}
 
-	cmd := exec.Command(exePath, "script", "run")
+	cmd := instantCommandRunner(exePath, "script", "run")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = location.FullPath()
