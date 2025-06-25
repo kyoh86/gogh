@@ -29,7 +29,7 @@ func (cs *ScriptSourceStore) Save(ctx context.Context, scriptID string, content 
 	}
 	defer f.Close()
 	if _, err := io.Copy(f, content); err != nil {
-		return fmt.Errorf("failed to write content: %w", err)
+		return fmt.Errorf("failed to write script: %w", err)
 	}
 	return nil
 }

@@ -2,13 +2,14 @@ package config_test
 
 import (
 	"context"
+	"errors"
 	"iter"
 	"os"
 	"path/filepath"
 	"slices"
 	"testing"
 
-	"github.com/kyoh86/gogh/v4/app/config"
+	testtarget "github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/typ"
@@ -24,11 +25,11 @@ func TestOverlayStore(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Mock AppContextPathFunc to use our temp directory
-	origAppContextPathFunc := config.AppContextPathFunc
-	defer func() { config.AppContextPathFunc = origAppContextPathFunc }()
+	origAppContextPathFunc := testtarget.AppContextPathFunc
+	defer func() { testtarget.AppContextPathFunc = origAppContextPathFunc }()
 
 	overlayFile := filepath.Join(tempDir, "overlay.v4.toml")
-	config.AppContextPathFunc = func(envar string, getDir func() (string, error), rel ...string) (string, error) {
+	testtarget.AppContextPathFunc = func(envar string, getDir func() (string, error), rel ...string) (string, error) {
 		if envar == "GOGH_OVERLAY_PATH" {
 			return overlayFile, nil
 		}
@@ -37,7 +38,7 @@ func TestOverlayStore(t *testing.T) {
 
 	// Create test context and store
 	ctx := context.Background()
-	store := config.NewOverlayStore()
+	store := testtarget.NewOverlayStore()
 
 	t.Run("Source", func(t *testing.T) {
 		source, err := store.Source()
@@ -183,7 +184,7 @@ func TestOverlayStore(t *testing.T) {
 		This is not valid TOML content
 		overlays = [
 		`
-		if err := os.WriteFile(overlayFile, []byte(invalidContent), 0644); err != nil {
+		if err := os.WriteFile(overlayFile, []byte(invalidContent), 0o644); err != nil {
 			t.Fatalf("Failed to write invalid overlay file: %v", err)
 		}
 
@@ -200,6 +201,32 @@ func TestOverlayStore(t *testing.T) {
 		})
 		if err == nil {
 			t.Errorf("Load() did not fail with invalid file content")
+		}
+	})
+
+	t.Run("Load with source error", func(t *testing.T) {
+		// テスト前にAppContextPathFuncを保存
+		originalFunc := testtarget.AppContextPathFunc
+		defer func() {
+			testtarget.AppContextPathFunc = originalFunc
+		}()
+
+		// AppContextPathFuncをエラーを返すようにモック
+		testtarget.AppContextPathFunc = func(envar string, getDir func() (string, error), rel ...string) (string, error) {
+			return "", errors.New("source error")
+		}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		store := testtarget.NewOverlayStore()
+		mockOverlayService := overlay_mock.NewMockOverlayService(ctrl)
+
+		_, err := store.Load(ctx, func() overlay.OverlayService {
+			return mockOverlayService
+		})
+		if err == nil {
+			t.Error("Load() error = nil, want error")
 		}
 	})
 }
