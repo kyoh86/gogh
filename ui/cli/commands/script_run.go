@@ -18,6 +18,12 @@ func NewScriptRunCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 		Hidden: true,
 		Args:   cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Check if we're in test mode to prevent infinite recursion
+			if os.Getenv("GOGH_TEST_MODE") == "1" {
+				// In test mode, just exit successfully without executing
+				return nil
+			}
+
 			ctx := cmd.Context()
 			var script run.Script
 			gob.Register(map[string]any{})

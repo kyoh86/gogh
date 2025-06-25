@@ -17,6 +17,58 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Command interface abstracts exec.Cmd for testing
+type Command interface {
+	StdinPipe() (io.WriteCloser, error)
+	Run() error
+	SetDir(dir string)
+	SetStdout(stdout io.Writer)
+	SetStderr(stderr io.Writer)
+}
+
+// execCmd wraps exec.Cmd to implement Command interface
+type execCmd struct {
+	*exec.Cmd
+}
+
+func (c *execCmd) StdinPipe() (io.WriteCloser, error) {
+	return c.Cmd.StdinPipe()
+}
+
+func (c *execCmd) Run() error {
+	return c.Cmd.Run()
+}
+
+func (c *execCmd) SetDir(dir string) {
+	c.Dir = dir
+}
+
+func (c *execCmd) SetStdout(stdout io.Writer) {
+	c.Stdout = stdout
+}
+
+func (c *execCmd) SetStderr(stderr io.Writer) {
+	c.Stderr = stderr
+}
+
+// commandRunner is used to create Command instances.
+// This can be overridden in tests to avoid actual subprocess execution.
+var commandRunner func(name string, args ...string) Command = defaultCommandRunner
+
+// defaultCommandRunner is the default implementation that creates real exec.Cmd
+func defaultCommandRunner(name string, args ...string) Command {
+	cmd := exec.Command(name, args...)
+	return &execCmd{cmd}
+}
+
+// SetCommandRunner allows tests to override the command runner.
+// Returns the previous command runner for restoration.
+func SetCommandRunner(runner func(string, ...string) Command) func(string, ...string) Command {
+	prev := commandRunner
+	commandRunner = runner
+	return prev
+}
+
 // UseCase for running script scripts
 type UseCase struct {
 	workspaceService workspace.WorkspaceService
@@ -76,10 +128,11 @@ func (uc *UseCase) Invoke(ctx context.Context, location *repository.Location, sc
 		"name":      location.Name(),
 	}
 
-	cmd := exec.Command(os.Args[0], "script", "run")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Dir = location.FullPath()
+	cmd := commandRunner(os.Args[0], "script", "run")
+	cmd.SetStdout(os.Stdout)
+	cmd.SetStderr(os.Stderr)
+	cmd.SetDir(location.FullPath())
+
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
