@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"testing"
 
 	testtarget "github.com/kyoh86/gogh/v4/app/config"
@@ -34,18 +35,18 @@ func TestAppContextPath(t *testing.T) {
 			name:     "no environment variable, use getDir",
 			envar:    "UNSET_VAR",
 			envValue: "",
-			getDir:   func() (string, error) { return "/home/user/.config", nil },
+			getDir:   func() (string, error) { return filepath.Join("/home", "user", ".config"), nil },
 			rel:      []string{"config.yaml"},
-			wantPath: "/home/user/.config/gogh/config.yaml",
+			wantPath: filepath.Join("/home", "user", ".config", "gogh", "config.yaml"),
 			wantErr:  false,
 		},
 		{
 			name:     "multiple relative paths",
 			envar:    "UNSET_VAR",
 			envValue: "",
-			getDir:   func() (string, error) { return "/home/user/.config", nil },
+			getDir:   func() (string, error) { return filepath.Join("/home", "user", ".config"), nil },
 			rel:      []string{"subdir", "config.yaml"},
-			wantPath: "/home/user/.config/gogh/subdir/config.yaml",
+			wantPath: filepath.Join("/home", "user", ".config", "gogh", "subdir", "config.yaml"),
 			wantErr:  false,
 		},
 		{

@@ -1,6 +1,7 @@
 package workspace_test
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -17,12 +18,15 @@ func TestWorkspaceService_GetRoots(t *testing.T) {
 	}
 
 	// Add roots
-	err := ws.AddRoot("/home/user/repos1", false)
+	root1, _ := filepath.Abs("/home/user/repos1")
+	root2, _ := filepath.Abs("/home/user/repos2")
+
+	err := ws.AddRoot(root1, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
-	err = ws.AddRoot("/home/user/repos2", false)
+	err = ws.AddRoot(root2, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
@@ -44,25 +48,28 @@ func TestWorkspaceService_GetPrimaryRoot(t *testing.T) {
 	}
 
 	// Add first root (should become primary)
-	err := ws.AddRoot("/home/user/repos1", false)
+	root1, _ := filepath.Abs("/home/user/repos1")
+	root2, _ := filepath.Abs("/home/user/repos2")
+
+	err := ws.AddRoot(root1, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
 	primaryRoot = ws.GetPrimaryRoot()
-	if primaryRoot != "/home/user/repos1" {
-		t.Errorf("expected primary root to be /home/user/repos1, got %q", primaryRoot)
+	if primaryRoot != root1 {
+		t.Errorf("expected primary root to be %s, got %q", root1, primaryRoot)
 	}
 
 	// Add second root as primary
-	err = ws.AddRoot("/home/user/repos2", true)
+	err = ws.AddRoot(root2, true)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
 	primaryRoot = ws.GetPrimaryRoot()
-	if primaryRoot != "/home/user/repos2" {
-		t.Errorf("expected primary root to be /home/user/repos2, got %q", primaryRoot)
+	if primaryRoot != root2 {
+		t.Errorf("expected primary root to be %s, got %q", root2, primaryRoot)
 	}
 }
 
@@ -70,29 +77,33 @@ func TestWorkspaceService_SetPrimaryRoot(t *testing.T) {
 	ws := filesystem.NewWorkspaceService()
 
 	// Add roots
-	err := ws.AddRoot("/home/user/repos1", false)
+	root1, _ := filepath.Abs("/home/user/repos1")
+	root2, _ := filepath.Abs("/home/user/repos2")
+
+	err := ws.AddRoot(root1, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
-	err = ws.AddRoot("/home/user/repos2", false)
+	err = ws.AddRoot(root2, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
 	// Set primary root
-	err = ws.SetPrimaryRoot("/home/user/repos2")
+	err = ws.SetPrimaryRoot(root2)
 	if err != nil {
 		t.Fatalf("failed to set primary root: %v", err)
 	}
 
 	primaryRoot := ws.GetPrimaryRoot()
-	if primaryRoot != "/home/user/repos2" {
-		t.Errorf("expected primary root to be /home/user/repos2, got %q", primaryRoot)
+	if primaryRoot != root2 {
+		t.Errorf("expected primary root to be %s, got %q", root2, primaryRoot)
 	}
 
 	// Try to set non-existent root as primary
-	err = ws.SetPrimaryRoot("/home/user/repos3")
+	root3, _ := filepath.Abs("/home/user/repos3")
+	err = ws.SetPrimaryRoot(root3)
 	if err == nil {
 		t.Error("expected error when setting non-existent root as primary")
 	}
@@ -102,13 +113,15 @@ func TestWorkspaceService_AddRoot(t *testing.T) {
 	ws := filesystem.NewWorkspaceService()
 
 	// Add root
-	err := ws.AddRoot("/home/user/repos1", false)
+	root1, _ := filepath.Abs("/home/user/repos1")
+
+	err := ws.AddRoot(root1, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
 	// Try to add duplicate root
-	err = ws.AddRoot("/home/user/repos1", false)
+	err = ws.AddRoot(root1, false)
 	if err == nil {
 		t.Error("expected error when adding duplicate root")
 	}
@@ -129,18 +142,21 @@ func TestWorkspaceService_RemoveRoot(t *testing.T) {
 	ws := filesystem.NewWorkspaceService()
 
 	// Add roots
-	err := ws.AddRoot("/home/user/repos1", false)
+	root1, _ := filepath.Abs("/home/user/repos1")
+	root2, _ := filepath.Abs("/home/user/repos2")
+
+	err := ws.AddRoot(root1, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
-	err = ws.AddRoot("/home/user/repos2", false)
+	err = ws.AddRoot(root2, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
 	// Remove root
-	err = ws.RemoveRoot("/home/user/repos2")
+	err = ws.RemoveRoot(root2)
 	if err != nil {
 		t.Fatalf("failed to remove root: %v", err)
 	}
@@ -151,13 +167,14 @@ func TestWorkspaceService_RemoveRoot(t *testing.T) {
 	}
 
 	// Remove non-existent root
-	err = ws.RemoveRoot("/home/user/repos3")
+	root3, _ := filepath.Abs("/home/user/repos3")
+	err = ws.RemoveRoot(root3)
 	if err == nil {
 		t.Error("expected error when removing non-existent root")
 	}
 
 	// Remove primary root
-	err = ws.RemoveRoot("/home/user/repos1")
+	err = ws.RemoveRoot(root1)
 	if err != nil {
 		t.Fatalf("failed to remove primary root: %v", err)
 	}
@@ -172,37 +189,41 @@ func TestWorkspaceService_RemovePrimaryRoot(t *testing.T) {
 	ws := filesystem.NewWorkspaceService()
 
 	// Add multiple roots
-	err := ws.AddRoot("/home/user/repos1", true)
+	root1, _ := filepath.Abs("/home/user/repos1")
+	root2, _ := filepath.Abs("/home/user/repos2")
+	root3, _ := filepath.Abs("/home/user/repos3")
+
+	err := ws.AddRoot(root1, true)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
-	err = ws.AddRoot("/home/user/repos2", false)
+	err = ws.AddRoot(root2, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
-	err = ws.AddRoot("/home/user/repos3", false)
+	err = ws.AddRoot(root3, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
 	// Verify primary root
 	primaryRoot := ws.GetPrimaryRoot()
-	if primaryRoot != "/home/user/repos1" {
-		t.Errorf("expected primary root to be /home/user/repos1, got %q", primaryRoot)
+	if primaryRoot != root1 {
+		t.Errorf("expected primary root to be %s, got %q", root1, primaryRoot)
 	}
 
 	// Remove primary root
-	err = ws.RemoveRoot("/home/user/repos1")
+	err = ws.RemoveRoot(root1)
 	if err != nil {
 		t.Fatalf("failed to remove primary root: %v", err)
 	}
 
 	// Primary root should switch to the first remaining root
 	primaryRoot = ws.GetPrimaryRoot()
-	if primaryRoot != "/home/user/repos2" {
-		t.Errorf("expected primary root to be /home/user/repos2 after removal, got %q", primaryRoot)
+	if primaryRoot != root2 {
+		t.Errorf("expected primary root to be %s after removal, got %q", root2, primaryRoot)
 	}
 }
 
@@ -210,19 +231,21 @@ func TestWorkspaceService_GetLayoutFor(t *testing.T) {
 	ws := filesystem.NewWorkspaceService()
 
 	// Add root
-	err := ws.AddRoot("/home/user/repos", false)
+	root, _ := filepath.Abs("/home/user/repos")
+
+	err := ws.AddRoot(root, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
 
 	// Get layout for root
-	layout := ws.GetLayoutFor("/home/user/repos")
+	layout := ws.GetLayoutFor(root)
 	if layout == nil {
 		t.Fatal("expected layout, got nil")
 	}
 
-	if layout.GetRoot() != "/home/user/repos" {
-		t.Errorf("expected layout root to be /home/user/repos, got %q", layout.GetRoot())
+	if layout.GetRoot() != root {
+		t.Errorf("expected layout root to be %s, got %q", root, layout.GetRoot())
 	}
 }
 
@@ -230,7 +253,9 @@ func TestWorkspaceService_GetPrimaryLayout(t *testing.T) {
 	ws := filesystem.NewWorkspaceService()
 
 	// Add root
-	err := ws.AddRoot("/home/user/repos", true)
+	root, _ := filepath.Abs("/home/user/repos")
+
+	err := ws.AddRoot(root, true)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
@@ -241,8 +266,8 @@ func TestWorkspaceService_GetPrimaryLayout(t *testing.T) {
 		t.Fatal("expected layout, got nil")
 	}
 
-	if layout.GetRoot() != "/home/user/repos" {
-		t.Errorf("expected layout root to be /home/user/repos, got %q", layout.GetRoot())
+	if layout.GetRoot() != root {
+		t.Errorf("expected layout root to be %s, got %q", root, layout.GetRoot())
 	}
 }
 
@@ -255,7 +280,9 @@ func TestWorkspaceService_HasChanges(t *testing.T) {
 	}
 
 	// Add root
-	err := ws.AddRoot("/home/user/repos", false)
+	root, _ := filepath.Abs("/home/user/repos")
+
+	err := ws.AddRoot(root, false)
 	if err != nil {
 		t.Fatalf("failed to add root: %v", err)
 	}
@@ -272,7 +299,7 @@ func TestWorkspaceService_HasChanges(t *testing.T) {
 	}
 
 	// Set primary root
-	err = ws.SetPrimaryRoot("/home/user/repos")
+	err = ws.SetPrimaryRoot(root)
 	if err != nil {
 		t.Fatalf("failed to set primary root: %v", err)
 	}
