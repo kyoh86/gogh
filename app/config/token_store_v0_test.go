@@ -66,7 +66,7 @@ func createTestTokenYAML(t *testing.T, path string) {
         access_token: gitlab-access-token
 `
 
-	err := os.WriteFile(path, []byte(content), 0644)
+	err := os.WriteFile(path, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write test YAML file: %v", err)
 	}
@@ -184,7 +184,7 @@ func TestTokenStoreV0Load_EmptyAccessToken(t *testing.T) {
         token_type: Bearer
 `
 
-	err := os.WriteFile(configPath, []byte(content), 0644)
+	err := os.WriteFile(configPath, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write YAML file: %v", err)
 	}

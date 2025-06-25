@@ -19,7 +19,7 @@ func (cs *ScriptSourceStore) Save(ctx context.Context, scriptID string, content 
 	if err != nil {
 		return fmt.Errorf("get content source: %w", err)
 	}
-	if err := os.MkdirAll(source, 0755); err != nil {
+	if err := os.MkdirAll(source, 0o755); err != nil {
 		return fmt.Errorf("failed to create content directory: %w", err)
 	}
 	filePath := filepath.Join(source, scriptID)

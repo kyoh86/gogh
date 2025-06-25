@@ -60,7 +60,7 @@ repos:
   fork: "exclude"
 `
 	flagsPath := filepath.Join(tempDir, "flag.yaml")
-	err = os.WriteFile(flagsPath, []byte(flagsContent), 0644)
+	err = os.WriteFile(flagsPath, []byte(flagsContent), 0o644)
 	if err != nil {
 		t.Fatalf("failed to write test file: %v", err)
 	}
@@ -115,7 +115,7 @@ repos:
 
 	t.Run("invalid yaml", func(t *testing.T) {
 		invalidPath := filepath.Join(tempDir, "invalid.yaml")
-		err = os.WriteFile(invalidPath, []byte("invalid: yaml: content: - :\n"), 0644)
+		err = os.WriteFile(invalidPath, []byte("invalid: yaml: content: - :\n"), 0o644)
 		if err != nil {
 			t.Fatalf("failed to write invalid test file: %v", err)
 		}

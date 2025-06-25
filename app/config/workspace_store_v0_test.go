@@ -37,7 +37,7 @@ roots:
   - /path/to/root1
   - /path/to/root2
 `
-		err := os.WriteFile(configPath, []byte(validYAML), 0644)
+		err := os.WriteFile(configPath, []byte(validYAML), 0o644)
 		if err != nil {
 			t.Fatalf("failed to write test file: %v", err)
 		}
@@ -58,7 +58,6 @@ roots:
 		result, err := store.Load(context.Background(), func() workspace.WorkspaceService {
 			return mockSvc
 		})
-
 		if err != nil {
 			t.Fatalf("Load failed with error: %v", err)
 		}
@@ -93,7 +92,7 @@ roots:
   - 
   invalid: content
 `
-		err := os.WriteFile(configPath, []byte(invalidYAML), 0644)
+		err := os.WriteFile(configPath, []byte(invalidYAML), 0o644)
 		if err != nil {
 			t.Fatalf("failed to write test file: %v", err)
 		}

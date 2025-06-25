@@ -71,7 +71,7 @@ hosts:
     default_owner: otheruser
 `
 
-	err := os.WriteFile(path, []byte(content), 0644)
+	err := os.WriteFile(path, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write test YAML file: %v", err)
 	}
@@ -153,7 +153,7 @@ func TestLoadV0_InvalidYAML(t *testing.T) {
 
 	// Create an invalid YAML file
 	configPath := filepath.Join(tempDir, "tokens.yaml")
-	err := os.WriteFile(configPath, []byte("invalid: yaml: content: - - -"), 0644)
+	err := os.WriteFile(configPath, []byte("invalid: yaml: content: - - -"), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write invalid YAML file: %v", err)
 	}
@@ -232,7 +232,7 @@ hosts:
   gitlab.com:
     default_owner: ""
 `
-	err := os.WriteFile(configPath, []byte(content), 0644)
+	err := os.WriteFile(configPath, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write YAML file: %v", err)
 	}
@@ -276,7 +276,7 @@ hosts:
 extra_section:
   some_value: this should be ignored too
 `
-	err := os.WriteFile(configPath, []byte(content), 0644)
+	err := os.WriteFile(configPath, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write complex YAML file: %v", err)
 	}

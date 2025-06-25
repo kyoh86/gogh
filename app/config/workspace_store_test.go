@@ -69,14 +69,14 @@ func createWorkspaceStoreTestTOMLFile(t *testing.T, path string, roots []workspa
 		"roots":        roots,
 		"primary_root": primaryRoot,
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatalf("Failed to create directory for TOML file: %v", err)
 	}
 	encoded, err := toml.Marshal(raw)
 	if err != nil {
 		t.Fatalf("Failed to encode TOML: %v", err)
 	}
-	if err := os.WriteFile(path, encoded, 0644); err != nil {
+	if err := os.WriteFile(path, encoded, 0o644); err != nil {
 		t.Fatalf("Failed to write TOML file: %v", err)
 	}
 }
@@ -160,7 +160,7 @@ func TestWorkspaceStore_Load_InvalidTOML(t *testing.T) {
 
 	// Create an invalid TOML file
 	configPath := filepath.Join(tempDir, "workspace.v4.toml")
-	err := os.WriteFile(configPath, []byte("invalid toml content"), 0644)
+	err := os.WriteFile(configPath, []byte("invalid toml content"), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write invalid TOML file: %v", err)
 	}

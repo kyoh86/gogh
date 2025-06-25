@@ -108,3 +108,10 @@ GraphQL client code is generated from `infra/githubv4/*.graphql` files. After mo
 - The `roots` command manages multiple repository storage locations, not the CLI root command
 - Overlays are never applied automatically - they must be applied manually or through hooks
 - Hook system can trigger overlay application and script execution based on repository events
+
+## Code Quality
+
+- **ALWAYS run `make lint` before committing** to ensure code quality and architecture compliance
+- **ALWAYS format Go files with gofumpt after making changes** - use `go run mvdan.cc/gofumpt@latest -w path/to/file.go`
+  - This ensures consistent formatting and proper trailing newlines
+  - gofumpt is a stricter gofmt that enforces additional formatting rules

@@ -61,7 +61,7 @@ privacy = "public"
 fork = "exclude"
 `
 	flagsPath := filepath.Join(tempDir, "flags.v4.toml")
-	err = os.WriteFile(flagsPath, []byte(flagsContent), 0644)
+	err = os.WriteFile(flagsPath, []byte(flagsContent), 0o644)
 	if err != nil {
 		t.Fatalf("failed to write test file: %v", err)
 	}
@@ -118,7 +118,7 @@ fork = "exclude"
 
 	t.Run("invalid toml", func(t *testing.T) {
 		invalidPath := filepath.Join(tempDir, "invalid.toml")
-		err = os.WriteFile(invalidPath, []byte("invalid toml content"), 0644)
+		err = os.WriteFile(invalidPath, []byte("invalid toml content"), 0o644)
 		if err != nil {
 			t.Fatalf("failed to write invalid test file: %v", err)
 		}
@@ -245,7 +245,6 @@ func TestFlagsStore_Save(t *testing.T) {
 		// Try to save to an invalid directory
 		store := config.NewFlagsStore() // Need a new store to pick up the env var change
 		err := store.Save(ctx, flags, true)
-
 		// Should not fail to create directory
 		if err != nil {
 			t.Fatalf("expected success when saving to invalid directory, got %v", err)

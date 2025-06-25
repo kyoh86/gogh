@@ -19,7 +19,7 @@ func TestLoadTOMLFile(t *testing.T) {
 
 		content := `name = "test"
 value = 42`
-		if err := os.WriteFile(testFile, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(testFile, []byte(content), 0o644); err != nil {
 			t.Fatalf("Failed to write test file: %v", err)
 		}
 
@@ -53,7 +53,7 @@ value = 42`
 		testFile := filepath.Join(tempDir, "invalid.toml")
 
 		// Write invalid TOML
-		if err := os.WriteFile(testFile, []byte("invalid [toml content"), 0644); err != nil {
+		if err := os.WriteFile(testFile, []byte("invalid [toml content"), 0o644); err != nil {
 			t.Fatalf("Failed to write test file: %v", err)
 		}
 
@@ -131,7 +131,7 @@ value = 42
 		tempDir := t.TempDir()
 		// Create a directory with no write permission
 		readOnlyDir := filepath.Join(tempDir, "readonly")
-		if err := os.Mkdir(readOnlyDir, 0555); err != nil {
+		if err := os.Mkdir(readOnlyDir, 0o555); err != nil {
 			t.Fatalf("Failed to create readonly dir: %v", err)
 		}
 
@@ -186,7 +186,7 @@ func TestEnsureDirectoryExists(t *testing.T) {
 		tempDir := t.TempDir()
 		// Create a directory with no write permission
 		readOnlyDir := filepath.Join(tempDir, "readonly")
-		if err := os.Mkdir(readOnlyDir, 0555); err != nil {
+		if err := os.Mkdir(readOnlyDir, 0o555); err != nil {
 			t.Fatalf("Failed to create readonly dir: %v", err)
 		}
 
@@ -221,7 +221,7 @@ func TestOpenFileForWrite(t *testing.T) {
 		testFile := filepath.Join(tempDir, "existing.txt")
 
 		// Create existing file with content
-		if err := os.WriteFile(testFile, []byte("old content"), 0644); err != nil {
+		if err := os.WriteFile(testFile, []byte("old content"), 0o644); err != nil {
 			t.Fatalf("Failed to create test file: %v", err)
 		}
 
@@ -253,7 +253,7 @@ func TestOpenFileForWrite(t *testing.T) {
 		testFile := filepath.Join(tempDir, "readonly.txt")
 
 		// Create file with read-only permission
-		if err := os.WriteFile(testFile, []byte("test"), 0444); err != nil {
+		if err := os.WriteFile(testFile, []byte("test"), 0o444); err != nil {
 			t.Fatalf("Failed to create test file: %v", err)
 		}
 

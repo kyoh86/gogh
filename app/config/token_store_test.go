@@ -63,7 +63,7 @@ TokenType = "Bearer"
 AccessToken = "gitlab-access-token"
 `
 
-	err := os.WriteFile(path, []byte(content), 0644)
+	err := os.WriteFile(path, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write test TOML file: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestTokenStoreLoad_InvalidTOML(t *testing.T) {
 
 	// Create an invalid TOML file
 	configPath := filepath.Join(tempDir, "tokens.v4.toml")
-	err := os.WriteFile(configPath, []byte("invalid toml content"), 0644)
+	err := os.WriteFile(configPath, []byte("invalid toml content"), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write invalid TOML file: %v", err)
 	}
@@ -194,7 +194,7 @@ AccessToken = "valid-token"
 TokenType = "Bearer"
 `
 
-	err := os.WriteFile(configPath, []byte(content), 0644)
+	err := os.WriteFile(configPath, []byte(content), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to write TOML file: %v", err)
 	}

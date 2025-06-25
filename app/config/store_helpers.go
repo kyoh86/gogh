@@ -25,11 +25,11 @@ func loadTOMLFile[T any](source string) (*T, error) {
 
 // saveTOMLFile saves data to a TOML file, ensuring the directory exists
 func saveTOMLFile[T any](source string, data T) error {
-	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(source), 0o755); err != nil {
 		return fmt.Errorf("create directory: %w", err)
 	}
 
-	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return fmt.Errorf("open file: %w", err)
 	}
@@ -44,7 +44,7 @@ func saveTOMLFile[T any](source string, data T) error {
 // ensureDirectoryExists creates the directory for the given file path if it doesn't exist
 func ensureDirectoryExists(filePath string) error {
 	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("create directory %s: %w", dir, err)
 	}
 	return nil
@@ -52,5 +52,5 @@ func ensureDirectoryExists(filePath string) error {
 
 // openFileForWrite opens a file for writing, creating it if necessary
 func openFileForWrite(path string) (*os.File, error) {
-	return os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	return os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 }
