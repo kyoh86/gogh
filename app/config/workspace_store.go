@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
-	"github.com/pelletier/go-toml/v2"
 )
 
 // WorkspaceStore is a repository for managing workspace configuration.
@@ -21,19 +19,16 @@ type tomlWorkspaceStore struct {
 
 // Load implements store.Store.
 func (w *WorkspaceStore) Load(ctx context.Context, initial func() workspace.WorkspaceService) (workspace.WorkspaceService, error) {
-	var v tomlWorkspaceStore
 	source, err := w.Source()
 	if err != nil {
 		return nil, err
 	}
-	file, err := os.Open(source)
+
+	v, err := loadTOMLFile[tomlWorkspaceStore](source)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-	if err := toml.NewDecoder(file).Decode(&v); err != nil {
-		return nil, err
-	}
+
 	svc := initial()
 	for _, root := range v.Roots {
 		if err := svc.AddRoot(root, root == v.PrimaryRoot); err != nil {
@@ -53,21 +48,12 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
-		return err
-	}
-	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	v := tomlWorkspaceStore{
 		Roots:       ws.GetRoots(),
 		PrimaryRoot: ws.GetPrimaryRoot(),
 	}
 
-	if err := toml.NewEncoder(file).Encode(v); err != nil {
+	if err := saveTOMLFile(source, v); err != nil {
 		return err
 	}
 	ws.MarkSaved()

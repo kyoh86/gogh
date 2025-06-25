@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/pelletier/go-toml/v2"
 )
 
 // OverlayDir returns the path to the overlay directory.
@@ -49,20 +47,17 @@ func (s *OverlayStore) Load(ctx context.Context, initial func() overlay.OverlayS
 	if err != nil {
 		return nil, fmt.Errorf("get overlay store source: %w", err)
 	}
-	f, err := os.Open(src)
+
+	data, err := loadTOMLFile[tomlOverlayStore](src)
 	if err != nil {
 		if os.IsNotExist(err) {
 			svc := initial()
 			svc.MarkSaved()
 			return svc, nil
 		}
-		return nil, fmt.Errorf("open overlay store: %w", err)
+		return nil, fmt.Errorf("load overlay store: %w", err)
 	}
-	defer f.Close()
-	var data tomlOverlayStore
-	if err := toml.NewDecoder(f).Decode(&data); err != nil {
-		return nil, fmt.Errorf("decode overlay store: %w", err)
-	}
+
 	svc := initial()
 	if err := svc.Load(func(yield func(overlay overlay.Overlay, err error) bool) {
 		if err != nil {
@@ -100,16 +95,8 @@ func (s *OverlayStore) Save(ctx context.Context, svc overlay.OverlayService, for
 		})
 	}
 
-	if err := os.MkdirAll(filepath.Dir(src), 0755); err != nil {
-		return fmt.Errorf("create overlay store directory: %w", err)
-	}
-	f, err := os.OpenFile(src, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return fmt.Errorf("open overlay store file: %w", err)
-	}
-	defer f.Close()
-	if err := toml.NewEncoder(f).Encode(data); err != nil {
-		return fmt.Errorf("encode overlay store file: %w", err)
+	if err := saveTOMLFile(src, data); err != nil {
+		return fmt.Errorf("save overlay store: %w", err)
 	}
 	svc.MarkSaved()
 	return nil

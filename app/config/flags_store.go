@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/pelletier/go-toml/v2"
 )
 
 // FlagsStore is a store for flags.
@@ -20,19 +18,16 @@ func NewFlagsStore() *FlagsStore {
 
 // Load implements store.Loader
 func (s *FlagsStore) Load(ctx context.Context, initial func() *Flags) (*Flags, error) {
-	v := initial()
 	source, err := s.Source()
 	if err != nil {
 		return nil, err
 	}
-	file, err := os.Open(source)
+
+	v, err := loadTOMLFile[Flags](source)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-	if err := toml.NewDecoder(file).Decode(v); err != nil {
-		return nil, err
-	}
+
 	return v, nil
 }
 
@@ -45,16 +40,7 @@ func (d *FlagsStore) Save(ctx context.Context, flags *Flags, force bool) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
-		return err
-	}
-	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	if err := toml.NewEncoder(file).Encode(flags); err != nil {
+	if err := saveTOMLFile(source, flags); err != nil {
 		return err
 	}
 	flags.MarkSaved()

@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/pelletier/go-toml/v2"
 )
 
 // HookDir returns the path to the hook directory.
@@ -49,20 +47,17 @@ func (s *HookStore) Load(ctx context.Context, initial func() hook.HookService) (
 	if err != nil {
 		return nil, fmt.Errorf("get hook store source: %w", err)
 	}
-	f, err := os.Open(src)
+
+	data, err := loadTOMLFile[tomlHookStore](src)
 	if err != nil {
 		if os.IsNotExist(err) {
 			svc := initial()
 			svc.MarkSaved()
 			return svc, nil
 		}
-		return nil, fmt.Errorf("open hook store: %w", err)
+		return nil, fmt.Errorf("load hook store: %w", err)
 	}
-	defer f.Close()
-	var data tomlHookStore
-	if err := toml.NewDecoder(f).Decode(&data); err != nil {
-		return nil, fmt.Errorf("decode hook store: %w", err)
-	}
+
 	svc := initial()
 	if err := svc.Load(func(yield func(hook.Hook, error) bool) {
 		for _, h := range data.Hooks {
@@ -106,16 +101,8 @@ func (s *HookStore) Save(ctx context.Context, svc hook.HookService, force bool) 
 			OperationID:   h.OperationID(),
 		})
 	}
-	if err := os.MkdirAll(filepath.Dir(src), 0755); err != nil {
-		return fmt.Errorf("create hook store directory: %w", err)
-	}
-	f, err := os.OpenFile(src, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return fmt.Errorf("open hook store file: %w", err)
-	}
-	defer f.Close()
-	if err := toml.NewEncoder(f).Encode(data); err != nil {
-		return fmt.Errorf("encode hook store file: %w", err)
+	if err := saveTOMLFile(src, data); err != nil {
+		return fmt.Errorf("save hook store: %w", err)
 	}
 	svc.MarkSaved()
 	return nil

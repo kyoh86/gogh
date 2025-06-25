@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/pelletier/go-toml/v2"
 )
 
 type DefaultNameStore struct{}
@@ -20,19 +18,16 @@ type tomlDefaultNameStore struct {
 
 // Load implements repository.DefaultNameRepository.
 func (d *DefaultNameStore) Load(ctx context.Context, initial func() repository.DefaultNameService) (repository.DefaultNameService, error) {
-	var v tomlDefaultNameStore
 	source, err := d.Source()
 	if err != nil {
 		return nil, err
 	}
-	file, err := os.Open(source)
+
+	v, err := loadTOMLFile[tomlDefaultNameStore](source)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-	if err := toml.NewDecoder(file).Decode(&v); err != nil {
-		return nil, err
-	}
+
 	svc := initial()
 	if err := svc.SetDefaultHost(v.DefaultHost); err != nil {
 		return nil, err
@@ -55,21 +50,12 @@ func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameSe
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
-		return err
-	}
-	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	v := tomlDefaultNameStore{
 		Hosts:       ds.GetMap(),
 		DefaultHost: ds.GetDefaultHost(),
 	}
 
-	if err := toml.NewEncoder(file).Encode(v); err != nil {
+	if err := saveTOMLFile(source, v); err != nil {
 		return err
 	}
 	ds.MarkSaved()

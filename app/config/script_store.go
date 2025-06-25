@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/pelletier/go-toml/v2"
 )
 
 // ScriptDir returns the path to the script directory.
@@ -47,20 +45,17 @@ func (s *ScriptStore) Load(ctx context.Context, initial func() script.ScriptServ
 	if err != nil {
 		return nil, fmt.Errorf("get script store source: %w", err)
 	}
-	f, err := os.Open(src)
+
+	data, err := loadTOMLFile[tomlScriptStore](src)
 	if err != nil {
 		if os.IsNotExist(err) {
 			svc := initial()
 			svc.MarkSaved()
 			return svc, nil
 		}
-		return nil, fmt.Errorf("open script store: %w", err)
+		return nil, fmt.Errorf("load script store: %w", err)
 	}
-	defer f.Close()
-	var data tomlScriptStore
-	if err := toml.NewDecoder(f).Decode(&data); err != nil {
-		return nil, fmt.Errorf("decode script store: %w", err)
-	}
+
 	svc := initial()
 	if err := svc.Load(func(yield func(script.Script, error) bool) {
 		for _, s := range data.Scripts {
@@ -100,16 +95,8 @@ func (s *ScriptStore) Save(ctx context.Context, svc script.ScriptService, force 
 			UpdatedAt: h.UpdatedAt(),
 		})
 	}
-	if err := os.MkdirAll(filepath.Dir(src), 0755); err != nil {
-		return fmt.Errorf("create script store directory: %w", err)
-	}
-	f, err := os.OpenFile(src, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return fmt.Errorf("open script store file: %w", err)
-	}
-	defer f.Close()
-	if err := toml.NewEncoder(f).Encode(data); err != nil {
-		return fmt.Errorf("encode script store file: %w", err)
+	if err := saveTOMLFile(src, data); err != nil {
+		return fmt.Errorf("save script store: %w", err)
 	}
 	svc.MarkSaved()
 	return nil

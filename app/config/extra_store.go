@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/BurntSushi/toml"
 	"github.com/kyoh86/gogh/v4/core/extra"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/store"
@@ -56,20 +54,14 @@ func (s *ExtraStore) Load(ctx context.Context, initial func() extra.ExtraService
 		return nil, fmt.Errorf("get extra store source: %w", err)
 	}
 
-	f, err := os.Open(src)
+	data, err := loadTOMLFile[extraData](src)
 	if err != nil {
 		if os.IsNotExist(err) {
 			svc := initial()
 			svc.MarkSaved()
 			return svc, nil
 		}
-		return nil, fmt.Errorf("open extra store: %w", err)
-	}
-	defer f.Close()
-
-	var data extraData
-	if _, err := toml.NewDecoder(f).Decode(&data); err != nil {
-		return nil, fmt.Errorf("decode extra store: %w", err)
+		return nil, fmt.Errorf("load extra store: %w", err)
 	}
 
 	svc := initial()
@@ -172,18 +164,8 @@ func (s *ExtraStore) Save(ctx context.Context, svc extra.ExtraService, force boo
 		return fmt.Errorf("get extra store source: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(src), 0o755); err != nil {
-		return fmt.Errorf("create extra store directory: %w", err)
-	}
-
-	f, err := os.Create(src)
-	if err != nil {
-		return fmt.Errorf("create extra store: %w", err)
-	}
-	defer f.Close()
-
-	if err := toml.NewEncoder(f).Encode(data); err != nil {
-		return fmt.Errorf("encode extra store: %w", err)
+	if err := saveTOMLFile(src, data); err != nil {
+		return fmt.Errorf("save extra store: %w", err)
 	}
 
 	svc.MarkSaved()

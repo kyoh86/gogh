@@ -312,13 +312,14 @@ func TestExtraStore_Save(t *testing.T) {
 
 				// Check content contains expected data
 				contentStr := string(content)
-				if !contains(contentStr, "type = \"auto\"") {
+				t.Logf("Saved content:\n%s", contentStr)
+				if !contains(contentStr, "type = \"auto\"") && !contains(contentStr, "type = 'auto'") {
 					t.Error("Expected auto extra in saved content")
 				}
-				if !contains(contentStr, "type = \"named\"") {
+				if !contains(contentStr, "type = \"named\"") && !contains(contentStr, "type = 'named'") {
 					t.Error("Expected named extra in saved content")
 				}
-				if !contains(contentStr, "name = \"my-config\"") {
+				if !contains(contentStr, "name = \"my-config\"") && !contains(contentStr, "name = 'my-config'") {
 					t.Error("Expected named extra name in saved content")
 				}
 			},
@@ -354,7 +355,9 @@ func TestExtraStore_Save(t *testing.T) {
 					t.Fatalf("Failed to read saved file: %v", err)
 				}
 
-				if !contains(string(content), "name = \"force-save\"") {
+				contentStr := string(content)
+				t.Logf("Force saved content:\n%s", contentStr)
+				if !contains(contentStr, "name = \"force-save\"") && !contains(contentStr, "name = 'force-save'") {
 					t.Error("Expected force-saved extra in content")
 				}
 			},

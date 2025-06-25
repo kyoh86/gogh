@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/store"
-	"github.com/pelletier/go-toml/v2"
 	"golang.org/x/oauth2"
 )
 
@@ -27,21 +25,18 @@ func (d *TokenStore) Source() (string, error) {
 
 // Load implements store.Store.
 func (d *TokenStore) Load(ctx context.Context, initial func() auth.TokenService) (auth.TokenService, error) {
-	var v tomlTokenStore
 	source, err := d.Source()
 	if err != nil {
 		return nil, err
 	}
-	file, err := os.Open(source)
+
+	v, err := loadTOMLFile[tomlTokenStore](source)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-	if err := toml.NewDecoder(file).Decode(&v); err != nil {
-		return nil, err
-	}
+
 	svc := initial()
-	for host, entry := range v {
+	for host, entry := range *v {
 		for owner, token := range entry {
 			if token.AccessToken == "" {
 				continue
@@ -64,15 +59,6 @@ func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService, force bool)
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(source), 0755); err != nil {
-		return err
-	}
-	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	v := tomlTokenStore{}
 	for _, entry := range ds.Entries() {
 		host := entry.Host
@@ -84,7 +70,7 @@ func (d *TokenStore) Save(ctx context.Context, ds auth.TokenService, force bool)
 		v[host][owner] = token
 	}
 
-	if err := toml.NewEncoder(file).Encode(v); err != nil {
+	if err := saveTOMLFile(source, v); err != nil {
 		return err
 	}
 	ds.MarkSaved()
