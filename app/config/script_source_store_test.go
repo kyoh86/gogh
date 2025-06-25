@@ -39,10 +39,49 @@ func TestScriptSourceStore_Source(t *testing.T) {
 	if source != customPath {
 		t.Errorf("Expected source to be %s, got %s", customPath, source)
 	}
+
+	// Test error path by overriding AppContextPathFunc
+	originalFunc := config.AppContextPathFunc
+	defer func() {
+		config.AppContextPathFunc = originalFunc
+	}()
+
+	config.AppContextPathFunc = func(envar string, getDir func() (string, error), rel ...string) (string, error) {
+		return "", os.ErrPermission
+	}
+
+	_, err = store.Source()
+	if err == nil {
+		t.Error("Expected error when AppContextPathFunc fails")
+	}
+	if !contains(err.Error(), "search script content path") {
+		t.Errorf("Expected error to contain 'search script content path', got %v", err)
+	}
 }
 
 func TestScriptSourceStore_Save(t *testing.T) {
 	ctx := context.Background()
+
+	// Test error when Source() fails
+	t.Run("Save with Source error", func(t *testing.T) {
+		originalFunc := config.AppContextPathFunc
+		defer func() {
+			config.AppContextPathFunc = originalFunc
+		}()
+
+		config.AppContextPathFunc = func(envar string, getDir func() (string, error), rel ...string) (string, error) {
+			return "", os.ErrPermission
+		}
+
+		store := config.NewScriptSourceStore()
+		err := store.Save(ctx, "test-id", bytes.NewReader([]byte("content")))
+		if err == nil {
+			t.Error("Expected error when Source() fails")
+		}
+		if !contains(err.Error(), "get content source") {
+			t.Errorf("Expected error to contain 'get content source', got %v", err)
+		}
+	})
 
 	testCases := []struct {
 		name     string
@@ -167,6 +206,27 @@ func TestScriptSourceStore_Save(t *testing.T) {
 func TestScriptSourceStore_Open(t *testing.T) {
 	ctx := context.Background()
 
+	// Test error when Source() fails
+	t.Run("Open with Source error", func(t *testing.T) {
+		originalFunc := config.AppContextPathFunc
+		defer func() {
+			config.AppContextPathFunc = originalFunc
+		}()
+
+		config.AppContextPathFunc = func(envar string, getDir func() (string, error), rel ...string) (string, error) {
+			return "", os.ErrPermission
+		}
+
+		store := config.NewScriptSourceStore()
+		_, err := store.Open(ctx, "test-id")
+		if err == nil {
+			t.Error("Expected error when Source() fails")
+		}
+		if !contains(err.Error(), "get content source") {
+			t.Errorf("Expected error to contain 'get content source', got %v", err)
+		}
+	})
+
 	testCases := []struct {
 		name     string
 		scriptID string
@@ -258,6 +318,27 @@ func TestScriptSourceStore_Open(t *testing.T) {
 
 func TestScriptSourceStore_Remove(t *testing.T) {
 	ctx := context.Background()
+
+	// Test error when Source() fails
+	t.Run("Remove with Source error", func(t *testing.T) {
+		originalFunc := config.AppContextPathFunc
+		defer func() {
+			config.AppContextPathFunc = originalFunc
+		}()
+
+		config.AppContextPathFunc = func(envar string, getDir func() (string, error), rel ...string) (string, error) {
+			return "", os.ErrPermission
+		}
+
+		store := config.NewScriptSourceStore()
+		err := store.Remove(ctx, "test-id")
+		if err == nil {
+			t.Error("Expected error when Source() fails")
+		}
+		if !contains(err.Error(), "get content source") {
+			t.Errorf("Expected error to contain 'get content source', got %v", err)
+		}
+	})
 
 	testCases := []struct {
 		name     string

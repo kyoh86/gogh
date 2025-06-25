@@ -109,6 +109,216 @@ func TestExecute(t *testing.T) {
 			expectedCount: 0,
 			expectedError: true,
 		},
+		{
+			name: "Skip nil repository",
+			setupMocks: func(finder *workspace_mock.MockFinderService, ws *workspace_mock.MockWorkspaceService, hosting *hosting_mock.MockHostingService, git *git_mock.MockGitService) {
+				loc := repository.NewLocation("/path/to/github.com/kyoh86/gogh", "github.com", "kyoh86", "gogh")
+
+				// Setup mock for ListAllRepository with nil repository
+				finder.EXPECT().
+					ListAllRepository(gomock.Any(), ws, gomock.Any()).
+					Return(func(yield func(*repository.Location, error) bool) {
+						if !yield(nil, nil) { // nil repository
+							return
+						}
+						yield(loc, nil) // valid repository
+					})
+
+				// Setup mock for GetDefaultRemotes
+				git.EXPECT().
+					GetDefaultRemotes(gomock.Any(), "/path/to/github.com/kyoh86/gogh").
+					Return([]string{"https://github.com/kyoh86/gogh.git"}, nil)
+
+				// Setup mock for ParseURL
+				expectedURL, _ := url.Parse("https://github.com/kyoh86/gogh.git")
+				ref := repository.NewReference("github.com", "kyoh86", "gogh")
+				hosting.EXPECT().
+					ParseURL(gomock.Eq(expectedURL)).
+					Return(&ref, nil)
+			},
+			options:       workspace.ListOptions{},
+			expectedCount: 1,
+			expectedError: false,
+			expectedEntries: []*testtarget.BundleEntry{
+				{
+					Name:  "github.com/kyoh86/gogh",
+					Alias: nil,
+				},
+			},
+		},
+		{
+			name: "Error: When GetDefaultRemotes fails",
+			setupMocks: func(finder *workspace_mock.MockFinderService, ws *workspace_mock.MockWorkspaceService, hosting *hosting_mock.MockHostingService, git *git_mock.MockGitService) {
+				// Setup repository
+				loc := repository.NewLocation("/path/to/github.com/kyoh86/gogh", "github.com", "kyoh86", "gogh")
+
+				// Setup mock for ListAllRepository
+				finder.EXPECT().
+					ListAllRepository(gomock.Any(), ws, gomock.Any()).
+					Return(func(yield func(*repository.Location, error) bool) {
+						yield(loc, nil)
+					})
+
+				// Setup mock for GetDefaultRemotes to return error
+				git.EXPECT().
+					GetDefaultRemotes(gomock.Any(), "/path/to/github.com/kyoh86/gogh").
+					Return(nil, errors.New("git error"))
+			},
+			options:       workspace.ListOptions{},
+			expectedCount: 0,
+			expectedError: true,
+		},
+		{
+			name: "Error: When URL parsing fails",
+			setupMocks: func(finder *workspace_mock.MockFinderService, ws *workspace_mock.MockWorkspaceService, hosting *hosting_mock.MockHostingService, git *git_mock.MockGitService) {
+				// Setup repository
+				loc := repository.NewLocation("/path/to/github.com/kyoh86/gogh", "github.com", "kyoh86", "gogh")
+
+				// Setup mock for ListAllRepository
+				finder.EXPECT().
+					ListAllRepository(gomock.Any(), ws, gomock.Any()).
+					Return(func(yield func(*repository.Location, error) bool) {
+						yield(loc, nil)
+					})
+
+				// Setup mock for GetDefaultRemotes with invalid URL
+				git.EXPECT().
+					GetDefaultRemotes(gomock.Any(), "/path/to/github.com/kyoh86/gogh").
+					Return([]string{"://invalid-url"}, nil)
+			},
+			options:       workspace.ListOptions{},
+			expectedCount: 0,
+			expectedError: true,
+		},
+		{
+			name: "Skip remotes with different host",
+			setupMocks: func(finder *workspace_mock.MockFinderService, ws *workspace_mock.MockWorkspaceService, hosting *hosting_mock.MockHostingService, git *git_mock.MockGitService) {
+				// Setup repository
+				loc := repository.NewLocation("/path/to/github.com/kyoh86/gogh", "github.com", "kyoh86", "gogh")
+
+				// Setup mock for ListAllRepository
+				finder.EXPECT().
+					ListAllRepository(gomock.Any(), ws, gomock.Any()).
+					Return(func(yield func(*repository.Location, error) bool) {
+						yield(loc, nil)
+					})
+
+				// Setup mock for GetDefaultRemotes with different host
+				git.EXPECT().
+					GetDefaultRemotes(gomock.Any(), "/path/to/github.com/kyoh86/gogh").
+					Return([]string{
+						"https://gitlab.com/kyoh86/gogh.git", // different host
+						"https://github.com/kyoh86/gogh.git", // correct host
+					}, nil)
+
+				// Setup mock for ParseURL
+				expectedURL, _ := url.Parse("https://github.com/kyoh86/gogh.git")
+				ref := repository.NewReference("github.com", "kyoh86", "gogh")
+				hosting.EXPECT().
+					ParseURL(gomock.Eq(expectedURL)).
+					Return(&ref, nil)
+			},
+			options:       workspace.ListOptions{},
+			expectedCount: 1,
+			expectedError: false,
+			expectedEntries: []*testtarget.BundleEntry{
+				{
+					Name:  "github.com/kyoh86/gogh",
+					Alias: nil,
+				},
+			},
+		},
+		{
+			name: "Error: When ParseURL fails",
+			setupMocks: func(finder *workspace_mock.MockFinderService, ws *workspace_mock.MockWorkspaceService, hosting *hosting_mock.MockHostingService, git *git_mock.MockGitService) {
+				// Setup repository
+				loc := repository.NewLocation("/path/to/github.com/kyoh86/gogh", "github.com", "kyoh86", "gogh")
+
+				// Setup mock for ListAllRepository
+				finder.EXPECT().
+					ListAllRepository(gomock.Any(), ws, gomock.Any()).
+					Return(func(yield func(*repository.Location, error) bool) {
+						yield(loc, nil)
+					})
+
+				// Setup mock for GetDefaultRemotes
+				git.EXPECT().
+					GetDefaultRemotes(gomock.Any(), "/path/to/github.com/kyoh86/gogh").
+					Return([]string{"https://github.com/kyoh86/gogh.git"}, nil)
+
+				// Setup mock for ParseURL to return error
+				expectedURL, _ := url.Parse("https://github.com/kyoh86/gogh.git")
+				hosting.EXPECT().
+					ParseURL(gomock.Eq(expectedURL)).
+					Return(nil, errors.New("parse error"))
+			},
+			options:       workspace.ListOptions{},
+			expectedCount: 0,
+			expectedError: true,
+		},
+		{
+			name: "No remotes returned",
+			setupMocks: func(finder *workspace_mock.MockFinderService, ws *workspace_mock.MockWorkspaceService, hosting *hosting_mock.MockHostingService, git *git_mock.MockGitService) {
+				// Setup repository
+				loc := repository.NewLocation("/path/to/github.com/kyoh86/gogh", "github.com", "kyoh86", "gogh")
+
+				// Setup mock for ListAllRepository
+				finder.EXPECT().
+					ListAllRepository(gomock.Any(), ws, gomock.Any()).
+					Return(func(yield func(*repository.Location, error) bool) {
+						yield(loc, nil)
+					})
+
+				// Setup mock for GetDefaultRemotes to return empty slice
+				git.EXPECT().
+					GetDefaultRemotes(gomock.Any(), "/path/to/github.com/kyoh86/gogh").
+					Return([]string{}, nil)
+			},
+			options:       workspace.ListOptions{},
+			expectedCount: 0,
+			expectedError: false,
+		},
+		{
+			name: "Early termination when yield returns false",
+			setupMocks: func(finder *workspace_mock.MockFinderService, ws *workspace_mock.MockWorkspaceService, hosting *hosting_mock.MockHostingService, git *git_mock.MockGitService) {
+				// Setup repository
+				loc1 := repository.NewLocation("/path/to/github.com/kyoh86/gogh", "github.com", "kyoh86", "gogh")
+				loc2 := repository.NewLocation("/path/to/github.com/kyoh86/other", "github.com", "kyoh86", "other")
+
+				// Setup mock for ListAllRepository
+				finder.EXPECT().
+					ListAllRepository(gomock.Any(), ws, gomock.Any()).
+					Return(func(yield func(*repository.Location, error) bool) {
+						if !yield(loc1, nil) {
+							return // Stop if yield returns false
+						}
+						yield(loc2, nil) // This should not be processed
+					})
+
+				// Setup mock for GetDefaultRemotes (only once)
+				git.EXPECT().
+					GetDefaultRemotes(gomock.Any(), "/path/to/github.com/kyoh86/gogh").
+					Return([]string{"https://github.com/kyoh86/gogh.git"}, nil).
+					Times(1)
+
+				// Setup mock for ParseURL
+				expectedURL, _ := url.Parse("https://github.com/kyoh86/gogh.git")
+				ref := repository.NewReference("github.com", "kyoh86", "gogh")
+				hosting.EXPECT().
+					ParseURL(gomock.Eq(expectedURL)).
+					Return(&ref, nil).
+					Times(1)
+			},
+			options:       workspace.ListOptions{},
+			expectedCount: 1, // Only first entry should be yielded
+			expectedError: false,
+			expectedEntries: []*testtarget.BundleEntry{
+				{
+					Name:  "github.com/kyoh86/gogh",
+					Alias: nil,
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -156,6 +366,11 @@ func TestExecute(t *testing.T) {
 						t.Errorf("Alias mismatch: expected %v, got %v",
 							expected.Alias, entry.Alias)
 					}
+				}
+
+				// For early termination test, break after first entry
+				if tt.name == "Early termination when yield returns false" && count == 1 {
+					break
 				}
 			}
 

@@ -8,19 +8,157 @@ import (
 	"time"
 
 	testtarget "github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/core/repository"
 )
+
+func TestLocationFormatter(t *testing.T) {
+	testCases := []struct {
+		name      string
+		input     string
+		wantErr   bool
+		wantValue interface{}
+	}{
+		{
+			name:      "empty string returns path format",
+			input:     "",
+			wantErr:   false,
+			wantValue: repository.LocationFormatPath,
+		},
+		{
+			name:      "rel-path returns path format",
+			input:     "rel-path",
+			wantErr:   false,
+			wantValue: repository.LocationFormatPath,
+		},
+		{
+			name:      "rel returns path format",
+			input:     "rel",
+			wantErr:   false,
+			wantValue: repository.LocationFormatPath,
+		},
+		{
+			name:      "path returns path format",
+			input:     "path",
+			wantErr:   false,
+			wantValue: repository.LocationFormatPath,
+		},
+		{
+			name:      "rel-file-path returns path format",
+			input:     "rel-file-path",
+			wantErr:   false,
+			wantValue: repository.LocationFormatPath,
+		},
+		{
+			name:      "full-file-path returns full path format",
+			input:     "full-file-path",
+			wantErr:   false,
+			wantValue: repository.LocationFormatFullPath,
+		},
+		{
+			name:      "full returns full path format",
+			input:     "full",
+			wantErr:   false,
+			wantValue: repository.LocationFormatFullPath,
+		},
+		{
+			name:      "json returns JSON format",
+			input:     "json",
+			wantErr:   false,
+			wantValue: repository.LocationFormatJSON,
+		},
+		{
+			name:      "fields returns fields format with tab separator",
+			input:     "fields",
+			wantErr:   false,
+			wantValue: repository.LocationFormatFields("\t"),
+		},
+		{
+			name:      "fields with custom separator",
+			input:     "fields:|",
+			wantErr:   false,
+			wantValue: repository.LocationFormatFields("|"),
+		},
+		{
+			name:      "fields with comma separator",
+			input:     "fields:,",
+			wantErr:   false,
+			wantValue: repository.LocationFormatFields(","),
+		},
+		{
+			name:      "fields with space separator",
+			input:     "fields: ",
+			wantErr:   false,
+			wantValue: repository.LocationFormatFields(" "),
+		},
+		{
+			name:      "invalid format",
+			input:     "invalid",
+			wantErr:   true,
+			wantValue: nil,
+		},
+		{
+			name:      "unknown format",
+			input:     "unknown-format",
+			wantErr:   true,
+			wantValue: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := testtarget.LocationFormatter(tc.input)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("LocationFormatter(%q) error = %v, wantErr %v", tc.input, err, tc.wantErr)
+				return
+			}
+			if !tc.wantErr {
+				// Compare the formatters by their string representation
+				gotStr := formatToString(got)
+				wantStr := formatToString(tc.wantValue.(repository.LocationFormat))
+				if gotStr != wantStr {
+					t.Errorf("LocationFormatter(%q) = %v, want %v", tc.input, gotStr, wantStr)
+				}
+			}
+		})
+	}
+}
+
+// Helper function to convert LocationFormat to string for comparison
+func formatToString(f repository.LocationFormat) string {
+	if f == nil {
+		return "nil"
+	}
+	// Test with a sample location
+	loc := repository.NewLocation("/path/to/repo", "github.com", "owner", "name")
+	formatted, err := f.Format(*loc)
+	if err != nil {
+		return "error: " + err.Error()
+	}
+	return formatted
+}
 
 func TestFlags_HasChanges(t *testing.T) {
 	f := &testtarget.Flags{}
 	if f.HasChanges() {
 		t.Errorf("HasChanges should always return false")
 	}
+
+	// Test with RawHasChanges set to true
+	f.RawHasChanges = true
+	if !f.HasChanges() {
+		t.Errorf("HasChanges should return true when RawHasChanges is true")
+	}
 }
 
 func TestFlags_MarkSaved(t *testing.T) {
 	f := &testtarget.Flags{}
-	// No assertions needed, just ensuring it doesn't panic
+	// Set RawHasChanges to true
+	f.RawHasChanges = true
 	f.MarkSaved()
+	// Verify it's set back to false
+	if f.RawHasChanges {
+		t.Errorf("RawHasChanges should be false after MarkSaved")
+	}
 }
 
 func TestDefaultFlags(t *testing.T) {
