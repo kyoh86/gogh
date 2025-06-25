@@ -111,15 +111,19 @@ func (m *mockReferenceParser) ParseWithAlias(refStr string) (*repository.Referen
 
 // Mock command runner to capture subprocess execution
 type mockCmd struct {
-	name   string
-	args   []string
-	dir    string
-	stdin  io.Reader
-	stdout io.Writer
-	stderr io.Writer
+	name         string
+	args         []string
+	dir          string
+	stdin        io.Reader
+	stdout       io.Writer
+	stderr       io.Writer
+	stdinPipeErr error // For simulating StdinPipe errors
 }
 
 func (m *mockCmd) StdinPipe() (io.WriteCloser, error) {
+	if m.stdinPipeErr != nil {
+		return nil, m.stdinPipeErr
+	}
 	r, w := io.Pipe()
 	m.stdin = r
 	return w, nil
@@ -537,6 +541,42 @@ print("Custom value: " .. gogh.custom_key)
 		// This should not cause an error in our mock since we handle it gracefully
 		err := uc.Invoke(ctx, location, "script", nil)
 		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("stdin pipe error", func(t *testing.T) {
+		// Override command runner to simulate StdinPipe error
+		originalRunner := testtarget.SetCommandRunner(func(name string, args ...string) testtarget.Command {
+			return &mockCmd{
+				name:         name,
+				args:         args,
+				stdinPipeErr: errors.New("stdin pipe failed"),
+			}
+		})
+		defer func() {
+			testtarget.SetCommandRunner(originalRunner)
+		}()
+
+		scripts := &mockScriptService{
+			openFunc: func(ctx context.Context, id string) (io.ReadCloser, error) {
+				return io.NopCloser(strings.NewReader("print('test')")), nil
+			},
+		}
+
+		uc := testtarget.NewUseCase(
+			&mockWorkspaceService{},
+			&mockFinderService{},
+			scripts,
+			&mockReferenceParser{},
+		)
+
+		location := repository.NewLocation("/tmp/test", "github.com", "kyoh86", "test")
+		err := uc.Invoke(ctx, location, "script", nil)
+		if err == nil {
+			t.Error("expected error for stdin pipe failure")
+		}
+		if !contains(err.Error(), "stdin pipe failed") {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
