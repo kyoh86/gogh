@@ -29,9 +29,9 @@ func NewScriptService(content ScriptSourceStore) ScriptService {
 
 // List returns an iterator for all registered scripts.
 func (s *serviceImpl) List() iter.Seq2[Script, error] {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 	return func(yield func(Script, error) bool) {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
 		for script := range s.scripts.Iter() {
 			if !yield(script, nil) {
 				break
@@ -84,8 +84,8 @@ func (s *serviceImpl) Update(ctx context.Context, idlike string, entry Entry) er
 
 // Get retrieves a script by its ID.
 func (s *serviceImpl) Get(ctx context.Context, idlike string) (Script, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.scripts.GetBy(idlike)
 }
 

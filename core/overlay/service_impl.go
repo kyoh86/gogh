@@ -29,9 +29,9 @@ func NewOverlayService(content ContentStore) OverlayService {
 }
 
 func (s *serviceImpl) List() iter.Seq2[Overlay, error] {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 	return func(yield func(Overlay, error) bool) {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
 		for ov := range s.overlays.Iter() {
 			if !yield(ov, nil) {
 				return
@@ -87,8 +87,8 @@ func (s *serviceImpl) Update(ctx context.Context, idlike string, entry Entry) er
 
 // Get retrieves a script by its ID.
 func (s *serviceImpl) Get(ctx context.Context, idlike string) (Overlay, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.overlays.GetBy(idlike)
 }
 
@@ -144,10 +144,14 @@ func (s *serviceImpl) Load(seq iter.Seq2[Overlay, error]) error {
 }
 
 func (s *serviceImpl) HasChanges() bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.dirty
 }
 
 func (s *serviceImpl) MarkSaved() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.dirty = false
 }
 
