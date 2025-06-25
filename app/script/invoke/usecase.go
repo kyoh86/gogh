@@ -128,7 +128,13 @@ func (uc *UseCase) Invoke(ctx context.Context, location *repository.Location, sc
 		"name":      location.Name(),
 	}
 
-	cmd := commandRunner(os.Args[0], "script", "run")
+	// Get the executable path in a cross-platform way
+	exePath := os.Args[0]
+	if exe, err := os.Executable(); err == nil {
+		exePath = exe
+	}
+
+	cmd := commandRunner(exePath, "script", "run")
 	cmd.SetStdout(os.Stdout)
 	cmd.SetStderr(os.Stderr)
 	cmd.SetDir(location.FullPath())

@@ -26,7 +26,13 @@ func InvokeInstant(ctx context.Context, location *repository.Location, code stri
 		"name":      location.Name(),
 	}
 
-	cmd := exec.Command(os.Args[0], "script", "run")
+	// Get the executable path in a cross-platform way
+	exePath := os.Args[0]
+	if exe, err := os.Executable(); err == nil {
+		exePath = exe
+	}
+
+	cmd := exec.Command(exePath, "script", "run")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = location.FullPath()
