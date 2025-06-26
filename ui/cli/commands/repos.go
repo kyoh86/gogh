@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/app/repoprint"
 	"github.com/kyoh86/gogh/v4/app/repos"
-	"github.com/kyoh86/gogh/v4/app/repository_print"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
@@ -56,7 +56,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := cmd.Context()
-			if err := repository_print.NewUsecase(cmd.OutOrStdout(), format).Execute(ctx, repos.NewUsecase(svc.HostingService).Execute(ctx, repos.Options{
+			if err := repoprint.NewUsecase(cmd.OutOrStdout(), format).Execute(ctx, repos.NewUsecase(svc.HostingService).Execute(ctx, repos.Options{
 				Limit:    opts.Limit,
 				Privacy:  opts.Privacy,
 				Fork:     opts.Fork,

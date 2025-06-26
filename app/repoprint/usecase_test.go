@@ -1,4 +1,4 @@
-package repository_print_test
+package repoprint_test
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	testtarget "github.com/kyoh86/gogh/v4/app/repository_print"
+	testtarget "github.com/kyoh86/gogh/v4/app/repoprint"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/repository"
 )

@@ -1,4 +1,4 @@
-package repository_print
+package repoprint
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"io"
 	"iter"
 
-	"github.com/kyoh86/gogh/v4/app/repository_print/repotab"
+	"github.com/kyoh86/gogh/v4/app/repoprint/repotab"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 )
 

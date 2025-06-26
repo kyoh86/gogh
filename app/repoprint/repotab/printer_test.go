@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyoh86/gogh/v4/app/repository_print/repotab"
+	"github.com/kyoh86/gogh/v4/app/repoprint/repotab"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
