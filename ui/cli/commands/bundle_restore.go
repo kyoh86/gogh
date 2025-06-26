@@ -17,7 +17,7 @@ import (
 
 func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.BundleRestoreFlags
-	cloneUseCase := clone.NewUseCase(
+	cloneUsecase := clone.NewUsecase(
 		svc.HostingService,
 		svc.WorkspaceService,
 		svc.FinderService,
@@ -47,7 +47,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 				fmt.Printf("git clone %q\n", ref)
 			} else {
 				eg.Go(func() error {
-					if err := cloneUseCase.Execute(egCtx, ref, clone.Options{
+					if err := cloneUsecase.Execute(egCtx, ref, clone.Options{
 						TryCloneOptions: try_clone.Options{
 							Notify: try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(egCtx, nil)),
 						},

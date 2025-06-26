@@ -26,7 +26,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	testCases := []struct {
 		name       string
 		source     string
@@ -392,7 +392,7 @@ func TestUseCase_Execute(t *testing.T) {
 					mockGitService,
 				)
 
-				useCase := fork.NewUseCase(
+				usecase := fork.NewUsecase(
 					mockHostingService,
 					mockWorkspaceService,
 					mockFinderService,
@@ -412,7 +412,7 @@ func TestUseCase_Execute(t *testing.T) {
 					Target: tc.target,
 				}
 
-				err := useCase.Execute(context.Background(), tc.source, opts)
+				err := usecase.Execute(context.Background(), tc.source, opts)
 
 				if err == nil {
 					t.Fatalf("Expected error but got nil")

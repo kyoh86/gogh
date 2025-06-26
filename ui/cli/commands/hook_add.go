@@ -30,7 +30,7 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 				OperationType: f.operationType,
 				OperationID:   f.operationID,
 			}
-			id, err := add.NewUseCase(svc.HookService).Execute(ctx, opts)
+			id, err := add.NewUsecase(svc.HookService).Execute(ctx, opts)
 			if err != nil {
 				return fmt.Errorf("add hook: %w", err)
 			}

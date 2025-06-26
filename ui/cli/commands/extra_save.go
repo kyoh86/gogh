@@ -35,14 +35,14 @@ These extra will be automatically applied when the repository is cloned.`,
 
 			// Use current directory if reference is "."
 			if repoStr == "." {
-				repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+				repo, err := cwd.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
 				if err != nil {
 					return fmt.Errorf("finding repository from current directory: %w", err)
 				}
 				repoStr = repo.Ref().String()
 			}
 
-			uc := save.NewUseCase(
+			uc := save.NewUsecase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.GitService,

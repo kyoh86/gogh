@@ -10,22 +10,22 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase defines the use case for listing repositories
-type UseCase struct {
+// Usecase defines the use case for listing repositories
+type Usecase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	hostingService   hosting.HostingService
 	gitService       git.GitService
 }
 
-// NewUseCase creates a new instance of UseCase
-func NewUseCase(
+// NewUsecase creates a new instance of Usecase
+func NewUsecase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	hostingService hosting.HostingService,
 	gitService git.GitService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		hostingService:   hostingService,
@@ -42,7 +42,7 @@ type BundleEntry struct {
 type Options = workspace.ListOptions
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (uc *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*BundleEntry, error] {
+func (uc *Usecase) Execute(ctx context.Context, opts Options) iter.Seq2[*BundleEntry, error] {
 	return func(yield func(*BundleEntry, error) bool) {
 		for repo, err := range uc.finderService.ListAllRepository(ctx, uc.workspaceService, opts) {
 			if err != nil {

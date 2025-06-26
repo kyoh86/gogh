@@ -14,7 +14,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
-func TestUseCaseJSON_Execute_AutoExtra(t *testing.T) {
+func TestJSONUsecase_Execute_AutoExtra(t *testing.T) {
 	ctx := context.Background()
 
 	extraID := uuid.New().String()
@@ -29,7 +29,7 @@ func TestUseCaseJSON_Execute_AutoExtra(t *testing.T) {
 	e := extra.NewAutoExtra(extraID, repo, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSON(&buf)
+	uc := testtarget.NewJSONUsecase(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -60,7 +60,7 @@ func TestUseCaseJSON_Execute_AutoExtra(t *testing.T) {
 	}
 }
 
-func TestUseCaseJSON_Execute_NamedExtra(t *testing.T) {
+func TestJSONUsecase_Execute_NamedExtra(t *testing.T) {
 	ctx := context.Background()
 
 	extraID := uuid.New().String()
@@ -74,7 +74,7 @@ func TestUseCaseJSON_Execute_NamedExtra(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSON(&buf)
+	uc := testtarget.NewJSONUsecase(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -100,7 +100,7 @@ func TestUseCaseJSON_Execute_NamedExtra(t *testing.T) {
 	}
 }
 
-func TestUseCaseOneLine_Execute_AutoExtra(t *testing.T) {
+func TestOnelineUsecase_Execute_AutoExtra(t *testing.T) {
 	ctx := context.Background()
 
 	extraID := uuid.New().String()
@@ -115,7 +115,7 @@ func TestUseCaseOneLine_Execute_AutoExtra(t *testing.T) {
 	e := extra.NewAutoExtra(extraID, repo, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewOnelineUsecase(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -137,7 +137,7 @@ func TestUseCaseOneLine_Execute_AutoExtra(t *testing.T) {
 	}
 }
 
-func TestUseCaseOneLine_Execute_NamedExtra(t *testing.T) {
+func TestOnelineUsecase_Execute_NamedExtra(t *testing.T) {
 	ctx := context.Background()
 
 	extraID := uuid.New().String()
@@ -151,7 +151,7 @@ func TestUseCaseOneLine_Execute_NamedExtra(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewOnelineUsecase(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -173,7 +173,7 @@ func TestUseCaseOneLine_Execute_NamedExtra(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute_AutoExtra(t *testing.T) {
+func TestDetailUsecase_Execute_AutoExtra(t *testing.T) {
 	ctx := context.Background()
 
 	extraID := uuid.New().String()
@@ -188,7 +188,7 @@ func TestUseCaseDetail_Execute_AutoExtra(t *testing.T) {
 	e := extra.NewAutoExtra(extraID, repo, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(&buf)
+	uc := testtarget.NewDetailUsecase(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -220,7 +220,7 @@ func TestUseCaseDetail_Execute_AutoExtra(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute_NamedExtra(t *testing.T) {
+func TestDetailUsecase_Execute_NamedExtra(t *testing.T) {
 	ctx := context.Background()
 
 	extraID := uuid.New().String()
@@ -234,7 +234,7 @@ func TestUseCaseDetail_Execute_NamedExtra(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(&buf)
+	uc := testtarget.NewDetailUsecase(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {
@@ -265,7 +265,7 @@ func TestUseCaseDetail_Execute_NamedExtra(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute_EmptyItems(t *testing.T) {
+func TestDetailUsecase_Execute_EmptyItems(t *testing.T) {
 	ctx := context.Background()
 
 	extraID := uuid.New().String()
@@ -277,7 +277,7 @@ func TestUseCaseDetail_Execute_EmptyItems(t *testing.T) {
 	e := extra.NewNamedExtra(extraID, extraName, source, items, createdAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(&buf)
+	uc := testtarget.NewDetailUsecase(&buf)
 
 	err := uc.Execute(ctx, *e)
 	if err != nil {

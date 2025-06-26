@@ -20,7 +20,7 @@ func NewScriptRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			logger := log.FromContext(ctx)
 
 			scriptID := args[0]
-			if err := remove.NewUseCase(svc.ScriptService).Execute(ctx, scriptID); err != nil {
+			if err := remove.NewUsecase(svc.ScriptService).Execute(ctx, scriptID); err != nil {
 				return err
 			}
 

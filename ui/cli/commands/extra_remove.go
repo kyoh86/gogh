@@ -9,7 +9,7 @@ import (
 )
 
 func NewExtraRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	useCase := remove.NewUseCase(
+	usecase := remove.NewUsecase(
 		svc.ExtraService,
 		svc.ReferenceParser,
 	)
@@ -28,7 +28,7 @@ You can remove by:
 - Repository (for auto extras): Use --repository flag`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return useCase.Execute(cmd.Context(), opts)
+			return usecase.Execute(cmd.Context(), opts)
 		},
 	}
 

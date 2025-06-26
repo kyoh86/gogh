@@ -9,22 +9,22 @@ import (
 	"github.com/kyoh86/gogh/v4/core/extra"
 )
 
-// UseCase represents the extra show use case
-type UseCase struct {
+// Usecase represents the extra show use case
+type Usecase struct {
 	extraService extra.ExtraService
 	writer       io.Writer
 }
 
-// NewUseCase creates a new extra show use case
-func NewUseCase(extraService extra.ExtraService, writer io.Writer) *UseCase {
-	return &UseCase{
+// NewUsecase creates a new extra show use case
+func NewUsecase(extraService extra.ExtraService, writer io.Writer) *Usecase {
+	return &Usecase{
 		extraService: extraService,
 		writer:       writer,
 	}
 }
 
 // Execute performs the extra show operation
-func (uc *UseCase) Execute(ctx context.Context, identifier string, asJSON bool) error {
+func (uc *Usecase) Execute(ctx context.Context, identifier string, asJSON bool) error {
 	// Try as ID first
 	e, err := uc.extraService.Get(ctx, identifier)
 	if err != nil {
@@ -35,15 +35,15 @@ func (uc *UseCase) Execute(ctx context.Context, identifier string, asJSON bool) 
 		}
 	}
 
-	var useCase interface {
+	var usecase interface {
 		Execute(ctx context.Context, e describe.Extra) error
 	}
 
 	if asJSON {
-		useCase = describe.NewUseCaseJSON(uc.writer)
+		usecase = describe.NewJSONUsecase(uc.writer)
 	} else {
-		useCase = describe.NewUseCaseDetail(uc.writer)
+		usecase = describe.NewDetailUsecase(uc.writer)
 	}
 
-	return useCase.Execute(ctx, *e)
+	return usecase.Execute(ctx, *e)
 }

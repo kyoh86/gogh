@@ -46,7 +46,7 @@ func NewOverlayAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return err
 			}
 			defer content.Close()
-			id, err := add.NewUseCase(svc.OverlayService).Execute(ctx, name, targetPath, content)
+			id, err := add.NewUsecase(svc.OverlayService).Execute(ctx, name, targetPath, content)
 			if err != nil {
 				return err
 			}

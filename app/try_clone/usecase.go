@@ -13,22 +13,22 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase provides common operations for repository manipulation
-type UseCase struct {
+// Usecase provides common operations for repository manipulation
+type Usecase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
 	overlayService   overlay.OverlayService
 	gitService       git.GitService
 }
 
-// NewUseCase creates a new instance of RepositoryService.
-func NewUseCase(
+// NewUsecase creates a new instance of RepositoryService.
+func NewUsecase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
 	overlayService overlay.OverlayService,
 	gitService git.GitService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
 		overlayService:   overlayService,
@@ -73,7 +73,7 @@ type Options struct {
 }
 
 // Execute attempts to clone a repository with retry logic.
-func (uc *UseCase) Execute(
+func (uc *Usecase) Execute(
 	ctx context.Context,
 	repo *hosting.Repository,
 	alias *repository.Reference,

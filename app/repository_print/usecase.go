@@ -10,7 +10,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hosting"
 )
 
-type UseCase struct {
+type Usecase struct {
 	w      io.Writer
 	format string
 }
@@ -29,14 +29,14 @@ func repositoryFormatter(v string, w io.Writer) (RepositoryPrinter, error) {
 	return nil, fmt.Errorf("invalid format: %q", v)
 }
 
-func NewUseCase(w io.Writer, format string) *UseCase {
-	return &UseCase{
+func NewUsecase(w io.Writer, format string) *Usecase {
+	return &Usecase{
 		w:      w,
 		format: format,
 	}
 }
 
-func (uc *UseCase) Execute(_ context.Context, r iter.Seq2[*hosting.Repository, error]) error {
+func (uc *Usecase) Execute(_ context.Context, r iter.Seq2[*hosting.Repository, error]) error {
 	printer, err := repositoryFormatter(uc.format, uc.w)
 	if err != nil {
 		return err

@@ -15,13 +15,13 @@ import (
 )
 
 func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	logoutUseCase := logout.NewUseCase(svc.TokenService)
+	logoutUsecase := logout.NewUsecase(svc.TokenService)
 
 	checkFlags := func(cmd *cobra.Command, args []string) ([]string, error) {
 		if len(args) > 0 {
 			return args, nil
 		}
-		entries, err := list.NewUseCase(svc.TokenService).Execute(cmd.Context())
+		entries, err := list.NewUsecase(svc.TokenService).Execute(cmd.Context())
 		if err != nil {
 			return nil, fmt.Errorf("listing up tokens: %w", err)
 		}
@@ -74,7 +74,7 @@ func NewAuthLogoutCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.
 
 			for _, target := range owners {
 				targetStr := fmt.Sprintf("%s/%s", target[0], target[1])
-				if err := logoutUseCase.Execute(ctx, target[0], target[1]); err != nil {
+				if err := logoutUsecase.Execute(ctx, target[0], target[1]); err != nil {
 					return fmt.Errorf("deleting token %q: %w", targetStr, err)
 				}
 				log.FromContext(cmd.Context()).Infof("Logged out from %q", targetStr)

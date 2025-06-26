@@ -6,17 +6,17 @@ import (
 	"github.com/kyoh86/gogh/v4/core/auth"
 )
 
-type UseCase struct {
+type Usecase struct {
 	tokenService auth.TokenService
 }
 
-func NewUseCase(tokenService auth.TokenService) *UseCase {
-	return &UseCase{
+func NewUsecase(tokenService auth.TokenService) *Usecase {
+	return &Usecase{
 		tokenService: tokenService,
 	}
 }
 
-func (uc *UseCase) Execute(_ context.Context) ([]auth.TokenEntry, error) {
+func (uc *Usecase) Execute(_ context.Context) ([]auth.TokenEntry, error) {
 	tokens := uc.tokenService.Entries()
 	return tokens, nil
 }

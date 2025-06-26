@@ -25,7 +25,7 @@ const (
 
 type Options struct{}
 
-type UseCase struct {
+type Usecase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	hookService      hook.HookService
@@ -34,15 +34,15 @@ type UseCase struct {
 	referenceParser  repository.ReferenceParser
 }
 
-func NewUseCase(
+func NewUsecase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	hookService hook.HookService,
 	overlayService overlay.OverlayService,
 	scriptService script.ScriptService,
 	referenceParser repository.ReferenceParser,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		hookService:      hookService,
@@ -53,28 +53,28 @@ func NewUseCase(
 }
 
 // Invoke executes the hooks for the given hookID and refStr.
-func (uc *UseCase) Invoke(ctx context.Context, hookID, refStr string) error {
+func (uc *Usecase) Invoke(ctx context.Context, hookID, refStr string) error {
 	h, err := uc.hookService.Get(ctx, hookID)
 	if err != nil {
 		return err
 	}
 	switch h.OperationType() {
 	case hook.OperationTypeOverlay:
-		overlayApplyUseCase := apply.NewUseCase(
+		overlayApplyUsecase := apply.NewUsecase(
 			uc.workspaceService,
 			uc.finderService,
 			uc.referenceParser,
 			uc.overlayService,
 		)
-		return overlayApplyUseCase.Execute(ctx, refStr, h.OperationID())
+		return overlayApplyUsecase.Execute(ctx, refStr, h.OperationID())
 	case hook.OperationTypeScript:
-		scriptApplyUseCase := scriptinvoke.NewUseCase(
+		scriptApplyUsecase := scriptinvoke.NewUsecase(
 			uc.workspaceService,
 			uc.finderService,
 			uc.scriptService,
 			uc.referenceParser,
 		)
-		return scriptApplyUseCase.Execute(ctx, refStr, h.OperationID(), map[string]any{
+		return scriptApplyUsecase.Execute(ctx, refStr, h.OperationID(), map[string]any{
 			"hook": map[string]any{
 				"id":            h.ID(),
 				"name":          h.Name(),
@@ -89,12 +89,12 @@ func (uc *UseCase) Invoke(ctx context.Context, hookID, refStr string) error {
 }
 
 // InvokeFor executes all hooks that match the repository and the event
-func (uc *UseCase) InvokeFor(ctx context.Context, event Event, refStr string) error {
+func (uc *Usecase) InvokeFor(ctx context.Context, event Event, refStr string) error {
 	return uc.InvokeForWithGlobals(ctx, event, refStr, nil)
 }
 
 // InvokeForWithGlobals executes all hooks that match the repository and the event with additional globals
-func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr string, globals map[string]any) error {
+func (uc *Usecase) InvokeForWithGlobals(ctx context.Context, event Event, refStr string, globals map[string]any) error {
 	refWithAlias, err := uc.referenceParser.ParseWithAlias(refStr)
 	if err != nil {
 		return fmt.Errorf("parsing repository reference: %w", err)
@@ -106,13 +106,13 @@ func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr
 	if match == nil {
 		return fmt.Errorf("repository not found for reference: %s", refStr)
 	}
-	overlayApplyUseCase := apply.NewUseCase(
+	overlayApplyUsecase := apply.NewUsecase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.referenceParser,
 		uc.overlayService,
 	)
-	scriptApplyUseCase := scriptinvoke.NewUseCase(
+	scriptApplyUsecase := scriptinvoke.NewUsecase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.scriptService,
@@ -124,7 +124,7 @@ func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr
 		}
 		switch h.OperationType() {
 		case hook.OperationTypeOverlay:
-			if err := overlayApplyUseCase.Apply(ctx, match, h.OperationID()); err != nil {
+			if err := overlayApplyUsecase.Apply(ctx, match, h.OperationID()); err != nil {
 				return fmt.Errorf("applying overlay for the hook %s: %w", h.ID(), err)
 			}
 		case hook.OperationTypeScript:
@@ -140,7 +140,7 @@ func (uc *UseCase) InvokeForWithGlobals(ctx context.Context, event Event, refStr
 				"operationType": string(h.OperationType()),
 				"operationId":   h.OperationID(),
 			}
-			if err := scriptApplyUseCase.Invoke(ctx, match, h.OperationID(), g); err != nil {
+			if err := scriptApplyUsecase.Invoke(ctx, match, h.OperationID(), g); err != nil {
 				return fmt.Errorf("invoking script for the hook %s: %w", h.ID(), err)
 			}
 		}

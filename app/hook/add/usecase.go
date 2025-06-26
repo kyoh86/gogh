@@ -14,15 +14,15 @@ type Options struct {
 	OperationID   string
 }
 
-type UseCase struct {
+type Usecase struct {
 	hookService hook.HookService
 }
 
-func NewUseCase(hookService hook.HookService) *UseCase {
-	return &UseCase{hookService: hookService}
+func NewUsecase(hookService hook.HookService) *Usecase {
+	return &Usecase{hookService: hookService}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, opts Options) (string, error) {
+func (uc *Usecase) Execute(ctx context.Context, opts Options) (string, error) {
 	h := hook.Entry{
 		Name:          opts.Name,
 		RepoPattern:   opts.RepoPattern,

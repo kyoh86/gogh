@@ -69,7 +69,7 @@ func NewScriptInvokeInstantCommand(_ context.Context, svc *service.ServiceSet) (
 					return errors.New("cannot specify repositories when --all or --pattern flag is set")
 				}
 
-				for repo, err := range list.NewUseCase(
+				for repo, err := range list.NewUsecase(
 					svc.WorkspaceService,
 					svc.FinderService,
 				).Execute(ctx, list.Options{ListOptions: list.ListOptions{
@@ -87,7 +87,7 @@ func NewScriptInvokeInstantCommand(_ context.Context, svc *service.ServiceSet) (
 			for _, ref := range refs {
 				// Use current directory if reference is "."
 				if ref == "." {
-					repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+					repo, err := cwd.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
 					if err != nil {
 						return fmt.Errorf("finding repository from current directory: %w", err)
 					}

@@ -9,9 +9,9 @@ import (
 )
 
 // Test Execute method scenarios without actual Lua execution
-func TestUseCase_Execute_Scenarios(t *testing.T) {
+func TestUsecase_Execute_Scenarios(t *testing.T) {
 	ctx := context.Background()
-	uc := testtarget.NewUseCase()
+	uc := testtarget.NewUsecase()
 
 	testCases := []struct {
 		name   string
@@ -178,7 +178,7 @@ func TestUseCase_Execute_Scenarios(t *testing.T) {
 }
 
 // Test error scenarios
-func TestUseCase_Execute_Errors(t *testing.T) {
+func TestUsecase_Execute_Errors(t *testing.T) {
 	t.Skip("Skipping Lua execution error tests")
 
 	// These would be the error scenarios to test:
@@ -246,12 +246,12 @@ func TestUseCase_Execute_Errors(t *testing.T) {
 }
 
 // Test context cancellation
-func TestUseCase_Execute_ContextCancellation(t *testing.T) {
+func TestUsecase_Execute_ContextCancellation(t *testing.T) {
 	t.Skip("Skipping context cancellation test")
 
 	// Test that long-running scripts respect context cancellation
 	ctx, cancel := context.WithCancel(context.Background())
-	uc := testtarget.NewUseCase()
+	uc := testtarget.NewUsecase()
 
 	script := testtarget.Script{
 		Code: `
@@ -277,8 +277,8 @@ func TestUseCase_Execute_ContextCancellation(t *testing.T) {
 }
 
 // Test script size limits
-func TestUseCase_Execute_LargeScripts(t *testing.T) {
-	uc := testtarget.NewUseCase()
+func TestUsecase_Execute_LargeScripts(t *testing.T) {
+	uc := testtarget.NewUsecase()
 	ctx := context.Background()
 
 	// Test with large script
@@ -304,11 +304,11 @@ func TestUseCase_Execute_LargeScripts(t *testing.T) {
 }
 
 // Test memory safety
-func TestUseCase_Execute_MemorySafety(t *testing.T) {
+func TestUsecase_Execute_MemorySafety(t *testing.T) {
 	t.Skip("Skipping memory safety test")
 
 	// Test that Lua state is properly cleaned up
-	uc := testtarget.NewUseCase()
+	uc := testtarget.NewUsecase()
 	ctx := context.Background()
 
 	// Run multiple scripts to ensure no memory leaks
@@ -334,11 +334,11 @@ func TestUseCase_Execute_MemorySafety(t *testing.T) {
 }
 
 // Test concurrent execution
-func TestUseCase_Execute_Concurrent(t *testing.T) {
+func TestUsecase_Execute_Concurrent(t *testing.T) {
 	t.Skip("Skipping concurrent execution test")
 
 	// Test that multiple scripts can run concurrently
-	uc := testtarget.NewUseCase()
+	uc := testtarget.NewUsecase()
 	ctx := context.Background()
 
 	// Each goroutine gets its own Lua state
@@ -381,7 +381,7 @@ func (e mockDoStringError) Error() string {
 }
 
 // Test error wrapping
-func TestUseCase_Execute_ErrorWrapping(t *testing.T) {
+func TestUsecase_Execute_ErrorWrapping(t *testing.T) {
 	// Test that errors are properly wrapped
 	originalErr := mockDoStringError{msg: "lua execution failed"}
 	wrappedErr := errors.New("run Lua: " + originalErr.Error())

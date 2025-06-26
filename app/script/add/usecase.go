@@ -7,15 +7,15 @@ import (
 	"github.com/kyoh86/gogh/v4/core/script"
 )
 
-type UseCase struct {
+type Usecase struct {
 	scriptService script.ScriptService
 }
 
-func NewUseCase(scriptService script.ScriptService) *UseCase {
-	return &UseCase{scriptService: scriptService}
+func NewUsecase(scriptService script.ScriptService) *Usecase {
+	return &Usecase{scriptService: scriptService}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, name string, content io.Reader) (script.Script, error) {
+func (uc *Usecase) Execute(ctx context.Context, name string, content io.Reader) (script.Script, error) {
 	e := script.Entry{
 		Name:    name,
 		Content: content,

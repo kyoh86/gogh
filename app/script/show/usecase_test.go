@@ -28,7 +28,7 @@ func (m *mockReadCloser) Close() error {
 	return nil
 }
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 	createdAt := time.Now()
 	updatedAt := createdAt.Add(time.Hour)
@@ -357,7 +357,7 @@ print("Special chars: \n\t\\")`
 
 			var buf bytes.Buffer
 			ss := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(ss, &buf)
+			uc := testtarget.NewUsecase(ss, &buf)
 
 			err := uc.Execute(ctx, tc.scriptID, tc.asJSON, tc.withSource)
 			if (err != nil) != tc.wantErr {
@@ -371,14 +371,14 @@ print("Special chars: \n\t\\")`
 	}
 }
 
-func TestUseCase_Execute_ServiceErrors(t *testing.T) {
+func TestUsecase_Execute_ServiceErrors(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	var buf bytes.Buffer
 	ss := script_mock.NewMockScriptService(ctrl)
-	uc := testtarget.NewUseCase(ss, &buf)
+	uc := testtarget.NewUsecase(ss, &buf)
 
 	// Test service returning unexpected error
 	ss.EXPECT().Get(ctx, "test-id").Return(nil, errors.New("database connection error"))
@@ -392,7 +392,7 @@ func TestUseCase_Execute_ServiceErrors(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
+func TestUsecase_Execute_AllDisplayModes(t *testing.T) {
 	ctx := context.Background()
 
 	modes := []struct {
@@ -400,7 +400,7 @@ func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
 		asJSON     bool
 		withSource bool
 	}{
-		{"OneLine", false, false},
+		{"Oneline", false, false},
 		{"Detail", false, true},
 		{"JSON", true, false},
 		{"JSONWithSource", true, true},
@@ -413,7 +413,7 @@ func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
 
 			var buf bytes.Buffer
 			ss := script_mock.NewMockScriptService(ctrl)
-			uc := testtarget.NewUseCase(ss, &buf)
+			uc := testtarget.NewUsecase(ss, &buf)
 
 			scriptID := uuid.New()
 			s := script.ConcreteScript(

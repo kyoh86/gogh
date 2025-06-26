@@ -11,7 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Success: Find repository by path", func(t *testing.T) {
@@ -33,7 +33,7 @@ func TestUseCase_Execute(t *testing.T) {
 			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(expectedLocation, nil)
 
-		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
+		uc := cwd.NewUsecase(mockWorkspaceService, mockFinderService)
 		result, err := uc.Execute(ctx)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -74,7 +74,7 @@ func TestUseCase_Execute(t *testing.T) {
 			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(expectedLocation, nil)
 
-		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
+		uc := cwd.NewUsecase(mockWorkspaceService, mockFinderService)
 		result, err := uc.Execute(ctx)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -98,7 +98,7 @@ func TestUseCase_Execute(t *testing.T) {
 			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(nil, expectedErr)
 
-		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
+		uc := cwd.NewUsecase(mockWorkspaceService, mockFinderService)
 		result, err := uc.Execute(ctx)
 
 		if err == nil {
@@ -126,7 +126,7 @@ func TestUseCase_Execute(t *testing.T) {
 			FindByPath(ctx, mockWorkspaceService, gomock.Any()).
 			Return(nil, expectedErr)
 
-		uc := cwd.NewUseCase(mockWorkspaceService, mockFinderService)
+		uc := cwd.NewUsecase(mockWorkspaceService, mockFinderService)
 		result, err := uc.Execute(ctx)
 
 		if err == nil {

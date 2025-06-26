@@ -17,7 +17,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -243,7 +243,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			es, os, ws, fs, rp := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(es, os, ws, fs, rp)
+			uc := testtarget.NewUsecase(es, os, ws, fs, rp)
 
 			err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -253,9 +253,9 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_FileSystemOperations(t *testing.T) {
+func TestUsecase_Execute_FileSystemOperations(t *testing.T) {
 	// Note: This test is skipped because it requires actual file system operations
 	// which are not mockable in the current implementation.
-	// The UseCase uses os.MkdirAll, os.OpenFile, and io.Copy directly.
+	// The Usecase uses os.MkdirAll, os.OpenFile, and io.Copy directly.
 	t.Skip("File system operations are not mockable in current implementation")
 }

@@ -38,7 +38,7 @@ func NewAuthLoginCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 				}
 			}
 
-			if err := login.NewUseCase(svc.TokenService, svc.AuthenticateService, svc.HostingService).Execute(cmd.Context(), f.Host, func(ctx context.Context, res login.DeviceAuthResponse) error {
+			if err := login.NewUsecase(svc.TokenService, svc.AuthenticateService, svc.HostingService).Execute(cmd.Context(), f.Host, func(ctx context.Context, res login.DeviceAuthResponse) error {
 				if errors.Is(browser.OpenURL(res.VerificationURI), exec.ErrNotFound) {
 					fmt.Fprintf(
 						os.Stderr,

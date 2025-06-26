@@ -13,18 +13,18 @@ import (
 // Script represents the script type
 type Script = script.Script
 
-// UseCaseJSON represents the use case for showing scripts in JSON format
-type UseCaseJSON struct {
+// JSONUsecase represents the use case for showing scripts in JSON format
+type JSONUsecase struct {
 	enc *json.Encoder
 }
 
-// NewUseCaseJSON creates a new use case for showing scripts in JSON format
-func NewUseCaseJSON(writer io.Writer) *UseCaseJSON {
-	return &UseCaseJSON{enc: json.NewEncoder(writer)}
+// NewJSONUsecase creates a new use case for showing scripts in JSON format
+func NewJSONUsecase(writer io.Writer) *JSONUsecase {
+	return &JSONUsecase{enc: json.NewEncoder(writer)}
 }
 
 // Execute executes the use case to show a script in JSON format
-func (uc *UseCaseJSON) Execute(ctx context.Context, s Script) error {
+func (uc *JSONUsecase) Execute(ctx context.Context, s Script) error {
 	return uc.enc.Encode(map[string]any{
 		"id":         s.ID(),
 		"name":       s.Name(),
@@ -33,41 +33,41 @@ func (uc *UseCaseJSON) Execute(ctx context.Context, s Script) error {
 	})
 }
 
-// UseCaseOneLine represents the use case for showing scripts in a single line format
-type UseCaseOneLine struct {
+// OnelineUsecase represents the use case for showing scripts in a single line format
+type OnelineUsecase struct {
 	writer io.Writer
 }
 
-// NewUseCaseOneline creates a new use case for showing overlays in text format
-func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
-	return &UseCaseOneLine{writer: writer}
+// NewOnelineUsecase creates a new use case for showing overlays in text format
+func NewOnelineUsecase(writer io.Writer) *OnelineUsecase {
+	return &OnelineUsecase{writer: writer}
 }
 
 // Execute executes the use case to show a script in a single line format
-func (uc *UseCaseOneLine) Execute(ctx context.Context, s script.Script) error {
+func (uc *OnelineUsecase) Execute(ctx context.Context, s script.Script) error {
 	_, err := fmt.Fprintf(uc.writer, "[%s] %s @ %s\n", s.ID()[:8], s.Name(), s.UpdatedAt().Format("2006-01-02 15:04:05"))
 	return err
 }
 
-// UseCaseJSONWithSource represents the use case for showing scripts in a single line format
-type UseCaseJSONWithSource struct {
+// JSONWithSourceUsecase represents the use case for showing scripts in a single line format
+type JSONWithSourceUsecase struct {
 	scriptService script.ScriptService
 	enc           *json.Encoder
 }
 
-// NewUseCaseJSONWithSource creates a new use case for showing overlays in text format
-func NewUseCaseJSONWithSource(
+// NewJSONWithSourceUsecase creates a new use case for showing overlays in text format
+func NewJSONWithSourceUsecase(
 	scriptService script.ScriptService,
 	writer io.Writer,
-) *UseCaseJSONWithSource {
-	return &UseCaseJSONWithSource{
+) *JSONWithSourceUsecase {
+	return &JSONWithSourceUsecase{
 		scriptService: scriptService,
 		enc:           json.NewEncoder(writer),
 	}
 }
 
 // Execute executes the use case to show a script in a single line format
-func (uc *UseCaseJSONWithSource) Execute(ctx context.Context, s script.Script) error {
+func (uc *JSONWithSourceUsecase) Execute(ctx context.Context, s script.Script) error {
 	src, err := uc.scriptService.Open(ctx, s.ID())
 	if err != nil {
 		return fmt.Errorf("open script source: %w", err)
@@ -89,25 +89,25 @@ func (uc *UseCaseJSONWithSource) Execute(ctx context.Context, s script.Script) e
 	return err
 }
 
-// UseCaseDetail represents the use case for showing scripts in a single line format
-type UseCaseDetail struct {
+// DetailUsecase represents the use case for showing scripts in a single line format
+type DetailUsecase struct {
 	scriptService script.ScriptService
 	writer        io.Writer
 }
 
-// NewUseCaseDetail creates a new use case for showing overlays in text format
-func NewUseCaseDetail(
+// NewDetailUsecase creates a new use case for showing overlays in text format
+func NewDetailUsecase(
 	scriptService script.ScriptService,
 	writer io.Writer,
-) *UseCaseDetail {
-	return &UseCaseDetail{
+) *DetailUsecase {
+	return &DetailUsecase{
 		scriptService: scriptService,
 		writer:        writer,
 	}
 }
 
 // Execute executes the use case to show a script in a single line format
-func (uc *UseCaseDetail) Execute(ctx context.Context, s script.Script) error {
+func (uc *DetailUsecase) Execute(ctx context.Context, s script.Script) error {
 	src, err := uc.scriptService.Open(ctx, s.ID())
 	if err != nil {
 		return fmt.Errorf("open script source: %w", err)

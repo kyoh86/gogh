@@ -7,16 +7,16 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay"
 )
 
-type UseCase struct {
+type Usecase struct {
 	overlayService overlay.OverlayService
 }
 
-func NewUseCase(overlayService overlay.OverlayService) *UseCase {
-	return &UseCase{overlayService: overlayService}
+func NewUsecase(overlayService overlay.OverlayService) *Usecase {
+	return &Usecase{overlayService: overlayService}
 }
 
 // ExtractOverlay extracts the overlay by its ID and writes it to the provided writer.
-func (uc *UseCase) ExtractOverlay(ctx context.Context, overlayID string, w io.Writer) error {
+func (uc *Usecase) ExtractOverlay(ctx context.Context, overlayID string, w io.Writer) error {
 	r, err := uc.overlayService.Open(ctx, overlayID)
 	if err != nil {
 		return err
@@ -27,6 +27,6 @@ func (uc *UseCase) ExtractOverlay(ctx context.Context, overlayID string, w io.Wr
 }
 
 // UpdateOverlay applies a new overlay identified by its ID.
-func (uc *UseCase) UpdateOverlay(ctx context.Context, overlayID string, r io.Reader) error {
+func (uc *Usecase) UpdateOverlay(ctx context.Context, overlayID string, r io.Reader) error {
 	return uc.overlayService.Update(ctx, overlayID, overlay.Entry{Content: r})
 }

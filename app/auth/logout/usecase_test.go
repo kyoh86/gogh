@@ -10,7 +10,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	// Define test cases
 	testCases := []struct {
 		name        string
@@ -50,11 +50,11 @@ func TestUseCase_Execute(t *testing.T) {
 			mockTokenService := auth_mock.NewMockTokenService(ctrl)
 			tc.setupMock(mockTokenService)
 
-			// Create UseCase under test
-			useCase := testtarget.NewUseCase(mockTokenService)
+			// Create Usecase under test
+			usecase := testtarget.NewUsecase(mockTokenService)
 
 			// Execute
-			err := useCase.Execute(context.Background(), tc.host, tc.owner)
+			err := usecase.Execute(context.Background(), tc.host, tc.owner)
 
 			// Verify result
 			if tc.expectError && err == nil {

@@ -56,7 +56,7 @@ func NewReposCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comma
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := cmd.Context()
-			if err := repository_print.NewUseCase(cmd.OutOrStdout(), format).Execute(ctx, repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{
+			if err := repository_print.NewUsecase(cmd.OutOrStdout(), format).Execute(ctx, repos.NewUsecase(svc.HostingService).Execute(ctx, repos.Options{
 				Limit:    opts.Limit,
 				Privacy:  opts.Privacy,
 				Fork:     opts.Fork,

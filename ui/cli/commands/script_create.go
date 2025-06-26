@@ -55,7 +55,7 @@ func NewScriptCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			defer content.Close()
 
 			// Add the script
-			h, err := add.NewUseCase(svc.ScriptService).Execute(ctx, f.name, content)
+			h, err := add.NewUsecase(svc.ScriptService).Execute(ctx, f.name, content)
 			if err != nil {
 				return fmt.Errorf("adding script: %w", err)
 			}

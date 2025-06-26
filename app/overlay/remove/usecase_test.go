@@ -10,7 +10,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	tests := []struct {
 		name      string
 		id        string
@@ -46,11 +46,11 @@ func TestUseCase_Execute(t *testing.T) {
 			mockService := overlay_mock.NewMockOverlayService(ctrl)
 			expectedErr := tt.mockSetup(mockService)
 
-			uc := testtarget.NewUseCase(mockService)
+			uc := testtarget.NewUsecase(mockService)
 			err := uc.Execute(context.Background(), tt.id)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("UseCase.Execute() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Usecase.Execute() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if err != nil && expectedErr != nil && err != expectedErr {

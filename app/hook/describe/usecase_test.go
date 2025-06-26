@@ -12,7 +12,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
-func TestUseCaseJSON_Execute(t *testing.T) {
+func TestJSONUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	hookUUID := uuid.New()
@@ -26,7 +26,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	h := hook.ConcreteHook(hookUUID, hookName, repoPattern, triggerEvent, operationType, operationID)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSON(&buf)
+	uc := testtarget.NewJSONUsecase(&buf)
 
 	err := uc.Execute(ctx, h)
 	if err != nil {
@@ -58,7 +58,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseOneLine_Execute(t *testing.T) {
+func TestOnelineUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -98,7 +98,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 			h := hook.ConcreteHook(hookUUID, tc.hookName, tc.repoPattern, tc.triggerEvent, tc.operationType, tc.operationID)
 
 			var buf bytes.Buffer
-			uc := testtarget.NewUseCaseOneLine(&buf)
+			uc := testtarget.NewOnelineUsecase(&buf)
 
 			err := uc.Execute(ctx, h)
 			if err != nil {
@@ -123,7 +123,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseOneLine_Execute_AllEventTypes(t *testing.T) {
+func TestOnelineUsecase_Execute_AllEventTypes(t *testing.T) {
 	ctx := context.Background()
 
 	events := []hook.Event{
@@ -145,7 +145,7 @@ func TestUseCaseOneLine_Execute_AllEventTypes(t *testing.T) {
 			)
 
 			var buf bytes.Buffer
-			uc := testtarget.NewUseCaseOneLine(&buf)
+			uc := testtarget.NewOnelineUsecase(&buf)
 
 			err := uc.Execute(ctx, h)
 			if err != nil {
@@ -160,7 +160,7 @@ func TestUseCaseOneLine_Execute_AllEventTypes(t *testing.T) {
 	}
 }
 
-func TestUseCaseOneLine_Execute_AllOperationTypes(t *testing.T) {
+func TestOnelineUsecase_Execute_AllOperationTypes(t *testing.T) {
 	ctx := context.Background()
 
 	operations := []struct {
@@ -184,7 +184,7 @@ func TestUseCaseOneLine_Execute_AllOperationTypes(t *testing.T) {
 			)
 
 			var buf bytes.Buffer
-			uc := testtarget.NewUseCaseOneLine(&buf)
+			uc := testtarget.NewOnelineUsecase(&buf)
 
 			err := uc.Execute(ctx, h)
 			if err != nil {

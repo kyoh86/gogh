@@ -31,7 +31,7 @@ func NewScriptRunCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Com
 			if err := dec.Decode(&script); err != nil {
 				return fmt.Errorf("decoding script from stdin: %w", err)
 			}
-			return run.NewUseCase().Execute(ctx, script)
+			return run.NewUsecase().Execute(ctx, script)
 		},
 	}
 	return cmd, nil

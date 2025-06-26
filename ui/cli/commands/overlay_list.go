@@ -18,7 +18,7 @@ func NewOverlayListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		Short: "List registered overlays",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return list.NewUseCase(svc.OverlayService, cmd.OutOrStdout()).Execute(cmd.Context(), f.json, f.source)
+			return list.NewUsecase(svc.OverlayService, cmd.OutOrStdout()).Execute(cmd.Context(), f.json, f.source)
 		},
 	}
 	cmd.Flags().BoolVarP(&f.json, "json", "", false, "Output in JSON format")

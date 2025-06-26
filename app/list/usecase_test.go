@@ -15,7 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	// Define test cases
 	tests := []struct {
 		name          string
@@ -118,11 +118,11 @@ func TestUseCase_Execute(t *testing.T) {
 			// Setup mocks
 			tt.setupMocks(mockWorkspace, mockFinder)
 
-			// Create UseCase to test
-			useCase := testtarget.NewUseCase(mockWorkspace, mockFinder)
+			// Create Usecase to test
+			usecase := testtarget.NewUsecase(mockWorkspace, mockFinder)
 
 			// Execute test
-			seq := useCase.Execute(context.Background(), tt.options)
+			seq := usecase.Execute(context.Background(), tt.options)
 
 			// Process the sequence to check for errors
 			var foundError error

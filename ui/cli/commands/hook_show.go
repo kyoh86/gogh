@@ -20,7 +20,7 @@ func NewHookShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			hookID := args[0]
-			return show.NewUseCase(svc.HookService, cmd.OutOrStdout()).Execute(ctx, hookID, f.json)
+			return show.NewUsecase(svc.HookService, cmd.OutOrStdout()).Execute(ctx, hookID, f.json)
 		},
 	}
 	cmd.Flags().BoolVarP(&f.json, "json", "", false, "Output in JSON format")

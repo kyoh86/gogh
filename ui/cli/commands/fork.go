@@ -36,7 +36,7 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 				Target: f.To,
 			}
 			if err := fork.
-				NewUseCase(
+				NewUsecase(
 					svc.HostingService,
 					svc.WorkspaceService,
 					svc.FinderService,

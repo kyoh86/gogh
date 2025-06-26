@@ -6,14 +6,14 @@ import (
 	"github.com/kyoh86/gogh/v4/core/script"
 )
 
-type UseCase struct {
+type Usecase struct {
 	scriptService script.ScriptService
 }
 
-func NewUseCase(scriptService script.ScriptService) *UseCase {
-	return &UseCase{scriptService: scriptService}
+func NewUsecase(scriptService script.ScriptService) *Usecase {
+	return &Usecase{scriptService: scriptService}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, scriptID string) error {
+func (uc *Usecase) Execute(ctx context.Context, scriptID string) error {
 	return uc.scriptService.Remove(ctx, scriptID)
 }

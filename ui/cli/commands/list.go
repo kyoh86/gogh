@@ -35,7 +35,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 					Patterns: f.Patterns,
 				},
 			}
-			for repo, err := range list.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx, opts) {
+			for repo, err := range list.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx, opts) {
 				if err != nil {
 					return fmt.Errorf("listing up repositories: %w", err)
 				}

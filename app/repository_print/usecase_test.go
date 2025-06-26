@@ -56,7 +56,7 @@ func TestRepositoryPrinter(t *testing.T) {
 	} {
 		t.Run(testcase.title, func(t *testing.T) {
 			var buf bytes.Buffer
-			printer := testtarget.NewUseCase(&buf, testcase.format)
+			printer := testtarget.NewUsecase(&buf, testcase.format)
 			if err := printer.Execute(context.Background(), sliceToIter2([]*hosting.Repository{&repo})); err != nil {
 				t.Fatal(err)
 			}

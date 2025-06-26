@@ -8,20 +8,20 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hosting"
 )
 
-// UseCase is the services to handle login authentication.
-type UseCase struct {
+// Usecase is the services to handle login authentication.
+type Usecase struct {
 	tokenService   auth.TokenService
 	authService    auth.AuthenticateService
 	hostingService hosting.HostingService
 }
 
-// NewUseCase creates a new UseCase instance with the provided services.
-func NewUseCase(
+// NewUsecase creates a new Usecase instance with the provided services.
+func NewUsecase(
 	tokenService auth.TokenService,
 	authService auth.AuthenticateService,
 	hostingService hosting.HostingService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		tokenService:   tokenService,
 		authService:    authService,
 		hostingService: hostingService,
@@ -35,7 +35,7 @@ type DeviceAuthResponse = auth.DeviceAuthResponse
 type Verify = auth.Verify
 
 // Execute performs the authentication process.
-func (uc *UseCase) Execute(ctx context.Context, host string, verify Verify) error {
+func (uc *Usecase) Execute(ctx context.Context, host string, verify Verify) error {
 	user, token, err := uc.authService.Authenticate(ctx, host, verify)
 	if err != nil {
 		return fmt.Errorf("authenticating: %w", err)

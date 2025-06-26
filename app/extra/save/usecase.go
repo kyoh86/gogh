@@ -16,8 +16,8 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase for saving auto-apply extra
-type UseCase struct {
+// Usecase for saving auto-apply extra
+type Usecase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	gitService       git.GitService
@@ -27,8 +27,8 @@ type UseCase struct {
 	referenceParser  repository.ReferenceParser
 }
 
-// NewUseCase creates a new extra save use case
-func NewUseCase(
+// NewUsecase creates a new extra save use case
+func NewUsecase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	gitService git.GitService,
@@ -36,8 +36,8 @@ func NewUseCase(
 	hookService hook.HookService,
 	extraService extra.ExtraService,
 	referenceParser repository.ReferenceParser,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		gitService:       gitService,
@@ -49,7 +49,7 @@ func NewUseCase(
 }
 
 // Execute saves excluded files as auto-apply extra
-func (uc *UseCase) Execute(ctx context.Context, repoStr string) error {
+func (uc *Usecase) Execute(ctx context.Context, repoStr string) error {
 	// Parse repository reference
 	ref, err := uc.referenceParser.Parse(repoStr)
 	if err != nil {
@@ -111,7 +111,7 @@ func (uc *UseCase) Execute(ctx context.Context, repoStr string) error {
 		}
 
 		// Create post-clone hook for this overlay
-		hookAddUC := add.NewUseCase(uc.hookService)
+		hookAddUC := add.NewUsecase(uc.hookService)
 		hookID, err := hookAddUC.Execute(ctx, add.Options{
 			Name:          fmt.Sprintf("Auto extra for %s: %s", ref.String(), file),
 			RepoPattern:   ref.String(),

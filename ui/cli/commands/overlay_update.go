@@ -33,7 +33,7 @@ func NewOverlayUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 				defer c.Close()
 				content = c
 			}
-			if err := update.NewUseCase(svc.OverlayService).Execute(ctx, overlayID, f.name, f.relativePath, content); err != nil {
+			if err := update.NewUsecase(svc.OverlayService).Execute(ctx, overlayID, f.name, f.relativePath, content); err != nil {
 				return fmt.Errorf("updating overlay: %w", err)
 			}
 			return nil

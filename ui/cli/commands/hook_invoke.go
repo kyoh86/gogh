@@ -33,14 +33,14 @@ func NewHookInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 
 			// Use current directory if reference is "."
 			if repoRef == "." {
-				repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+				repo, err := cwd.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
 				if err != nil {
 					return fmt.Errorf("finding repository from current directory: %w", err)
 				}
 				repoRef = repo.Ref().String()
 			}
 
-			return invoke.NewUseCase(
+			return invoke.NewUsecase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.HookService,

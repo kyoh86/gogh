@@ -336,12 +336,12 @@ func TestExecute(t *testing.T) {
 			// Setup mocks
 			tt.setupMocks(mockFinder, mockWs, mockHosting, mockGit)
 
-			// Create the target UseCase
-			useCase := testtarget.NewUseCase(mockWs, mockFinder, mockHosting, mockGit)
+			// Create the target Usecase
+			usecase := testtarget.NewUsecase(mockWs, mockFinder, mockHosting, mockGit)
 
-			// Execute the UseCase
+			// Execute the Usecase
 			ctx := context.Background()
-			result := useCase.Execute(ctx, tt.options)
+			result := usecase.Execute(ctx, tt.options)
 
 			// Verify the results
 			count := 0

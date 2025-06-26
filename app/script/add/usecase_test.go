@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 	testID := uuid.New()
 	testTime := time.Now()
@@ -35,7 +35,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Get(ctx, testID.String()).
 			Return(expectedScript, nil)
 
-		uc := testtarget.NewUseCase(mockService)
+		uc := testtarget.NewUsecase(mockService)
 		result, err := uc.Execute(ctx, "test-script", content)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -64,7 +64,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Get(ctx, testID.String()).
 			Return(expectedScript, nil)
 
-		uc := testtarget.NewUseCase(mockService)
+		uc := testtarget.NewUsecase(mockService)
 		result, err := uc.Execute(ctx, "", content)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -89,7 +89,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Add(ctx, script.Entry{Name: "test-script", Content: content}).
 			Return("", expectedErr)
 
-		uc := testtarget.NewUseCase(mockService)
+		uc := testtarget.NewUsecase(mockService)
 		result, err := uc.Execute(ctx, "test-script", content)
 
 		if err == nil {
@@ -119,7 +119,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Get(ctx, testID.String()).
 			Return(nil, expectedErr)
 
-		uc := testtarget.NewUseCase(mockService)
+		uc := testtarget.NewUsecase(mockService)
 		result, err := uc.Execute(ctx, "test-script", content)
 
 		if err == nil {

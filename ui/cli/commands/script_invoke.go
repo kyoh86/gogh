@@ -46,7 +46,7 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			logger := log.FromContext(ctx)
 			scriptID := args[0]
 			refs := args[1:]
-			scriptInvokeUseCase := invoke.NewUseCase(
+			scriptInvokeUsecase := invoke.NewUsecase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ScriptService,
@@ -58,7 +58,7 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				}
 
 				// If --all flag is set, apply the script to all repositories in the workspace
-				for repo, err := range list.NewUseCase(
+				for repo, err := range list.NewUsecase(
 					svc.WorkspaceService,
 					svc.FinderService,
 				).Execute(ctx, list.Options{ListOptions: list.ListOptions{
@@ -76,14 +76,14 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 
 				// Use current directory if reference is "."
 				if ref == "." {
-					repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+					repo, err := cwd.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
 					if err != nil {
 						return fmt.Errorf("finding repository from current directory: %w", err)
 					}
 					resolvedRef = repo.Ref().String()
 				}
 
-				if err := scriptInvokeUseCase.Execute(ctx, resolvedRef, scriptID, map[string]any{}); err != nil {
+				if err := scriptInvokeUsecase.Execute(ctx, resolvedRef, scriptID, map[string]any{}); err != nil {
 					return err
 				}
 				logger.Infof("Invoked script %s in %s", scriptID, ref)

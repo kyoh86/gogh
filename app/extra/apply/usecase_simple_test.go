@@ -32,7 +32,7 @@ func (m *mockOverlay) Name() string         { return m.name }
 func (m *mockOverlay) RelativePath() string { return m.relativePath }
 
 // Test additional error scenarios and edge cases
-func TestUseCase_Execute_AdditionalCases(t *testing.T) {
+func TestUsecase_Execute_AdditionalCases(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -272,7 +272,7 @@ func TestUseCase_Execute_AdditionalCases(t *testing.T) {
 			defer ctrl.Finish()
 
 			es, overlayService, ws, fs, rp := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(es, overlayService, ws, fs, rp)
+			uc := testtarget.NewUsecase(es, overlayService, ws, fs, rp)
 
 			err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -305,9 +305,9 @@ func (e *errorDuringReadReader) Close() error {
 }
 
 // Test coverage documentation
-func TestUseCase_Execute_CoverageDocumentation(t *testing.T) {
+func TestUsecase_Execute_CoverageDocumentation(t *testing.T) {
 	t.Log("Current test coverage for app/extra/apply/usecase.go:")
-	t.Log("- NewUseCase: 100.0% (fully covered)")
+	t.Log("- NewUsecase: 100.0% (fully covered)")
 	t.Log("- Execute: Partial coverage due to direct file system operations")
 	t.Log("")
 	t.Log("Covered paths:")

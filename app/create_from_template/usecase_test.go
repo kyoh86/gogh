@@ -1,4 +1,4 @@
-package clone
+package create_from_template_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	testtarget "github.com/kyoh86/gogh/v4/app/create_from_template"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -25,11 +26,13 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	// Define test cases
 	tests := []struct {
 		name         string
 		refWithAlias string
+		template     repository.Reference
+		options      testtarget.CreateFromTemplateOptions
 		setupMocks   func(
 			mockHosting *hosting_mock.MockHostingService,
 			mockWorkspace *workspace_mock.MockWorkspaceService,
@@ -44,8 +47,16 @@ func TestUseCase_Execute(t *testing.T) {
 		errorContains string
 	}{
 		{
-			name:         "Success: Clone repository normally",
-			refWithAlias: "github.com/kyoh86/gogh",
+			name:         "Success: Create from template and clone repository",
+			refWithAlias: "github.com/kyoh86/new-repo",
+			template:     repository.NewReference("github.com", "kyoh86", "template-repo"),
+			options: testtarget.CreateFromTemplateOptions{
+				TryCloneOptions: try_clone.Options{},
+				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{
+					Description: "New repository from template",
+					Private:     true,
+				},
+			},
 			setupMocks: func(
 				mockHosting *hosting_mock.MockHostingService,
 				mockWorkspace *workspace_mock.MockWorkspaceService,
@@ -58,27 +69,31 @@ func TestUseCase_Execute(t *testing.T) {
 				mockGit *git_mock.MockGitService,
 			) {
 				tmpDir := t.TempDir()
-				ref := repository.NewReference("github.com", "kyoh86", "gogh")
+				ref := repository.NewReference("github.com", "kyoh86", "new-repo")
+				templateRef := repository.NewReference("github.com", "kyoh86", "template-repo")
+
 				// Parse reference
 				mockRefParser.EXPECT().
-					ParseWithAlias("github.com/kyoh86/gogh").
+					ParseWithAlias("github.com/kyoh86/new-repo").
 					Return(&repository.ReferenceWithAlias{
 						Reference: ref,
 						Alias:     nil,
-					}, nil).
-					AnyTimes()
+					}, nil).AnyTimes()
 
-				pseudoCloneURL := "https://github.com/kyoh86/gogh.git"
-				// Get repository information
+				pseudoCloneURL := "https://github.com/kyoh86/new-repo.git"
+				// Create repository from template
 				mockHosting.EXPECT().
-					GetRepository(gomock.Any(), repository.NewReference("github.com", "kyoh86", "gogh")).
+					CreateRepositoryFromTemplate(gomock.Any(), ref, templateRef, hosting.CreateRepositoryFromTemplateOptions{
+						Description: "New repository from template",
+						Private:     true,
+					}).
 					Return(&hosting.Repository{
 						Ref:         ref,
-						URL:         "https://github.com/kyoh86/gogh",
+						URL:         "https://github.com/kyoh86/new-repo",
 						CloneURL:    pseudoCloneURL,
 						UpdatedAt:   time.Now(),
-						Description: "GoGH - GO Github Handler",
-						Homepage:    "https://github.com/kyoh86/gogh",
+						Description: "New repository from template",
+						Homepage:    "https://github.com/kyoh86/new-repo",
 						Language:    "Go",
 					}, nil)
 				mockHosting.EXPECT().
@@ -89,9 +104,7 @@ func TestUseCase_Execute(t *testing.T) {
 				mockLayout.EXPECT().PathFor(ref).Return(pseudoPath)
 				mockWorkspace.EXPECT().GetPrimaryLayout().Return(mockLayout)
 
-				// Verify that try_clone.Execute is called
-				// Since we're calling the actual function instead of a mock,
-				// set expectations for GitService.Clone
+				// Set expectations for GitService.Clone
 				mockGit.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "kyoh86", "").Return(mockGit, nil)
 				mockGit.EXPECT().Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				mockGit.EXPECT().SetDefaultRemotes(gomock.Any(), pseudoPath, []string{pseudoCloneURL}).Return(nil)
@@ -106,16 +119,16 @@ func TestUseCase_Execute(t *testing.T) {
 						"gogh",
 					), nil)
 				mockHook.EXPECT().
-					ListFor(ref, hook.EventPostClone).Return(func(yield func(hook.Hook, error) bool) {
+					ListFor(ref, hook.EventPostCreate).Return(func(yield func(hook.Hook, error) bool) {
 					if !yield(hook.NewHook(hook.Entry{
-						Name:          "post-clone-example",
+						Name:          "post-create-from-template-example",
 						OperationType: hook.OperationTypeOverlay,
 						OperationID:   "overlay-id",
 					}), nil) {
 						return
 					}
 					if !yield(hook.NewHook(hook.Entry{
-						Name:          "post-clone-example",
+						Name:          "post-create-from-template-example",
 						OperationType: hook.OperationTypeScript,
 						OperationID:   "script-id",
 					}), nil) {
@@ -138,6 +151,11 @@ func TestUseCase_Execute(t *testing.T) {
 		{
 			name:         "Error: Reference parsing error",
 			refWithAlias: "invalid-reference",
+			template:     repository.NewReference("github.com", "kyoh86", "template-repo"),
+			options: testtarget.CreateFromTemplateOptions{
+				TryCloneOptions:   try_clone.Options{},
+				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{},
+			},
 			setupMocks: func(
 				mockHosting *hosting_mock.MockHostingService,
 				mockWorkspace *workspace_mock.MockWorkspaceService,
@@ -154,11 +172,16 @@ func TestUseCase_Execute(t *testing.T) {
 					ParseWithAlias("invalid-reference").
 					Return(&repository.ReferenceWithAlias{}, errors.New("invalid reference format"))
 			},
-			errorContains: "invalid reference format",
+			errorContains: "invalid reference: invalid reference format",
 		},
 		{
-			name:         "Error: Repository fetch error",
-			refWithAlias: "github.com/kyoh86/not-found",
+			name:         "Error: Repository creation from template error",
+			refWithAlias: "github.com/kyoh86/repo-creation-failed",
+			template:     repository.NewReference("github.com", "kyoh86", "template-repo"),
+			options: testtarget.CreateFromTemplateOptions{
+				TryCloneOptions:   try_clone.Options{},
+				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{},
+			},
 			setupMocks: func(
 				mockHosting *hosting_mock.MockHostingService,
 				mockWorkspace *workspace_mock.MockWorkspaceService,
@@ -170,20 +193,23 @@ func TestUseCase_Execute(t *testing.T) {
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
+				ref := repository.NewReference("github.com", "kyoh86", "repo-creation-failed")
+				templateRef := repository.NewReference("github.com", "kyoh86", "template-repo")
+
 				// Parse reference
 				mockRefParser.EXPECT().
-					ParseWithAlias("github.com/kyoh86/not-found").
+					ParseWithAlias("github.com/kyoh86/repo-creation-failed").
 					Return(&repository.ReferenceWithAlias{
-						Reference: repository.NewReference("github.com", "kyoh86", "not-found"),
+						Reference: ref,
 						Alias:     nil,
 					}, nil)
 
-				// Repository fetch error
+				// Repository creation from template error
 				mockHosting.EXPECT().
-					GetRepository(gomock.Any(), repository.NewReference("github.com", "kyoh86", "not-found")).
-					Return(&hosting.Repository{}, errors.New("repository not found"))
+					CreateRepositoryFromTemplate(gomock.Any(), ref, templateRef, hosting.CreateRepositoryFromTemplateOptions{}).
+					Return(&hosting.Repository{}, errors.New("failed to create repository from template"))
 			},
-			errorContains: "repository not found",
+			errorContains: "creating repository from template: failed to create repository from template",
 		},
 	}
 
@@ -207,18 +233,16 @@ func TestUseCase_Execute(t *testing.T) {
 			// Setup mocks
 			tt.setupMocks(mockHosting, mockWorkspace, mockFinder, mockLayout, mockOverlay, mockScript, mockHook, mockRefParser, mockGit)
 
-			// Create UseCase to test
-			useCase := NewUseCase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockScript, mockHook, mockRefParser, mockGit)
+			// Create Usecase to test
+			usecase := testtarget.NewUsecase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockScript, mockHook, mockRefParser, mockGit)
 
 			// Execute test
-			err := useCase.Execute(context.Background(), tt.refWithAlias, Options{
-				TryCloneOptions: try_clone.Options{},
-			})
+			err := usecase.Execute(context.Background(), tt.refWithAlias, tt.template, tt.options)
 
 			// Verify results
 			if err == nil {
 				t.Errorf("Expected an error but got none")
-			} else if tt.errorContains != "" && !strings.Contains(err.Error(), tt.errorContains) && errors.Unwrap(err) == nil {
+			} else if tt.errorContains != "" && !strings.Contains(err.Error(), tt.errorContains) {
 				t.Errorf("Expected error containing: %v, got: %v", tt.errorContains, err)
 			}
 		})

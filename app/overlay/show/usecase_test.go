@@ -27,7 +27,7 @@ func (m *mockReadCloser) Close() error {
 	return nil
 }
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -319,7 +319,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 			var buf bytes.Buffer
 			os := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(os, &buf)
+			uc := testtarget.NewUsecase(os, &buf)
 
 			err := uc.Execute(ctx, tc.overlayID, tc.asJSON, tc.withSource)
 			if (err != nil) != tc.wantErr {
@@ -333,14 +333,14 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_ServiceErrors(t *testing.T) {
+func TestUsecase_Execute_ServiceErrors(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	var buf bytes.Buffer
 	os := overlay_mock.NewMockOverlayService(ctrl)
-	uc := testtarget.NewUseCase(os, &buf)
+	uc := testtarget.NewUsecase(os, &buf)
 
 	// Test service returning unexpected error
 	os.EXPECT().Get(ctx, "test-id").Return(nil, errors.New("database connection error"))
@@ -354,7 +354,7 @@ func TestUseCase_Execute_ServiceErrors(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
+func TestUsecase_Execute_AllDisplayModes(t *testing.T) {
 	ctx := context.Background()
 
 	modes := []struct {
@@ -362,7 +362,7 @@ func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
 		asJSON     bool
 		withSource bool
 	}{
-		{"OneLine", false, false},
+		{"Oneline", false, false},
 		{"Detail", false, true},
 		{"JSON", true, false},
 		{"JSONWithContent", true, true},
@@ -375,7 +375,7 @@ func TestUseCase_Execute_AllDisplayModes(t *testing.T) {
 
 			var buf bytes.Buffer
 			os := overlay_mock.NewMockOverlayService(ctrl)
-			uc := testtarget.NewUseCase(os, &buf)
+			uc := testtarget.NewUsecase(os, &buf)
 
 			overlayID := uuid.New()
 			o := overlay.ConcreteOverlay(

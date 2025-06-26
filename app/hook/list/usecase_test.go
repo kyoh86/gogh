@@ -13,7 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -154,7 +154,7 @@ func TestUseCase_Execute(t *testing.T) {
 			tc.setupMock(mockHookService)
 
 			var buf bytes.Buffer
-			uc := testtarget.NewUseCase(mockHookService, &buf)
+			uc := testtarget.NewUsecase(mockHookService, &buf)
 
 			err := uc.Execute(ctx, tc.asJSON)
 			if (err != nil) != tc.wantErr {

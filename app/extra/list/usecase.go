@@ -9,30 +9,30 @@ import (
 	"github.com/kyoh86/gogh/v4/core/extra"
 )
 
-// UseCase represents the extra list use case
-type UseCase struct {
+// Usecase represents the extra list use case
+type Usecase struct {
 	extraService extra.ExtraService
 	writer       io.Writer
 }
 
-// NewUseCase creates a new extra list use case
-func NewUseCase(extraService extra.ExtraService, writer io.Writer) *UseCase {
-	return &UseCase{
+// NewUsecase creates a new extra list use case
+func NewUsecase(extraService extra.ExtraService, writer io.Writer) *Usecase {
+	return &Usecase{
 		extraService: extraService,
 		writer:       writer,
 	}
 }
 
 // Execute performs the extra list operation
-func (uc *UseCase) Execute(ctx context.Context, asJSON bool, extraType string) error {
-	var useCase interface {
+func (uc *Usecase) Execute(ctx context.Context, asJSON bool, extraType string) error {
+	var usecase interface {
 		Execute(ctx context.Context, e describe.Extra) error
 	}
 
 	if asJSON {
-		useCase = describe.NewUseCaseJSON(uc.writer)
+		usecase = describe.NewJSONUsecase(uc.writer)
 	} else {
-		useCase = describe.NewUseCaseOneLine(uc.writer)
+		usecase = describe.NewOnelineUsecase(uc.writer)
 	}
 
 	var list iter.Seq2[*extra.Extra, error]
@@ -52,7 +52,7 @@ func (uc *UseCase) Execute(ctx context.Context, asJSON bool, extraType string) e
 		if e == nil {
 			continue
 		}
-		if err := useCase.Execute(ctx, *e); err != nil {
+		if err := usecase.Execute(ctx, *e); err != nil {
 			return err
 		}
 	}

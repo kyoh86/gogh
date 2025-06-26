@@ -11,7 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -86,7 +86,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			hs := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(hs)
+			uc := testtarget.NewUsecase(hs)
 
 			err := uc.Execute(ctx, tc.hookID)
 			if (err != nil) != tc.wantErr {
@@ -96,13 +96,13 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_MultipleRemoves(t *testing.T) {
+func TestUsecase_Execute_MultipleRemoves(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	hs := hook_mock.NewMockHookService(ctrl)
-	uc := testtarget.NewUseCase(hs)
+	uc := testtarget.NewUsecase(hs)
 
 	// Test removing multiple hooks in sequence
 	hookIDs := []string{
@@ -121,13 +121,13 @@ func TestUseCase_Execute_MultipleRemoves(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_PartialFailure(t *testing.T) {
+func TestUsecase_Execute_PartialFailure(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	hs := hook_mock.NewMockHookService(ctrl)
-	uc := testtarget.NewUseCase(hs)
+	uc := testtarget.NewUsecase(hs)
 
 	// First removal succeeds
 	successID := uuid.New().String()

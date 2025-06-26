@@ -12,18 +12,18 @@ import (
 // Extra represents the extra type
 type Extra = extra.Extra
 
-// UseCaseJSON represents the use case for showing extras in JSON format
-type UseCaseJSON struct {
+// JSONUsecase represents the use case for showing extras in JSON format
+type JSONUsecase struct {
 	enc *json.Encoder
 }
 
-// NewUseCaseJSON creates a new use case for showing extras in JSON format
-func NewUseCaseJSON(writer io.Writer) *UseCaseJSON {
-	return &UseCaseJSON{enc: json.NewEncoder(writer)}
+// NewJSONUsecase creates a new use case for showing extras in JSON format
+func NewJSONUsecase(writer io.Writer) *JSONUsecase {
+	return &JSONUsecase{enc: json.NewEncoder(writer)}
 }
 
 // Execute executes the use case to show an extra in JSON format
-func (uc *UseCaseJSON) Execute(ctx context.Context, e Extra) error {
+func (uc *JSONUsecase) Execute(ctx context.Context, e Extra) error {
 	data := map[string]any{
 		"id":         e.ID(),
 		"type":       e.Type(),
@@ -44,18 +44,18 @@ func (uc *UseCaseJSON) Execute(ctx context.Context, e Extra) error {
 	return uc.enc.Encode(data)
 }
 
-// UseCaseOneLine represents the use case for showing extras in a single line format
-type UseCaseOneLine struct {
+// OnelineUsecase represents the use case for showing extras in a single line format
+type OnelineUsecase struct {
 	writer io.Writer
 }
 
-// NewUseCaseOneLine creates a new use case for showing extras in text format
-func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
-	return &UseCaseOneLine{writer: writer}
+// NewOnelineUsecase creates a new use case for showing extras in text format
+func NewOnelineUsecase(writer io.Writer) *OnelineUsecase {
+	return &OnelineUsecase{writer: writer}
 }
 
 // Execute executes the use case to show an extra in a single line format
-func (uc *UseCaseOneLine) Execute(ctx context.Context, e extra.Extra) error {
+func (uc *OnelineUsecase) Execute(ctx context.Context, e extra.Extra) error {
 	var nameOrRepo string
 	switch e.Type() {
 	case extra.TypeAuto:
@@ -75,18 +75,18 @@ func (uc *UseCaseOneLine) Execute(ctx context.Context, e extra.Extra) error {
 	return err
 }
 
-// UseCaseDetail represents the use case for showing extras in detail format
-type UseCaseDetail struct {
+// DetailUsecase represents the use case for showing extras in detail format
+type DetailUsecase struct {
 	writer io.Writer
 }
 
-// NewUseCaseDetail creates a new use case for showing extras in detail format
-func NewUseCaseDetail(writer io.Writer) *UseCaseDetail {
-	return &UseCaseDetail{writer: writer}
+// NewDetailUsecase creates a new use case for showing extras in detail format
+func NewDetailUsecase(writer io.Writer) *DetailUsecase {
+	return &DetailUsecase{writer: writer}
 }
 
 // Execute executes the use case to show an extra in detail format
-func (uc *UseCaseDetail) Execute(ctx context.Context, e extra.Extra) error {
+func (uc *DetailUsecase) Execute(ctx context.Context, e extra.Extra) error {
 	fmt.Fprintf(uc.writer, "ID: %s\n", e.ID())
 	fmt.Fprintf(uc.writer, "Type: %s\n", e.Type())
 

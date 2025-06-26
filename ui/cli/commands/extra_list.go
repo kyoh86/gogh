@@ -26,8 +26,8 @@ Use --type to filter by extra type (auto, named).
 Use --json to output in JSON format.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			useCase := list.NewUseCase(svc.ExtraService, os.Stdout)
-			return useCase.Execute(cmd.Context(), asJSON, extraType)
+			usecase := list.NewUsecase(svc.ExtraService, os.Stdout)
+			return usecase.Execute(cmd.Context(), asJSON, extraType)
 		},
 	}
 

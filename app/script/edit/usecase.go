@@ -7,16 +7,16 @@ import (
 	"github.com/kyoh86/gogh/v4/core/script"
 )
 
-type UseCase struct {
+type Usecase struct {
 	scriptService script.ScriptService
 }
 
-func NewUseCase(scriptService script.ScriptService) *UseCase {
-	return &UseCase{scriptService: scriptService}
+func NewUsecase(scriptService script.ScriptService) *Usecase {
+	return &Usecase{scriptService: scriptService}
 }
 
 // ExtractScript extracts the script by its ID and writes it to the provided writer.
-func (uc *UseCase) ExtractScript(ctx context.Context, scriptID string, w io.Writer) error {
+func (uc *Usecase) ExtractScript(ctx context.Context, scriptID string, w io.Writer) error {
 	r, err := uc.scriptService.Open(ctx, scriptID)
 	if err != nil {
 		return err
@@ -27,6 +27,6 @@ func (uc *UseCase) ExtractScript(ctx context.Context, scriptID string, w io.Writ
 }
 
 // UpdateScript applies a new script identified by its ID.
-func (uc *UseCase) UpdateScript(ctx context.Context, scriptID string, r io.Reader) error {
+func (uc *Usecase) UpdateScript(ctx context.Context, scriptID string, r io.Reader) error {
 	return uc.scriptService.Update(ctx, scriptID, script.Entry{Content: r})
 }

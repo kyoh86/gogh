@@ -11,7 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	t.Run("successfully list repositories", func(t *testing.T) {
 		// Setup mock
 		ctrl := gomock.NewController(t)
@@ -39,15 +39,15 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			})
 
-		// Create UseCase with mock
-		useCase := repos.NewUseCase(mockHostingService)
+		// Create Usecase with mock
+		usecase := repos.NewUsecase(mockHostingService)
 
 		// Execute the method
 		options := repos.Options{} // Default options
 		results := []*hosting.Repository{}
 		var testErr error
 
-		for repo, err := range useCase.Execute(context.Background(), options) {
+		for repo, err := range usecase.Execute(context.Background(), options) {
 			if err != nil {
 				testErr = err
 				break
@@ -77,7 +77,7 @@ func TestUseCase_Execute(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockHostingService := hosting_mock.NewMockHostingService(ctrl)
-		useCase := repos.NewUseCase(mockHostingService)
+		usecase := repos.NewUsecase(mockHostingService)
 
 		// Invalid options that will cause an error
 		options := repos.Options{
@@ -87,7 +87,7 @@ func TestUseCase_Execute(t *testing.T) {
 		var testErr error
 		count := 0
 
-		for _, err := range useCase.Execute(context.Background(), options) {
+		for _, err := range usecase.Execute(context.Background(), options) {
 			count++
 			if err != nil {
 				testErr = err

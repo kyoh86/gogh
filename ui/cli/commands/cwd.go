@@ -27,7 +27,7 @@ func NewCwdCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command
 			}
 
 			ctx := cmd.Context()
-			repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+			repo, err := cwd.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
 			if err != nil {
 				return fmt.Errorf("finding repository in current directory: %w", err)
 			}

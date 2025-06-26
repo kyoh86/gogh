@@ -8,29 +8,29 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
-type UseCase struct {
+type Usecase struct {
 	hookService hook.HookService
 	writer      io.Writer
 }
 
-func NewUseCase(
+func NewUsecase(
 	hookService hook.HookService,
 	writer io.Writer,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		hookService: hookService,
 		writer:      writer,
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, asJSON bool) error {
-	var useCase interface {
+func (uc *Usecase) Execute(ctx context.Context, asJSON bool) error {
+	var usecase interface {
 		Execute(ctx context.Context, s describe.Hook) error
 	}
 	if asJSON {
-		useCase = describe.NewUseCaseJSON(uc.writer)
+		usecase = describe.NewJSONUsecase(uc.writer)
 	} else {
-		useCase = describe.NewUseCaseOneLine(uc.writer)
+		usecase = describe.NewOnelineUsecase(uc.writer)
 	}
 	for s, err := range uc.hookService.List() {
 		if err != nil {
@@ -39,7 +39,7 @@ func (uc *UseCase) Execute(ctx context.Context, asJSON bool) error {
 		if s == nil {
 			continue
 		}
-		if err := useCase.Execute(ctx, s); err != nil {
+		if err := usecase.Execute(ctx, s); err != nil {
 			return err
 		}
 	}

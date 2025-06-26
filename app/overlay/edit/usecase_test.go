@@ -26,7 +26,7 @@ func (m *mockReadCloser) Close() error {
 	return nil
 }
 
-func TestUseCase_ExtractOverlay(t *testing.T) {
+func TestUsecase_ExtractOverlay(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -143,7 +143,7 @@ func TestUseCase_ExtractOverlay(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(os)
+			uc := testtarget.NewUsecase(os)
 
 			var buf bytes.Buffer
 			err := uc.ExtractOverlay(ctx, tc.overlayID, &buf)
@@ -160,7 +160,7 @@ func TestUseCase_ExtractOverlay(t *testing.T) {
 	}
 }
 
-func TestUseCase_UpdateOverlay(t *testing.T) {
+func TestUsecase_UpdateOverlay(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -316,7 +316,7 @@ func TestUseCase_UpdateOverlay(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(os)
+			uc := testtarget.NewUsecase(os)
 
 			err := uc.UpdateOverlay(ctx, tc.overlayID, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -326,7 +326,7 @@ func TestUseCase_UpdateOverlay(t *testing.T) {
 	}
 }
 
-func TestUseCase_ExtractOverlay_ReaderBehavior(t *testing.T) {
+func TestUsecase_ExtractOverlay_ReaderBehavior(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -337,7 +337,7 @@ func TestUseCase_ExtractOverlay_ReaderBehavior(t *testing.T) {
 
 	os.EXPECT().Open(ctx, gomock.Any()).Return(reader, nil)
 
-	uc := testtarget.NewUseCase(os)
+	uc := testtarget.NewUsecase(os)
 	var buf bytes.Buffer
 	err := uc.ExtractOverlay(ctx, uuid.New().String(), &buf)
 	if err != nil {
@@ -349,7 +349,7 @@ func TestUseCase_ExtractOverlay_ReaderBehavior(t *testing.T) {
 	}
 }
 
-func TestUseCase_UpdateOverlay_ReaderPassthrough(t *testing.T) {
+func TestUsecase_UpdateOverlay_ReaderPassthrough(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -368,7 +368,7 @@ func TestUseCase_UpdateOverlay_ReaderPassthrough(t *testing.T) {
 		},
 	)
 
-	uc := testtarget.NewUseCase(os)
+	uc := testtarget.NewUsecase(os)
 	err := uc.UpdateOverlay(ctx, uuid.New().String(), customReader)
 	if err != nil {
 		t.Errorf("UpdateOverlay() unexpected error = %v", err)

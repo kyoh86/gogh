@@ -13,7 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	testCases := []struct {
 		name          string
 		refs          string
@@ -183,14 +183,14 @@ func TestUseCase_Execute(t *testing.T) {
 
 			tc.setupMocks(mockWorkspaceService, mockFinderService, mockHostingService, mockReferenceParser)
 
-			useCase := delete.NewUseCase(
+			usecase := delete.NewUsecase(
 				mockWorkspaceService,
 				mockFinderService,
 				mockHostingService,
 				mockReferenceParser,
 			)
 
-			err := useCase.Execute(context.Background(), tc.refs, tc.options)
+			err := usecase.Execute(context.Background(), tc.refs, tc.options)
 
 			if tc.expectErr {
 				if err == nil {

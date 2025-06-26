@@ -25,7 +25,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			return args[0], nil
 		}
 		var opts []huh.Option[string]
-		for repo, err := range repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{}) {
+		for repo, err := range repos.NewUsecase(svc.HostingService).Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return "", fmt.Errorf("listing up repositories: %w", err)
 			}
@@ -118,7 +118,7 @@ func NewDeleteCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if f.dryRun {
 				return nil
 			}
-			if err := delete.NewUseCase(
+			if err := delete.NewUsecase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.HostingService,

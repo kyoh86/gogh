@@ -26,7 +26,7 @@ func (m *mockReadCloser) Close() error {
 	return nil
 }
 
-func TestUseCase_ExtractScript(t *testing.T) {
+func TestUsecase_ExtractScript(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -189,7 +189,7 @@ print('Single quotes with "nested" double')`,
 			defer ctrl.Finish()
 
 			ss := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(ss)
+			uc := testtarget.NewUsecase(ss)
 
 			var buf bytes.Buffer
 			err := uc.ExtractScript(ctx, tc.scriptID, &buf)
@@ -206,7 +206,7 @@ print('Single quotes with "nested" double')`,
 	}
 }
 
-func TestUseCase_UpdateScript(t *testing.T) {
+func TestUsecase_UpdateScript(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -391,7 +391,7 @@ print('Unicode: 🚀 ✨ 💻')`,
 			defer ctrl.Finish()
 
 			ss := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(ss)
+			uc := testtarget.NewUsecase(ss)
 
 			err := uc.UpdateScript(ctx, tc.scriptID, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -401,7 +401,7 @@ print('Unicode: 🚀 ✨ 💻')`,
 	}
 }
 
-func TestUseCase_ExtractScript_ReaderBehavior(t *testing.T) {
+func TestUsecase_ExtractScript_ReaderBehavior(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -412,7 +412,7 @@ func TestUseCase_ExtractScript_ReaderBehavior(t *testing.T) {
 
 	ss.EXPECT().Open(ctx, gomock.Any()).Return(reader, nil)
 
-	uc := testtarget.NewUseCase(ss)
+	uc := testtarget.NewUsecase(ss)
 	var buf bytes.Buffer
 	err := uc.ExtractScript(ctx, uuid.New().String(), &buf)
 	if err != nil {
@@ -424,7 +424,7 @@ func TestUseCase_ExtractScript_ReaderBehavior(t *testing.T) {
 	}
 }
 
-func TestUseCase_UpdateScript_ReaderPassthrough(t *testing.T) {
+func TestUsecase_UpdateScript_ReaderPassthrough(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -443,7 +443,7 @@ func TestUseCase_UpdateScript_ReaderPassthrough(t *testing.T) {
 		},
 	)
 
-	uc := testtarget.NewUseCase(ss)
+	uc := testtarget.NewUsecase(ss)
 	err := uc.UpdateScript(ctx, uuid.New().String(), customReader)
 	if err != nil {
 		t.Errorf("UpdateScript() unexpected error = %v", err)

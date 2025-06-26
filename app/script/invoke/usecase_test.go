@@ -180,19 +180,19 @@ func contains(s, substr string) bool {
 
 // Tests
 
-func TestNewUseCase(t *testing.T) {
+func TestNewUsecase(t *testing.T) {
 	ws := &mockWorkspaceService{}
 	finder := &mockFinderService{}
 	scripts := &mockScriptService{}
 	parser := &mockReferenceParser{}
 
-	uc := testtarget.NewUseCase(ws, finder, scripts, parser)
+	uc := testtarget.NewUsecase(ws, finder, scripts, parser)
 	if uc == nil {
-		t.Fatal("expected non-nil UseCase")
+		t.Fatal("expected non-nil Usecase")
 	}
 }
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
@@ -297,7 +297,7 @@ func TestUseCase_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			finder, scripts, parser := tt.setupMock()
-			uc := testtarget.NewUseCase(&mockWorkspaceService{}, finder, scripts, parser)
+			uc := testtarget.NewUsecase(&mockWorkspaceService{}, finder, scripts, parser)
 
 			// Reset last mock command
 			lastMockCmd = nil
@@ -325,11 +325,11 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Invoke(t *testing.T) {
+func TestUsecase_Invoke(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("nil location", func(t *testing.T) {
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			&mockScriptService{},
@@ -352,7 +352,7 @@ func TestUseCase_Invoke(t *testing.T) {
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -376,7 +376,7 @@ func TestUseCase_Invoke(t *testing.T) {
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -404,7 +404,7 @@ print("Custom value: " .. gogh.custom_key)
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -442,7 +442,7 @@ print("Custom value: " .. gogh.custom_key)
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -476,7 +476,7 @@ print("Custom value: " .. gogh.custom_key)
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -497,7 +497,7 @@ print("Custom value: " .. gogh.custom_key)
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -530,7 +530,7 @@ print("Custom value: " .. gogh.custom_key)
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -564,7 +564,7 @@ print("Custom value: " .. gogh.custom_key)
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,
@@ -583,7 +583,7 @@ print("Custom value: " .. gogh.custom_key)
 }
 
 // Test globals merging behavior
-func TestUseCase_Invoke_GlobalsMerging(t *testing.T) {
+func TestUsecase_Invoke_GlobalsMerging(t *testing.T) {
 	ctx := context.Background()
 	location := repository.NewLocation("/home/user/repos/test", "github.com", "kyoh86", "test-repo")
 
@@ -615,7 +615,7 @@ func TestUseCase_Invoke_GlobalsMerging(t *testing.T) {
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			scripts,

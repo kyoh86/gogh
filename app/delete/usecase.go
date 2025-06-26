@@ -10,22 +10,22 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase defines the use case for deleting repositories
-type UseCase struct {
+// Usecase defines the use case for deleting repositories
+type Usecase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	hostingService   hosting.HostingService
 	referenceParser  repository.ReferenceParser
 }
 
-// NewUseCase creates a new instance of UseCase
-func NewUseCase(
+// NewUsecase creates a new instance of Usecase
+func NewUsecase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	hostingService hosting.HostingService,
 	referenceParser repository.ReferenceParser,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		hostingService:   hostingService,
@@ -40,7 +40,7 @@ type Options struct {
 }
 
 // Execute deletes the specified repository from local and remote
-func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) error {
+func (uc *Usecase) Execute(ctx context.Context, refs string, opts Options) error {
 	ref, err := uc.referenceParser.Parse(refs)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (uc *UseCase) Execute(ctx context.Context, refs string, opts Options) error
 	return nil
 }
 
-func (uc *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, opts Options) error {
+func (uc *Usecase) deleteLocal(ctx context.Context, ref repository.Reference, opts Options) error {
 	if !opts.Local {
 		return nil
 	}
@@ -68,7 +68,7 @@ func (uc *UseCase) deleteLocal(ctx context.Context, ref repository.Reference, op
 	return os.RemoveAll(match.FullPath())
 }
 
-func (uc *UseCase) deleteRemote(ctx context.Context, ref repository.Reference, opts Options) error {
+func (uc *Usecase) deleteRemote(ctx context.Context, ref repository.Reference, opts Options) error {
 	if !opts.Remote {
 		return nil
 	}

@@ -15,8 +15,8 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase represents the fork use case
-type UseCase struct {
+// Usecase represents the fork use case
+type Usecase struct {
 	hostingService     hosting.HostingService
 	workspaceService   workspace.WorkspaceService
 	finderService      workspace.FinderService
@@ -28,8 +28,8 @@ type UseCase struct {
 	gitService         git.GitService
 }
 
-// NewUseCase creates a new fork use case
-func NewUseCase(
+// NewUsecase creates a new fork use case
+func NewUsecase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
@@ -39,8 +39,8 @@ func NewUseCase(
 	defaultNameService repository.DefaultNameService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		hostingService:     hostingService,
 		workspaceService:   workspaceService,
 		finderService:      finderService,
@@ -64,7 +64,7 @@ type Options struct {
 	Target string
 }
 
-func (uc *UseCase) parseRefs(source, target string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
+func (uc *Usecase) parseRefs(source, target string) (*repository.Reference, *repository.ReferenceWithAlias, error) {
 	srcRef, err := uc.referenceParser.Parse(source)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid source: %w", err)
@@ -92,7 +92,7 @@ func (uc *UseCase) parseRefs(source, target string) (*repository.Reference, *rep
 }
 
 // Execute forks a repository and clones it to the local machine
-func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) error {
+func (uc *Usecase) Execute(ctx context.Context, source string, opts Options) error {
 	ref, targetRef, err := uc.parseRefs(source, opts.Target)
 	if err != nil {
 		return err
@@ -101,8 +101,8 @@ func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) err
 	if err != nil {
 		return fmt.Errorf("requesting fork: %w", err)
 	}
-	tryCloneUseCase := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
-	if err := tryCloneUseCase.Execute(ctx, fork, targetRef.Alias, opts.TryCloneOptions); err != nil {
+	tryCloneUsecase := try_clone.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
+	if err := tryCloneUsecase.Execute(ctx, fork, targetRef.Alias, opts.TryCloneOptions); err != nil {
 		return err
 	}
 	globals := make(map[string]any)
@@ -114,7 +114,7 @@ func (uc *UseCase) Execute(ctx context.Context, source string, opts Options) err
 			"clone_url": fork.Parent.CloneURL,
 		}
 	}
-	if err := invoke.NewUseCase(
+	if err := invoke.NewUsecase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.hookService,

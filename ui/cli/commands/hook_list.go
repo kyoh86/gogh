@@ -18,8 +18,8 @@ func NewHookListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		Short: "List registered hooks",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			useCase := list.NewUseCase(svc.HookService, cmd.OutOrStdout())
-			return useCase.Execute(cmd.Context(), f.json)
+			usecase := list.NewUsecase(svc.HookService, cmd.OutOrStdout())
+			return usecase.Execute(cmd.Context(), f.json)
 		},
 	}
 	cmd.Flags().BoolVarP(&f.json, "json", "", false, "Output in JSON format")

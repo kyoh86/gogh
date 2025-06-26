@@ -12,7 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -187,7 +187,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			hs := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(hs)
+			uc := testtarget.NewUsecase(hs)
 
 			id, err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -203,7 +203,7 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_AllEventTypes(t *testing.T) {
+func TestUsecase_Execute_AllEventTypes(t *testing.T) {
 	ctx := context.Background()
 
 	events := []hook.Event{
@@ -228,7 +228,7 @@ func TestUseCase_Execute_AllEventTypes(t *testing.T) {
 				},
 			)
 
-			uc := testtarget.NewUseCase(hs)
+			uc := testtarget.NewUsecase(hs)
 			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",
@@ -245,7 +245,7 @@ func TestUseCase_Execute_AllEventTypes(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_AllOperationTypes(t *testing.T) {
+func TestUsecase_Execute_AllOperationTypes(t *testing.T) {
 	ctx := context.Background()
 
 	operations := []hook.OperationType{
@@ -268,7 +268,7 @@ func TestUseCase_Execute_AllOperationTypes(t *testing.T) {
 				},
 			)
 
-			uc := testtarget.NewUseCase(hs)
+			uc := testtarget.NewUsecase(hs)
 			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",

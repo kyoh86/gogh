@@ -13,12 +13,12 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_parseRefs(t *testing.T) {
+func TestUsecase_parseRefs(t *testing.T) {
 	testCases := []struct {
 		name           string
 		source         string
 		target         string
-		setupMocks     func(ctrl *gomock.Controller, uc *UseCase)
+		setupMocks     func(ctrl *gomock.Controller, uc *Usecase)
 		expectedSource repository.Reference
 		expectedTarget *repository.ReferenceWithAlias
 		expectedErr    bool
@@ -28,7 +28,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			name:   "valid source and target",
 			source: "github.com/source/repo",
 			target: "github.com/target/repo",
-			setupMocks: func(ctrl *gomock.Controller, uc *UseCase) {
+			setupMocks: func(ctrl *gomock.Controller, uc *Usecase) {
 				mockParser := repository_mock.NewMockReferenceParser(ctrl)
 				uc.referenceParser = mockParser
 
@@ -54,7 +54,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			name:   "invalid source",
 			source: "invalid-source",
 			target: "github.com/target/repo",
-			setupMocks: func(ctrl *gomock.Controller, uc *UseCase) {
+			setupMocks: func(ctrl *gomock.Controller, uc *Usecase) {
 				mockParser := repository_mock.NewMockReferenceParser(ctrl)
 				uc.referenceParser = mockParser
 
@@ -69,7 +69,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			name:   "empty target uses default owner",
 			source: "github.com/source/repo",
 			target: "",
-			setupMocks: func(ctrl *gomock.Controller, uc *UseCase) {
+			setupMocks: func(ctrl *gomock.Controller, uc *Usecase) {
 				mockParser := repository_mock.NewMockReferenceParser(ctrl)
 				mockDefaultNameService := repository_mock.NewMockDefaultNameService(ctrl)
 				uc.referenceParser = mockParser
@@ -94,7 +94,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			name:   "invalid target",
 			source: "github.com/source/repo",
 			target: "invalid-target",
-			setupMocks: func(ctrl *gomock.Controller, uc *UseCase) {
+			setupMocks: func(ctrl *gomock.Controller, uc *Usecase) {
 				mockParser := repository_mock.NewMockReferenceParser(ctrl)
 				uc.referenceParser = mockParser
 
@@ -114,7 +114,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			name:   "different hosts",
 			source: "github.com/source/repo",
 			target: "gitlab.com/target/repo",
-			setupMocks: func(ctrl *gomock.Controller, uc *UseCase) {
+			setupMocks: func(ctrl *gomock.Controller, uc *Usecase) {
 				mockParser := repository_mock.NewMockReferenceParser(ctrl)
 				uc.referenceParser = mockParser
 
@@ -137,7 +137,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			name:   "empty owner",
 			source: "github.com/source/repo",
 			target: "github.com//repo",
-			setupMocks: func(ctrl *gomock.Controller, uc *UseCase) {
+			setupMocks: func(ctrl *gomock.Controller, uc *Usecase) {
 				mockParser := repository_mock.NewMockReferenceParser(ctrl)
 				uc.referenceParser = mockParser
 
@@ -160,7 +160,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			name:   "error getting default owner",
 			source: "github.com/source/repo",
 			target: "",
-			setupMocks: func(ctrl *gomock.Controller, uc *UseCase) {
+			setupMocks: func(ctrl *gomock.Controller, uc *Usecase) {
 				mockParser := repository_mock.NewMockReferenceParser(ctrl)
 				mockDefaultNameService := repository_mock.NewMockDefaultNameService(ctrl)
 				uc.referenceParser = mockParser
@@ -185,7 +185,7 @@ func TestUseCase_parseRefs(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			uc := &UseCase{
+			uc := &Usecase{
 				hostingService:     hosting_mock.NewMockHostingService(ctrl),
 				workspaceService:   workspace_mock.NewMockWorkspaceService(ctrl),
 				defaultNameService: repository_mock.NewMockDefaultNameService(ctrl),

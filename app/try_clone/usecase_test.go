@@ -18,7 +18,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestNewUseCase(t *testing.T) {
+func TestNewUsecase(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -27,7 +27,7 @@ func TestNewUseCase(t *testing.T) {
 	overlayService := overlay_mock.NewMockOverlayService(ctrl)
 	gitService := git_mock.NewMockGitService(ctrl)
 
-	svc := try_clone.NewUseCase(hostingService, workspaceService, overlayService, gitService)
+	svc := try_clone.NewUsecase(hostingService, workspaceService, overlayService, gitService)
 	if svc == nil {
 		t.Fatal("NewRepositoryService returned nil")
 	}
@@ -316,7 +316,7 @@ func TestTryClone(t *testing.T) {
 
 			mhs, mws, mgs, mos := tc.setupMocks(ctrl)
 
-			svc := try_clone.NewUseCase(mhs, mws, mgs, mos)
+			svc := try_clone.NewUsecase(mhs, mws, mgs, mos)
 
 			repo := &hosting.Repository{
 				Ref:      repository.NewReference("github.com", "user", "repo"),

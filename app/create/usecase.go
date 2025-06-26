@@ -15,8 +15,8 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase represents the create use case
-type UseCase struct {
+// Usecase represents the create use case
+type Usecase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
@@ -27,7 +27,7 @@ type UseCase struct {
 	gitService       git.GitService
 }
 
-func NewUseCase(
+func NewUsecase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
@@ -36,8 +36,8 @@ func NewUseCase(
 	hookService hook.HookService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
 		finderService:    finderService,
@@ -60,20 +60,20 @@ type Options struct {
 }
 
 // Execute performs the create operation
-func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Options) error {
+func (uc *Usecase) Execute(ctx context.Context, refWithAlias string, opts Options) error {
 	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
 	if err != nil {
 		return fmt.Errorf("invalid ref: %w", err)
 	}
-	tryCloneUseCase := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
+	tryCloneUsecase := try_clone.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepository(ctx, ref.Reference, opts.RepositoryOptions)
 	if err != nil {
 		return fmt.Errorf("creating: %w", err)
 	}
-	if err := tryCloneUseCase.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
+	if err := tryCloneUsecase.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
-	if err := invoke.NewUseCase(
+	if err := invoke.NewUsecase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.hookService,

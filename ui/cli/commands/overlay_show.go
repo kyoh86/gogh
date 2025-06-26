@@ -21,8 +21,8 @@ func NewOverlayShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			overlayID := args[0]
-			overlayShowUseCase := show.NewUseCase(svc.OverlayService, cmd.OutOrStdout())
-			if err := overlayShowUseCase.Execute(ctx, overlayID, f.json, f.source); err != nil {
+			overlayShowUsecase := show.NewUsecase(svc.OverlayService, cmd.OutOrStdout())
+			if err := overlayShowUsecase.Execute(ctx, overlayID, f.json, f.source); err != nil {
 				return fmt.Errorf("showing overlay %s: %w", overlayID, err)
 			}
 			return nil

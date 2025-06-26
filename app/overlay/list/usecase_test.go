@@ -28,7 +28,7 @@ func (t testOverlay) UUID() uuid.UUID      { return t.id }
 func (t testOverlay) Name() string         { return t.name }
 func (t testOverlay) RelativePath() string { return t.relativePath }
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Success: List overlays as one-line", func(t *testing.T) {
@@ -59,7 +59,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := testtarget.NewUseCase(mockService, buf)
+		uc := testtarget.NewUsecase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -101,7 +101,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := testtarget.NewUseCase(mockService, buf)
+		uc := testtarget.NewUsecase(mockService, buf)
 		err := uc.Execute(ctx, true, false)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -142,7 +142,7 @@ func TestUseCase_Execute(t *testing.T) {
 			Open(ctx, overlay1.id.String()).
 			Return(io.NopCloser(strings.NewReader("overlay content")), nil)
 
-		uc := testtarget.NewUseCase(mockService, buf)
+		uc := testtarget.NewUsecase(mockService, buf)
 		err := uc.Execute(ctx, false, true)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -176,7 +176,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := testtarget.NewUseCase(mockService, buf)
+		uc := testtarget.NewUsecase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -204,7 +204,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := testtarget.NewUseCase(mockService, buf)
+		uc := testtarget.NewUsecase(mockService, buf)
 		err := uc.Execute(ctx, false, false)
 
 		if err == nil {
@@ -237,7 +237,7 @@ func TestUseCase_Execute(t *testing.T) {
 				}
 			}())
 
-		uc := testtarget.NewUseCase(mockService, failWriter)
+		uc := testtarget.NewUsecase(mockService, failWriter)
 		err := uc.Execute(ctx, false, false)
 
 		if err == nil {

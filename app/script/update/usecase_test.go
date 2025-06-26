@@ -15,7 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -291,7 +291,7 @@ print("Special chars: \n\t\r\\")`,
 			defer ctrl.Finish()
 
 			ss := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(ss)
+			uc := testtarget.NewUsecase(ss)
 
 			err := uc.Execute(ctx, tc.scriptID, tc.scriptName, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -301,7 +301,7 @@ print("Special chars: \n\t\r\\")`,
 	}
 }
 
-func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
+func TestUsecase_Execute_ReaderBehavior(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -324,20 +324,20 @@ func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
 		},
 	)
 
-	uc := testtarget.NewUseCase(ss)
+	uc := testtarget.NewUsecase(ss)
 	err := uc.Execute(ctx, uuid.New().String(), "test-script", customReader)
 	if err != nil {
 		t.Errorf("Execute() unexpected error = %v", err)
 	}
 }
 
-func TestUseCase_Execute_MultipleReaders(t *testing.T) {
+func TestUsecase_Execute_MultipleReaders(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	ss := script_mock.NewMockScriptService(ctrl)
-	uc := testtarget.NewUseCase(ss)
+	uc := testtarget.NewUsecase(ss)
 
 	// Test with different reader types
 	readers := []struct {

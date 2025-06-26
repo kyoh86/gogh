@@ -28,7 +28,7 @@ func (r *readCloserMock) Close() error {
 	return nil
 }
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	// Setup temp directory for file operations
 	tempDir, err := os.MkdirTemp("", "overlay_apply_test")
 	if err != nil {
@@ -189,11 +189,11 @@ func TestUseCase_Execute(t *testing.T) {
 
 			workspaceSvc, finderSvc, refParser, overlaySvc, content := tt.mockSetup(ctrl)
 
-			uc := testtarget.NewUseCase(workspaceSvc, finderSvc, refParser, overlaySvc)
+			uc := testtarget.NewUsecase(workspaceSvc, finderSvc, refParser, overlaySvc)
 			err := uc.Execute(context.Background(), tt.refs, tt.id)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("UseCase.Execute() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Usecase.Execute() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			// Verify that ReadCloser was properly closed (if there was no error)

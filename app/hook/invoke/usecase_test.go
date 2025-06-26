@@ -208,7 +208,7 @@ func (m *mockReferenceParser) ParseWithAlias(refStr string) (*repository.Referen
 
 // Tests
 
-func TestNewUseCase(t *testing.T) {
+func TestNewUsecase(t *testing.T) {
 	ws := &mockWorkspaceService{}
 	finder := &mockFinderService{}
 	hooks := &mockHookService{}
@@ -216,13 +216,13 @@ func TestNewUseCase(t *testing.T) {
 	scripts := &mockScriptService{}
 	parser := &mockReferenceParser{}
 
-	uc := testtarget.NewUseCase(ws, finder, hooks, overlays, scripts, parser)
+	uc := testtarget.NewUsecase(ws, finder, hooks, overlays, scripts, parser)
 	if uc == nil {
-		t.Fatal("expected non-nil UseCase")
+		t.Fatal("expected non-nil Usecase")
 	}
 }
 
-func TestUseCase_Invoke(t *testing.T) {
+func TestUsecase_Invoke(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
@@ -281,7 +281,7 @@ func TestUseCase_Invoke(t *testing.T) {
 				},
 			}
 
-			uc := testtarget.NewUseCase(
+			uc := testtarget.NewUsecase(
 				&mockWorkspaceService{},
 				&mockFinderService{},
 				hookSvc,
@@ -301,7 +301,7 @@ func TestUseCase_Invoke(t *testing.T) {
 	}
 }
 
-func TestUseCase_InvokeFor(t *testing.T) {
+func TestUsecase_InvokeFor(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("successful invocation", func(t *testing.T) {
@@ -332,7 +332,7 @@ func TestUseCase_InvokeFor(t *testing.T) {
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			hookSvc,
@@ -349,7 +349,7 @@ func TestUseCase_InvokeFor(t *testing.T) {
 	})
 
 	t.Run("invalid reference", func(t *testing.T) {
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			&mockFinderService{},
 			&mockHookService{},
@@ -371,7 +371,7 @@ func TestUseCase_InvokeFor(t *testing.T) {
 			},
 		}
 
-		uc := testtarget.NewUseCase(
+		uc := testtarget.NewUsecase(
 			&mockWorkspaceService{},
 			finder,
 			&mockHookService{},
@@ -387,7 +387,7 @@ func TestUseCase_InvokeFor(t *testing.T) {
 	})
 }
 
-func TestUseCase_InvokeForWithGlobals(t *testing.T) {
+func TestUsecase_InvokeForWithGlobals(t *testing.T) {
 	ctx := context.Background()
 
 	scriptHook := &mockHook{
@@ -406,7 +406,7 @@ func TestUseCase_InvokeForWithGlobals(t *testing.T) {
 		},
 	}
 
-	uc := testtarget.NewUseCase(
+	uc := testtarget.NewUsecase(
 		&mockWorkspaceService{},
 		&mockFinderService{},
 		hookSvc,

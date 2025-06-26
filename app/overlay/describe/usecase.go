@@ -13,18 +13,18 @@ import (
 // Overlay represents the overlay type
 type Overlay = overlay.Overlay
 
-// UseCaseJSON represents the use case for showing overlays in JSON format
-type UseCaseJSON struct {
+// JSONUsecase represents the use case for showing overlays in JSON format
+type JSONUsecase struct {
 	enc *json.Encoder
 }
 
-// NewUseCaseJSON creates a new use case for showing overlays in JSON format
-func NewUseCaseJSON(writer io.Writer) *UseCaseJSON {
-	return &UseCaseJSON{enc: json.NewEncoder(writer)}
+// NewJSONUsecase creates a new use case for showing overlays in JSON format
+func NewJSONUsecase(writer io.Writer) *JSONUsecase {
+	return &JSONUsecase{enc: json.NewEncoder(writer)}
 }
 
 // Execute executes the use case to show a overlay in JSON format
-func (uc *UseCaseJSON) Execute(ctx context.Context, s Overlay) error {
+func (uc *JSONUsecase) Execute(ctx context.Context, s Overlay) error {
 	return uc.enc.Encode(map[string]any{
 		"id":            s.ID(),
 		"name":          s.Name(),
@@ -32,41 +32,41 @@ func (uc *UseCaseJSON) Execute(ctx context.Context, s Overlay) error {
 	})
 }
 
-// UseCaseOneLine represents the use case for showing overlays in a single line format
-type UseCaseOneLine struct {
+// OnelineUsecase represents the use case for showing overlays in a single line format
+type OnelineUsecase struct {
 	writer io.Writer
 }
 
-// NewUseCaseOneline creates a new use case for showing overlays in text format
-func NewUseCaseOneLine(writer io.Writer) *UseCaseOneLine {
-	return &UseCaseOneLine{writer: writer}
+// NewOnelineUsecase creates a new use case for showing overlays in text format
+func NewOnelineUsecase(writer io.Writer) *OnelineUsecase {
+	return &OnelineUsecase{writer: writer}
 }
 
 // Execute executes the use case to show a overlay in a single line format
-func (uc *UseCaseOneLine) Execute(ctx context.Context, s overlay.Overlay) error {
+func (uc *OnelineUsecase) Execute(ctx context.Context, s overlay.Overlay) error {
 	_, err := fmt.Fprintf(uc.writer, "[%s] %s for %s\n", s.ID()[:8], s.Name(), s.RelativePath())
 	return err
 }
 
-// UseCaseJSONWithContent represents the use case for showing overlays in a single line format
-type UseCaseJSONWithContent struct {
+// JSONWithContentUsecase represents the use case for showing overlays in a single line format
+type JSONWithContentUsecase struct {
 	overlayService overlay.OverlayService
 	enc            *json.Encoder
 }
 
-// NewUseCaseJSONWithContent creates a new use case for showing overlays in text format
-func NewUseCaseJSONWithContent(
+// NewJSONWithContentUsecase creates a new use case for showing overlays in text format
+func NewJSONWithContentUsecase(
 	overlayService overlay.OverlayService,
 	writer io.Writer,
-) *UseCaseJSONWithContent {
-	return &UseCaseJSONWithContent{
+) *JSONWithContentUsecase {
+	return &JSONWithContentUsecase{
 		overlayService: overlayService,
 		enc:            json.NewEncoder(writer),
 	}
 }
 
 // Execute executes the use case to show a overlay in a single line format
-func (uc *UseCaseJSONWithContent) Execute(ctx context.Context, s overlay.Overlay) error {
+func (uc *JSONWithContentUsecase) Execute(ctx context.Context, s overlay.Overlay) error {
 	src, err := uc.overlayService.Open(ctx, s.ID())
 	if err != nil {
 		return fmt.Errorf("open overlay content: %w", err)
@@ -87,25 +87,25 @@ func (uc *UseCaseJSONWithContent) Execute(ctx context.Context, s overlay.Overlay
 	return err
 }
 
-// UseCaseDetail represents the use case for showing overlays in a single line format
-type UseCaseDetail struct {
+// DetailUsecase represents the use case for showing overlays in a single line format
+type DetailUsecase struct {
 	overlayService overlay.OverlayService
 	writer         io.Writer
 }
 
-// NewUseCaseDetail creates a new use case for showing overlays in text format
-func NewUseCaseDetail(
+// NewDetailUsecase creates a new use case for showing overlays in text format
+func NewDetailUsecase(
 	overlayService overlay.OverlayService,
 	writer io.Writer,
-) *UseCaseDetail {
-	return &UseCaseDetail{
+) *DetailUsecase {
+	return &DetailUsecase{
 		overlayService: overlayService,
 		writer:         writer,
 	}
 }
 
 // Execute executes the use case to show a overlay in a single line format
-func (uc *UseCaseDetail) Execute(ctx context.Context, s overlay.Overlay) error {
+func (uc *DetailUsecase) Execute(ctx context.Context, s overlay.Overlay) error {
 	cnt, err := uc.overlayService.Open(ctx, s.ID())
 	if err != nil {
 		return fmt.Errorf("open overlay content: %w", err)

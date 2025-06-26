@@ -63,7 +63,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 					DeleteBranchOnMerge: f.DeleteBranchOnMerge,
 				},
 			}
-			if err := create.NewUseCase(
+			if err := create.NewUsecase(
 				svc.HostingService,
 				svc.WorkspaceService,
 				svc.FinderService,
@@ -80,7 +80,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 			if err != nil {
 				return fmt.Errorf("invalid template: %w", err)
 			}
-			if err := create_from_template.NewUseCase(
+			if err := create_from_template.NewUsecase(
 				svc.HostingService,
 				svc.WorkspaceService,
 				svc.FinderService,

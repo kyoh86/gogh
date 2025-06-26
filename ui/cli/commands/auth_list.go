@@ -17,7 +17,7 @@ func NewAuthListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comm
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := cmd.Context()
-			entries, err := list.NewUseCase(svc.TokenService).Execute(ctx)
+			entries, err := list.NewUsecase(svc.TokenService).Execute(ctx)
 			if err != nil {
 				return fmt.Errorf("listing up tokens: %w", err)
 			}

@@ -13,7 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -286,7 +286,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			es, rp := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(es, rp)
+			uc := testtarget.NewUsecase(es, rp)
 
 			err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -307,14 +307,14 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_PriorityOrder(t *testing.T) {
+func TestUsecase_Execute_PriorityOrder(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	es := extra_mock.NewMockExtraService(ctrl)
 	rp := repository_mock.NewMockReferenceParser(ctrl)
-	uc := testtarget.NewUseCase(es, rp)
+	uc := testtarget.NewUsecase(es, rp)
 
 	// Test priority: ID > Name > Repository
 	opts := testtarget.Options{

@@ -20,7 +20,7 @@ func NewScriptShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			scriptID := args[0]
-			return show.NewUseCase(svc.ScriptService, cmd.OutOrStdout()).Execute(ctx, scriptID, f.json, f.source)
+			return show.NewUsecase(svc.ScriptService, cmd.OutOrStdout()).Execute(ctx, scriptID, f.json, f.source)
 		},
 	}
 	cmd.Flags().BoolVarP(&f.json, "json", "", false, "Output in JSON format")

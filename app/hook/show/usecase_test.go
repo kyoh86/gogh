@@ -15,7 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -260,7 +260,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 			var buf bytes.Buffer
 			hs := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(hs, &buf)
+			uc := testtarget.NewUsecase(hs, &buf)
 
 			err := uc.Execute(ctx, tc.hookID, tc.asJSON)
 			if (err != nil) != tc.wantErr {
@@ -274,7 +274,7 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_AllEventTypes(t *testing.T) {
+func TestUsecase_Execute_AllEventTypes(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -290,7 +290,7 @@ func TestUseCase_Execute_AllEventTypes(t *testing.T) {
 		t.Run(string(event), func(t *testing.T) {
 			var buf bytes.Buffer
 			hs := hook_mock.NewMockHookService(ctrl)
-			uc := testtarget.NewUseCase(hs, &buf)
+			uc := testtarget.NewUsecase(hs, &buf)
 
 			h := hook.ConcreteHook(
 				uuid.New(),
@@ -319,7 +319,7 @@ func TestUseCase_Execute_AllEventTypes(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_AllOperationTypes(t *testing.T) {
+func TestUsecase_Execute_AllOperationTypes(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -333,7 +333,7 @@ func TestUseCase_Execute_AllOperationTypes(t *testing.T) {
 		t.Run(string(opType), func(t *testing.T) {
 			var buf bytes.Buffer
 			hs := hook_mock.NewMockHookService(ctrl)
-			uc := testtarget.NewUseCase(hs, &buf)
+			uc := testtarget.NewUsecase(hs, &buf)
 
 			h := hook.ConcreteHook(
 				uuid.New(),

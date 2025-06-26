@@ -12,7 +12,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -56,15 +56,15 @@ func TestUseCase_Execute(t *testing.T) {
 			mockTokenService := auth_mock.NewMockTokenService(ctrl)
 			tt.setup(mockTokenService)
 
-			uc := testtarget.NewUseCase(mockTokenService)
+			uc := testtarget.NewUsecase(mockTokenService)
 			got, err := uc.Execute(context.Background())
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("UseCase.Execute() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Usecase.Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UseCase.Execute() = %v, want %v", got, tt.want)
+				t.Errorf("Usecase.Execute() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -13,8 +13,8 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase represents the extra apply use case
-type UseCase struct {
+// Usecase represents the extra apply use case
+type Usecase struct {
 	extraService     extra.ExtraService
 	overlayService   overlay.OverlayService
 	workspaceService workspace.WorkspaceService
@@ -22,15 +22,15 @@ type UseCase struct {
 	referenceParser  repository.ReferenceParser
 }
 
-// NewUseCase creates a new extra apply use case
-func NewUseCase(
+// NewUsecase creates a new extra apply use case
+func NewUsecase(
 	extraService extra.ExtraService,
 	overlayService overlay.OverlayService,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		extraService:     extraService,
 		overlayService:   overlayService,
 		workspaceService: workspaceService,
@@ -46,7 +46,7 @@ type Options struct {
 }
 
 // Execute performs the extra apply operation
-func (uc *UseCase) Execute(ctx context.Context, opts Options) error {
+func (uc *Usecase) Execute(ctx context.Context, opts Options) error {
 	if opts.Name == "" {
 		return fmt.Errorf("name is required")
 	}

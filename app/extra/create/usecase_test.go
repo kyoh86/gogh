@@ -17,7 +17,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -273,7 +273,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			ws, fs, es, os, rp := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(ws, fs, es, os, rp)
+			uc := testtarget.NewUsecase(ws, fs, es, os, rp)
 
 			err := uc.Execute(ctx, tc.opts)
 			if (err != nil) != tc.wantErr {

@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCaseJSON_Execute(t *testing.T) {
+func TestJSONUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	overlayUUID := uuid.New()
@@ -27,7 +27,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	o := overlay.ConcreteOverlay(overlayUUID, overlayName, relativePath)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSON(&buf)
+	uc := testtarget.NewJSONUsecase(&buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -50,7 +50,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseOneLine_Execute(t *testing.T) {
+func TestOnelineUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	overlayUUID := uuid.New()
@@ -61,7 +61,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 	o := overlay.ConcreteOverlay(overlayUUID, overlayName, relativePath)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewOnelineUsecase(&buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -75,7 +75,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseJSONWithContent_Execute(t *testing.T) {
+func TestJSONWithContentUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -94,7 +94,7 @@ func TestUseCaseJSONWithContent_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSONWithContent(mockOverlayService, &buf)
+	uc := testtarget.NewJSONWithContentUsecase(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -120,7 +120,7 @@ func TestUseCaseJSONWithContent_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseJSONWithContent_Execute_OpenError(t *testing.T) {
+func TestJSONWithContentUsecase_Execute_OpenError(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -138,7 +138,7 @@ func TestUseCaseJSONWithContent_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSONWithContent(mockOverlayService, &buf)
+	uc := testtarget.NewJSONWithContentUsecase(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err == nil {
@@ -149,7 +149,7 @@ func TestUseCaseJSONWithContent_Execute_OpenError(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute(t *testing.T) {
+func TestDetailUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -168,7 +168,7 @@ func TestUseCaseDetail_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(mockOverlayService, &buf)
+	uc := testtarget.NewDetailUsecase(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err != nil {
@@ -192,7 +192,7 @@ func TestUseCaseDetail_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
+func TestDetailUsecase_Execute_OpenError(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -210,7 +210,7 @@ func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(mockOverlayService, &buf)
+	uc := testtarget.NewDetailUsecase(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err == nil {
@@ -221,7 +221,7 @@ func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute_ReadError(t *testing.T) {
+func TestDetailUsecase_Execute_ReadError(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -242,7 +242,7 @@ func TestUseCaseDetail_Execute_ReadError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(mockOverlayService, &buf)
+	uc := testtarget.NewDetailUsecase(mockOverlayService, &buf)
 
 	err := uc.Execute(ctx, o)
 	if err == nil {

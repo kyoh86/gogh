@@ -20,7 +20,7 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			logger := log.FromContext(ctx)
 
 			overlayID := args[0]
-			if err := remove.NewUseCase(svc.OverlayService).Execute(ctx, overlayID); err != nil {
+			if err := remove.NewUsecase(svc.OverlayService).Execute(ctx, overlayID); err != nil {
 				return err
 			}
 

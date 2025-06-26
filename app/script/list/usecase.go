@@ -8,36 +8,36 @@ import (
 	"github.com/kyoh86/gogh/v4/core/script"
 )
 
-type UseCase struct {
+type Usecase struct {
 	scriptService script.ScriptService
 	writer        io.Writer
 }
 
-func NewUseCase(
+func NewUsecase(
 	scriptService script.ScriptService,
 	writer io.Writer,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		scriptService: scriptService,
 		writer:        writer,
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, asJSON, withSource bool) error {
-	var useCase interface {
+func (uc *Usecase) Execute(ctx context.Context, asJSON, withSource bool) error {
+	var usecase interface {
 		Execute(ctx context.Context, s describe.Script) error
 	}
 	if asJSON {
 		if withSource {
-			useCase = describe.NewUseCaseJSONWithSource(uc.scriptService, uc.writer)
+			usecase = describe.NewJSONWithSourceUsecase(uc.scriptService, uc.writer)
 		} else {
-			useCase = describe.NewUseCaseJSON(uc.writer)
+			usecase = describe.NewJSONUsecase(uc.writer)
 		}
 	} else {
 		if withSource {
-			useCase = describe.NewUseCaseDetail(uc.scriptService, uc.writer)
+			usecase = describe.NewDetailUsecase(uc.scriptService, uc.writer)
 		} else {
-			useCase = describe.NewUseCaseOneLine(uc.writer)
+			usecase = describe.NewOnelineUsecase(uc.writer)
 		}
 	}
 	for s, err := range uc.scriptService.List() {
@@ -47,7 +47,7 @@ func (uc *UseCase) Execute(ctx context.Context, asJSON, withSource bool) error {
 		if s == nil {
 			continue
 		}
-		if err := useCase.Execute(ctx, s); err != nil {
+		if err := usecase.Execute(ctx, s); err != nil {
 			return err
 		}
 	}

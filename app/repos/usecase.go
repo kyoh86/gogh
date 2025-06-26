@@ -9,12 +9,12 @@ import (
 	"github.com/kyoh86/gogh/v4/typ"
 )
 
-type UseCase struct {
+type Usecase struct {
 	hostingService hosting.HostingService
 }
 
-func NewUseCase(hostingService hosting.HostingService) *UseCase {
-	return &UseCase{
+func NewUsecase(hostingService hosting.HostingService) *Usecase {
+	return &Usecase{
 		hostingService: hostingService,
 	}
 }
@@ -101,7 +101,7 @@ func convertOpts(f Options) (hosting.ListRepositoryOptions, error) {
 
 // Execute lists repositories based on the provided options.
 // It returns an iterator that yields repositories and errors.
-func (uc *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*hosting.Repository, error] {
+func (uc *Usecase) Execute(ctx context.Context, opts Options) iter.Seq2[*hosting.Repository, error] {
 	return func(yield func(*hosting.Repository, error) bool) {
 		listOpts, err := convertOpts(opts)
 		if err != nil {

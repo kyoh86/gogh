@@ -32,7 +32,7 @@ func NewScriptUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				defer c.Close()
 				content = c
 			}
-			if err := update.NewUseCase(svc.ScriptService).Execute(ctx, scriptID, f.name, content); err != nil {
+			if err := update.NewUsecase(svc.ScriptService).Execute(ctx, scriptID, f.name, content); err != nil {
 				return fmt.Errorf("updating script metadata: %w", err)
 			}
 			return nil

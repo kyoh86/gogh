@@ -18,7 +18,7 @@ import (
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.CloneFlags
-	cloneUseCase := clone.NewUseCase(
+	cloneUsecase := clone.NewUsecase(
 		svc.HostingService,
 		svc.WorkspaceService,
 		svc.FinderService,
@@ -34,7 +34,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			return args, nil
 		}
 		var opts []huh.Option[string]
-		for repo, err := range repos.NewUseCase(svc.HostingService).Execute(ctx, repos.Options{}) {
+		for repo, err := range repos.NewUsecase(svc.HostingService).Execute(ctx, repos.Options{}) {
 			if err != nil {
 				return nil, fmt.Errorf("listing up repositories: %w", err)
 			}
@@ -67,7 +67,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		for _, ref := range refs {
 			ref := ref // capture loop variable
 			eg.Go(func() error {
-				err := cloneUseCase.Execute(egCtx, ref, clone.Options{
+				err := cloneUsecase.Execute(egCtx, ref, clone.Options{
 					TryCloneOptions: try_clone.Options{
 						Notify:  try_clone.RetryLimit(1, nil),
 						Timeout: f.CloneRetryTimeout,

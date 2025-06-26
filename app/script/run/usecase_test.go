@@ -7,10 +7,10 @@ import (
 	testtarget "github.com/kyoh86/gogh/v4/app/script/run"
 )
 
-func TestNewUseCase(t *testing.T) {
-	uc := testtarget.NewUseCase()
+func TestNewUsecase(t *testing.T) {
+	uc := testtarget.NewUsecase()
 	if uc == nil {
-		t.Fatal("expected non-nil UseCase")
+		t.Fatal("expected non-nil Usecase")
 	}
 }
 
@@ -78,18 +78,18 @@ func TestGlobalsTypes(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	// Skip actual Lua execution tests as they require CGO and Lua runtime
 	t.Skip("Skipping Lua execution test to avoid CGO dependencies")
 
 	// If we were to test this, we would:
-	// 1. Create a UseCase
+	// 1. Create a Usecase
 	// 2. Create a Script with simple Lua code
 	// 3. Call Execute and verify no errors
 	// 4. Test error cases like invalid Lua syntax
 
 	ctx := context.Background()
-	uc := testtarget.NewUseCase()
+	uc := testtarget.NewUsecase()
 
 	// Example of what would be tested:
 	script := testtarget.Script{

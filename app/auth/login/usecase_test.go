@@ -12,7 +12,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	type mocks struct {
 		tokenService   *auth_mock.MockTokenService
 		authService    *auth_mock.MockAuthenticateService
@@ -82,16 +82,16 @@ func TestUseCase_Execute(t *testing.T) {
 				tt.setupMock(m)
 			}
 
-			uc := testtarget.NewUseCase(m.tokenService, m.authService, m.hostingService)
+			uc := testtarget.NewUsecase(m.tokenService, m.authService, m.hostingService)
 			err := uc.Execute(context.Background(), tt.host, func(_ context.Context, resp testtarget.DeviceAuthResponse) error { return nil })
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("UseCase.Execute() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Usecase.Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if tt.wantErr && err != nil && err.Error() != tt.errMsg {
-				t.Errorf("UseCase.Execute() error message = %v, want %v", err.Error(), tt.errMsg)
+				t.Errorf("Usecase.Execute() error message = %v, want %v", err.Error(), tt.errMsg)
 			}
 		})
 	}

@@ -24,7 +24,7 @@ func NewOverlayEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			}
 			defer os.Remove(tmpFile.Name())
 
-			if err := overlayedit.NewUseCase(svc.OverlayService).ExtractOverlay(ctx, overlayID, tmpFile); err != nil {
+			if err := overlayedit.NewUsecase(svc.OverlayService).ExtractOverlay(ctx, overlayID, tmpFile); err != nil {
 				return err
 			}
 			tmpFile.Close()
@@ -38,7 +38,7 @@ func NewOverlayEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 				return err
 			}
 			defer edited.Close()
-			return overlayedit.NewUseCase(svc.OverlayService).UpdateOverlay(ctx, overlayID, edited)
+			return overlayedit.NewUsecase(svc.OverlayService).UpdateOverlay(ctx, overlayID, edited)
 		},
 	}
 	return cmd, nil

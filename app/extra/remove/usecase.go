@@ -8,18 +8,18 @@ import (
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
-// UseCase represents the extra remove use case
-type UseCase struct {
+// Usecase represents the extra remove use case
+type Usecase struct {
 	extraService    extra.ExtraService
 	referenceParser repository.ReferenceParser
 }
 
-// NewUseCase creates a new extra remove use case
-func NewUseCase(
+// NewUsecase creates a new extra remove use case
+func NewUsecase(
 	extraService extra.ExtraService,
 	referenceParser repository.ReferenceParser,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		extraService:    extraService,
 		referenceParser: referenceParser,
 	}
@@ -33,7 +33,7 @@ type Options struct {
 }
 
 // Execute performs the extra remove operation
-func (uc *UseCase) Execute(ctx context.Context, opts Options) error {
+func (uc *Usecase) Execute(ctx context.Context, opts Options) error {
 	switch {
 	case opts.ID != "":
 		// Remove by ID

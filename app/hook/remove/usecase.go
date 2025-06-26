@@ -6,14 +6,14 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hook"
 )
 
-type UseCase struct {
+type Usecase struct {
 	hookService hook.HookService
 }
 
-func NewUseCase(hookService hook.HookService) *UseCase {
-	return &UseCase{hookService: hookService}
+func NewUsecase(hookService hook.HookService) *Usecase {
+	return &Usecase{hookService: hookService}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, hookID string) error {
+func (uc *Usecase) Execute(ctx context.Context, hookID string) error {
 	return uc.hookService.Remove(ctx, hookID)
 }

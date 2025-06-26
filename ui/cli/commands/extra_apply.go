@@ -9,7 +9,7 @@ import (
 )
 
 func NewExtraApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
-	useCase := apply.NewUseCase(
+	usecase := apply.NewUsecase(
 		svc.ExtraService,
 		svc.OverlayService,
 		svc.WorkspaceService,
@@ -29,7 +29,7 @@ By default, it applies to the current directory's repository.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Name = args[0]
-			return useCase.Execute(cmd.Context(), opts)
+			return usecase.Execute(cmd.Context(), opts)
 		},
 	}
 

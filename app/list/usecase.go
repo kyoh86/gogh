@@ -8,18 +8,18 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase defines the use case for listing repositories
-type UseCase struct {
+// Usecase defines the use case for listing repositories
+type Usecase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 }
 
-// NewUseCase creates a new instance of UseCase
-func NewUseCase(
+// NewUsecase creates a new instance of Usecase
+func NewUsecase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 	}
@@ -33,7 +33,7 @@ type Options struct {
 }
 
 // Execute retrieves a list of repositories under the specified workspace roots
-func (uc *UseCase) Execute(ctx context.Context, opts Options) iter.Seq2[*repository.Location, error] {
+func (uc *Usecase) Execute(ctx context.Context, opts Options) iter.Seq2[*repository.Location, error] {
 	ws := uc.workspaceService
 	if opts.Primary {
 		layout := ws.GetLayoutFor(ws.GetPrimaryRoot())

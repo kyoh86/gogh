@@ -46,7 +46,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			logger := log.FromContext(ctx)
 			overlayID := args[0]
 			refs := args[1:]
-			overlayApplyUseCase := apply.NewUseCase(
+			overlayApplyUsecase := apply.NewUsecase(
 				svc.WorkspaceService,
 				svc.FinderService,
 				svc.ReferenceParser,
@@ -58,7 +58,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 				}
 
 				// If --all flag is set, apply the script to all repositories in the workspace
-				for repo, err := range list.NewUseCase(
+				for repo, err := range list.NewUsecase(
 					svc.WorkspaceService,
 					svc.FinderService,
 				).Execute(ctx, list.Options{ListOptions: list.ListOptions{
@@ -74,14 +74,14 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			for _, ref := range refs {
 				// Use current directory if reference is "."
 				if ref == "." {
-					repo, err := cwd.NewUseCase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
+					repo, err := cwd.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx)
 					if err != nil {
 						return fmt.Errorf("finding repository from current directory: %w", err)
 					}
 					ref = repo.Ref().String()
 				}
 
-				if err := overlayApplyUseCase.Execute(ctx, ref, overlayID); err != nil {
+				if err := overlayApplyUsecase.Execute(ctx, ref, overlayID); err != nil {
 					return err
 				}
 				logger.Infof("Applied overlay %s to %s", overlayID, ref)

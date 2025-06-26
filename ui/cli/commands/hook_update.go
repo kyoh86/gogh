@@ -31,7 +31,7 @@ func NewHookUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				OperationType: f.operationType,
 				OperationID:   f.operationID,
 			}
-			if err := update.NewUseCase(svc.HookService).Execute(ctx, hookID, opts); err != nil {
+			if err := update.NewUsecase(svc.HookService).Execute(ctx, hookID, opts); err != nil {
 				return fmt.Errorf("updating hook metadata: %w", err)
 			}
 			return nil

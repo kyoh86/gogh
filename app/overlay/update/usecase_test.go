@@ -15,7 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -332,7 +332,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(os)
+			uc := testtarget.NewUsecase(os)
 
 			err := uc.Execute(ctx, tc.overlayID, tc.overlayName, tc.relativePath, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -342,7 +342,7 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
+func TestUsecase_Execute_ReaderBehavior(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -368,20 +368,20 @@ func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
 		},
 	)
 
-	uc := testtarget.NewUseCase(os)
+	uc := testtarget.NewUsecase(os)
 	err := uc.Execute(ctx, uuid.New().String(), "test-overlay", "test/path.txt", customReader)
 	if err != nil {
 		t.Errorf("Execute() unexpected error = %v", err)
 	}
 }
 
-func TestUseCase_Execute_MultipleReaders(t *testing.T) {
+func TestUsecase_Execute_MultipleReaders(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	os := overlay_mock.NewMockOverlayService(ctrl)
-	uc := testtarget.NewUseCase(os)
+	uc := testtarget.NewUsecase(os)
 
 	// Test with different reader types
 	readers := []struct {

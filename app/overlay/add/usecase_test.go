@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCase_Execute(t *testing.T) {
+func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	testCases := []struct {
@@ -234,7 +234,7 @@ func TestUseCase_Execute(t *testing.T) {
 			defer ctrl.Finish()
 
 			os := tc.setupMock(ctrl)
-			uc := testtarget.NewUseCase(os)
+			uc := testtarget.NewUsecase(os)
 
 			id, err := uc.Execute(ctx, tc.overlayName, tc.relativePath, strings.NewReader(tc.content))
 			if (err != nil) != tc.wantErr {
@@ -250,7 +250,7 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
+func TestUsecase_Execute_ReaderBehavior(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -269,7 +269,7 @@ func TestUseCase_Execute_ReaderBehavior(t *testing.T) {
 		},
 	)
 
-	uc := testtarget.NewUseCase(os)
+	uc := testtarget.NewUsecase(os)
 	_, err := uc.Execute(ctx, "test", "test.txt", customReader)
 	if err != nil {
 		t.Errorf("Execute() unexpected error = %v", err)

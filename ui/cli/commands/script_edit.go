@@ -24,7 +24,7 @@ func NewScriptEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			}
 			defer os.Remove(tmpFile.Name())
 
-			if err := scriptedit.NewUseCase(svc.ScriptService).ExtractScript(ctx, scriptID, tmpFile); err != nil {
+			if err := scriptedit.NewUsecase(svc.ScriptService).ExtractScript(ctx, scriptID, tmpFile); err != nil {
 				return err
 			}
 			tmpFile.Close()
@@ -38,7 +38,7 @@ func NewScriptEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				return err
 			}
 			defer edited.Close()
-			return scriptedit.NewUseCase(svc.ScriptService).UpdateScript(ctx, scriptID, edited)
+			return scriptedit.NewUsecase(svc.ScriptService).UpdateScript(ctx, scriptID, edited)
 		},
 	}
 	return cmd, nil

@@ -16,7 +16,7 @@ func NewHookRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			hookID := args[0]
-			return remove.NewUseCase(svc.HookService).Execute(ctx, hookID)
+			return remove.NewUsecase(svc.HookService).Execute(ctx, hookID)
 		},
 	}
 	return cmd, nil

@@ -18,7 +18,7 @@ func NewScriptListCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		Short: "List registered scripts",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return list.NewUseCase(svc.ScriptService, cmd.OutOrStdout()).Execute(cmd.Context(), f.json, f.source)
+			return list.NewUsecase(svc.ScriptService, cmd.OutOrStdout()).Execute(cmd.Context(), f.json, f.source)
 		},
 	}
 	cmd.Flags().BoolVarP(&f.json, "json", "", false, "Output in JSON format")

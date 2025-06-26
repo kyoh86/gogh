@@ -69,21 +69,21 @@ func SetCommandRunner(runner func(string, ...string) Command) func(string, ...st
 	return prev
 }
 
-// UseCase for running script scripts
-type UseCase struct {
+// Usecase for running script scripts
+type Usecase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	scriptService    script.ScriptService
 	referenceParser  repository.ReferenceParser
 }
 
-func NewUseCase(
+func NewUsecase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	scriptService script.ScriptService,
 	referenceParser repository.ReferenceParser,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		scriptService:    scriptService,
@@ -91,7 +91,7 @@ func NewUseCase(
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, refStr string, scriptID string, globals map[string]any) error {
+func (uc *Usecase) Execute(ctx context.Context, refStr string, scriptID string, globals map[string]any) error {
 	refWithAlias, err := uc.referenceParser.ParseWithAlias(refStr)
 	if err != nil {
 		return fmt.Errorf("parsing repository reference: %w", err)
@@ -103,7 +103,7 @@ func (uc *UseCase) Execute(ctx context.Context, refStr string, scriptID string, 
 	return uc.Invoke(ctx, match, scriptID, globals)
 }
 
-func (uc *UseCase) Invoke(ctx context.Context, location *repository.Location, scriptID string, globals map[string]any) error {
+func (uc *Usecase) Invoke(ctx context.Context, location *repository.Location, scriptID string, globals map[string]any) error {
 	if location == nil {
 		return errors.New("repository not found")
 	}

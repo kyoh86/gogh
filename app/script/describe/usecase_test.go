@@ -17,7 +17,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestUseCaseJSON_Execute(t *testing.T) {
+func TestJSONUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	scriptUUID := uuid.New()
@@ -29,7 +29,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	s := script.ConcreteScript(scriptUUID, scriptName, createdAt, updatedAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSON(&buf)
+	uc := testtarget.NewJSONUsecase(&buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -49,7 +49,7 @@ func TestUseCaseJSON_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseOneLine_Execute(t *testing.T) {
+func TestOnelineUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	scriptUUID := uuid.New()
@@ -61,7 +61,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 	s := script.ConcreteScript(scriptUUID, scriptName, createdAt, updatedAt)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseOneLine(&buf)
+	uc := testtarget.NewOnelineUsecase(&buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -75,7 +75,7 @@ func TestUseCaseOneLine_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseJSONWithSource_Execute(t *testing.T) {
+func TestJSONWithSourceUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -95,7 +95,7 @@ func TestUseCaseJSONWithSource_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSONWithSource(mockScriptService, &buf)
+	uc := testtarget.NewJSONWithSourceUsecase(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -118,7 +118,7 @@ func TestUseCaseJSONWithSource_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseJSONWithSource_Execute_OpenError(t *testing.T) {
+func TestJSONWithSourceUsecase_Execute_OpenError(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -137,7 +137,7 @@ func TestUseCaseJSONWithSource_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseJSONWithSource(mockScriptService, &buf)
+	uc := testtarget.NewJSONWithSourceUsecase(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err == nil {
@@ -148,7 +148,7 @@ func TestUseCaseJSONWithSource_Execute_OpenError(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute(t *testing.T) {
+func TestDetailUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -168,7 +168,7 @@ func TestUseCaseDetail_Execute(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(mockScriptService, &buf)
+	uc := testtarget.NewDetailUsecase(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err != nil {
@@ -193,7 +193,7 @@ func TestUseCaseDetail_Execute(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
+func TestDetailUsecase_Execute_OpenError(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -212,7 +212,7 @@ func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(mockScriptService, &buf)
+	uc := testtarget.NewDetailUsecase(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err == nil {
@@ -223,7 +223,7 @@ func TestUseCaseDetail_Execute_OpenError(t *testing.T) {
 	}
 }
 
-func TestUseCaseDetail_Execute_ReadError(t *testing.T) {
+func TestDetailUsecase_Execute_ReadError(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -245,7 +245,7 @@ func TestUseCaseDetail_Execute_ReadError(t *testing.T) {
 	)
 
 	var buf bytes.Buffer
-	uc := testtarget.NewUseCaseDetail(mockScriptService, &buf)
+	uc := testtarget.NewDetailUsecase(mockScriptService, &buf)
 
 	err := uc.Execute(ctx, s)
 	if err == nil {

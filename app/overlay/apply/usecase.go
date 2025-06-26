@@ -13,21 +13,21 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase represents the create use case
-type UseCase struct {
+// Usecase represents the create use case
+type Usecase struct {
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
 	referenceParser  repository.ReferenceParser
 	overlayService   overlay.OverlayService
 }
 
-func NewUseCase(
+func NewUsecase(
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
 	referenceParser repository.ReferenceParser,
 	overlayService overlay.OverlayService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		workspaceService: workspaceService,
 		finderService:    finderService,
 		referenceParser:  referenceParser,
@@ -35,7 +35,7 @@ func NewUseCase(
 	}
 }
 
-func (uc *UseCase) Execute(ctx context.Context, refStr string, overlayID string) error {
+func (uc *Usecase) Execute(ctx context.Context, refStr string, overlayID string) error {
 	refWithAlias, err := uc.referenceParser.ParseWithAlias(refStr)
 	if err != nil {
 		return fmt.Errorf("parsing reference '%s': %w", refStr, err)
@@ -47,7 +47,7 @@ func (uc *UseCase) Execute(ctx context.Context, refStr string, overlayID string)
 	return uc.Apply(ctx, match, overlayID)
 }
 
-func (uc *UseCase) Apply(ctx context.Context, location *repository.Location, overlayID string) error {
+func (uc *Usecase) Apply(ctx context.Context, location *repository.Location, overlayID string) error {
 	if location == nil {
 		return errors.New("repository not found")
 	}

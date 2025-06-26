@@ -15,8 +15,8 @@ import (
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
-// UseCase represents the clone use case
-type UseCase struct {
+// Usecase represents the clone use case
+type Usecase struct {
 	hostingService   hosting.HostingService
 	workspaceService workspace.WorkspaceService
 	finderService    workspace.FinderService
@@ -27,8 +27,8 @@ type UseCase struct {
 	gitService       git.GitService
 }
 
-// NewUseCase creates a new clone use case
-func NewUseCase(
+// NewUsecase creates a new clone use case
+func NewUsecase(
 	hostingService hosting.HostingService,
 	workspaceService workspace.WorkspaceService,
 	finderService workspace.FinderService,
@@ -37,8 +37,8 @@ func NewUseCase(
 	hookService hook.HookService,
 	referenceParser repository.ReferenceParser,
 	gitService git.GitService,
-) *UseCase {
-	return &UseCase{
+) *Usecase {
+	return &Usecase{
 		hostingService:   hostingService,
 		workspaceService: workspaceService,
 		finderService:    finderService,
@@ -58,7 +58,7 @@ type Options struct {
 }
 
 // Execute performs the clone operation
-func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Options) error {
+func (uc *Usecase) Execute(ctx context.Context, refWithAlias string, opts Options) error {
 	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
 	if err != nil {
 		return err
@@ -68,8 +68,8 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 	if err != nil {
 		return err
 	}
-	tryCloneUseCase := try_clone.NewUseCase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
-	if err := tryCloneUseCase.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
+	tryCloneUsecase := try_clone.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
+	if err := tryCloneUsecase.Execute(ctx, repo, ref.Alias, opts.TryCloneOptions); err != nil {
 		return err
 	}
 	globals := make(map[string]any)
@@ -81,7 +81,7 @@ func (uc *UseCase) Execute(ctx context.Context, refWithAlias string, opts Option
 			"clone_url": repo.Parent.CloneURL,
 		}
 	}
-	if err := invoke.NewUseCase(
+	if err := invoke.NewUsecase(
 		uc.workspaceService,
 		uc.finderService,
 		uc.hookService,

@@ -8,11 +8,11 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-// UseCase for running script scripts
-type UseCase struct{}
+// Usecase for running script scripts
+type Usecase struct{}
 
-func NewUseCase() *UseCase {
-	return &UseCase{}
+func NewUsecase() *Usecase {
+	return &Usecase{}
 }
 
 // Globals represents a map of global variables to be passed to Lua
@@ -47,7 +47,7 @@ type Script struct {
 	Globals Globals
 }
 
-func (uc *UseCase) Execute(ctx context.Context, script Script) error {
+func (uc *Usecase) Execute(ctx context.Context, script Script) error {
 	l := lua.NewState()
 	defer l.Close()
 
