@@ -1,4 +1,4 @@
-package bundle_dump
+package dump
 
 import (
 	"context"

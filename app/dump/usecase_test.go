@@ -1,4 +1,4 @@
-package bundle_dump_test
+package dump_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	testtarget "github.com/kyoh86/gogh/v4/app/bundle_dump"
+	testtarget "github.com/kyoh86/gogh/v4/app/dump"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hosting_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
