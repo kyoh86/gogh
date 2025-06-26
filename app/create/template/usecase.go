@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/app/hook/invoke"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hosting"
@@ -51,7 +51,7 @@ func NewUsecase(
 
 type RepositoryOptions = hosting.CreateRepositoryFromTemplateOptions
 
-type TryCloneOptions = try_clone.Options
+type TryCloneOptions = try.Options
 
 type CreateFromTemplateOptions struct {
 	TryCloneOptions
@@ -68,7 +68,7 @@ func (uc *Usecase) Execute(
 	if err != nil {
 		return fmt.Errorf("invalid reference: %w", err)
 	}
-	tryCloneUsecase := try_clone.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
+	tryCloneUsecase := try.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
 	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref.Reference, tmp, opts.RepositoryOptions)
 	if err != nil {
 		return fmt.Errorf("creating repository from template: %w", err)

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyoh86/gogh/v4/app/try_clone"
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -89,7 +89,7 @@ func TestUsecase_Execute(t *testing.T) {
 				mockLayout.EXPECT().PathFor(ref).Return(pseudoPath)
 				mockWorkspace.EXPECT().GetPrimaryLayout().Return(mockLayout)
 
-				// Verify that try_clone.Execute is called
+				// Verify that try.Execute is called
 				// Since we're calling the actual function instead of a mock,
 				// set expectations for GitService.Clone
 				mockGit.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "kyoh86", "").Return(mockGit, nil)
@@ -212,7 +212,7 @@ func TestUsecase_Execute(t *testing.T) {
 
 			// Execute test
 			err := usecase.Execute(context.Background(), tt.refWithAlias, Options{
-				TryCloneOptions: try_clone.Options{},
+				TryCloneOptions: try.Options{},
 			})
 
 			// Verify results

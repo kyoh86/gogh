@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	testtarget "github.com/kyoh86/gogh/v4/app/create/template"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -51,7 +51,7 @@ func TestUsecase_Execute(t *testing.T) {
 			refWithAlias: "github.com/kyoh86/new-repo",
 			tmp:          repository.NewReference("github.com", "kyoh86", "template-repo"),
 			options: testtarget.CreateFromTemplateOptions{
-				TryCloneOptions: try_clone.Options{},
+				TryCloneOptions: try.Options{},
 				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{
 					Description: "New repository from template",
 					Private:     true,
@@ -153,7 +153,7 @@ func TestUsecase_Execute(t *testing.T) {
 			refWithAlias: "invalid-reference",
 			tmp:          repository.NewReference("github.com", "kyoh86", "template-repo"),
 			options: testtarget.CreateFromTemplateOptions{
-				TryCloneOptions:   try_clone.Options{},
+				TryCloneOptions:   try.Options{},
 				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{},
 			},
 			setupMocks: func(
@@ -179,7 +179,7 @@ func TestUsecase_Execute(t *testing.T) {
 			refWithAlias: "github.com/kyoh86/repo-creation-failed",
 			tmp:          repository.NewReference("github.com", "kyoh86", "template-repo"),
 			options: testtarget.CreateFromTemplateOptions{
-				TryCloneOptions:   try_clone.Options{},
+				TryCloneOptions:   try.Options{},
 				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{},
 			},
 			setupMocks: func(

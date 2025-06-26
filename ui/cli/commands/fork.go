@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/fork"
 	"github.com/kyoh86/gogh/v4/app/service"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 )
@@ -26,9 +26,9 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 		RunE: func(cmd *cobra.Command, refs []string) error {
 			ctx := cmd.Context()
 			opts := fork.Options{
-				TryCloneOptions: try_clone.Options{
+				TryCloneOptions: try.Options{
 					Timeout: f.CloneRetryTimeout,
-					Notify:  try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					Notify:  try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				HostingOptions: fork.HostingOptions{
 					DefaultBranchOnly: f.DefaultBranchOnly,

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/app/hook/invoke"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hosting"
@@ -55,7 +55,7 @@ func NewUsecase(
 
 type HostingOptions = hosting.ForkRepositoryOptions
 
-type TryCloneOptions = try_clone.Options
+type TryCloneOptions = try.Options
 
 // Options represents the options for the fork use case
 type Options struct {
@@ -101,7 +101,7 @@ func (uc *Usecase) Execute(ctx context.Context, source string, opts Options) err
 	if err != nil {
 		return fmt.Errorf("requesting fork: %w", err)
 	}
-	tryCloneUsecase := try_clone.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
+	tryCloneUsecase := try.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
 	if err := tryCloneUsecase.Execute(ctx, fork, targetRef.Alias, opts.TryCloneOptions); err != nil {
 		return err
 	}

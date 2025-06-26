@@ -8,10 +8,10 @@ import (
 	"github.com/apex/log"
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/clone"
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
@@ -68,8 +68,8 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			ref := ref // capture loop variable
 			eg.Go(func() error {
 				err := cloneUsecase.Execute(egCtx, ref, clone.Options{
-					TryCloneOptions: try_clone.Options{
-						Notify:  try_clone.RetryLimit(1, nil),
+					TryCloneOptions: try.Options{
+						Notify:  try.RetryLimit(1, nil),
 						Timeout: f.CloneRetryTimeout,
 					},
 				})

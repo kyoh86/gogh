@@ -1,4 +1,4 @@
-package try_clone_test
+package try_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kyoh86/gogh/v4/app/try_clone"
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -27,7 +27,7 @@ func TestNewUsecase(t *testing.T) {
 	overlayService := overlay_mock.NewMockOverlayService(ctrl)
 	gitService := git_mock.NewMockGitService(ctrl)
 
-	svc := try_clone.NewUsecase(hostingService, workspaceService, overlayService, gitService)
+	svc := try.NewUsecase(hostingService, workspaceService, overlayService, gitService)
 	if svc == nil {
 		t.Fatal("NewRepositoryService returned nil")
 	}
@@ -37,33 +37,33 @@ func TestRetryLimit(t *testing.T) {
 	testCases := []struct {
 		name          string
 		limit         int
-		notifications []try_clone.Status
+		notifications []try.Status
 		expectErr     bool
 		errAt         int
 	}{
 		{
 			name:          "no retries needed",
 			limit:         3,
-			notifications: []try_clone.Status{try_clone.StatusEmpty},
+			notifications: []try.Status{try.StatusEmpty},
 			expectErr:     false,
 		},
 		{
 			name:  "retries within limit",
 			limit: 3,
-			notifications: []try_clone.Status{
-				try_clone.StatusRetry,
-				try_clone.StatusRetry,
-				try_clone.StatusEmpty,
+			notifications: []try.Status{
+				try.StatusRetry,
+				try.StatusRetry,
+				try.StatusEmpty,
 			},
 			expectErr: false,
 		},
 		{
 			name:  "retries exceed limit",
 			limit: 2,
-			notifications: []try_clone.Status{
-				try_clone.StatusRetry,
-				try_clone.StatusRetry,
-				try_clone.StatusRetry,
+			notifications: []try.Status{
+				try.StatusRetry,
+				try.StatusRetry,
+				try.StatusRetry,
 			},
 			expectErr: true,
 			errAt:     2, // 0-indexed, so this is the 3rd retry attempt
@@ -71,9 +71,9 @@ func TestRetryLimit(t *testing.T) {
 		{
 			name:  "nil notify function",
 			limit: 2,
-			notifications: []try_clone.Status{
-				try_clone.StatusRetry,
-				try_clone.StatusEmpty,
+			notifications: []try.Status{
+				try.StatusRetry,
+				try.StatusEmpty,
 			},
 			expectErr: false,
 		},
@@ -81,12 +81,12 @@ func TestRetryLimit(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var notify try_clone.Notify
+			var notify try.Notify
 			if tc.name != "nil notify function" {
-				notify = func(n try_clone.Status) error { return nil }
+				notify = func(n try.Status) error { return nil }
 			}
 
-			limitedNotify := try_clone.RetryLimit(tc.limit, notify)
+			limitedNotify := try.RetryLimit(tc.limit, notify)
 
 			var err error
 			for i, status := range tc.notifications {
@@ -316,7 +316,7 @@ func TestTryClone(t *testing.T) {
 
 			mhs, mws, mgs, mos := tc.setupMocks(ctrl)
 
-			svc := try_clone.NewUsecase(mhs, mws, mgs, mos)
+			svc := try.NewUsecase(mhs, mws, mgs, mos)
 
 			repo := &hosting.Repository{
 				Ref:      repository.NewReference("github.com", "user", "repo"),
@@ -330,8 +330,8 @@ func TestTryClone(t *testing.T) {
 				}
 			}
 
-			var notifyCalledWith try_clone.Status
-			notify := func(status try_clone.Status) error {
+			var notifyCalledWith try.Status
+			notify := func(status try.Status) error {
 				notifyCalledWith = status
 				return nil
 			}
@@ -340,7 +340,7 @@ func TestTryClone(t *testing.T) {
 				context.Background(),
 				repo,
 				nil, // no alias
-				try_clone.Options{
+				try.Options{
 					Timeout: 30 * time.Second,
 					Notify:  notify,
 				},
@@ -360,7 +360,7 @@ func TestTryClone(t *testing.T) {
 			}
 
 			// Verify notification was called correctly for empty repo case
-			if tc.name == "empty repository" && notifyCalledWith != try_clone.StatusEmpty {
+			if tc.name == "empty repository" && notifyCalledWith != try.StatusEmpty {
 				t.Errorf("Expected notification with TryCloneStatusEmpty, got %v", notifyCalledWith)
 			}
 		})

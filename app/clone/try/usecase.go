@@ -1,4 +1,4 @@
-package try_clone
+package try
 
 import (
 	"context"

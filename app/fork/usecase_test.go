@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/app/fork"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -405,9 +405,9 @@ func TestUsecase_Execute(t *testing.T) {
 				)
 
 				opts := fork.Options{
-					TryCloneOptions: try_clone.Options{
+					TryCloneOptions: try.Options{
 						Timeout: 30 * time.Second,
-						Notify:  func(msg try_clone.Status) error { return nil },
+						Notify:  func(msg try.Status) error { return nil },
 					},
 					Target: tc.target,
 				}

@@ -4,19 +4,19 @@ import (
 	"context"
 
 	"github.com/apex/log"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 )
 
 // TryCloneNotify is a wrapper for the TryCloneNotify function to log the status.
 func TryCloneNotify(
 	ctx context.Context,
-	notify try_clone.Notify,
-) try_clone.Notify {
-	return func(n try_clone.Status) error {
+	notify try.Notify,
+) try.Notify {
+	return func(n try.Status) error {
 		switch n {
-		case try_clone.StatusEmpty:
+		case try.StatusEmpty:
 			log.FromContext(ctx).Info("created empty repository")
-		case try_clone.StatusRetry:
+		case try.StatusRetry:
 			log.FromContext(ctx).Info("waiting the remote repository is ready")
 		}
 		if notify != nil {

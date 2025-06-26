@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	testtarget "github.com/kyoh86/gogh/v4/app/create"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -49,7 +49,7 @@ func TestUsecase_Execute(t *testing.T) {
 			name:         "Success: Create and clone repository",
 			refWithAlias: "github.com/kyoh86/new-repo",
 			options: testtarget.Options{
-				TryCloneOptions: try_clone.Options{},
+				TryCloneOptions: try.Options{},
 				RepositoryOptions: hosting.CreateRepositoryOptions{
 					Description: "New repository",
 					Private:     true,
@@ -148,7 +148,7 @@ func TestUsecase_Execute(t *testing.T) {
 			name:         "Error: Reference parsing error",
 			refWithAlias: "invalid-reference",
 			options: testtarget.Options{
-				TryCloneOptions:   try_clone.Options{},
+				TryCloneOptions:   try.Options{},
 				RepositoryOptions: hosting.CreateRepositoryOptions{},
 			},
 			setupMocks: func(
@@ -173,7 +173,7 @@ func TestUsecase_Execute(t *testing.T) {
 			name:         "Error: Repository creation error",
 			refWithAlias: "github.com/kyoh86/repo-creation-failed",
 			options: testtarget.Options{
-				TryCloneOptions:   try_clone.Options{},
+				TryCloneOptions:   try.Options{},
 				RepositoryOptions: hosting.CreateRepositoryOptions{},
 			},
 			setupMocks: func(

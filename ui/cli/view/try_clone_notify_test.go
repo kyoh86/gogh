@@ -7,7 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
-	"github.com/kyoh86/gogh/v4/app/try_clone"
+	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,15 +23,15 @@ func TestTryCloneNotify(t *testing.T) {
 
 		// Mock notify function to verify call
 		var called bool
-		mockNotify := func(status try_clone.Status) error {
+		mockNotify := func(status try.Status) error {
 			called = true
-			assert.Equal(t, try_clone.StatusEmpty, status)
+			assert.Equal(t, try.StatusEmpty, status)
 			return nil
 		}
 
 		// Execute the function under test
 		notify := TryCloneNotify(ctx, mockNotify)
-		err := notify(try_clone.StatusEmpty)
+		err := notify(try.StatusEmpty)
 
 		// Verify
 		assert.NoError(t, err)
@@ -50,15 +50,15 @@ func TestTryCloneNotify(t *testing.T) {
 
 		// Mock notify function to verify call
 		var called bool
-		mockNotify := func(status try_clone.Status) error {
+		mockNotify := func(status try.Status) error {
 			called = true
-			assert.Equal(t, try_clone.StatusRetry, status)
+			assert.Equal(t, try.StatusRetry, status)
 			return nil
 		}
 
 		// Execute the function under test
 		notify := TryCloneNotify(ctx, mockNotify)
-		err := notify(try_clone.StatusRetry)
+		err := notify(try.StatusRetry)
 
 		// Verify
 		assert.NoError(t, err)
@@ -71,7 +71,7 @@ func TestTryCloneNotify(t *testing.T) {
 
 		// Test with nil notify function
 		notify := TryCloneNotify(ctx, nil)
-		err := notify(try_clone.StatusEmpty)
+		err := notify(try.StatusEmpty)
 
 		// Verify no error occurs
 		assert.NoError(t, err)
