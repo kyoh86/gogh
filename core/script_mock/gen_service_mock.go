@@ -59,18 +59,18 @@ func (mr *MockScriptServiceMockRecorder) Add(ctx, entry any) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockScriptService) Get(ctx context.Context, id string) (script.Script, error) {
+func (m *MockScriptService) Get(ctx context.Context, idlike string) (script.Script, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, idlike)
 	ret0, _ := ret[0].(script.Script)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockScriptServiceMockRecorder) Get(ctx, id any) *gomock.Call {
+func (mr *MockScriptServiceMockRecorder) Get(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockScriptService)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockScriptService)(nil).Get), ctx, idlike)
 }
 
 // HasChanges mocks base method.
@@ -128,44 +128,44 @@ func (mr *MockScriptServiceMockRecorder) MarkSaved() *gomock.Call {
 }
 
 // Open mocks base method.
-func (m *MockScriptService) Open(ctx context.Context, id string) (io.ReadCloser, error) {
+func (m *MockScriptService) Open(ctx context.Context, idlike string) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Open", ctx, id)
+	ret := m.ctrl.Call(m, "Open", ctx, idlike)
 	ret0, _ := ret[0].(io.ReadCloser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Open indicates an expected call of Open.
-func (mr *MockScriptServiceMockRecorder) Open(ctx, id any) *gomock.Call {
+func (mr *MockScriptServiceMockRecorder) Open(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Open", reflect.TypeOf((*MockScriptService)(nil).Open), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Open", reflect.TypeOf((*MockScriptService)(nil).Open), ctx, idlike)
 }
 
 // Remove mocks base method.
-func (m *MockScriptService) Remove(ctx context.Context, id string) error {
+func (m *MockScriptService) Remove(ctx context.Context, idlike string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Remove", ctx, id)
+	ret := m.ctrl.Call(m, "Remove", ctx, idlike)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Remove indicates an expected call of Remove.
-func (mr *MockScriptServiceMockRecorder) Remove(ctx, id any) *gomock.Call {
+func (mr *MockScriptServiceMockRecorder) Remove(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockScriptService)(nil).Remove), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockScriptService)(nil).Remove), ctx, idlike)
 }
 
 // Update mocks base method.
-func (m *MockScriptService) Update(ctx context.Context, id string, entry script.Entry) error {
+func (m *MockScriptService) Update(ctx context.Context, idlike string, entry script.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, entry)
+	ret := m.ctrl.Call(m, "Update", ctx, idlike, entry)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockScriptServiceMockRecorder) Update(ctx, id, entry any) *gomock.Call {
+func (mr *MockScriptServiceMockRecorder) Update(ctx, idlike, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockScriptService)(nil).Update), ctx, id, entry)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockScriptService)(nil).Update), ctx, idlike, entry)
 }

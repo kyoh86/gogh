@@ -59,18 +59,18 @@ func (mr *MockHookServiceMockRecorder) Add(ctx, entry any) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockHookService) Get(ctx context.Context, id string) (hook.Hook, error) {
+func (m *MockHookService) Get(ctx context.Context, idlike string) (hook.Hook, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, idlike)
 	ret0, _ := ret[0].(hook.Hook)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockHookServiceMockRecorder) Get(ctx, id any) *gomock.Call {
+func (mr *MockHookServiceMockRecorder) Get(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockHookService)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockHookService)(nil).Get), ctx, idlike)
 }
 
 // HasChanges mocks base method.
@@ -142,29 +142,29 @@ func (mr *MockHookServiceMockRecorder) MarkSaved() *gomock.Call {
 }
 
 // Remove mocks base method.
-func (m *MockHookService) Remove(ctx context.Context, id string) error {
+func (m *MockHookService) Remove(ctx context.Context, idlike string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Remove", ctx, id)
+	ret := m.ctrl.Call(m, "Remove", ctx, idlike)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Remove indicates an expected call of Remove.
-func (mr *MockHookServiceMockRecorder) Remove(ctx, id any) *gomock.Call {
+func (mr *MockHookServiceMockRecorder) Remove(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockHookService)(nil).Remove), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockHookService)(nil).Remove), ctx, idlike)
 }
 
 // Update mocks base method.
-func (m *MockHookService) Update(ctx context.Context, id string, entry hook.Entry) error {
+func (m *MockHookService) Update(ctx context.Context, idlike string, entry hook.Entry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, entry)
+	ret := m.ctrl.Call(m, "Update", ctx, idlike, entry)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockHookServiceMockRecorder) Update(ctx, id, entry any) *gomock.Call {
+func (mr *MockHookServiceMockRecorder) Update(ctx, idlike, entry any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockHookService)(nil).Update), ctx, id, entry)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockHookService)(nil).Update), ctx, idlike, entry)
 }

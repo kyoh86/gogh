@@ -74,18 +74,18 @@ func (mr *MockExtraServiceMockRecorder) AddNamedExtra(ctx, name, source, items a
 }
 
 // Get mocks base method.
-func (m *MockExtraService) Get(ctx context.Context, id string) (*extra.Extra, error) {
+func (m *MockExtraService) Get(ctx context.Context, idlike string) (*extra.Extra, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, idlike)
 	ret0, _ := ret[0].(*extra.Extra)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockExtraServiceMockRecorder) Get(ctx, id any) *gomock.Call {
+func (mr *MockExtraServiceMockRecorder) Get(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExtraService)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExtraService)(nil).Get), ctx, idlike)
 }
 
 // GetAutoExtra mocks base method.
@@ -187,17 +187,17 @@ func (mr *MockExtraServiceMockRecorder) MarkSaved() *gomock.Call {
 }
 
 // Remove mocks base method.
-func (m *MockExtraService) Remove(ctx context.Context, id string) error {
+func (m *MockExtraService) Remove(ctx context.Context, idlike string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Remove", ctx, id)
+	ret := m.ctrl.Call(m, "Remove", ctx, idlike)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Remove indicates an expected call of Remove.
-func (mr *MockExtraServiceMockRecorder) Remove(ctx, id any) *gomock.Call {
+func (mr *MockExtraServiceMockRecorder) Remove(ctx, idlike any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockExtraService)(nil).Remove), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockExtraService)(nil).Remove), ctx, idlike)
 }
 
 // RemoveAutoExtra mocks base method.

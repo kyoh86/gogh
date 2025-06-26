@@ -33,7 +33,7 @@ type ExtraService interface {
 	GetNamedExtra(ctx context.Context, name string) (*Extra, error)
 
 	// Get retrieves extra by ID
-	Get(ctx context.Context, id string) (*Extra, error)
+	Get(ctx context.Context, idlike string) (*Extra, error)
 
 	// RemoveAutoExtra removes auto-apply extra for a repository
 	RemoveAutoExtra(ctx context.Context, repo repository.Reference) error
@@ -42,7 +42,7 @@ type ExtraService interface {
 	RemoveNamedExtra(ctx context.Context, name string) error
 
 	// Remove removes extra by ID
-	Remove(ctx context.Context, id string) error
+	Remove(ctx context.Context, idlike string) error
 
 	// List lists all extra
 	List(ctx context.Context) iter.Seq2[*Extra, error]

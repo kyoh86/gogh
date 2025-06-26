@@ -15,8 +15,8 @@ type HookService interface {
 	List() iter.Seq2[Hook, error]
 	ListFor(reference repository.Reference, event Event) iter.Seq2[Hook, error]
 	Add(ctx context.Context, entry Entry) (id string, _ error)
-	Get(ctx context.Context, id string) (Hook, error)
-	Update(ctx context.Context, id string, entry Entry) error
-	Remove(ctx context.Context, id string) error
+	Get(ctx context.Context, idlike string) (Hook, error)
+	Update(ctx context.Context, idlike string, entry Entry) error
+	Remove(ctx context.Context, idlike string) error
 	Load(iter.Seq2[Hook, error]) error
 }
