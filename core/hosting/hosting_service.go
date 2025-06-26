@@ -34,7 +34,7 @@ type HostingService interface {
 	CreateRepositoryFromTemplate(
 		ctx context.Context,
 		ref repository.Reference,
-		template repository.Reference,
+		tmp repository.Reference,
 		opts CreateRepositoryFromTemplateOptions,
 	) (*Repository, error)
 	// ForkRepository creates a fork of a repository on the remote hosting service

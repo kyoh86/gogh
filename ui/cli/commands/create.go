@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/create"
-	"github.com/kyoh86/gogh/v4/app/create_from_template"
+	"github.com/kyoh86/gogh/v4/app/create/template"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
@@ -76,11 +76,11 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				return fmt.Errorf("creating the repository: %w", err)
 			}
 		} else {
-			template, err := svc.ReferenceParser.Parse(f.Template)
+			tmp, err := svc.ReferenceParser.Parse(f.Template)
 			if err != nil {
 				return fmt.Errorf("invalid template: %w", err)
 			}
-			if err := create_from_template.NewUsecase(
+			if err := template.NewUsecase(
 				svc.HostingService,
 				svc.WorkspaceService,
 				svc.FinderService,
@@ -89,12 +89,12 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				svc.HookService,
 				svc.ReferenceParser,
 				svc.GitService,
-			).Execute(ctx, refWithAlias, *template, create_from_template.CreateFromTemplateOptions{
+			).Execute(ctx, refWithAlias, *tmp, template.CreateFromTemplateOptions{
 				TryCloneOptions: try_clone.Options{
 					Timeout: f.CloneRetryTimeout,
 					Notify:  try_clone.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
-				RepositoryOptions: create_from_template.RepositoryOptions{
+				RepositoryOptions: template.RepositoryOptions{
 					Description:        f.Description,
 					IncludeAllBranches: f.IncludeAllBranches,
 					Private:            f.Private,

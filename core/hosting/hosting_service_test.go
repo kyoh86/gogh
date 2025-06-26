@@ -91,9 +91,9 @@ func (m *mockHostingService) CreateRepository(ctx context.Context, ref repositor
 	}, nil
 }
 
-func (m *mockHostingService) CreateRepositoryFromTemplate(ctx context.Context, ref repository.Reference, template repository.Reference, opts hosting.CreateRepositoryFromTemplateOptions) (*hosting.Repository, error) {
+func (m *mockHostingService) CreateRepositoryFromTemplate(ctx context.Context, ref repository.Reference, tmp repository.Reference, opts hosting.CreateRepositoryFromTemplateOptions) (*hosting.Repository, error) {
 	if m.createRepositoryFromTemplateFunc != nil {
-		return m.createRepositoryFromTemplateFunc(ctx, ref, template, opts)
+		return m.createRepositoryFromTemplateFunc(ctx, ref, tmp, opts)
 	}
 	return &hosting.Repository{
 		Ref:         ref,
@@ -518,7 +518,7 @@ func TestHostingService_CreateRepository(t *testing.T) {
 func TestHostingService_CreateRepositoryFromTemplate(t *testing.T) {
 	ctx := context.Background()
 	ref := repository.NewReference("github.com", "kyoh86", "new-from-template")
-	template := repository.NewReference("github.com", "org", "template-repo")
+	tmp := repository.NewReference("github.com", "org", "template-repo")
 
 	t.Run("success", func(t *testing.T) {
 		service := &mockHostingService{}
@@ -527,7 +527,7 @@ func TestHostingService_CreateRepositoryFromTemplate(t *testing.T) {
 			IncludeAllBranches: true,
 			Private:            true,
 		}
-		repo, err := service.CreateRepositoryFromTemplate(ctx, ref, template, opts)
+		repo, err := service.CreateRepositoryFromTemplate(ctx, ref, tmp, opts)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -544,12 +544,12 @@ func TestHostingService_CreateRepositoryFromTemplate(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		service := &mockHostingService{
-			createRepositoryFromTemplateFunc: func(ctx context.Context, ref, template repository.Reference, opts hosting.CreateRepositoryFromTemplateOptions) (*hosting.Repository, error) {
+			createRepositoryFromTemplateFunc: func(ctx context.Context, ref, tmp repository.Reference, opts hosting.CreateRepositoryFromTemplateOptions) (*hosting.Repository, error) {
 				return nil, errors.New("template not found")
 			},
 		}
 		opts := hosting.CreateRepositoryFromTemplateOptions{}
-		_, err := service.CreateRepositoryFromTemplate(ctx, ref, template, opts)
+		_, err := service.CreateRepositoryFromTemplate(ctx, ref, tmp, opts)
 		if err == nil {
 			t.Error("expected error, got nil")
 		}

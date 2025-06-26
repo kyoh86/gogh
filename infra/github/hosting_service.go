@@ -431,7 +431,7 @@ func (s *HostingService) CreateRepository(
 func (s *HostingService) CreateRepositoryFromTemplate(
 	ctx context.Context,
 	ref repository.Reference,
-	template repository.Reference,
+	tmp repository.Reference,
 	opts hosting.CreateRepositoryFromTemplateOptions,
 ) (*hosting.Repository, error) {
 	user, token, err := s.GetTokenFor(ctx, ref.Host(), ref.Owner())
@@ -450,8 +450,8 @@ func (s *HostingService) CreateRepositoryFromTemplate(
 	}
 	repo, _, err := conn.rest.Repositories.CreateFromTemplate(
 		ctx,
-		template.Owner(),
-		template.Name(),
+		tmp.Owner(),
+		tmp.Name(),
 		&req,
 	)
 	if err != nil {

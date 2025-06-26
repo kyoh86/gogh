@@ -1,4 +1,4 @@
-package create_from_template
+package template
 
 import (
 	"context"
@@ -61,7 +61,7 @@ type CreateFromTemplateOptions struct {
 func (uc *Usecase) Execute(
 	ctx context.Context,
 	refWithAlias string,
-	template repository.Reference,
+	tmp repository.Reference,
 	opts CreateFromTemplateOptions,
 ) error {
 	ref, err := uc.referenceParser.ParseWithAlias(refWithAlias)
@@ -69,7 +69,7 @@ func (uc *Usecase) Execute(
 		return fmt.Errorf("invalid reference: %w", err)
 	}
 	tryCloneUsecase := try_clone.NewUsecase(uc.hostingService, uc.workspaceService, uc.overlayService, uc.gitService)
-	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref.Reference, template, opts.RepositoryOptions)
+	repo, err := uc.hostingService.CreateRepositoryFromTemplate(ctx, ref.Reference, tmp, opts.RepositoryOptions)
 	if err != nil {
 		return fmt.Errorf("creating repository from template: %w", err)
 	}

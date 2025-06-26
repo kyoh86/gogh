@@ -1,4 +1,4 @@
-package create_from_template_test
+package template_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	testtarget "github.com/kyoh86/gogh/v4/app/create_from_template"
+	testtarget "github.com/kyoh86/gogh/v4/app/create/template"
 	"github.com/kyoh86/gogh/v4/app/try_clone"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -31,7 +31,7 @@ func TestUsecase_Execute(t *testing.T) {
 	tests := []struct {
 		name         string
 		refWithAlias string
-		template     repository.Reference
+		tmp          repository.Reference
 		options      testtarget.CreateFromTemplateOptions
 		setupMocks   func(
 			mockHosting *hosting_mock.MockHostingService,
@@ -49,7 +49,7 @@ func TestUsecase_Execute(t *testing.T) {
 		{
 			name:         "Success: Create from template and clone repository",
 			refWithAlias: "github.com/kyoh86/new-repo",
-			template:     repository.NewReference("github.com", "kyoh86", "template-repo"),
+			tmp:          repository.NewReference("github.com", "kyoh86", "template-repo"),
 			options: testtarget.CreateFromTemplateOptions{
 				TryCloneOptions: try_clone.Options{},
 				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{
@@ -151,7 +151,7 @@ func TestUsecase_Execute(t *testing.T) {
 		{
 			name:         "Error: Reference parsing error",
 			refWithAlias: "invalid-reference",
-			template:     repository.NewReference("github.com", "kyoh86", "template-repo"),
+			tmp:          repository.NewReference("github.com", "kyoh86", "template-repo"),
 			options: testtarget.CreateFromTemplateOptions{
 				TryCloneOptions:   try_clone.Options{},
 				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{},
@@ -177,7 +177,7 @@ func TestUsecase_Execute(t *testing.T) {
 		{
 			name:         "Error: Repository creation from template error",
 			refWithAlias: "github.com/kyoh86/repo-creation-failed",
-			template:     repository.NewReference("github.com", "kyoh86", "template-repo"),
+			tmp:          repository.NewReference("github.com", "kyoh86", "template-repo"),
 			options: testtarget.CreateFromTemplateOptions{
 				TryCloneOptions:   try_clone.Options{},
 				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{},
@@ -237,7 +237,7 @@ func TestUsecase_Execute(t *testing.T) {
 			usecase := testtarget.NewUsecase(mockHosting, mockWorkspace, mockFinder, mockOverlay, mockScript, mockHook, mockRefParser, mockGit)
 
 			// Execute test
-			err := usecase.Execute(context.Background(), tt.refWithAlias, tt.template, tt.options)
+			err := usecase.Execute(context.Background(), tt.refWithAlias, tt.tmp, tt.options)
 
 			// Verify results
 			if err == nil {

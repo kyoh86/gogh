@@ -61,18 +61,18 @@ func (mr *MockHostingServiceMockRecorder) CreateRepository(ctx, ref, opts any) *
 }
 
 // CreateRepositoryFromTemplate mocks base method.
-func (m *MockHostingService) CreateRepositoryFromTemplate(ctx context.Context, ref, template repository.Reference, opts hosting.CreateRepositoryFromTemplateOptions) (*hosting.Repository, error) {
+func (m *MockHostingService) CreateRepositoryFromTemplate(ctx context.Context, ref, tmp repository.Reference, opts hosting.CreateRepositoryFromTemplateOptions) (*hosting.Repository, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRepositoryFromTemplate", ctx, ref, template, opts)
+	ret := m.ctrl.Call(m, "CreateRepositoryFromTemplate", ctx, ref, tmp, opts)
 	ret0, _ := ret[0].(*hosting.Repository)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateRepositoryFromTemplate indicates an expected call of CreateRepositoryFromTemplate.
-func (mr *MockHostingServiceMockRecorder) CreateRepositoryFromTemplate(ctx, ref, template, opts any) *gomock.Call {
+func (mr *MockHostingServiceMockRecorder) CreateRepositoryFromTemplate(ctx, ref, tmp, opts any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepositoryFromTemplate", reflect.TypeOf((*MockHostingService)(nil).CreateRepositoryFromTemplate), ctx, ref, template, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepositoryFromTemplate", reflect.TypeOf((*MockHostingService)(nil).CreateRepositoryFromTemplate), ctx, ref, tmp, opts)
 }
 
 // DeleteRepository mocks base method.

@@ -274,7 +274,7 @@ func TestCreateRepository(t *testing.T) {
 
 func TestCreateRepositoryFromTemplate(t *testing.T) {
 	ctx := context.Background()
-	template := repository.NewReference("github.com", "kyoh86", "template-repo")
+	tmp := repository.NewReference("github.com", "kyoh86", "template-repo")
 
 	// Test error handling for token retrieval
 	t.Run("token error", func(t *testing.T) {
@@ -289,7 +289,7 @@ func TestCreateRepositoryFromTemplate(t *testing.T) {
 		mockTokenService.EXPECT().Entries().Return([]auth.TokenEntry{})
 
 		errorRef := repository.NewReference("github.com", "error", "repo")
-		_, err := service.CreateRepositoryFromTemplate(ctx, errorRef, template, hosting.CreateRepositoryFromTemplateOptions{})
+		_, err := service.CreateRepositoryFromTemplate(ctx, errorRef, tmp, hosting.CreateRepositoryFromTemplateOptions{})
 		if err == nil {
 			t.Error("Expected error for token retrieval, got nil")
 		}
