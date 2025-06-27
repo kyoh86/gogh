@@ -17,8 +17,11 @@ mocks: \
 	workspace_mock/gen_layout_service_mock.go \
 	workspace_mock/gen_workspace_service_mock.go \
 	overlay_mock/gen_service_mock.go \
+	overlay_mock/gen_overlay_mock.go \
 	script_mock/gen_service_mock.go \
+	script_mock/gen_script_mock.go \
 	hook_mock/gen_service_mock.go \
+	hook_mock/gen_hook_mock.go \
 	extra_mock/gen_service_mock.go
 
 # Rules for each mock file
@@ -61,10 +64,19 @@ workspace_mock/gen_workspace_service_mock.go: workspace/workspace_service.go
 overlay_mock/gen_service_mock.go: overlay/service.go
 	$(MOCKGEN) -source $< -destination $@ -package overlay_mock
 
+overlay_mock/gen_overlay_mock.go: overlay/overlay.go
+	$(MOCKGEN) -source $< -destination $@ -package overlay_mock
+
 script_mock/gen_service_mock.go: script/service.go
 	$(MOCKGEN) -source $< -destination $@ -package script_mock
 
+script_mock/gen_script_mock.go: script/script.go
+	$(MOCKGEN) -source $< -destination $@ -package script_mock
+
 hook_mock/gen_service_mock.go: hook/service.go
+	$(MOCKGEN) -source $< -destination $@ -package hook_mock
+
+hook_mock/gen_hook_mock.go: hook/hook.go
 	$(MOCKGEN) -source $< -destination $@ -package hook_mock
 
 extra_mock/gen_service_mock.go: extra/extra_service.go

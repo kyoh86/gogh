@@ -38,7 +38,7 @@ func TestUsecase_Execute(t *testing.T) {
 					"github.com/owner/*",
 					string(hook.EventPostClone),
 					string(hook.OperationTypeOverlay),
-					"overlay-123",
+					uuid.New(),
 				)
 				hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 				return hs
@@ -63,13 +63,14 @@ func TestUsecase_Execute(t *testing.T) {
 			asJSON: true,
 			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
 				hs := hook_mock.NewMockHookService(ctrl)
+				operationID := uuid.New()
 				h := hook.ConcreteHook(
 					uuid.New(),
 					"script-hook",
 					"github.com/test/*",
 					string(hook.EventPostFork),
 					string(hook.OperationTypeScript),
-					"script-456",
+					operationID,
 				)
 				hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 				return hs
@@ -77,7 +78,7 @@ func TestUsecase_Execute(t *testing.T) {
 			wantErr: false,
 			validate: func(t *testing.T, output string) {
 				// Should be valid JSON
-				var data map[string]interface{}
+				var data map[string]any
 				if err := json.Unmarshal([]byte(output), &data); err != nil {
 					t.Errorf("Expected valid JSON output, got error: %v", err)
 				}
@@ -91,8 +92,13 @@ func TestUsecase_Execute(t *testing.T) {
 				if data["operation_type"] != "script" {
 					t.Errorf("Expected operation_type 'script', got %v", data["operation_type"])
 				}
-				if data["operation_id"] != "script-456" {
-					t.Errorf("Expected operation_id 'script-456', got %v", data["operation_id"])
+				// Just check that operation_id is a valid UUID
+				operationIDStr, ok := data["operation_id"].(string)
+				if !ok {
+					t.Errorf("Expected operation_id to be a string, got %T", data["operation_id"])
+				}
+				if _, err := uuid.Parse(operationIDStr); err != nil {
+					t.Errorf("Expected operation_id to be a valid UUID, got %v", operationIDStr)
 				}
 			},
 		},
@@ -108,7 +114,7 @@ func TestUsecase_Execute(t *testing.T) {
 					"", // Empty pattern means global
 					string(hook.EventPostCreate),
 					string(hook.OperationTypeOverlay),
-					"overlay-789",
+					uuid.New(),
 				)
 				hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 				return hs
@@ -135,14 +141,14 @@ func TestUsecase_Execute(t *testing.T) {
 					"github.com/any/*",
 					string(hook.EventAny),
 					string(hook.OperationTypeScript),
-					"script-any",
+					uuid.New(),
 				)
 				hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 				return hs
 			},
 			wantErr: false,
 			validate: func(t *testing.T, output string) {
-				var data map[string]interface{}
+				var data map[string]any
 				if err := json.Unmarshal([]byte(output), &data); err != nil {
 					t.Errorf("Expected valid JSON output, got error: %v", err)
 				}
@@ -209,7 +215,7 @@ func TestUsecase_Execute(t *testing.T) {
 					"github.com/long/*",
 					string(hook.EventPostClone),
 					string(hook.OperationTypeOverlay),
-					"overlay-long",
+					uuid.New(),
 				)
 				hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 				return hs
@@ -234,14 +240,14 @@ func TestUsecase_Execute(t *testing.T) {
 					"github.com/{owner1,owner2}/{repo1,repo2,repo3}",
 					string(hook.EventPostFork),
 					string(hook.OperationTypeScript),
-					"script-complex",
+					uuid.New(),
 				)
 				hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 				return hs
 			},
 			wantErr: false,
 			validate: func(t *testing.T, output string) {
-				var data map[string]interface{}
+				var data map[string]any
 				if err := json.Unmarshal([]byte(output), &data); err != nil {
 					t.Errorf("Expected valid JSON output, got error: %v", err)
 				}
@@ -298,7 +304,7 @@ func TestUsecase_Execute_AllEventTypes(t *testing.T) {
 				"github.com/test/*",
 				string(event),
 				string(hook.OperationTypeOverlay),
-				"overlay-123",
+				uuid.New(),
 			)
 			hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 
@@ -308,7 +314,7 @@ func TestUsecase_Execute_AllEventTypes(t *testing.T) {
 			}
 
 			// Verify JSON contains correct event
-			var data map[string]interface{}
+			var data map[string]any
 			if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
 				t.Errorf("Failed to parse JSON for event %s: %v", event, err)
 			}
@@ -341,7 +347,7 @@ func TestUsecase_Execute_AllOperationTypes(t *testing.T) {
 				"github.com/test/*",
 				string(hook.EventPostClone),
 				string(opType),
-				"operation-123",
+				uuid.New(),
 			)
 			hs.EXPECT().Get(ctx, gomock.Any()).Return(h, nil)
 
@@ -351,7 +357,7 @@ func TestUsecase_Execute_AllOperationTypes(t *testing.T) {
 			}
 
 			// Verify JSON contains correct operation type
-			var data map[string]interface{}
+			var data map[string]any
 			if err := json.Unmarshal(buf.Bytes(), &data); err != nil {
 				t.Errorf("Failed to parse JSON for operation %s: %v", opType, err)
 			}

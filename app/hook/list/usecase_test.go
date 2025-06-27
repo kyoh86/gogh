@@ -34,7 +34,7 @@ func TestUsecase_Execute(t *testing.T) {
 						"github.com/owner/*",
 						string(hook.EventPostClone),
 						string(hook.OperationTypeOverlay),
-						"overlay-id-1",
+						uuid.New(),
 					),
 					hook.ConcreteHook(
 						uuid.New(),
@@ -42,7 +42,7 @@ func TestUsecase_Execute(t *testing.T) {
 						"github.com/org/**",
 						string(hook.EventPostCreate),
 						string(hook.OperationTypeScript),
-						"script-id-1",
+						uuid.New(),
 					),
 				}
 				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
@@ -71,7 +71,7 @@ func TestUsecase_Execute(t *testing.T) {
 						"github.com/test/*",
 						string(hook.EventPostFork),
 						string(hook.OperationTypeScript),
-						"script-id-2",
+						uuid.New(),
 					),
 				}
 				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
@@ -101,7 +101,7 @@ func TestUsecase_Execute(t *testing.T) {
 						"",
 						string(hook.EventAny),
 						string(hook.OperationTypeOverlay),
-						"overlay-id",
+						uuid.New(),
 					), nil)
 				})
 			},
@@ -130,7 +130,7 @@ func TestUsecase_Execute(t *testing.T) {
 						"github.com/owner/*",
 						string(hook.EventPostClone),
 						string(hook.OperationTypeOverlay),
-						"overlay-id",
+						uuid.New(),
 					),
 				}
 				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {

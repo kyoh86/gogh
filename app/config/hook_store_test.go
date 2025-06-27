@@ -72,13 +72,15 @@ func TestHookStore_Load(t *testing.T) {
 				tempDir := t.TempDir()
 				path := filepath.Join(tempDir, "hook.toml")
 
+				overlayID := uuid.New()
+				scriptID := uuid.New()
 				content := `[[hooks]]
 id = "` + uuid.New().String() + `"
 name = "post-clone-hook"
 repo-pattern = "github.com/owner/*"
 trigger-event = "post-clone"
 operation-type = "overlay"
-operation-id = "overlay-123"
+operation-id = "` + overlayID.String() + `"
 
 [[hooks]]
 id = "` + uuid.New().String() + `"
@@ -86,7 +88,7 @@ name = "post-create-script"
 repo-pattern = "github.com/myorg/*"
 trigger-event = "post-create"
 operation-type = "script"
-operation-id = "script-456"
+operation-id = "` + scriptID.String() + `"
 `
 				if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 					t.Fatalf("Failed to write test file: %v", err)
@@ -174,7 +176,7 @@ name = "test-hook"
 repo-pattern = "*"
 trigger-event = "post-clone"
 operation-type = "overlay"
-operation-id = "test-id"
+operation-id = "` + uuid.New().String() + `"
 `
 				if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 					t.Fatalf("Failed to write test file: %v", err)
@@ -256,7 +258,7 @@ func TestHookStore_Save(t *testing.T) {
 					"github.com/owner/*",
 					string(hook.EventPostClone),
 					string(hook.OperationTypeOverlay),
-					"overlay-id-1",
+					uuid.New(),
 				)
 
 				hook2 := hook.ConcreteHook(
@@ -265,7 +267,7 @@ func TestHookStore_Save(t *testing.T) {
 					"github.com/test/*",
 					string(hook.EventPostFork),
 					string(hook.OperationTypeScript),
-					"script-id-2",
+					uuid.New(),
 				)
 
 				hs.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
@@ -312,7 +314,7 @@ func TestHookStore_Save(t *testing.T) {
 					"*",
 					string(hook.EventPostClone),
 					string(hook.OperationTypeOverlay),
-					"test-id",
+					uuid.New(),
 				)
 
 				hs.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
@@ -363,7 +365,7 @@ func TestHookStore_Save(t *testing.T) {
 					"*",
 					string(hook.EventPostClone),
 					string(hook.OperationTypeOverlay),
-					"test-id",
+					uuid.New(),
 				)
 
 				hs.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {

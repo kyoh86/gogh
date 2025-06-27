@@ -31,7 +31,7 @@ func NewHookUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				OperationType: f.operationType,
 				OperationID:   f.operationID,
 			}
-			if err := update.NewUsecase(svc.HookService).Execute(ctx, hookID, opts); err != nil {
+			if err := update.NewUsecase(svc.HookService, svc.OverlayService, svc.ScriptService).Execute(ctx, hookID, opts); err != nil {
 				return fmt.Errorf("updating hook metadata: %w", err)
 			}
 			return nil
@@ -45,6 +45,12 @@ func NewHookUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	if err := enumFlag(cmd, &f.operationType, "operation-type", "", "Operation type", "overlay", "script"); err != nil {
 		return nil, fmt.Errorf("registering operation-type flag: %w", err)
 	}
-	cmd.Flags().StringVar(&f.operationID, "operation-id", "", "Operation resource ID")
+	if err := cmd.MarkFlagRequired("operation-type"); err != nil {
+		return nil, fmt.Errorf("marking operation-type flag required: %w", err)
+	}
+	cmd.Flags().StringVar(&f.operationID, "operation-id", "", "Operation resource ID (overlay ID or script ID). It can be a partial ID as it is matched by prefix.")
+	if err := cmd.MarkFlagRequired("operation-id"); err != nil {
+		return nil, fmt.Errorf("marking operation-id flag required: %w", err)
+	}
 	return cmd, nil
 }

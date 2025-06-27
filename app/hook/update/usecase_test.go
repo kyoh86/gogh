@@ -9,6 +9,8 @@ import (
 	testtarget "github.com/kyoh86/gogh/v4/app/hook/update"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hook_mock"
+	"github.com/kyoh86/gogh/v4/core/overlay_mock"
+	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"go.uber.org/mock/gomock"
 )
 
@@ -19,7 +21,7 @@ func TestUsecase_Execute(t *testing.T) {
 		name      string
 		hookID    string
 		opts      testtarget.Options
-		setupMock func(*gomock.Controller) *hook_mock.MockHookService
+		setupMock func(*gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService)
 		wantErr   bool
 	}{
 		{
@@ -32,8 +34,17 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: string(hook.OperationTypeOverlay),
 				OperationID:   "overlay-updated",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
+				overlayID := uuid.New()
 				hs := hook_mock.NewMockHookService(ctrl)
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+
+				// Mock overlay resolution
+				mockOverlay := overlay_mock.NewMockOverlay(ctrl)
+				mockOverlay.EXPECT().UUID().Return(overlayID)
+				os.EXPECT().Get(ctx, "overlay-updated").Return(mockOverlay, nil)
+
 				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, entry hook.Entry) error {
 						// Validate the ID
@@ -53,13 +64,13 @@ func TestUsecase_Execute(t *testing.T) {
 						if entry.OperationType != hook.OperationTypeOverlay {
 							t.Errorf("Expected operation type %s, got %s", hook.OperationTypeOverlay, entry.OperationType)
 						}
-						if entry.OperationID != "overlay-updated" {
-							t.Errorf("Expected operation ID 'overlay-updated', got %s", entry.OperationID)
+						if entry.OperationID != overlayID {
+							t.Errorf("Expected operation ID %s, got %s", overlayID, entry.OperationID)
 						}
 						return nil
 					},
 				)
-				return hs
+				return hs, os, ss
 			},
 			wantErr: false,
 		},
@@ -73,8 +84,12 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: "",
 				OperationID:   "",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
 				hs := hook_mock.NewMockHookService(ctrl)
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+				// No operation ID resolution needed when operation type is empty
+
 				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, entry hook.Entry) error {
 						if entry.Name != "partial-update" {
@@ -89,13 +104,14 @@ func TestUsecase_Execute(t *testing.T) {
 						if entry.OperationType != "" {
 							t.Errorf("Expected empty operation type, got %s", entry.OperationType)
 						}
-						if entry.OperationID != "" {
+						var zero uuid.UUID
+						if entry.OperationID != zero {
 							t.Errorf("Expected empty operation ID, got %s", entry.OperationID)
 						}
 						return nil
 					},
 				)
-				return hs
+				return hs, os, ss
 			},
 			wantErr: false,
 		},
@@ -109,20 +125,29 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: string(hook.OperationTypeScript),
 				OperationID:   "script-123",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
+				scriptID := uuid.New()
 				hs := hook_mock.NewMockHookService(ctrl)
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+
+				// Mock script resolution
+				mockScript := script_mock.NewMockScript(ctrl)
+				mockScript.EXPECT().UUID().Return(scriptID)
+				ss.EXPECT().Get(ctx, "script-123").Return(mockScript, nil)
+
 				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, entry hook.Entry) error {
 						if entry.OperationType != hook.OperationTypeScript {
 							t.Errorf("Expected operation type %s, got %s", hook.OperationTypeScript, entry.OperationType)
 						}
-						if entry.OperationID != "script-123" {
-							t.Errorf("Expected operation ID 'script-123', got %s", entry.OperationID)
+						if entry.OperationID != scriptID {
+							t.Errorf("Expected operation ID %s, got %s", scriptID, entry.OperationID)
 						}
 						return nil
 					},
 				)
-				return hs
+				return hs, os, ss
 			},
 			wantErr: false,
 		},
@@ -136,10 +161,15 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: string(hook.OperationTypeOverlay),
 				OperationID:   "overlay-123",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
 				hs := hook_mock.NewMockHookService(ctrl)
-				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).Return(errors.New("hook not found"))
-				return hs
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+
+				// Mock overlay resolution failure
+				os.EXPECT().Get(ctx, "overlay-123").Return(nil, errors.New("overlay not found"))
+
+				return hs, os, ss
 			},
 			wantErr: true,
 		},
@@ -153,10 +183,15 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: string(hook.OperationTypeOverlay),
 				OperationID:   "overlay-123",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
 				hs := hook_mock.NewMockHookService(ctrl)
-				hs.EXPECT().Update(ctx, "invalid-id", gomock.Any()).Return(errors.New("invalid hook ID"))
-				return hs
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+
+				// Mock overlay resolution failure
+				os.EXPECT().Get(ctx, "overlay-123").Return(nil, errors.New("overlay not found"))
+
+				return hs, os, ss
 			},
 			wantErr: true,
 		},
@@ -170,10 +205,15 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: string(hook.OperationTypeOverlay),
 				OperationID:   "overlay-123",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
 				hs := hook_mock.NewMockHookService(ctrl)
-				hs.EXPECT().Update(ctx, "", gomock.Any()).Return(errors.New("hook ID is required"))
-				return hs
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+
+				// Mock overlay resolution failure
+				os.EXPECT().Get(ctx, "overlay-123").Return(nil, errors.New("overlay not found"))
+
+				return hs, os, ss
 			},
 			wantErr: true,
 		},
@@ -187,15 +227,13 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: "",
 				OperationID:   "",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
 				hs := hook_mock.NewMockHookService(ctrl)
-				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, entry hook.Entry) error {
-						// Service might validate and return error
-						return errors.New("at least one field must be provided")
-					},
-				)
-				return hs
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+				// Hook service should be called even with empty operation type
+				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).Return(errors.New("at least one field must be provided"))
+				return hs, os, ss
 			},
 			wantErr: true,
 		},
@@ -209,8 +247,17 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: string(hook.OperationTypeScript),
 				OperationID:   "script-custom",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
+				scriptID := uuid.New()
 				hs := hook_mock.NewMockHookService(ctrl)
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+
+				// Mock script resolution
+				mockScript := script_mock.NewMockScript(ctrl)
+				mockScript.EXPECT().UUID().Return(scriptID)
+				ss.EXPECT().Get(ctx, "script-custom").Return(mockScript, nil)
+
 				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, entry hook.Entry) error {
 						if string(entry.TriggerEvent) != "custom-event" {
@@ -219,7 +266,7 @@ func TestUsecase_Execute(t *testing.T) {
 						return nil
 					},
 				)
-				return hs
+				return hs, os, ss
 			},
 			wantErr: false,
 		},
@@ -233,10 +280,15 @@ func TestUsecase_Execute(t *testing.T) {
 				OperationType: string(hook.OperationTypeOverlay),
 				OperationID:   "overlay-123",
 			},
-			setupMock: func(ctrl *gomock.Controller) *hook_mock.MockHookService {
+			setupMock: func(ctrl *gomock.Controller) (*hook_mock.MockHookService, *overlay_mock.MockOverlayService, *script_mock.MockScriptService) {
 				hs := hook_mock.NewMockHookService(ctrl)
-				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).Return(errors.New("storage error"))
-				return hs
+				os := overlay_mock.NewMockOverlayService(ctrl)
+				ss := script_mock.NewMockScriptService(ctrl)
+
+				// Mock overlay resolution failure
+				os.EXPECT().Get(ctx, "overlay-123").Return(nil, errors.New("overlay not found"))
+
+				return hs, os, ss
 			},
 			wantErr: true,
 		},
@@ -247,8 +299,8 @@ func TestUsecase_Execute(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			hs := tc.setupMock(ctrl)
-			uc := testtarget.NewUsecase(hs)
+			hs, os, ss := tc.setupMock(ctrl)
+			uc := testtarget.NewUsecase(hs, os, ss)
 
 			err := uc.Execute(ctx, tc.hookID, tc.opts)
 			if (err != nil) != tc.wantErr {
@@ -273,7 +325,16 @@ func TestUsecase_Execute_AllEventTypes(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			overlayID := uuid.New()
 			hs := hook_mock.NewMockHookService(ctrl)
+			os := overlay_mock.NewMockOverlayService(ctrl)
+			ss := script_mock.NewMockScriptService(ctrl)
+
+			// Mock overlay resolution
+			mockOverlay := overlay_mock.NewMockOverlay(ctrl)
+			mockOverlay.EXPECT().UUID().Return(overlayID)
+			os.EXPECT().Get(ctx, "overlay-123").Return(mockOverlay, nil)
+
 			hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
 				func(ctx context.Context, id string, entry hook.Entry) error {
 					if entry.TriggerEvent != event {
@@ -283,7 +344,7 @@ func TestUsecase_Execute_AllEventTypes(t *testing.T) {
 				},
 			)
 
-			uc := testtarget.NewUsecase(hs)
+			uc := testtarget.NewUsecase(hs, os, ss)
 			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",
@@ -314,16 +375,45 @@ func TestUsecase_Execute_AllOperationTypes(t *testing.T) {
 			defer ctrl.Finish()
 
 			hs := hook_mock.NewMockHookService(ctrl)
-			hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
-				func(ctx context.Context, id string, entry hook.Entry) error {
-					if entry.OperationType != opType {
-						t.Errorf("Expected operation type %s, got %s", opType, entry.OperationType)
-					}
-					return nil
-				},
-			)
+			os := overlay_mock.NewMockOverlayService(ctrl)
+			ss := script_mock.NewMockScriptService(ctrl)
 
-			uc := testtarget.NewUsecase(hs)
+			// Mock appropriate service based on operation type
+			if opType == hook.OperationTypeOverlay {
+				overlayID := uuid.New()
+				mockOverlay := overlay_mock.NewMockOverlay(ctrl)
+				mockOverlay.EXPECT().UUID().Return(overlayID)
+				os.EXPECT().Get(ctx, "operation-123").Return(mockOverlay, nil)
+				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, id string, entry hook.Entry) error {
+						if entry.OperationType != opType {
+							t.Errorf("Expected operation type %s, got %s", opType, entry.OperationType)
+						}
+						if entry.OperationID != overlayID {
+							t.Errorf("Expected operation ID %s, got %s", overlayID, entry.OperationID)
+						}
+						return nil
+					},
+				)
+			} else {
+				scriptID := uuid.New()
+				mockScript := script_mock.NewMockScript(ctrl)
+				mockScript.EXPECT().UUID().Return(scriptID)
+				ss.EXPECT().Get(ctx, "operation-123").Return(mockScript, nil)
+				hs.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, id string, entry hook.Entry) error {
+						if entry.OperationType != opType {
+							t.Errorf("Expected operation type %s, got %s", opType, entry.OperationType)
+						}
+						if entry.OperationID != scriptID {
+							t.Errorf("Expected operation ID %s, got %s", scriptID, entry.OperationID)
+						}
+						return nil
+					},
+				)
+			}
+
+			uc := testtarget.NewUsecase(hs, os, ss)
 			opts := testtarget.Options{
 				Name:          "test-hook",
 				RepoPattern:   "github.com/test/*",

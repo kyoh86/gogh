@@ -13,6 +13,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
@@ -22,6 +23,7 @@ type Usecase struct {
 	finderService    workspace.FinderService
 	gitService       git.GitService
 	overlayService   overlay.OverlayService
+	scriptService    script.ScriptService
 	hookService      hook.HookService
 	extraService     extra.ExtraService
 	referenceParser  repository.ReferenceParser
@@ -33,6 +35,7 @@ func NewUsecase(
 	finderService workspace.FinderService,
 	gitService git.GitService,
 	overlayService overlay.OverlayService,
+	scriptService script.ScriptService,
 	hookService hook.HookService,
 	extraService extra.ExtraService,
 	referenceParser repository.ReferenceParser,
@@ -42,6 +45,7 @@ func NewUsecase(
 		finderService:    finderService,
 		gitService:       gitService,
 		overlayService:   overlayService,
+		scriptService:    scriptService,
 		hookService:      hookService,
 		extraService:     extraService,
 		referenceParser:  referenceParser,
@@ -111,7 +115,7 @@ func (uc *Usecase) Execute(ctx context.Context, repoStr string) error {
 		}
 
 		// Create post-clone hook for this overlay
-		hookAddUC := add.NewUsecase(uc.hookService)
+		hookAddUC := add.NewUsecase(uc.hookService, uc.overlayService, uc.scriptService)
 		hookID, err := hookAddUC.Execute(ctx, add.Options{
 			Name:          fmt.Sprintf("Auto extra for %s: %s", ref.String(), file),
 			RepoPattern:   ref.String(),

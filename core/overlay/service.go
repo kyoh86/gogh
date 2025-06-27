@@ -14,6 +14,8 @@ type OverlayService interface {
 
 	List() iter.Seq2[Overlay, error]
 	Add(ctx context.Context, entry Entry) (id string, _ error)
+	// Get retrieves an overlay by its ID-like string.
+	// If multiple overlays match or no overlay matches, it should return the error.
 	Get(ctx context.Context, idlike string) (Overlay, error)
 	Update(ctx context.Context, idlike string, entry Entry) error
 	Remove(ctx context.Context, idlike string) error

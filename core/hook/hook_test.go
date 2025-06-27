@@ -14,7 +14,7 @@ func TestNewHook(t *testing.T) {
 		RepoPattern:   "github.com/owner/*",
 		TriggerEvent:  hook.EventPostClone,
 		OperationType: hook.OperationTypeOverlay,
-		OperationID:   "overlay-123",
+		OperationID:   uuid.New(),
 	}
 
 	h := hook.NewHook(entry)
@@ -31,7 +31,7 @@ func TestNewHook(t *testing.T) {
 	if h.OperationType() != entry.OperationType {
 		t.Errorf("OperationType() = %v, want %v", h.OperationType(), entry.OperationType)
 	}
-	if h.OperationID() != entry.OperationID {
+	if h.OperationUUID() != entry.OperationID {
 		t.Errorf("OperationID() = %v, want %v", h.OperationID(), entry.OperationID)
 	}
 	if h.ID() == "" {
@@ -48,7 +48,7 @@ func TestConcreteHook(t *testing.T) {
 	repoPattern := "github.com/test/**"
 	triggerEvent := string(hook.EventPostFork)
 	operationType := string(hook.OperationTypeScript)
-	operationID := "script-456"
+	operationID := uuid.New()
 
 	h := hook.ConcreteHook(id, name, repoPattern, triggerEvent, operationType, operationID)
 
@@ -70,7 +70,7 @@ func TestConcreteHook(t *testing.T) {
 	if h.OperationType() != hook.OperationTypeScript {
 		t.Errorf("OperationType() = %v, want %v", h.OperationType(), hook.OperationTypeScript)
 	}
-	if h.OperationID() != operationID {
+	if h.OperationUUID() != operationID {
 		t.Errorf("OperationID() = %v, want %v", h.OperationID(), operationID)
 	}
 }
@@ -166,7 +166,6 @@ func TestHook_Match(t *testing.T) {
 				RepoPattern:   tc.repoPattern,
 				TriggerEvent:  tc.triggerEvent,
 				OperationType: hook.OperationTypeOverlay,
-				OperationID:   "test-id",
 			})
 
 			match, err := h.Match(tc.ref, tc.event)

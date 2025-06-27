@@ -30,7 +30,7 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 				OperationType: f.operationType,
 				OperationID:   f.operationID,
 			}
-			id, err := add.NewUsecase(svc.HookService).Execute(ctx, opts)
+			id, err := add.NewUsecase(svc.HookService, svc.OverlayService, svc.ScriptService).Execute(ctx, opts)
 			if err != nil {
 				return fmt.Errorf("add hook: %w", err)
 			}
@@ -51,7 +51,7 @@ func NewHookAddCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comma
 	if err := cmd.MarkFlagRequired("operation-type"); err != nil {
 		return nil, fmt.Errorf("marking operation-type flag required: %w", err)
 	}
-	cmd.Flags().StringVar(&f.operationID, "operation-id", "", "Operation resource ID")
+	cmd.Flags().StringVar(&f.operationID, "operation-id", "", "Operation resource ID (overlay ID or script ID). It can be a partial ID as it is matched by prefix.")
 	if err := cmd.MarkFlagRequired("operation-id"); err != nil {
 		return nil, fmt.Errorf("marking operation-id flag required: %w", err)
 	}

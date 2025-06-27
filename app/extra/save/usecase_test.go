@@ -18,6 +18,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
+	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
 	"go.uber.org/mock/gomock"
 )
@@ -33,6 +34,7 @@ func TestUsecase_Execute(t *testing.T) {
 			*workspace_mock.MockFinderService,
 			*git_mock.MockGitService,
 			*overlay_mock.MockOverlayService,
+			*script_mock.MockScriptService,
 			*hook_mock.MockHookService,
 			*extra_mock.MockExtraService,
 			*repository_mock.MockReferenceParser,
@@ -47,6 +49,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -98,8 +101,8 @@ func TestUsecase_Execute(t *testing.T) {
 				)
 
 				// Create overlays and hooks
-				overlayID1 := uuid.New().String()
-				overlayID2 := uuid.New().String()
+				overlayID1 := uuid.New()
+				overlayID2 := uuid.New()
 				hookID1 := uuid.New().String()
 				hookID2 := uuid.New().String()
 
@@ -112,9 +115,13 @@ func TestUsecase_Execute(t *testing.T) {
 						if entry.RelativePath != ".gitignore" {
 							t.Errorf("Expected relative path '.gitignore', got %s", entry.RelativePath)
 						}
-						return overlayID1, nil
+						return overlayID1.String(), nil
 					},
 				)
+				// Mock overlay resolution for hook operation ID
+				mockOverlay1 := overlay_mock.NewMockOverlay(ctrl)
+				mockOverlay1.EXPECT().UUID().Return(overlayID1)
+				overlayService.EXPECT().Get(ctx, overlayID1.String()).Return(mockOverlay1, nil)
 				hs.EXPECT().Add(ctx, gomock.Any()).Return(hookID1, nil)
 
 				// For config.toml
@@ -126,9 +133,13 @@ func TestUsecase_Execute(t *testing.T) {
 						if entry.RelativePath != "config.toml" {
 							t.Errorf("Expected relative path 'config.toml', got %s", entry.RelativePath)
 						}
-						return overlayID2, nil
+						return overlayID2.String(), nil
 					},
 				)
+				// Mock overlay resolution for hook operation ID
+				mockOverlay2 := overlay_mock.NewMockOverlay(ctrl)
+				mockOverlay2.EXPECT().UUID().Return(overlayID2)
+				overlayService.EXPECT().Get(ctx, overlayID2.String()).Return(mockOverlay2, nil)
 				hs.EXPECT().Add(ctx, gomock.Any()).Return(hookID2, nil)
 
 				// Save auto extra
@@ -141,7 +152,8 @@ func TestUsecase_Execute(t *testing.T) {
 					},
 				)
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: false,
 		},
@@ -153,6 +165,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -167,7 +180,8 @@ func TestUsecase_Execute(t *testing.T) {
 
 				rp.EXPECT().Parse("invalid-ref").Return(nil, errors.New("invalid reference"))
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: true,
 		},
@@ -179,6 +193,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -196,7 +211,8 @@ func TestUsecase_Execute(t *testing.T) {
 				rp.EXPECT().Parse("github.com/owner/notfound").Return(&ref, nil)
 				fs.EXPECT().FindByReference(ctx, ws, ref).Return(nil, errors.New("not found"))
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: true,
 		},
@@ -208,6 +224,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -225,7 +242,8 @@ func TestUsecase_Execute(t *testing.T) {
 				rp.EXPECT().Parse("github.com/owner/repo").Return(&ref, nil)
 				fs.EXPECT().FindByReference(ctx, ws, ref).Return(nil, nil)
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: true,
 		},
@@ -237,6 +255,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -270,7 +289,8 @@ func TestUsecase_Execute(t *testing.T) {
 				)
 				es.EXPECT().GetAutoExtra(ctx, ref).Return(existingExtra, nil)
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: true,
 		},
@@ -282,6 +302,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -313,7 +334,8 @@ func TestUsecase_Execute(t *testing.T) {
 					},
 				)
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: true,
 		},
@@ -325,6 +347,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -369,8 +392,12 @@ func TestUsecase_Execute(t *testing.T) {
 				)
 
 				// First overlay succeeds
-				overlayID1 := uuid.New().String()
-				overlayService.EXPECT().Add(ctx, gomock.Any()).Return(overlayID1, nil)
+				overlayID1 := uuid.New()
+				overlayService.EXPECT().Add(ctx, gomock.Any()).Return(overlayID1.String(), nil)
+				// Mock overlay resolution for hook operation ID
+				mockOverlay1 := overlay_mock.NewMockOverlay(ctrl)
+				mockOverlay1.EXPECT().UUID().Return(overlayID1)
+				overlayService.EXPECT().Get(ctx, overlayID1.String()).Return(mockOverlay1, nil)
 				hookID1 := uuid.New().String()
 				hs.EXPECT().Add(ctx, gomock.Any()).Return(hookID1, nil)
 
@@ -378,10 +405,11 @@ func TestUsecase_Execute(t *testing.T) {
 				overlayService.EXPECT().Add(ctx, gomock.Any()).Return("", errors.New("overlay creation failed"))
 
 				// Rollback expectations
-				overlayService.EXPECT().Remove(ctx, overlayID1).Return(nil)
+				overlayService.EXPECT().Remove(ctx, overlayID1.String()).Return(nil)
 				hs.EXPECT().Remove(ctx, hookID1).Return(nil)
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: true,
 		},
@@ -393,6 +421,7 @@ func TestUsecase_Execute(t *testing.T) {
 				*workspace_mock.MockFinderService,
 				*git_mock.MockGitService,
 				*overlay_mock.MockOverlayService,
+				*script_mock.MockScriptService,
 				*hook_mock.MockHookService,
 				*extra_mock.MockExtraService,
 				*repository_mock.MockReferenceParser,
@@ -433,16 +462,21 @@ func TestUsecase_Execute(t *testing.T) {
 				)
 
 				// Overlay succeeds
-				overlayID1 := uuid.New().String()
-				overlayService.EXPECT().Add(ctx, gomock.Any()).Return(overlayID1, nil)
+				overlayID1 := uuid.New()
+				overlayService.EXPECT().Add(ctx, gomock.Any()).Return(overlayID1.String(), nil)
+				// Mock overlay resolution for hook operation ID
+				mockOverlay1 := overlay_mock.NewMockOverlay(ctrl)
+				mockOverlay1.EXPECT().UUID().Return(overlayID1)
+				overlayService.EXPECT().Get(ctx, overlayID1.String()).Return(mockOverlay1, nil)
 
 				// Hook fails
 				hs.EXPECT().Add(ctx, gomock.Any()).Return("", errors.New("hook creation failed"))
 
 				// Rollback expectations
-				overlayService.EXPECT().Remove(ctx, overlayID1).Return(nil)
+				overlayService.EXPECT().Remove(ctx, overlayID1.String()).Return(nil)
 
-				return ws, fs, gs, overlayService, hs, es, rp
+				ss := script_mock.NewMockScriptService(ctrl)
+				return ws, fs, gs, overlayService, ss, hs, es, rp
 			},
 			wantErr: true,
 		},
@@ -453,8 +487,8 @@ func TestUsecase_Execute(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			ws, fs, gs, overlayService, hs, es, rp := tc.setupMock(t, ctrl)
-			uc := testtarget.NewUsecase(ws, fs, gs, overlayService, hs, es, rp)
+			ws, fs, gs, overlayService, ss, hs, es, rp := tc.setupMock(t, ctrl)
+			uc := testtarget.NewUsecase(ws, fs, gs, overlayService, ss, hs, es, rp)
 
 			err := uc.Execute(ctx, tc.repoStr)
 			if (err != nil) != tc.wantErr {

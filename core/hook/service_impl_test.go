@@ -26,7 +26,7 @@ func TestHookService_Add(t *testing.T) {
 		RepoPattern:   "github.com/kyoh86/*",
 		TriggerEvent:  hook.EventPostClone,
 		OperationType: hook.OperationTypeOverlay,
-		OperationID:   "overlay-123",
+		OperationID:   uuid.New(),
 	}
 
 	// Test successful addition
@@ -58,7 +58,7 @@ func TestHookService_Add(t *testing.T) {
 	if h.OperationType() != entry.OperationType {
 		t.Errorf("expected operation type %s, got %s", entry.OperationType, h.OperationType())
 	}
-	if h.OperationID() != entry.OperationID {
+	if h.OperationUUID() != entry.OperationID {
 		t.Errorf("expected operation ID %s, got %s", entry.OperationID, h.OperationID())
 	}
 }
@@ -73,7 +73,7 @@ func TestHookService_Update(t *testing.T) {
 		RepoPattern:   "github.com/kyoh86/*",
 		TriggerEvent:  hook.EventPostClone,
 		OperationType: hook.OperationTypeOverlay,
-		OperationID:   "overlay-123",
+		OperationID:   uuid.New(),
 	}
 
 	id, err := service.Add(ctx, entry)
@@ -87,7 +87,7 @@ func TestHookService_Update(t *testing.T) {
 		RepoPattern:   "github.com/updated/*",
 		TriggerEvent:  hook.EventPostFork,
 		OperationType: hook.OperationTypeScript,
-		OperationID:   "script-456",
+		OperationID:   uuid.New(),
 	}
 
 	err = service.Update(ctx, id, updateEntry)
@@ -112,7 +112,7 @@ func TestHookService_Update(t *testing.T) {
 	if h.OperationType() != updateEntry.OperationType {
 		t.Errorf("expected operation type %s, got %s", updateEntry.OperationType, h.OperationType())
 	}
-	if h.OperationID() != updateEntry.OperationID {
+	if h.OperationUUID() != updateEntry.OperationID {
 		t.Errorf("expected operation ID %s, got %s", updateEntry.OperationID, h.OperationID())
 	}
 
@@ -154,7 +154,7 @@ func TestHookService_Get(t *testing.T) {
 		RepoPattern:   "github.com/kyoh86/*",
 		TriggerEvent:  hook.EventPostClone,
 		OperationType: hook.OperationTypeOverlay,
-		OperationID:   "overlay-123",
+		OperationID:   uuid.New(),
 	}
 
 	id, err := service.Add(ctx, entry)
@@ -200,7 +200,7 @@ func TestHookService_Remove(t *testing.T) {
 		RepoPattern:   "github.com/kyoh86/*",
 		TriggerEvent:  hook.EventPostClone,
 		OperationType: hook.OperationTypeOverlay,
-		OperationID:   "overlay-123",
+		OperationID:   uuid.New(),
 	}
 
 	id, err := service.Add(ctx, entry)
@@ -238,21 +238,21 @@ func TestHookService_List(t *testing.T) {
 			RepoPattern:   "github.com/kyoh86/*",
 			TriggerEvent:  hook.EventPostClone,
 			OperationType: hook.OperationTypeOverlay,
-			OperationID:   "overlay-1",
+			OperationID:   uuid.New(),
 		},
 		{
 			Name:          "hook2",
 			RepoPattern:   "github.com/golang/*",
 			TriggerEvent:  hook.EventPostFork,
 			OperationType: hook.OperationTypeScript,
-			OperationID:   "script-1",
+			OperationID:   uuid.New(),
 		},
 		{
 			Name:          "hook3",
 			RepoPattern:   "*",
 			TriggerEvent:  hook.EventPostCreate,
 			OperationType: hook.OperationTypeOverlay,
-			OperationID:   "overlay-2",
+			OperationID:   uuid.New(),
 		},
 	}
 
@@ -299,35 +299,35 @@ func TestHookService_ListFor(t *testing.T) {
 			RepoPattern:   "github.com/kyoh86/gogh",
 			TriggerEvent:  hook.EventPostClone,
 			OperationType: hook.OperationTypeOverlay,
-			OperationID:   "overlay-1",
+			OperationID:   uuid.New(),
 		},
 		{
 			Name:          "wildcard-owner",
 			RepoPattern:   "github.com/kyoh86/*",
 			TriggerEvent:  hook.EventPostClone,
 			OperationType: hook.OperationTypeScript,
-			OperationID:   "script-1",
+			OperationID:   uuid.New(),
 		},
 		{
 			Name:          "any-repo",
 			RepoPattern:   "",
 			TriggerEvent:  hook.EventPostFork,
 			OperationType: hook.OperationTypeOverlay,
-			OperationID:   "overlay-2",
+			OperationID:   uuid.New(),
 		},
 		{
 			Name:          "different-event",
 			RepoPattern:   "github.com/kyoh86/gogh",
 			TriggerEvent:  hook.EventPostCreate,
 			OperationType: hook.OperationTypeScript,
-			OperationID:   "script-2",
+			OperationID:   uuid.New(),
 		},
 		{
 			Name:          "any-event",
 			RepoPattern:   "github.com/kyoh86/gogh",
 			TriggerEvent:  hook.EventAny,
 			OperationType: hook.OperationTypeOverlay,
-			OperationID:   "overlay-3",
+			OperationID:   uuid.New(),
 		},
 	}
 
@@ -394,7 +394,7 @@ func TestHookService_Load(t *testing.T) {
 			"github.com/kyoh86/*",
 			string(hook.EventPostClone),
 			string(hook.OperationTypeOverlay),
-			"overlay-1",
+			uuid.New(),
 		),
 		hook.ConcreteHook(
 			uuid.New(),
@@ -402,7 +402,7 @@ func TestHookService_Load(t *testing.T) {
 			"github.com/golang/*",
 			string(hook.EventPostFork),
 			string(hook.OperationTypeScript),
-			"script-1",
+			uuid.New(),
 		),
 	}
 
@@ -474,7 +474,7 @@ func TestHookService_HasChanges(t *testing.T) {
 		RepoPattern:   "github.com/kyoh86/*",
 		TriggerEvent:  hook.EventPostClone,
 		OperationType: hook.OperationTypeOverlay,
-		OperationID:   "overlay-123",
+		OperationID:   uuid.New(),
 	}
 
 	id, err := service.Add(ctx, entry)
@@ -535,7 +535,7 @@ func TestHookService_Match(t *testing.T) {
 				RepoPattern:   "github.com/kyoh86/gogh",
 				TriggerEvent:  hook.EventPostClone,
 				OperationType: hook.OperationTypeOverlay,
-				OperationID:   "overlay-1",
+				OperationID:   uuid.New(),
 			}),
 			ref:       repository.NewReference("github.com", "kyoh86", "gogh"),
 			event:     hook.EventPostClone,
@@ -548,7 +548,7 @@ func TestHookService_Match(t *testing.T) {
 				RepoPattern:   "github.com/kyoh86/*",
 				TriggerEvent:  hook.EventPostClone,
 				OperationType: hook.OperationTypeOverlay,
-				OperationID:   "overlay-1",
+				OperationID:   uuid.New(),
 			}),
 			ref:       repository.NewReference("github.com", "kyoh86", "dotfiles"),
 			event:     hook.EventPostClone,
@@ -561,7 +561,7 @@ func TestHookService_Match(t *testing.T) {
 				RepoPattern:   "",
 				TriggerEvent:  hook.EventPostClone,
 				OperationType: hook.OperationTypeOverlay,
-				OperationID:   "overlay-1",
+				OperationID:   uuid.New(),
 			}),
 			ref:       repository.NewReference("gitlab.com", "user", "project"),
 			event:     hook.EventPostClone,
@@ -574,7 +574,7 @@ func TestHookService_Match(t *testing.T) {
 				RepoPattern:   "github.com/kyoh86/gogh",
 				TriggerEvent:  hook.EventPostClone,
 				OperationType: hook.OperationTypeOverlay,
-				OperationID:   "overlay-1",
+				OperationID:   uuid.New(),
 			}),
 			ref:       repository.NewReference("github.com", "kyoh86", "gogh"),
 			event:     hook.EventPostFork,
@@ -587,7 +587,7 @@ func TestHookService_Match(t *testing.T) {
 				RepoPattern:   "github.com/kyoh86/gogh",
 				TriggerEvent:  hook.EventAny,
 				OperationType: hook.OperationTypeOverlay,
-				OperationID:   "overlay-1",
+				OperationID:   uuid.New(),
 			}),
 			ref:       repository.NewReference("github.com", "kyoh86", "gogh"),
 			event:     hook.EventPostCreate,
@@ -600,7 +600,7 @@ func TestHookService_Match(t *testing.T) {
 				RepoPattern:   "github.com/golang/*",
 				TriggerEvent:  hook.EventPostClone,
 				OperationType: hook.OperationTypeOverlay,
-				OperationID:   "overlay-1",
+				OperationID:   uuid.New(),
 			}),
 			ref:       repository.NewReference("github.com", "kyoh86", "gogh"),
 			event:     hook.EventPostClone,

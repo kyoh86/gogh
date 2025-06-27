@@ -11,7 +11,7 @@ type Entry struct {
 	RepoPattern   string
 	TriggerEvent  Event
 	OperationType OperationType
-	OperationID   string
+	OperationID   uuid.UUID
 }
 
 // Event defines the trigger of the hook, such as post-clone, post-fork, or post-create
@@ -42,6 +42,7 @@ type Hook interface {
 
 	OperationType() OperationType
 	OperationID() string
+	OperationUUID() uuid.UUID
 
 	Match(ref repository.Reference, event Event) (bool, error)
 }
@@ -64,7 +65,7 @@ func ConcreteHook(
 	repoPattern string,
 	triggerEvent string,
 	operationType string,
-	operationID string,
+	operationID uuid.UUID,
 ) Hook {
 	return hookElement{
 		id:            id,
@@ -84,7 +85,7 @@ type hookElement struct {
 	triggerEvent Event
 
 	operationType OperationType
-	operationID   string
+	operationID   uuid.UUID
 }
 
 func (h hookElement) ID() string {
@@ -112,6 +113,10 @@ func (h hookElement) OperationType() OperationType {
 }
 
 func (h hookElement) OperationID() string {
+	return h.operationID.String()
+}
+
+func (h hookElement) OperationUUID() uuid.UUID {
 	return h.operationID
 }
 

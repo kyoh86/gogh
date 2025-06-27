@@ -21,7 +21,7 @@ func TestJSONUsecase_Execute(t *testing.T) {
 	repoPattern := "github.com/owner/*"
 	triggerEvent := string(hook.EventPostClone)
 	operationType := string(hook.OperationTypeOverlay)
-	operationID := "overlay-123"
+	operationID := uuid.New()
 
 	h := hook.ConcreteHook(hookUUID, hookName, repoPattern, triggerEvent, operationType, operationID)
 
@@ -53,8 +53,8 @@ func TestJSONUsecase_Execute(t *testing.T) {
 	if result["operation_type"] != operationType {
 		t.Errorf("Expected operation_type %s, got %v", operationType, result["operation_type"])
 	}
-	if result["operation_id"] != operationID {
-		t.Errorf("Expected operation_id %s, got %v", operationID, result["operation_id"])
+	if result["operation_id"] != operationID.String() {
+		t.Errorf("Expected operation_id %s, got %v", operationID.String(), result["operation_id"])
 	}
 }
 
@@ -67,7 +67,7 @@ func TestOnelineUsecase_Execute(t *testing.T) {
 		repoPattern     string
 		triggerEvent    string
 		operationType   string
-		operationID     string
+		operationID     uuid.UUID
 		expectedPattern string
 	}{
 		{
@@ -76,7 +76,7 @@ func TestOnelineUsecase_Execute(t *testing.T) {
 			repoPattern:     "github.com/owner/*",
 			triggerEvent:    string(hook.EventPostClone),
 			operationType:   string(hook.OperationTypeOverlay),
-			operationID:     "overlay-123",
+			operationID:     uuid.New(),
 			expectedPattern: "github.com/owner/*",
 		},
 		{
@@ -85,7 +85,7 @@ func TestOnelineUsecase_Execute(t *testing.T) {
 			repoPattern:     "",
 			triggerEvent:    string(hook.EventPostFork),
 			operationType:   string(hook.OperationTypeScript),
-			operationID:     "script-456",
+			operationID:     uuid.New(),
 			expectedPattern: "*",
 		},
 	}
@@ -111,7 +111,7 @@ func TestOnelineUsecase_Execute(t *testing.T) {
 				tc.hookName,
 				"for repos(" + tc.expectedPattern + ")",
 				"@" + tc.triggerEvent,
-				tc.operationType + "(" + tc.operationID + ")",
+				tc.operationType + "(" + tc.operationID.String() + ")",
 			}
 
 			for _, part := range expectedParts {
@@ -141,7 +141,7 @@ func TestOnelineUsecase_Execute_AllEventTypes(t *testing.T) {
 				"github.com/test/*",
 				string(event),
 				string(hook.OperationTypeOverlay),
-				"overlay-123",
+				uuid.New(),
 			)
 
 			var buf bytes.Buffer
@@ -165,10 +165,10 @@ func TestOnelineUsecase_Execute_AllOperationTypes(t *testing.T) {
 
 	operations := []struct {
 		opType hook.OperationType
-		opID   string
+		opID   uuid.UUID
 	}{
-		{hook.OperationTypeOverlay, "overlay-abc"},
-		{hook.OperationTypeScript, "script-def"},
+		{hook.OperationTypeOverlay, uuid.New()},
+		{hook.OperationTypeScript, uuid.New()},
 	}
 
 	for _, op := range operations {
@@ -192,7 +192,7 @@ func TestOnelineUsecase_Execute_AllOperationTypes(t *testing.T) {
 			}
 
 			output := buf.String()
-			expected := string(op.opType) + "(" + op.opID + ")"
+			expected := string(op.opType) + "(" + op.opID.String() + ")"
 			if !strings.Contains(output, expected) {
 				t.Errorf("Expected output to contain '%s', but it doesn't: %s", expected, output)
 			}

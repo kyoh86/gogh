@@ -26,8 +26,8 @@ type tomlHook struct {
 	RepoPattern  string `toml:"repo-pattern"`
 	TriggerEvent string `toml:"trigger-event"`
 
-	OperationType string `toml:"operation-type"`
-	OperationID   string `toml:"operation-id"`
+	OperationType string    `toml:"operation-type"`
+	OperationID   uuid.UUID `toml:"operation-id"`
 }
 
 type tomlHookStore struct {
@@ -98,7 +98,7 @@ func (s *HookStore) Save(ctx context.Context, svc hook.HookService, force bool) 
 			RepoPattern:   h.RepoPattern(),
 			TriggerEvent:  string(h.TriggerEvent()),
 			OperationType: string(h.OperationType()),
-			OperationID:   h.OperationID(),
+			OperationID:   h.OperationUUID(),
 		})
 	}
 	if err := saveTOMLFile(src, data); err != nil {

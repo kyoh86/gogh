@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/clone/try"
 	testtarget "github.com/kyoh86/gogh/v4/app/create/template"
 	"github.com/kyoh86/gogh/v4/core/auth"
@@ -118,33 +119,35 @@ func TestUsecase_Execute(t *testing.T) {
 						"kyoh86",
 						"gogh",
 					), nil)
+				overlayID := uuid.New()
+				scriptID := uuid.New()
 				mockHook.EXPECT().
 					ListFor(ref, hook.EventPostCreate).Return(func(yield func(hook.Hook, error) bool) {
 					if !yield(hook.NewHook(hook.Entry{
 						Name:          "post-create-from-template-example",
 						OperationType: hook.OperationTypeOverlay,
-						OperationID:   "overlay-id",
+						OperationID:   overlayID,
 					}), nil) {
 						return
 					}
 					if !yield(hook.NewHook(hook.Entry{
 						Name:          "post-create-from-template-example",
 						OperationType: hook.OperationTypeScript,
-						OperationID:   "script-id",
+						OperationID:   scriptID,
 					}), nil) {
 						return
 					}
 				})
 				mockOverlay.EXPECT().
-					Get(gomock.Any(), "overlay-id").Return(overlay.NewOverlay(overlay.Entry{
+					Get(gomock.Any(), overlayID.String()).Return(overlay.NewOverlay(overlay.Entry{
 					Name:         "example-overlay",
 					RelativePath: "path/to/overlay",
 				}), nil)
 				mockOverlay.EXPECT().
-					Open(gomock.Any(), "overlay-id").Return(io.NopCloser(strings.NewReader("overlay content")), nil)
+					Open(gomock.Any(), overlayID.String()).Return(io.NopCloser(strings.NewReader("overlay content")), nil)
 				// Script cannot be run in this test, so we just return error
 				mockScript.EXPECT().
-					Open(gomock.Any(), "script-id").Return(nil, errors.New("script error"))
+					Open(gomock.Any(), scriptID.String()).Return(nil, errors.New("script error"))
 			},
 			errorContains: "script error",
 		},

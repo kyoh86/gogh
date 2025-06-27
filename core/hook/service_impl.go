@@ -6,6 +6,7 @@ import (
 	"iter"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/set"
 )
@@ -96,7 +97,8 @@ func (s *serviceImpl) Update(ctx context.Context, idlike string, entry Entry) er
 		hook.operationType = entry.OperationType
 		dirty = true
 	}
-	if entry.OperationID != "" {
+	var zero uuid.UUID
+	if entry.OperationID != zero {
 		hook.operationID = entry.OperationID
 		dirty = true
 	}
@@ -144,7 +146,7 @@ func (s *serviceImpl) Load(seq iter.Seq2[Hook, error]) error {
 			repoPattern:   h.RepoPattern(),
 			triggerEvent:  h.TriggerEvent(),
 			operationType: h.OperationType(),
-			operationID:   h.OperationID(),
+			operationID:   h.OperationUUID(),
 		}); err != nil {
 			return fmt.Errorf("load hook: %w", err)
 		}
