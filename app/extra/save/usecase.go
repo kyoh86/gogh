@@ -91,7 +91,14 @@ func (uc *Usecase) Execute(ctx context.Context, repoStr string) error {
 	// Create overlay and hook for each excluded file
 	var items []extra.Item
 	for _, file := range excludedFiles {
-		fullPath := filepath.Join(location.FullPath(), file)
+		// ListExcludedFiles returns absolute paths, so use file directly
+		fullPath := file
+
+		// Make the path relative to the repository for the overlay
+		relPath, err := filepath.Rel(location.FullPath(), file)
+		if err != nil {
+			return fmt.Errorf("making path relative: %w", err)
+		}
 
 		// Read file content
 		content, err := os.ReadFile(fullPath)
@@ -101,8 +108,8 @@ func (uc *Usecase) Execute(ctx context.Context, repoStr string) error {
 
 		// Create overlay
 		overlayID, err := uc.overlayService.Add(ctx, overlay.Entry{
-			Name:         fmt.Sprintf("Auto extra: %s", file),
-			RelativePath: file,
+			Name:         fmt.Sprintf("Auto extra: %s", relPath),
+			RelativePath: relPath,
 			Content:      bytes.NewReader(content),
 		})
 		if err != nil {
@@ -117,7 +124,7 @@ func (uc *Usecase) Execute(ctx context.Context, repoStr string) error {
 		// Create post-clone hook for this overlay
 		hookAddUC := add.NewUsecase(uc.hookService, uc.overlayService, uc.scriptService)
 		hookID, err := hookAddUC.Execute(ctx, add.Options{
-			Name:          fmt.Sprintf("Auto extra for %s: %s", ref.String(), file),
+			Name:          fmt.Sprintf("Auto extra for %s: %s", ref.String(), relPath),
 			RepoPattern:   ref.String(),
 			TriggerEvent:  string(hook.EventPostClone),
 			OperationType: string(hook.OperationTypeOverlay),

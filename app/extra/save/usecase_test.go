@@ -67,11 +67,11 @@ func TestUsecase_Execute(t *testing.T) {
 
 				// Create test files
 				gitignoreContent := []byte("*.log\nnode_modules/\n")
-				if err := os.WriteFile(filepath.Join(tempDir, ".gitignore"), gitignoreContent, 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(tempDir, ".gitignore"), gitignoreContent, 0o644); err != nil {
 					t.Fatalf("Failed to create .gitignore: %v", err)
 				}
 				configContent := []byte("[settings]\nkey = \"value\"\n")
-				if err := os.WriteFile(filepath.Join(tempDir, "config.toml"), configContent, 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(tempDir, "config.toml"), configContent, 0o644); err != nil {
 					t.Fatalf("Failed to create config.toml: %v", err)
 				}
 
@@ -95,8 +95,8 @@ func TestUsecase_Execute(t *testing.T) {
 				// List excluded files
 				gs.EXPECT().ListExcludedFiles(ctx, tempDir, nil).Return(
 					func(yield func(string, error) bool) {
-						yield(".gitignore", nil)
-						yield("config.toml", nil)
+						yield(filepath.Join(tempDir, ".gitignore"), nil)
+						yield(filepath.Join(tempDir, "config.toml"), nil)
 					},
 				)
 
@@ -364,10 +364,10 @@ func TestUsecase_Execute(t *testing.T) {
 				tempDir := t.TempDir()
 
 				// Create test files
-				if err := os.WriteFile(filepath.Join(tempDir, ".gitignore"), []byte("*.log\n"), 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(tempDir, ".gitignore"), []byte("*.log\n"), 0o644); err != nil {
 					t.Fatalf("Failed to create .gitignore: %v", err)
 				}
-				if err := os.WriteFile(filepath.Join(tempDir, "config.toml"), []byte("[test]\n"), 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(tempDir, "config.toml"), []byte("[test]\n"), 0o644); err != nil {
 					t.Fatalf("Failed to create config.toml: %v", err)
 				}
 
@@ -386,8 +386,8 @@ func TestUsecase_Execute(t *testing.T) {
 				// List excluded files
 				gs.EXPECT().ListExcludedFiles(ctx, tempDir, nil).Return(
 					func(yield func(string, error) bool) {
-						yield(".gitignore", nil)
-						yield("config.toml", nil)
+						yield(filepath.Join(tempDir, ".gitignore"), nil)
+						yield(filepath.Join(tempDir, "config.toml"), nil)
 					},
 				)
 
@@ -438,7 +438,7 @@ func TestUsecase_Execute(t *testing.T) {
 				tempDir := t.TempDir()
 
 				// Create test files
-				if err := os.WriteFile(filepath.Join(tempDir, ".gitignore"), []byte("*.log\n"), 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(tempDir, ".gitignore"), []byte("*.log\n"), 0o644); err != nil {
 					t.Fatalf("Failed to create .gitignore: %v", err)
 				}
 
@@ -457,7 +457,7 @@ func TestUsecase_Execute(t *testing.T) {
 				// List excluded files
 				gs.EXPECT().ListExcludedFiles(ctx, tempDir, nil).Return(
 					func(yield func(string, error) bool) {
-						yield(".gitignore", nil)
+						yield(filepath.Join(tempDir, ".gitignore"), nil)
 					},
 				)
 
