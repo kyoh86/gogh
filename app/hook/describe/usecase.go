@@ -58,7 +58,7 @@ func (uc *OnelineUsecase) Execute(ctx context.Context, s hook.Hook) error {
 		pattern,
 		s.TriggerEvent(),
 		s.OperationType(),
-		s.OperationID(),
+		s.OperationID()[:8],
 	)
 	return err
 }

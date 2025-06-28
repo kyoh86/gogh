@@ -111,7 +111,7 @@ func TestOnelineUsecase_Execute(t *testing.T) {
 				tc.hookName,
 				"for repos(" + tc.expectedPattern + ")",
 				"@" + tc.triggerEvent,
-				tc.operationType + "(" + tc.operationID.String() + ")",
+				tc.operationType + "(" + tc.operationID.String()[:8] + ")",
 			}
 
 			for _, part := range expectedParts {
@@ -192,7 +192,7 @@ func TestOnelineUsecase_Execute_AllOperationTypes(t *testing.T) {
 			}
 
 			output := buf.String()
-			expected := string(op.opType) + "(" + op.opID.String() + ")"
+			expected := string(op.opType) + "(" + op.opID.String()[:8] + ")"
 			if !strings.Contains(output, expected) {
 				t.Errorf("Expected output to contain '%s', but it doesn't: %s", expected, output)
 			}
