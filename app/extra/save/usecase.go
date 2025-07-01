@@ -54,6 +54,58 @@ func NewUsecase(
 
 // Execute saves excluded files as auto-apply extra
 func (uc *Usecase) Execute(ctx context.Context, repoStr string) error {
+	result, err := uc.GetExcludedFiles(ctx, repoStr)
+	if err != nil {
+		return err
+	}
+
+	if len(result.Files) == 0 {
+		return fmt.Errorf("no excluded files found in %s", repoStr)
+	}
+
+	return uc.SaveFiles(ctx, repoStr, result.Files)
+}
+
+// ExcludedFilesResult contains the result of GetExcludedFiles
+type ExcludedFilesResult struct {
+	RepositoryPath string
+	Files          []string
+}
+
+// GetExcludedFiles returns list of excluded files for the repository
+func (uc *Usecase) GetExcludedFiles(ctx context.Context, repoStr string) (*ExcludedFilesResult, error) {
+	// Parse repository reference
+	ref, err := uc.referenceParser.Parse(repoStr)
+	if err != nil {
+		return nil, fmt.Errorf("parsing repository reference: %w", err)
+	}
+
+	// Find repository location
+	location, err := uc.finderService.FindByReference(ctx, uc.workspaceService, *ref)
+	if err != nil {
+		return nil, fmt.Errorf("finding repository: %w", err)
+	}
+	if location == nil {
+		return nil, fmt.Errorf("repository not found: %s", repoStr)
+	}
+
+	// Get excluded files
+	var excludedFiles []string
+	for file, err := range uc.gitService.ListExcludedFiles(ctx, location.FullPath(), nil) {
+		if err != nil {
+			return nil, fmt.Errorf("listing excluded files: %w", err)
+		}
+		excludedFiles = append(excludedFiles, file)
+	}
+
+	return &ExcludedFilesResult{
+		RepositoryPath: location.FullPath(),
+		Files:          excludedFiles,
+	}, nil
+}
+
+// SaveFiles saves specified files as auto-apply extra
+func (uc *Usecase) SaveFiles(ctx context.Context, repoStr string, files []string) error {
 	// Parse repository reference
 	ref, err := uc.referenceParser.Parse(repoStr)
 	if err != nil {
@@ -75,22 +127,13 @@ func (uc *Usecase) Execute(ctx context.Context, repoStr string) error {
 		return fmt.Errorf("auto extra already exists for %s, use 'extras clear' first", repoStr)
 	}
 
-	// Get excluded files
-	var excludedFiles []string
-	for file, err := range uc.gitService.ListExcludedFiles(ctx, location.FullPath(), nil) {
-		if err != nil {
-			return fmt.Errorf("listing excluded files: %w", err)
-		}
-		excludedFiles = append(excludedFiles, file)
+	if len(files) == 0 {
+		return fmt.Errorf("no files provided")
 	}
 
-	if len(excludedFiles) == 0 {
-		return fmt.Errorf("no excluded files found in %s", repoStr)
-	}
-
-	// Create overlay and hook for each excluded file
+	// Create overlay and hook for each file
 	var items []extra.Item
-	for _, file := range excludedFiles {
+	for _, file := range files {
 		// ListExcludedFiles returns absolute paths, so use file directly
 		fullPath := file
 

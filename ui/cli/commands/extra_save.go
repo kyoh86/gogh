@@ -2,16 +2,22 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/extra/save"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 )
 
 func NewExtraSaveCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+	var f struct {
+		confirmMode string
+	}
+
 	cmd := &cobra.Command{
 		Use:   "save <repository>",
 		Short: "Save excluded files as auto-apply extra",
@@ -53,7 +59,54 @@ These extra will be automatically applied when the repository is cloned.`,
 				svc.ReferenceParser,
 			)
 
-			if err := uc.Execute(ctx, repoStr); err != nil {
+			// Get excluded files
+			result, err := uc.GetExcludedFiles(ctx, repoStr)
+			if err != nil {
+				return err
+			}
+
+			if len(result.Files) == 0 {
+				logger.Warn("No excluded files found")
+				return nil
+			}
+
+			// Select files based on confirmation mode
+			var selectedFiles []string
+			switch f.confirmMode {
+			case "none":
+				logger.Infof("Skipping confirmation, saving all %d excluded files", len(result.Files))
+				selectedFiles = result.Files
+			case "iterative":
+				selection, err := view.ConfirmFilesIterative(ctx, result.RepositoryPath, result.Files)
+				if err != nil {
+					if errors.Is(err, view.ErrQuit) {
+						logger.Info("File selection cancelled")
+						return nil
+					}
+					return fmt.Errorf("selecting files: %w", err)
+				}
+				if len(selection.Selected) == 0 {
+					logger.Info("No files selected")
+					return nil
+				}
+				selectedFiles = selection.Selected
+			case "select", "":
+				// Default to select mode
+				selection, err := view.SelectFiles(ctx, result.RepositoryPath, result.Files)
+				if err != nil {
+					return fmt.Errorf("selecting files: %w", err)
+				}
+				if len(selection.Selected) == 0 {
+					logger.Info("No files selected")
+					return nil
+				}
+				selectedFiles = selection.Selected
+			default:
+				return fmt.Errorf("invalid confirm mode: %s (valid options: select, iterative, none)", f.confirmMode)
+			}
+
+			// Save selected files
+			if err := uc.SaveFiles(ctx, repoStr, selectedFiles); err != nil {
 				return err
 			}
 
@@ -61,5 +114,8 @@ These extra will be automatically applied when the repository is cloned.`,
 			return nil
 		},
 	}
+
+	cmd.Flags().StringVar(&f.confirmMode, "confirm-mode", "select", "Confirmation mode: select (multi-select), iterative (one-by-one), none (skip confirmation)")
+
 	return cmd, nil
 }
