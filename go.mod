@@ -26,7 +26,7 @@ require (
 	github.com/yuin/gopher-lua v1.1.1
 	go.uber.org/mock v0.5.2
 	golang.org/x/oauth2 v0.30.0
-	golang.org/x/sync v0.15.0
+	golang.org/x/sync v0.16.0
 	golang.org/x/term v0.32.0
 	gopkg.in/yaml.v2 v2.4.0
 )
