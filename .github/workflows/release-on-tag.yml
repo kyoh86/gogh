@@ -30,7 +30,7 @@ jobs:
           check-retry-count: 20
           check-retry-interval: 20
       - name: Checkout Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set git tag
         run: |
           git config user.name "github-actions[bot]"
