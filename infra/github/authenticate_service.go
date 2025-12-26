@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v69/github"
+	"github.com/google/go-github/v80/github"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"

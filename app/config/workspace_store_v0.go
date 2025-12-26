@@ -6,13 +6,13 @@ import (
 	"os"
 
 	"github.com/apex/log"
+	yaml "github.com/goccy/go-yaml"
 	"github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
-	"gopkg.in/yaml.v2"
 )
 
-// WorkspaceStore is a repository for managing workspace configuration.
+// WorkspaceStoreV0 is a repository for managing workspace configuration.
 type WorkspaceStoreV0 struct{}
 
 type yamlWorkspaceStoreV0 struct {
@@ -57,7 +57,7 @@ func (*WorkspaceStoreV0) Source() (string, error) {
 	return path, nil
 }
 
-// NewWorkspaceStore creates a new WorkspaceStore instance.
+// NewWorkspaceStoreV0 creates a new WorkspaceStore instance.
 func NewWorkspaceStoreV0() *WorkspaceStoreV0 {
 	return &WorkspaceStoreV0{}
 }

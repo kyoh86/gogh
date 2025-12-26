@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/Khan/genqlient/graphql"
-	"github.com/google/go-github/v69/github"
+	"github.com/google/go-github/v80/github"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/repository"

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v69/github"
+	"github.com/google/go-github/v80/github"
 	"github.com/kyoh86/gogh/v4/core/repository"
 )
 
@@ -62,7 +62,6 @@ func TestConvertRepository(t *testing.T) {
 	// Convert using the function being tested
 	ref := repository.NewReference("github.com", "owner", "repo")
 	repo, err := convertRepository(ref, ghRepo)
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
