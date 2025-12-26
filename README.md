@@ -4,7 +4,6 @@ Gogh is a tool to manage GitHub repositories efficiently, inspired by [`ghq`](ht
 
 [![`PkgGoDev`](https://pkg.go.dev/github.com/kyoh86/gogh/v4)](https://pkg.go.dev/github.com/kyoh86/gogh/v4)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kyoh86/gogh/v4)](https://goreportcard.com/report/github.com/kyoh86/gogh/v4)
-[![Coverage Status](https://img.shields.io/codecov/c/github/kyoh86/gogh.svg)](https://codecov.io/gh/kyoh86/gogh)
 [![GitHub release](https://github.com/kyoh86/gogh/actions/workflows/release.yml/badge.svg)](https://github.com/kyoh86/gogh/releases)
 
 ![](./doc/image/gogh.jpg)

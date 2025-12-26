@@ -65,31 +65,12 @@ jobs:
           go-version: 1.24
       - name: Search diagnostics
         uses: golangci/golangci-lint-action@v9
-  test-covers:
-    name: Take test coverages
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Sources
-        uses: actions/checkout@v6
-      - name: Setup Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: 1.24
-      - name: Take coverage
-        run: go test -coverprofile=coverage.txt -covermode=atomic ./...
-      - name: Send coverage
-        uses: codecov/codecov-action@v5
-        with:
-          fail_ci_if_error: true
-          files: coverage.txt
-          token: ${{ secrets.CODECOV_TOKEN }}
   set-releasable-status:
     name: 'Mark commit status "releasable"'
     runs-on: ubuntu-latest
     needs:
       - test
       - test-diagnostics
-      - test-covers
       - test-release
     steps:
       - name: 'Mark commit status "releasable"'
