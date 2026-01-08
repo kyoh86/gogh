@@ -12,7 +12,6 @@ func TestTokenServiceDeleteNonExistentToken(t *testing.T) {
 
 	// Attempt to delete a token that doesn't exist
 	err := tokenService.Delete("nonexistent-host", "nonexistent-owner")
-
 	// Should not error when deleting non-existent token
 	if err != nil {
 		t.Errorf("TokenService.Delete() on non-existent token returned error %v, want nil", err)

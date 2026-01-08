@@ -37,7 +37,7 @@ func TestUsecase_Execute(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	repoPath := filepath.Join(tempDir, "github.com", "kyoh86", "example")
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		t.Fatalf("failed to create test repo dir: %v", err)
 	}
 

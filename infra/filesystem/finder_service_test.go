@@ -37,10 +37,10 @@ func TestFindByReference(t *testing.T) {
 	repoPath1 := filepath.Join(root1, "github.com", "kyoh86", "gogh")
 	repoPath2 := filepath.Join(root2, "gitlab.com", "user", "project")
 
-	if err := os.MkdirAll(repoPath1, 0755); err != nil {
+	if err := os.MkdirAll(repoPath1, 0o755); err != nil {
 		t.Fatalf("Failed to create test repository directory: %v", err)
 	}
-	if err := os.MkdirAll(repoPath2, 0755); err != nil {
+	if err := os.MkdirAll(repoPath2, 0o755); err != nil {
 		t.Fatalf("Failed to create test repository directory: %v", err)
 	}
 
@@ -144,7 +144,7 @@ func TestFindByPath(t *testing.T) {
 
 	// Create test repository directory
 	repoPath := filepath.Join(root1, "github.com", "kyoh86", "gogh")
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		t.Fatalf("Failed to create test repository directory: %v", err)
 	}
 
@@ -258,10 +258,10 @@ func TestListAllRepository(t *testing.T) {
 	root2 := filepath.Join(tmpDir, "root2")
 
 	// Create test repository directories
-	if err := os.MkdirAll(filepath.Join(root1, "github.com", "kyoh86", "gogh"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(root1, "github.com", "kyoh86", "gogh"), 0o755); err != nil {
 		t.Fatalf("Failed to create test repository directory: %v", err)
 	}
-	if err := os.MkdirAll(filepath.Join(root2, "gitlab.com", "user", "project"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(root2, "gitlab.com", "user", "project"), 0o755); err != nil {
 		t.Fatalf("Failed to create test repository directory: %v", err)
 	}
 

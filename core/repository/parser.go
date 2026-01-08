@@ -8,9 +8,7 @@ import (
 	"github.com/kyoh86/gogh/v4/typ"
 )
 
-var (
-	ErrTooManySlashes = errors.New("too many slashes")
-)
+var ErrTooManySlashes = errors.New("too many slashes")
 
 // ReferenceParser will parse any string as a Reference.
 //

@@ -15,7 +15,6 @@ func TestNewAuthCommand(t *testing.T) {
 
 	// Execute
 	_, err := commands.NewAuthCommand(ctx, serviceSet)
-
 	// Verify no error occurs
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)

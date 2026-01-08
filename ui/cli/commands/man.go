@@ -36,13 +36,13 @@ func NewManCommand(_ context.Context, _ *service.ServiceSet) (*cobra.Command, er
 				Title:   "GOGH",
 				Section: "1",
 			}
-			if err := os.MkdirAll(manPagePath, 0755); err != nil {
+			if err := os.MkdirAll(manPagePath, 0o755); err != nil {
 				return fmt.Errorf("making man page directory: %w", err)
 			}
 			if err := doc.GenManTree(facadeCommand, header, manPagePath); err != nil {
 				return fmt.Errorf("generating man pages: %w", err)
 			}
-			if err := os.MkdirAll(usageDocPath, 0755); err != nil {
+			if err := os.MkdirAll(usageDocPath, 0o755); err != nil {
 				return fmt.Errorf("making usage doc directory: %w", err)
 			}
 			facadeCommand.DisableAutoGenTag = true

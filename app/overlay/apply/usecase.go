@@ -68,12 +68,12 @@ func (uc *Usecase) Apply(ctx context.Context, location *repository.Location, ove
 
 	// Ensure the directory exists
 	targetDir := filepath.Dir(targetPath)
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		return fmt.Errorf("creating directory '%s': %w", targetDir, err)
 	}
 
 	// Open the target file for writing
-	target, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	target, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return fmt.Errorf("opening target file '%s': %w", targetPath, err)
 	}

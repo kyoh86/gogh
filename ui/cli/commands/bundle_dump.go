@@ -24,7 +24,7 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				file, err := os.OpenFile(
 					f.File,
 					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
-					0644,
+					0o644,
 				)
 				if err != nil {
 					return fmt.Errorf("opening file: %w", err)

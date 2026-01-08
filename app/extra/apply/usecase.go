@@ -94,7 +94,7 @@ func (uc *Usecase) Execute(ctx context.Context, opts Options) error {
 
 		// Ensure the directory exists
 		targetDir := filepath.Dir(targetPath)
-		if err := os.MkdirAll(targetDir, 0755); err != nil {
+		if err := os.MkdirAll(targetDir, 0o755); err != nil {
 			return fmt.Errorf("creating directory %q: %w", targetDir, err)
 		}
 
@@ -106,7 +106,7 @@ func (uc *Usecase) Execute(ctx context.Context, opts Options) error {
 		defer source.Close()
 
 		// Open the target file for writing
-		target, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		target, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 		if err != nil {
 			return fmt.Errorf("opening target file %q: %w", targetPath, err)
 		}

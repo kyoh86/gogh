@@ -28,7 +28,7 @@ func (a *MockContentStore) Save(ctx context.Context, overlayID string, content i
 	}
 
 	// Create base directory if it doesn't exist
-	if err := a.fs.MkdirAll(a.baseDir, 0755); err != nil {
+	if err := a.fs.MkdirAll(a.baseDir, 0o755); err != nil {
 		return err
 	}
 

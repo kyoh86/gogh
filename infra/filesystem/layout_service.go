@@ -70,7 +70,7 @@ func (l *LayoutService) PathFor(ref repository.Reference) string {
 
 func (l *LayoutService) CreateRepositoryFolder(ref repository.Reference) (string, error) {
 	path := l.PathFor(ref)
-	return path, os.MkdirAll(path, 0755)
+	return path, os.MkdirAll(path, 0o755)
 }
 
 func (l *LayoutService) DeleteRepository(ref repository.Reference) error {

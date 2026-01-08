@@ -16,7 +16,7 @@ func TestLoadUserExcludes(t *testing.T) {
 
 	// Create a mock repo path
 	repoPath := filepath.Join(tmpDir, "repo")
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		t.Fatalf("Failed to create repo dir: %v", err)
 	}
 
@@ -32,7 +32,7 @@ func TestLoadUserExcludes(t *testing.T) {
 /node_modules
 build/
 `
-	if err := os.WriteFile(testExcludesPath, []byte(testExcludesContent), 0644); err != nil {
+	if err := os.WriteFile(testExcludesPath, []byte(testExcludesContent), 0o644); err != nil {
 		t.Fatalf("Failed to write test excludes file: %v", err)
 	}
 
@@ -77,7 +77,7 @@ func TestLoadLocalExcludes(t *testing.T) {
 	// Create a mock repo with .git/info/exclude
 	repoPath := filepath.Join(tmpDir, "repo")
 	excludeDir := filepath.Join(repoPath, ".git", "info")
-	if err := os.MkdirAll(excludeDir, 0755); err != nil {
+	if err := os.MkdirAll(excludeDir, 0o755); err != nil {
 		t.Fatalf("Failed to create exclude dir: %v", err)
 	}
 
@@ -88,7 +88,7 @@ func TestLoadLocalExcludes(t *testing.T) {
 *.tmp
 .DS_Store
 `
-	if err := os.WriteFile(excludePath, []byte(excludeContent), 0644); err != nil {
+	if err := os.WriteFile(excludePath, []byte(excludeContent), 0o644); err != nil {
 		t.Fatalf("Failed to write test exclude file: %v", err)
 	}
 
@@ -105,7 +105,7 @@ func TestLoadLocalExcludes(t *testing.T) {
 
 	// Test with non-existent file
 	emptyRepoPath := filepath.Join(tmpDir, "empty-repo")
-	if err := os.MkdirAll(emptyRepoPath, 0755); err != nil {
+	if err := os.MkdirAll(emptyRepoPath, 0o755); err != nil {
 		t.Fatalf("Failed to create empty repo dir: %v", err)
 	}
 
@@ -128,7 +128,7 @@ func TestLoadLocalIgnore(t *testing.T) {
 
 	// Create a mock repo with .gitignore
 	repoPath := filepath.Join(tmpDir, "repo")
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		t.Fatalf("Failed to create repo dir: %v", err)
 	}
 
@@ -139,7 +139,7 @@ func TestLoadLocalIgnore(t *testing.T) {
 /coverage
 .env
 `
-	if err := os.WriteFile(filepath.Join(repoPath, ".gitignore"), []byte(ignoreContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(repoPath, ".gitignore"), []byte(ignoreContent), 0o644); err != nil {
 		t.Fatalf("Failed to write test .gitignore file: %v", err)
 	}
 
@@ -156,7 +156,7 @@ func TestLoadLocalIgnore(t *testing.T) {
 
 	// Test with non-existent file
 	emptyRepoPath := filepath.Join(tmpDir, "empty-repo")
-	if err := os.MkdirAll(emptyRepoPath, 0755); err != nil {
+	if err := os.MkdirAll(emptyRepoPath, 0o755); err != nil {
 		t.Fatalf("Failed to create empty repo dir: %v", err)
 	}
 
@@ -189,10 +189,10 @@ func TestDefaultUserExcludesFile(t *testing.T) {
 	configDir := filepath.Join(tmpDir, "config", "git")
 	homeDir := filepath.Join(tmpDir, "home")
 
-	if err := os.MkdirAll(configDir, 0755); err != nil {
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
 		t.Fatalf("Failed to create config dir: %v", err)
 	}
-	if err := os.MkdirAll(homeDir, 0755); err != nil {
+	if err := os.MkdirAll(homeDir, 0o755); err != nil {
 		t.Fatalf("Failed to create home dir: %v", err)
 	}
 
@@ -208,7 +208,7 @@ func TestDefaultUserExcludesFile(t *testing.T) {
 	xdgConfigContent := `[core]
 	excludesfile = /path/to/xdg/gitignore
 `
-	if err := os.WriteFile(filepath.Join(configDir, "config"), []byte(xdgConfigContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(configDir, "config"), []byte(xdgConfigContent), 0o644); err != nil {
 		t.Fatalf("Failed to write XDG config file: %v", err)
 	}
 
@@ -224,7 +224,7 @@ func TestDefaultUserExcludesFile(t *testing.T) {
 	homeConfigContent := `[core]
 	excludesfile = /path/to/home/gitignore
 `
-	if err := os.WriteFile(filepath.Join(homeDir, ".gitconfig"), []byte(homeConfigContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(homeDir, ".gitconfig"), []byte(homeConfigContent), 0o644); err != nil {
 		t.Fatalf("Failed to write home gitconfig file: %v", err)
 	}
 
@@ -271,7 +271,7 @@ func TestEnsureExcludeFile(t *testing.T) {
 	excludesfile = /path/to/gitignore
 `
 	configPath := filepath.Join(tmpDir, "config")
-	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+	if err := os.WriteFile(configPath, []byte(configContent), 0o644); err != nil {
 		t.Fatalf("Failed to write config file: %v", err)
 	}
 
@@ -288,7 +288,7 @@ func TestEnsureExcludeFile(t *testing.T) {
 	editor = vim
 `
 	configPath = filepath.Join(tmpDir, "config2")
-	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+	if err := os.WriteFile(configPath, []byte(configContent), 0o644); err != nil {
 		t.Fatalf("Failed to write config file: %v", err)
 	}
 
@@ -312,7 +312,7 @@ func TestEnsureExcludeFile(t *testing.T) {
 	// Test 4: Invalid git config format
 	configContent = `This is not a valid git config file`
 	configPath = filepath.Join(tmpDir, "invalid")
-	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+	if err := os.WriteFile(configPath, []byte(configContent), 0o644); err != nil {
 		t.Fatalf("Failed to write invalid config file: %v", err)
 	}
 
@@ -341,7 +341,7 @@ build/
 
 `
 	ignoreFile := filepath.Join(tmpDir, "ignore")
-	if err := os.WriteFile(ignoreFile, []byte(ignoreContent), 0644); err != nil {
+	if err := os.WriteFile(ignoreFile, []byte(ignoreContent), 0o644); err != nil {
 		t.Fatalf("Failed to write test ignore file: %v", err)
 	}
 

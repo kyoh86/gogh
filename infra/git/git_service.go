@@ -26,13 +26,11 @@ type GitService struct {
 
 type Option func(*GitService)
 
-var (
-	CloneProgressWriter = func(w io.Writer) Option {
-		return func(s *GitService) {
-			s.cloneProgressWriter = w
-		}
+var CloneProgressWriter = func(w io.Writer) Option {
+	return func(s *GitService) {
+		s.cloneProgressWriter = w
 	}
-)
+}
 
 // NewService creates a new Service instance without authentication.
 func NewService(options ...Option) *GitService {

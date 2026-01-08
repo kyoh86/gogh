@@ -3,10 +3,9 @@ package list_test
 import (
 	"context"
 	"errors"
+	"iter"
 	"strings"
 	"testing"
-
-	"iter"
 
 	testtarget "github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/core/repository"

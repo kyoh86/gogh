@@ -95,7 +95,7 @@ func TestClone(t *testing.T) {
 	sourceDir := filepath.Join(tempDir, "source")
 	destDir := filepath.Join(tempDir, "dest")
 
-	err = os.MkdirAll(sourceDir, 0755)
+	err = os.MkdirAll(sourceDir, 0o755)
 	if err != nil {
 		t.Fatalf("Failed to create source dir: %v", err)
 	}
@@ -385,7 +385,7 @@ func TestErrorHandling(t *testing.T) {
 			setupFn: func() (string, error) {
 				// Create an empty repository
 				emptyRepoPath := filepath.Join(tempDir, "empty")
-				if err := os.MkdirAll(emptyRepoPath, 0755); err != nil {
+				if err := os.MkdirAll(emptyRepoPath, 0o755); err != nil {
 					return "", err
 				}
 				_, err := git.PlainInit(emptyRepoPath, true)
@@ -407,7 +407,7 @@ func TestErrorHandling(t *testing.T) {
 
 			// Create a directory for this test case
 			testDir := filepath.Join(tempDir, tc.name)
-			if err := os.MkdirAll(testDir, 0755); err != nil {
+			if err := os.MkdirAll(testDir, 0o755); err != nil {
 				t.Fatalf("Failed to create test dir: %v", err)
 			}
 
@@ -458,23 +458,23 @@ func TestListExcludedFiles(t *testing.T) {
 
 	// Setup test repository with some ignored files
 	repoPath := filepath.Join(tempDir, "repo")
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		t.Fatalf("Failed to create repo dir: %v", err)
 	}
 
 	// Create .git directory and exclude file
 	gitInfoDir := filepath.Join(repoPath, ".git", "info")
-	if err := os.MkdirAll(gitInfoDir, 0755); err != nil {
+	if err := os.MkdirAll(gitInfoDir, 0o755); err != nil {
 		t.Fatalf("Failed to create .git/info dir: %v", err)
 	}
 	excludeContent := "*.tmp\n*.log\n"
-	if err := os.WriteFile(filepath.Join(gitInfoDir, "exclude"), []byte(excludeContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(gitInfoDir, "exclude"), []byte(excludeContent), 0o644); err != nil {
 		t.Fatalf("Failed to write exclude file: %v", err)
 	}
 
 	// Create .gitignore file
 	ignoreContent := "*.bak\n/node_modules/\n"
-	if err := os.WriteFile(filepath.Join(repoPath, ".gitignore"), []byte(ignoreContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(repoPath, ".gitignore"), []byte(ignoreContent), 0o644); err != nil {
 		t.Fatalf("Failed to write .gitignore file: %v", err)
 	}
 
@@ -493,11 +493,11 @@ func TestListExcludedFiles(t *testing.T) {
 	for file := range sampleFiles {
 		dirPath := filepath.Dir(filepath.Join(repoPath, file))
 		if dirPath != repoPath {
-			if err := os.MkdirAll(dirPath, 0755); err != nil {
+			if err := os.MkdirAll(dirPath, 0o755); err != nil {
 				t.Fatalf("Failed to create directory %s: %v", dirPath, err)
 			}
 		}
-		if err := os.WriteFile(filepath.Join(repoPath, file), []byte("content"), 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(repoPath, file), []byte("content"), 0o644); err != nil {
 			t.Fatalf("Failed to write file %s: %v", file, err)
 		}
 	}
@@ -571,16 +571,16 @@ func TestListAllFiles(t *testing.T) {
 
 	// Setup test repository with various files
 	repoPath := filepath.Join(tempDir, "repo")
-	if err := os.MkdirAll(repoPath, 0755); err != nil {
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
 		t.Fatalf("Failed to create repo dir: %v", err)
 	}
 
 	// Create .git directory (should be included in all files)
 	gitDir := filepath.Join(repoPath, ".git")
-	if err := os.MkdirAll(gitDir, 0755); err != nil {
+	if err := os.MkdirAll(gitDir, 0o755); err != nil {
 		t.Fatalf("Failed to create .git dir: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(gitDir, "HEAD"), []byte("ref: refs/heads/master"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(gitDir, "HEAD"), []byte("ref: refs/heads/master"), 0o644); err != nil {
 		t.Fatalf("Failed to write HEAD file: %v", err)
 	}
 
@@ -596,11 +596,11 @@ func TestListAllFiles(t *testing.T) {
 	for _, file := range sampleFiles {
 		dirPath := filepath.Dir(filepath.Join(repoPath, file))
 		if dirPath != repoPath {
-			if err := os.MkdirAll(dirPath, 0755); err != nil {
+			if err := os.MkdirAll(dirPath, 0o755); err != nil {
 				t.Fatalf("Failed to create directory %s: %v", dirPath, err)
 			}
 		}
-		if err := os.WriteFile(filepath.Join(repoPath, file), []byte("content"), 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(repoPath, file), []byte("content"), 0o644); err != nil {
 			t.Fatalf("Failed to write file %s: %v", file, err)
 		}
 	}
