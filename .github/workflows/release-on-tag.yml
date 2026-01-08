@@ -9,6 +9,8 @@ on:
           Which number to increment in the semantic versioning.
         required: true
         type: string
+permissions:
+  contents: write
 jobs:
   release-binary:
     name: Release Binary
