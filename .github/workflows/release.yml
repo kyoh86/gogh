@@ -17,6 +17,9 @@ jobs:
   release-binary:
     name: Release Binary
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      statuses: read
     steps:
       - name: Check Actor
         if: github.actor != 'kyoh86'
