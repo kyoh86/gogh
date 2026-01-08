@@ -20,7 +20,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24
+          go-version: 1.25
       - name: Test Go
         run: go test --race ./...
   test-architecture:
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24
+          go-version: 1.25
       - name: Check architecture
         run: go tool arch-go
   test-release:
@@ -44,7 +44,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24
+          go-version: 1.25
       - name: Try Bump-up Semantic Version
         uses: kyoh86/git-vertag-action@v1
         with:
@@ -62,7 +62,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24
+          go-version: 1.25
       - name: Search diagnostics
         uses: golangci/golangci-lint-action@v9
   set-releasable-status:
