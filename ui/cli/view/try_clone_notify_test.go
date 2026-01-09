@@ -36,7 +36,7 @@ func TestTryCloneNotify(t *testing.T) {
 		// Verify
 		assert.NoError(t, err)
 		assert.True(t, called, "original notify function should be called")
-		assert.Contains(t, buf.String(), "created empty repository")
+		assert.Contains(t, buf.String(), "Created empty repository")
 	})
 
 	t.Run("StatusRetry", func(t *testing.T) {

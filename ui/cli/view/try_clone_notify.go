@@ -15,9 +15,9 @@ func TryCloneNotify(
 	return func(n try.Status) error {
 		switch n {
 		case try.StatusEmpty:
-			log.FromContext(ctx).Info("created empty repository")
+			log.FromContext(ctx).Info("Created empty repository")
 		case try.StatusRetry:
-			log.FromContext(ctx).Info("waiting the remote repository is ready")
+			log.FromContext(ctx).Info("Waiting the remote repository is ready")
 		}
 		if notify != nil {
 			return notify(n)
