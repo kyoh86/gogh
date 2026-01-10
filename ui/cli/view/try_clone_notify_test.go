@@ -63,7 +63,7 @@ func TestTryCloneNotify(t *testing.T) {
 		// Verify
 		assert.NoError(t, err)
 		assert.True(t, called, "original notify function should be called")
-		assert.Contains(t, buf.String(), "waiting the remote repository is ready")
+		assert.Contains(t, buf.String(), "Waiting the remote repository is ready")
 	})
 
 	t.Run("NilNotify", func(t *testing.T) {
