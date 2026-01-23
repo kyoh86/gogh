@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/config"
@@ -35,6 +36,7 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 					Patterns: f.Patterns,
 				},
 			}
+			cnt := 0
 			for repo, err := range list.NewUsecase(svc.WorkspaceService, svc.FinderService).Execute(ctx, opts) {
 				if err != nil {
 					return fmt.Errorf("listing up repositories: %w", err)
@@ -48,6 +50,26 @@ func NewListCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Comman
 					}).Info("Failed to format")
 				} else {
 					fmt.Println(str)
+				}
+				cnt++
+			}
+			if cnt == 0 {
+				logger := log.FromContext(ctx).WithFields(log.Fields{
+					"format": format.String(),
+					"limit":  opts.Limit,
+				})
+				if opts.Primary {
+					logger = logger.WithField("primary", true)
+				}
+				if len(opts.Patterns) > 0 {
+					logger = logger.WithField("patterns", strings.Join(opts.Patterns, "|"))
+					logger.Info(strings.Join([]string{
+						"No entry found.",
+						"Patterns should be formed as <host>/<owner>/<name>.",
+						`For example, to match any repository of "kyoh86", use "*/kyoh86/*"`,
+					}, "\n"))
+				} else {
+					logger.Info("No entry found")
 				}
 			}
 

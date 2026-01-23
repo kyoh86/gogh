@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/cwd"
@@ -69,6 +70,19 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 						return fmt.Errorf("listing repositories: %w", err)
 					}
 					refs = append(refs, repo.Ref().String())
+				}
+				if len(refs) == 0 {
+					logger := log.FromContext(ctx)
+					if len(f.patterns) > 0 {
+						logger = logger.WithField("patterns", strings.Join(f.patterns, "|"))
+						logger.Info(strings.Join([]string{
+							"No entry found.",
+							"Patterns should be formed as <host>/<owner>/<name>.",
+							`For example, to match any repository of "kyoh86", use "*/kyoh86/*"`,
+						}, "\n"))
+					} else {
+						logger.Info("No entry found")
+					}
 				}
 			}
 			for _, ref := range refs {
