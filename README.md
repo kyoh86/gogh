@@ -518,6 +518,11 @@ Each extra contains:
 When you save an extra from a repository, it:
 1. Extracts all untracked files as overlays
 2. Creates hooks to apply these overlays
+
+## Contributing
+
+See `CONTRIBUTING.md` for development setup notes (including the local `gogh`
+binary workflow with mise).
 3. Bundles them together as a single extra
 
 ### Basic Extra Commands

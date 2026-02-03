@@ -1,0 +1,8 @@
+[env]
+_.path = ".mise/gogh"
+
+[tasks.build]
+description = "Build local gogh binary for this repo"
+run = "mkdir -p .mise/gogh && go build -o .mise/gogh/gogh ./cmd/gogh"
+sources = ["go.mod", "go.sum", "**/*.go"]
+outputs = [".mise/gogh/gogh"]

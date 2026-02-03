@@ -1,6 +1,7 @@
 # for goreleaser output with .goreleaser.yml
 /dist
 /doc/man
+/.mise
 
 # Binaries for programs and plugins
 *.exe
