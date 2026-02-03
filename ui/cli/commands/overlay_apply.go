@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/list"
 	"github.com/kyoh86/gogh/v4/app/overlay/apply"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/completion"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +27,7 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			if len(args) > 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			return completeOverlays(cmd.Context(), svc, toComplete)
+			return completion.Overlays(cmd.Context(), svc, toComplete)
 		},
 		Args: cobra.MinimumNArgs(1),
 		Example: `  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]

@@ -5,6 +5,7 @@ import (
 
 	"github.com/kyoh86/gogh/v4/app/script/show"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/completion"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,7 @@ func NewScriptShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			if len(args) > 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			return completeScripts(cmd.Context(), svc, toComplete)
+			return completion.Scripts(cmd.Context(), svc, toComplete)
 		},
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

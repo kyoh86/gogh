@@ -7,6 +7,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/cwd"
 	"github.com/kyoh86/gogh/v4/app/hook/invoke"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/completion"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +19,7 @@ func NewHookInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			if len(args) > 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			return completeHooks(cmd.Context(), svc, toComplete)
+			return completion.Hooks(cmd.Context(), svc, toComplete)
 		},
 		Args: cobra.ExactArgs(2),
 		Example: `  invoke <hook-id> github.com/owner/repo

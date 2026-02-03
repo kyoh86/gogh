@@ -6,6 +6,7 @@ import (
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/overlay/remove"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/completion"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +19,7 @@ func NewOverlayRemoveCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 			if len(args) > 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			return completeOverlays(cmd.Context(), svc, toComplete)
+			return completion.Overlays(cmd.Context(), svc, toComplete)
 		},
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
