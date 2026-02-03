@@ -14,7 +14,13 @@ func NewHookInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	cmd := &cobra.Command{
 		Use:   "invoke [flags] <hook-id> [[<host>/]<owner>/]<name>",
 		Short: "Manually invoke a hook for a repository",
-		Args:  cobra.ExactArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+			if len(args) > 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return completeHooks(cmd.Context(), svc, toComplete)
+		},
+		Args: cobra.ExactArgs(2),
 		Example: `  invoke <hook-id> github.com/owner/repo
   invoke <hook-id> owner/repo
   invoke <hook-id> repo

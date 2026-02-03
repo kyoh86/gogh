@@ -13,7 +13,13 @@ func NewOverlayEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 	cmd := &cobra.Command{
 		Use:   "edit [flags] <overlay-id>",
 		Short: "Edit an existing overlay (with $EDITOR)",
-		Args:  cobra.ExactArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+			if len(args) > 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return completeOverlays(cmd.Context(), svc, toComplete)
+		},
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			overlayID := args[0]

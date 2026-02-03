@@ -22,7 +22,13 @@ func NewOverlayApplyCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 	cmd := &cobra.Command{
 		Use:   "apply [flags] <overlay-id> [[<host>/]<owner>/]<name>",
 		Short: "Apply an overlay to a repository",
-		Args:  cobra.MinimumNArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+			if len(args) > 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return completeOverlays(cmd.Context(), svc, toComplete)
+		},
+		Args: cobra.MinimumNArgs(1),
 		Example: `  invoke [flags] <overlay-id> [[[<host>/]<owner>/]<name>...]
   invoke [flags] <overlay-id> --all
   invoke [flags] <overlay-id> --pattern <pattern> [--pattern <pattern>]...

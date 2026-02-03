@@ -22,7 +22,13 @@ func NewScriptInvokeCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 	cmd := &cobra.Command{
 		Use:   "invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]",
 		Short: "Invoke an script in a repository",
-		Args:  cobra.MinimumNArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+			if len(args) > 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return completeScripts(cmd.Context(), svc, toComplete)
+		},
+		Args: cobra.MinimumNArgs(1),
 		Example: `  invoke [flags] <script-id> [[[<host>/]<owner>/]<name>...]
   invoke [flags] <script-id> --all
   invoke [flags] <script-id> --pattern <pattern> [--pattern <pattern>]...
