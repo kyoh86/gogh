@@ -49,18 +49,8 @@ func NewHookUpdateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 	if err := enumFlag(cmd, &f.triggerEvent, "trigger-event", "", "event to hook automatically", "post-clone", "post-fork", "post-create"); err != nil {
 		return nil, fmt.Errorf("registering trigger-event flag: %w", err)
 	}
-	if err := cmd.RegisterFlagCompletionFunc("trigger-event", func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-		return []string{"post-clone", "post-fork", "post-create"}, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		return nil, fmt.Errorf("registering trigger-event completion: %w", err)
-	}
 	if err := enumFlag(cmd, &f.operationType, "operation-type", "", "Operation type", "overlay", "script"); err != nil {
 		return nil, fmt.Errorf("registering operation-type flag: %w", err)
-	}
-	if err := cmd.RegisterFlagCompletionFunc("operation-type", func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-		return []string{"overlay", "script"}, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		return nil, fmt.Errorf("registering operation-type completion: %w", err)
 	}
 	if err := cmd.MarkFlagRequired("operation-type"); err != nil {
 		return nil, fmt.Errorf("marking operation-type flag required: %w", err)
