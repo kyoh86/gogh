@@ -25,7 +25,7 @@ func Overlays(ctx context.Context, svc *service.ServiceSet, toComplete string) (
 			!strings.HasPrefix(name, toComplete) {
 			continue
 		}
-		completions = append(completions, cobra.Completion(id+"\t"+name))
+		completions = append(completions, id+"\t"+name)
 	}
 	return completions, cobra.ShellCompDirectiveNoFileComp
 }
