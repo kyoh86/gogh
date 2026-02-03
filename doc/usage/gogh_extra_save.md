@@ -28,7 +28,8 @@ gogh extra save <repository> [flags]
 ### Options
 
 ```
-  -h, --help   help for save
+      --confirm-mode string   Confirmation mode: select (multi-select), iterative (one-by-one), none (skip confirmation) (default "select")
+  -h, --help                  help for save
 ```
 
 ### SEE ALSO
