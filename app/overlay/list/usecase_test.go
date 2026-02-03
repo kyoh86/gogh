@@ -1,12 +1,8 @@
 package list_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
-	"iter"
-	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -31,13 +27,11 @@ func (t testOverlay) RelativePath() string { return t.relativePath }
 func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("Success: List overlays as one-line", func(t *testing.T) {
+	t.Run("Pass through overlays", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		mockService := overlay_mock.NewMockOverlayService(ctrl)
-		buf := &bytes.Buffer{}
-
 		overlay1 := testOverlay{
 			id:           uuid.New(),
 			name:         "overlay1",
@@ -49,211 +43,51 @@ func TestUsecase_Execute(t *testing.T) {
 			relativePath: "path/to/overlay2",
 		}
 
-		// Create an iterator that yields overlays
 		mockService.EXPECT().
 			List().
-			Return(func() iter.Seq2[overlay.Overlay, error] {
-				return func(yield func(overlay.Overlay, error) bool) {
-					yield(overlay1, nil)
-					yield(overlay2, nil)
-				}
-			}())
+			Return(func(yield func(overlay.Overlay, error) bool) {
+				yield(overlay1, nil)
+				yield(overlay2, nil)
+			})
 
-		uc := testtarget.NewUsecase(mockService, buf)
-		err := uc.Execute(ctx, false, false)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+		uc := testtarget.NewUsecase(mockService)
+		got := make([]overlay.Overlay, 0, 2)
+		for o, err := range uc.Execute(ctx) {
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			got = append(got, o)
 		}
 
-		output := buf.String()
-		if !strings.Contains(output, overlay1.id.String()[:8]) {
-			t.Errorf("expected output to contain overlay1 ID prefix, got: %s", output)
+		if len(got) != 2 {
+			t.Fatalf("got %d overlays, want 2", len(got))
 		}
-		if !strings.Contains(output, overlay2.id.String()[:8]) {
-			t.Errorf("expected output to contain overlay2 ID prefix, got: %s", output)
+		if got[0].ID() != overlay1.ID() {
+			t.Fatalf("overlay[0] id = %s, want %s", got[0].ID(), overlay1.ID())
 		}
-		if !strings.Contains(output, overlay1.name) {
-			t.Errorf("expected output to contain overlay1 name, got: %s", output)
-		}
-		if !strings.Contains(output, overlay2.name) {
-			t.Errorf("expected output to contain overlay2 name, got: %s", output)
+		if got[1].ID() != overlay2.ID() {
+			t.Fatalf("overlay[1] id = %s, want %s", got[1].ID(), overlay2.ID())
 		}
 	})
 
-	t.Run("Success: List overlays as JSON", func(t *testing.T) {
+	t.Run("Pass through errors", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		mockService := overlay_mock.NewMockOverlayService(ctrl)
-		buf := &bytes.Buffer{}
-
-		overlay1 := testOverlay{
-			id:           uuid.New(),
-			name:         "overlay1",
-			relativePath: "path/to/overlay1",
-		}
-
 		mockService.EXPECT().
 			List().
-			Return(func() iter.Seq2[overlay.Overlay, error] {
-				return func(yield func(overlay.Overlay, error) bool) {
-					yield(overlay1, nil)
-				}
-			}())
+			Return(func(yield func(overlay.Overlay, error) bool) {
+				yield(nil, errors.New("list failed"))
+			})
 
-		uc := testtarget.NewUsecase(mockService, buf)
-		err := uc.Execute(ctx, true, false)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
+		uc := testtarget.NewUsecase(mockService)
+		for _, err := range uc.Execute(ctx) {
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			return
 		}
-
-		output := buf.String()
-		if !strings.Contains(output, `"id"`) {
-			t.Errorf("expected JSON output to contain 'id' field")
-		}
-		if !strings.Contains(output, overlay1.id.String()) {
-			t.Errorf("expected JSON output to contain overlay ID")
-		}
+		t.Fatal("expected iterator result")
 	})
-
-	t.Run("Success: List overlays with source as detail", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockService := overlay_mock.NewMockOverlayService(ctrl)
-		buf := &bytes.Buffer{}
-
-		overlay1 := testOverlay{
-			id:           uuid.New(),
-			name:         "overlay1",
-			relativePath: "path/to/overlay1",
-		}
-
-		mockService.EXPECT().
-			List().
-			Return(func() iter.Seq2[overlay.Overlay, error] {
-				return func(yield func(overlay.Overlay, error) bool) {
-					yield(overlay1, nil)
-				}
-			}())
-
-		// For detail view with source, it will call Open to get content
-		mockService.EXPECT().
-			Open(ctx, overlay1.id.String()).
-			Return(io.NopCloser(strings.NewReader("overlay content")), nil)
-
-		uc := testtarget.NewUsecase(mockService, buf)
-		err := uc.Execute(ctx, false, true)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		output := buf.String()
-		if !strings.Contains(output, overlay1.id.String()) {
-			t.Errorf("expected output to contain overlay ID")
-		}
-	})
-
-	t.Run("Success: Skip nil overlays", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockService := overlay_mock.NewMockOverlayService(ctrl)
-		buf := &bytes.Buffer{}
-
-		overlay1 := testOverlay{
-			id:           uuid.New(),
-			name:         "overlay1",
-			relativePath: "path/to/overlay1",
-		}
-
-		mockService.EXPECT().
-			List().
-			Return(func() iter.Seq2[overlay.Overlay, error] {
-				return func(yield func(overlay.Overlay, error) bool) {
-					yield(nil, nil) // nil overlay should be skipped
-					yield(overlay1, nil)
-				}
-			}())
-
-		uc := testtarget.NewUsecase(mockService, buf)
-		err := uc.Execute(ctx, false, false)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		output := buf.String()
-		if !strings.Contains(output, overlay1.id.String()[:8]) {
-			t.Errorf("expected output to contain overlay1 ID prefix, got: %s", output)
-		}
-	})
-
-	t.Run("Error: List returns error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockService := overlay_mock.NewMockOverlayService(ctrl)
-		buf := &bytes.Buffer{}
-		expectedErr := errors.New("list failed")
-
-		mockService.EXPECT().
-			List().
-			Return(func() iter.Seq2[overlay.Overlay, error] {
-				return func(yield func(overlay.Overlay, error) bool) {
-					yield(nil, expectedErr)
-				}
-			}())
-
-		uc := testtarget.NewUsecase(mockService, buf)
-		err := uc.Execute(ctx, false, false)
-
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-		if err != expectedErr {
-			t.Errorf("expected error %v, got %v", expectedErr, err)
-		}
-	})
-
-	t.Run("Error: Execute fails for an overlay", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockService := overlay_mock.NewMockOverlayService(ctrl)
-		// Use a writer that fails on write
-		failWriter := &failingWriter{err: errors.New("write failed")}
-
-		overlay1 := testOverlay{
-			id:           uuid.New(),
-			name:         "overlay1",
-			relativePath: "path/to/overlay1",
-		}
-
-		mockService.EXPECT().
-			List().
-			Return(func() iter.Seq2[overlay.Overlay, error] {
-				return func(yield func(overlay.Overlay, error) bool) {
-					yield(overlay1, nil)
-				}
-			}())
-
-		uc := testtarget.NewUsecase(mockService, failWriter)
-		err := uc.Execute(ctx, false, false)
-
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-		if !strings.Contains(err.Error(), "write failed") {
-			t.Errorf("expected write failed error, got %v", err)
-		}
-	})
-}
-
-// failingWriter is a writer that always fails
-type failingWriter struct {
-	err error
-}
-
-func (f *failingWriter) Write(p []byte) (n int, err error) {
-	return 0, f.err
 }

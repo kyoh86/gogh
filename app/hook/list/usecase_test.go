@@ -1,7 +1,6 @@
 package list_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"testing"
@@ -16,155 +15,72 @@ import (
 func TestUsecase_Execute(t *testing.T) {
 	ctx := context.Background()
 
-	testCases := []struct {
-		name      string
-		asJSON    bool
-		setupMock func(*hook_mock.MockHookService)
-		wantErr   bool
-		validate  func(*testing.T, string)
-	}{
-		{
-			name:   "List hooks as one-line",
-			asJSON: false,
-			setupMock: func(m *hook_mock.MockHookService) {
-				hooks := []hook.Hook{
-					hook.ConcreteHook(
-						uuid.New(),
-						"test-hook-1",
-						"github.com/owner/*",
-						string(hook.EventPostClone),
-						string(hook.OperationTypeOverlay),
-						uuid.New(),
-					),
-					hook.ConcreteHook(
-						uuid.New(),
-						"test-hook-2",
-						"github.com/org/**",
-						string(hook.EventPostCreate),
-						string(hook.OperationTypeScript),
-						uuid.New(),
-					),
-				}
-				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
-					for _, h := range hooks {
-						if !yield(h, nil) {
-							return
-						}
-					}
-				})
-			},
-			wantErr: false,
-			validate: func(t *testing.T, output string) {
-				if output == "" {
-					t.Error("Expected non-empty output")
-				}
-			},
-		},
-		{
-			name:   "List hooks as JSON",
-			asJSON: true,
-			setupMock: func(m *hook_mock.MockHookService) {
-				hooks := []hook.Hook{
-					hook.ConcreteHook(
-						uuid.New(),
-						"json-hook",
-						"github.com/test/*",
-						string(hook.EventPostFork),
-						string(hook.OperationTypeScript),
-						uuid.New(),
-					),
-				}
-				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
-					for _, h := range hooks {
-						if !yield(h, nil) {
-							return
-						}
-					}
-				})
-			},
-			wantErr: false,
-			validate: func(t *testing.T, output string) {
-				if output == "" {
-					t.Error("Expected non-empty JSON output")
-				}
-			},
-		},
-		{
-			name:   "Skip nil hooks",
-			asJSON: false,
-			setupMock: func(m *hook_mock.MockHookService) {
-				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
-					yield(nil, nil) // nil hook should be skipped
-					yield(hook.ConcreteHook(
-						uuid.New(),
-						"valid-hook",
-						"",
-						string(hook.EventAny),
-						string(hook.OperationTypeOverlay),
-						uuid.New(),
-					), nil)
-				})
-			},
-			wantErr: false,
-		},
-		{
-			name:   "Error from List",
-			asJSON: false,
-			setupMock: func(m *hook_mock.MockHookService) {
-				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
-					yield(nil, errors.New("list error"))
-				})
-			},
-			wantErr: true,
-		},
-		{
-			name:   "Error from Execute",
-			asJSON: false,
-			setupMock: func(m *hook_mock.MockHookService) {
-				// Create a hook that would cause the Execute to fail
-				// by having invalid characters that might cause JSON marshaling issues
-				hooks := []hook.Hook{
-					hook.ConcreteHook(
-						uuid.New(),
-						"test-hook",
-						"github.com/owner/*",
-						string(hook.EventPostClone),
-						string(hook.OperationTypeOverlay),
-						uuid.New(),
-					),
-				}
-				m.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
-					for _, h := range hooks {
-						if !yield(h, nil) {
-							return
-						}
-					}
-				})
-			},
-			wantErr: false, // Normal hooks shouldn't cause Execute errors
-		},
-	}
+	t.Run("Pass through hooks", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			mockHookService := hook_mock.NewMockHookService(ctrl)
-			tc.setupMock(mockHookService)
-
-			var buf bytes.Buffer
-			uc := testtarget.NewUsecase(mockHookService, &buf)
-
-			err := uc.Execute(ctx, tc.asJSON)
-			if (err != nil) != tc.wantErr {
-				t.Errorf("Execute() error = %v, wantErr %v", err, tc.wantErr)
-				return
-			}
-
-			if tc.validate != nil {
-				tc.validate(t, buf.String())
+		mockHookService := hook_mock.NewMockHookService(ctrl)
+		hooks := []hook.Hook{
+			hook.ConcreteHook(
+				uuid.New(),
+				"test-hook-1",
+				"github.com/owner/*",
+				string(hook.EventPostClone),
+				string(hook.OperationTypeOverlay),
+				uuid.New(),
+			),
+			hook.ConcreteHook(
+				uuid.New(),
+				"test-hook-2",
+				"github.com/org/**",
+				string(hook.EventPostCreate),
+				string(hook.OperationTypeScript),
+				uuid.New(),
+			),
+		}
+		mockHookService.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
+			for _, h := range hooks {
+				if !yield(h, nil) {
+					return
+				}
 			}
 		})
-	}
+
+		uc := testtarget.NewUsecase(mockHookService)
+		got := make([]hook.Hook, 0, len(hooks))
+		for h, err := range uc.Execute(ctx) {
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			got = append(got, h)
+		}
+
+		if len(got) != len(hooks) {
+			t.Fatalf("got %d hooks, want %d", len(got), len(hooks))
+		}
+		for i := range got {
+			if got[i].ID() != hooks[i].ID() {
+				t.Fatalf("hook[%d] id = %s, want %s", i, got[i].ID(), hooks[i].ID())
+			}
+		}
+	})
+
+	t.Run("Pass through errors", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockHookService := hook_mock.NewMockHookService(ctrl)
+		mockHookService.EXPECT().List().Return(func(yield func(hook.Hook, error) bool) {
+			yield(nil, errors.New("list error"))
+		})
+
+		uc := testtarget.NewUsecase(mockHookService)
+		for _, err := range uc.Execute(ctx) {
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			return
+		}
+		t.Fatal("expected iterator result")
+	})
 }
