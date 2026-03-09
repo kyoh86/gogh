@@ -6,7 +6,7 @@ require (
 	github.com/Khan/genqlient v0.8.1
 	github.com/apex/log v1.9.0
 	github.com/bmatcuk/doublestar/v4 v4.10.0
-	github.com/charmbracelet/huh v0.8.0
+	github.com/charmbracelet/huh v1.0.0
 	github.com/cli/browser v1.3.0
 	github.com/cli/safeexec v1.0.1
 	github.com/go-git/go-git/v5 v5.17.0
