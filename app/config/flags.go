@@ -12,9 +12,9 @@ import (
 
 func LocationFormatter(v string) (repository.LocationFormat, error) {
 	switch v {
-	case "", "rel-path", "rel", "path", "rel-file-path":
+	case "", "path", "rel", "rel-path", "rel-file-path":
 		return repository.LocationFormatPath, nil
-	case "full-file-path", "full":
+	case "full", "full-path", "full-file-path":
 		return repository.LocationFormatFullPath, nil
 	case "json":
 		return repository.LocationFormatJSON, nil
