@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/huh v1.0.0
 	github.com/cli/browser v1.3.0
 	github.com/cli/safeexec v1.0.1
-	github.com/go-git/go-git/v5 v5.17.0
+	github.com/go-git/go-git/v5 v5.17.1
 	github.com/goccy/go-yaml v1.19.2
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-github/v80 v80.0.0
