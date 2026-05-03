@@ -1,3 +1,13 @@
+// Package logger provides logging infrastructure for the application.
+//
+// This package implements a logger using the apex/log library. It provides:
+//
+//   - Configurable log levels (controlled by GOGH_DEBUG environment variable)
+//   - Separated output streams for info/debug logs (stdout) and error/warning logs (stderr)
+//   - Context-based logger injection for use across the application
+//
+// The default log level is InfoLevel, but can be set to DebugLevel by setting
+// the GOGH_DEBUG environment variable.
 package logger
 
 import (

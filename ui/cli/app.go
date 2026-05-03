@@ -247,6 +247,7 @@ func NewApp(
 		{fn: commands.NewReposCommand, group: groupShow},
 		{fn: commands.NewDeleteCommand, group: groupManipulate},
 		{fn: commands.NewForkCommand, group: groupManipulate},
+		{fn: commands.NewWorktreeCommand, group: groupManipulate},
 	} {
 		c, err := sub.fn(ctx, svc)
 		if err != nil {

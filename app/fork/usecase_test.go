@@ -83,6 +83,14 @@ func TestUsecase_Execute(t *testing.T) {
 					ForkRepository(gomock.Any(), sourceRef, targetRef, gomock.Any()).
 					Return(forkedRepo, nil)
 
+				pseudoPath := filepath.Join(tmpDir, "github.com/target/repo")
+				mockLayout.EXPECT().
+					PathFor(targetRef).
+					Return(pseudoPath)
+				mockWorkspace.EXPECT().
+					GetPrimaryLayout().
+					Return(mockLayout)
+
 				// Clone repository
 				mockHosting.EXPECT().
 					GetTokenFor(gomock.Any(), targetRef.Host(), targetRef.Owner()).
@@ -93,17 +101,22 @@ func TestUsecase_Execute(t *testing.T) {
 				mockGit.EXPECT().
 					Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil)
+				// New bare + worktree flow
+				mockGit.EXPECT().
+					Fetch(gomock.Any(), pseudoPath, "origin").
+					Return(nil)
+				mockGit.EXPECT().
+					SetRemoteHead(gomock.Any(), pseudoPath, "origin").
+					Return(nil)
+				mockGit.EXPECT().
+					CreateBranch(gomock.Any(), pseudoPath, "main", "origin/HEAD").
+					Return(nil)
+				mockGit.EXPECT().
+					AddWorktree(gomock.Any(), pseudoPath, "main", ".worktree/main").
+					Return(nil)
 				mockGit.EXPECT().
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).
 					Return(nil)
-
-				pseudoPath := filepath.Join(tmpDir, "github.com/target/repo")
-				mockLayout.EXPECT().
-					PathFor(targetRef).
-					Return(pseudoPath)
-				mockWorkspace.EXPECT().
-					GetPrimaryLayout().
-					Return(mockLayout)
 
 				// Hook finds the repository by reference
 				mockFinder.EXPECT().
@@ -206,6 +219,14 @@ func TestUsecase_Execute(t *testing.T) {
 					ForkRepository(gomock.Any(), sourceRef, defaultRef, gomock.Any()).
 					Return(forkedRepo, nil)
 
+				pseudoPath := filepath.Join(tmpDir, "github.com/target/repo")
+				mockLayout.EXPECT().
+					PathFor(defaultRef).
+					Return(pseudoPath)
+				mockWorkspace.EXPECT().
+					GetPrimaryLayout().
+					Return(mockLayout)
+
 				// Clone repository
 				mockHosting.EXPECT().
 					GetTokenFor(gomock.Any(), defaultRef.Host(), defaultRef.Owner()).
@@ -216,17 +237,22 @@ func TestUsecase_Execute(t *testing.T) {
 				mockGit.EXPECT().
 					Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil)
+				// New bare + worktree flow
+				mockGit.EXPECT().
+					Fetch(gomock.Any(), pseudoPath, "origin").
+					Return(nil)
+				mockGit.EXPECT().
+					SetRemoteHead(gomock.Any(), pseudoPath, "origin").
+					Return(nil)
+				mockGit.EXPECT().
+					CreateBranch(gomock.Any(), pseudoPath, "main", "origin/HEAD").
+					Return(nil)
+				mockGit.EXPECT().
+					AddWorktree(gomock.Any(), pseudoPath, "main", ".worktree/main").
+					Return(nil)
 				mockGit.EXPECT().
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).
 					Return(nil)
-
-				pseudoPath := filepath.Join(tmpDir, "github.com/target/repo")
-				mockLayout.EXPECT().
-					PathFor(defaultRef).
-					Return(pseudoPath)
-				mockWorkspace.EXPECT().
-					GetPrimaryLayout().
-					Return(mockLayout)
 
 				// Hook finds the repository by reference
 				mockFinder.EXPECT().
@@ -344,6 +370,13 @@ func TestUsecase_Execute(t *testing.T) {
 					ForkRepository(gomock.Any(), sourceRef, targetRef, gomock.Any()).
 					Return(forkedRepo, nil)
 
+				mockLayout.EXPECT().
+					PathFor(targetRef).
+					Return("/path/to/repo")
+				mockWorkspace.EXPECT().
+					GetPrimaryLayout().
+					Return(mockLayout)
+
 				// Clone repository error
 				mockHosting.EXPECT().
 					GetTokenFor(gomock.Any(), targetRef.Host(), targetRef.Owner()).
@@ -354,13 +387,6 @@ func TestUsecase_Execute(t *testing.T) {
 				mockGit.EXPECT().
 					Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(errors.New("cloning error"))
-
-				mockLayout.EXPECT().
-					PathFor(targetRef).
-					Return("/path/to/repo")
-				mockWorkspace.EXPECT().
-					GetPrimaryLayout().
-					Return(mockLayout)
 			},
 			expectErrText: "cloning forked repository",
 		},
@@ -411,8 +437,9 @@ func TestUsecase_Execute(t *testing.T) {
 
 				opts := fork.Options{
 					TryCloneOptions: try.Options{
-						Timeout: 30 * time.Second,
-						Notify:  func(msg try.Status) error { return nil },
+						Worktree: true,
+						Timeout:  30 * time.Second,
+						Notify:   func(msg try.Status) error { return nil },
 					},
 					Target: tc.target,
 				}

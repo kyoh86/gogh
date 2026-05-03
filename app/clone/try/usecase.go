@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/kyoh86/gogh/v4/core/git"
@@ -70,6 +71,8 @@ type Options struct {
 	Notify Notify
 	// Timeout is the maximum wait time for each clone attempt.
 	Timeout time.Duration
+	// Worktree uses bare + worktree structure (default: true)
+	Worktree bool
 }
 
 // Execute attempts to clone a repository with retry logic.
@@ -98,7 +101,7 @@ func (uc *Usecase) Execute(
 	}
 
 	// Perform git clone operation
-	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Timeout, opts.Notify); err != nil {
+	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Worktree, opts.Timeout, opts.Notify); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
 
@@ -122,47 +125,166 @@ func cloneWithRetry(
 	layout workspace.LayoutService,
 	ref repository.Reference,
 	cloneURL, localPath string,
+	worktree bool,
 	timeout time.Duration,
 	notify Notify,
-) (err error) {
+) error {
 	if notify == nil {
 		notify = func(n Status) error { return nil }
 	}
 	if timeout == 0 {
 		timeout = 30 * time.Second
 	}
-	for {
-		toctx, tocancel := context.WithTimeout(ctx, timeout)
-		err = gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{})
-		tocancel()
-		switch {
-		case errors.Is(err, git.ErrRepositoryNotExists), errors.Is(err, context.DeadlineExceeded):
-			if err := notify(StatusRetry); err != nil {
-				return err
-			}
-		case err == nil:
-			return nil
-		case errors.Is(err, git.ErrRepositoryEmpty):
-			path, err := layout.CreateRepositoryFolder(ref)
-			if err != nil {
-				return err
-			}
-			if err := gitService.Init(ctx, cloneURL, path, false, git.InitOptions{}); err != nil {
-				return err
-			}
-			if err := notify(StatusEmpty); err != nil {
-				return err
-			}
-			return nil
-		default:
-			return err // return immediately for unrecoverable errors
-		}
 
+	// Determine if we should create a bare repository
+	cloneCore := cloneWithinTimeout
+	if worktree {
+		cloneCore = cloneBareWithinTimeout
+	}
+
+	for {
+		if err := cloneCore(ctx, gitService, cloneURL, localPath, timeout, notify, layout, ref); !errors.Is(err, errContinue) {
+			return err
+		}
+	}
+}
+
+var errContinue = errors.New("continue")
+
+func cloneWithinTimeout(
+	ctx context.Context,
+	gitService git.GitService,
+	cloneURL string,
+	localPath string,
+	timeout time.Duration,
+	notify Notify,
+	layout workspace.LayoutService,
+	ref repository.Reference,
+) error {
+	toctx, tocancel := context.WithTimeout(ctx, timeout)
+
+	err := gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{})
+	tocancel()
+	switch {
+	case errors.Is(err, git.ErrRepositoryNotExists), errors.Is(err, context.DeadlineExceeded):
+		if err := notify(StatusRetry); err != nil {
+			return err
+		}
+		// continue
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-time.After(1 * time.Second):
 			// next retry
 		}
+		return errContinue
+	case err == nil:
+		return nil
+	case errors.Is(err, git.ErrRepositoryEmpty):
+		path, err := layout.CreateRepositoryFolder(ref)
+		if err != nil {
+			return err
+		}
+		if err := gitService.Init(ctx, cloneURL, path, false, git.InitOptions{}); err != nil {
+			return err
+		}
+		if err := notify(StatusEmpty); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return err // return immediately for unrecoverable errors
+	}
+}
+
+func cloneBareWithinTimeout(
+	ctx context.Context,
+	gitService git.GitService,
+	cloneURL string,
+	localPath string,
+	timeout time.Duration,
+	notify Notify,
+	layout workspace.LayoutService,
+	ref repository.Reference,
+) error {
+	toctx, tocancel := context.WithTimeout(ctx, timeout)
+
+	err := gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{
+		IsBare: true,
+	})
+	tocancel()
+	switch {
+	case errors.Is(err, git.ErrRepositoryNotExists), errors.Is(err, context.DeadlineExceeded):
+		if err := notify(StatusRetry); err != nil {
+			return err
+		}
+		// continue
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(1 * time.Second):
+			// next retry
+		}
+		return errContinue
+	case err == nil:
+		// Create the main worktree
+
+		// Fetch from remote to get remote tracking branches
+		if err := gitService.Fetch(ctx, localPath, "origin"); err != nil {
+			// Ignore "already up-to-date" errors as they indicate successful clone
+			if !errors.Is(err, git.ErrAlreadyUpToDate) {
+				return fmt.Errorf("fetching from remote: %w", err)
+			}
+		}
+		// Set the remote HEAD symbolic reference
+		if err := gitService.SetRemoteHead(ctx, localPath, "origin"); err != nil {
+			return fmt.Errorf("setting remote head: %w", err)
+		}
+		// Create main branch from remote's default branch (origin/HEAD)
+		// Ignore error if branch already exists
+		if err := gitService.CreateBranch(ctx, localPath, "main", "origin/HEAD"); err != nil {
+			if !errors.Is(err, os.ErrExist) {
+				return fmt.Errorf("creating main branch: %w", err)
+			}
+		}
+		// Create .worktree/main worktree
+		if err := gitService.AddWorktree(ctx, localPath, "main", ".worktree/main"); err != nil {
+			return fmt.Errorf("creating main worktree: %w", err)
+		}
+		return nil
+	case errors.Is(err, git.ErrRepositoryEmpty):
+		path, err := layout.CreateRepositoryFolder(ref)
+		if err != nil {
+			return err
+		}
+		if err := gitService.Init(ctx, cloneURL, path, true, git.InitOptions{}); err != nil {
+			return err
+		}
+		// Create the main worktree
+		// Fetch from remote to get remote tracking branches
+		if err := gitService.Fetch(ctx, path, "origin"); err != nil {
+			// Ignore "already up-to-date" errors as they indicate successful clone
+			if !errors.Is(err, git.ErrAlreadyUpToDate) {
+				return fmt.Errorf("fetching from remote: %w", err)
+			}
+		}
+		// Set the remote HEAD symbolic reference
+		if err := gitService.SetRemoteHead(ctx, path, "origin"); err != nil {
+			return fmt.Errorf("setting remote head: %w", err)
+		}
+		// Create main branch from remote's default branch (origin/HEAD)
+		if err := gitService.CreateBranch(ctx, path, "main", "origin/HEAD"); err != nil {
+			return fmt.Errorf("creating main branch: %w", err)
+		}
+		// Create .worktree/main worktree
+		if err := gitService.AddWorktree(ctx, path, "main", ".worktree/main"); err != nil {
+			return fmt.Errorf("creating main worktree: %w", err)
+		}
+		if err := notify(StatusEmpty); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return err // return immediately for unrecoverable errors
 	}
 }

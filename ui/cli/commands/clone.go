@@ -65,12 +65,12 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		eg, egCtx := errgroup.WithContext(ctx)
 		eg.SetLimit(5)
 		for _, ref := range refs {
-			ref := ref // capture loop variable
 			eg.Go(func() error {
 				err := cloneUsecase.Execute(egCtx, ref, clone.Options{
 					TryCloneOptions: try.Options{
-						Notify:  try.RetryLimit(1, nil),
-						Timeout: f.CloneRetryTimeout,
+						Notify:   try.RetryLimit(1, nil),
+						Timeout:  f.CloneRetryTimeout,
+						Worktree: f.Worktree,
 					},
 				})
 				return err
@@ -89,12 +89,12 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 		Short:   "Clone remote repositories to local",
 		Example: `  It accepts a short notation for a repository
   (for example, "github.com/kyoh86/example") like below.
-    - "<name>": e.g. "example"; 
+    - "<name>": e.g. "example";
     - "<owner>/<name>": e.g. "kyoh86/example"
   They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
 
   It also accepts an alias for each repository.
-	The alias is used for a local repository.
+  The alias is used for a local repository.
   For example:
     - "kyoh86/example=sample"
     - "kyoh86/example=kyoh86-tryouts/tryout"
@@ -120,5 +120,15 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 
 	cmd.Flags().BoolVarP(&f.DryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Clone.CloneRetryTimeout, "Timeout for each clone attempt")
+	cmd.Flags().BoolVarP(&f.Worktree, "worktree", "w", true, "Use bare + worktree structure (default: true)")
+	cmd.Flags().Bool("no-worktree", false, "Use traditional non-worktree structure (v4 compatible)")
+	// Custom flag parsing to handle --no-worktree
+	cmd.PreRunE = func(cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Changed("no-worktree") {
+			f.Worktree = false
+		}
+		return nil
+	}
+
 	return cmd, nil
 }

@@ -104,6 +104,16 @@ autoload -Uz compinit && compinit
 `gogh` manages repositories in multiple servers that is pairs of an owner and a host name.
 To login in new server or logout, you should use `auth login`.
 
+### Recommended: Add `.worktree` to global git ignore
+
+If you plan to use the worktree feature, it's recommended to add `.worktree` to your global git ignore to prevent it from being tracked by git:
+
+```console
+$ echo ".worktree" >> ~/.gitignore_global
+```
+
+This ensures that the `.worktree` directory (used for storing git worktrees) is not accidentally committed to your repositories.
+
 ## Available commands
 
 See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
@@ -118,12 +128,13 @@ See [doc/usage/gogh.md](./doc/usage/gogh.md) for detailed command usage.
 
 ### Manipulate repositories
 
-| Command  | Description                              |
-| --       | --                                       |
-| `clone`  | Clone remote repositories to local       |
-| `create` | Create a new local and remote repository |
-| `delete` | Delete local and remote repository       |
-| `fork`   | Fork a repository                        |
+| Command   | Description                              |
+| --        | --                                       |
+| `clone`   | Clone remote repositories to local       |
+| `create`  | Create a new local and remote repository |
+| `delete`  | Delete local and remote repository       |
+| `fork`    | Fork a repository                        |
+| `worktree` Manage git worktrees                   |
 
 ### Automation
 
@@ -518,6 +529,149 @@ Each extra contains:
 When you save an extra from a repository, it:
 1. Extracts all untracked files as overlays
 2. Creates hooks to apply these overlays
+3. Bundles them together as a single extra
+
+## Worktree Feature
+
+### What are Worktrees?
+
+Git worktrees allow you to have multiple working directories for a single repository, each checked out to different branches. This enables you to:
+
+- Work on multiple branches simultaneously without switching branches
+- Avoid recompilation when switching between branches
+- Test different branches in isolation
+- Run long-running tests on one branch while developing on another
+
+### How Gogh Manages Worktrees
+
+Gogh provides a structured approach to managing worktrees:
+
+```console
+# Add a worktree for a feature branch
+$ gogh worktree add github.com/kyoh86/gogh feature/new-ui
+# Creates: ~/Projects/github.com/kyoh86/gogh/.worktree/feature/new-ui
+
+# Add a worktree for a branch with slashes
+$ gogh worktree add github.com/kyoh86/gogh feature/auth
+# Creates: ~/Projects/github.com/kyoh86/gogh/.worktree/feature/auth
+
+# List all worktrees for a repository
+$ gogh worktree list github.com/kyoh86/gogh
+~/Projects/github.com/kyoh86/gogh (main)
+~/Projects/github.com/kyoh86/gogh/.worktree/feature/new-ui (branch: feature/new-ui)
+~/Projects/github.com/kyoh86/gogh/.worktree/feature/auth (branch: feature/auth)
+
+# Remove a worktree
+$ gogh worktree remove github.com/kyoh86/gogh feature/new-ui
+```
+
+### Directory Structure
+
+Worktrees are stored under the `.worktree` directory in your repository:
+
+```
+~/Projects/github.com/kyoh86/gogh/              # Repository root
+├── .worktree/                                   # Worktree directory
+│   ├── main/                                   # Main worktree (optional)
+│   ├── feature-new-ui/                         # Worktree for feature/new-ui
+│   └── feature/                                # Subdirectory for branches with slashes
+│       └── auth/                               # Worktree for feature/auth
+└── [repository files]
+```
+
+### Recommended: Global Git Ignore
+
+To prevent the `.worktree` directory from being tracked by git, add it to your global git ignore:
+
+```console
+$ echo ".worktree" >> ~/.gitignore_global
+```
+
+### Branch Names with Slashes
+
+When a branch name contains slashes (e.g., `feature/auth`), Gogh creates subdirectories to preserve the branch hierarchy:
+
+- Branch: `feature-x` → Path: `.worktree/feature-x/`
+- Branch: `feature/auth` → Path: `.worktree/feature/auth/`
+- Branch: `bugfix/crash` → Path: `.worktree/bugfix/crash/`
+
+This approach avoids naming conflicts (e.g., `feature-x` vs `feature/x`) and maintains the logical structure of your branches.
+
+### Benefits for AI Agents and Developers
+
+**For AI Agents:**
+- Multiple agents can work on different branches simultaneously
+- Each agent has an isolated working directory
+- No risk of conflicting changes or stashing/unstaking
+
+**For Developers:**
+- Seamlessly switch between branches without losing build state
+- Keep long-running tests on one branch while developing on another
+- Reduce context-switching overhead
+
+### Basic Worktree Commands
+
+```console
+# List worktrees for a repository
+$ gogh worktree list <repo-ref>
+
+# Add a new worktree
+$ gogh worktree add <repo-ref> <branch>
+
+# Remove a worktree
+$ gogh worktree remove <repo-ref> <branch>
+```
+
+### Practical Examples
+
+#### Parallel Feature Development
+
+```console
+# Create worktrees for multiple features
+$ gogh worktree add github.com/kyoh86/gogh feature/new-ui
+$ gogh worktree add github.com/kyoh86/gogh feature/refactor-api
+
+# Work on both features simultaneously
+# Terminal 1:
+cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-new-ui
+# Develop new UI...
+
+# Terminal 2:
+cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-refactor-api
+# Refactor API...
+```
+
+#### Bug Fix While Maintaining Feature Work
+
+```console
+# You're working on a feature
+$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-new-ui
+
+# A critical bug is reported; create a worktree for the fix
+$ gogh worktree add github.com/kyoh86/gogh hotfix/crash-bug
+
+# Fix the bug in the hotfix worktree
+$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/hotfix-crash-bug
+# Make the fix, commit, and push
+
+# Return to your feature work
+$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-new-ui
+```
+
+#### Testing Different Branches
+
+```console
+# Create worktrees for testing different release branches
+$ gogh worktree add github.com/kyoh86/gogh release/v1.0
+$ gogh worktree add github.com/kyoh86/gogh release/v2.0
+
+# Test against different versions without recompiling
+$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/release-v1.0
+# Run tests for v1.0...
+
+$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/release-v2.0
+# Run tests for v2.0...
+```
 
 ## Contributing
 

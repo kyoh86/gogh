@@ -42,6 +42,20 @@ func (m *MockGitService) EXPECT() *MockGitServiceMockRecorder {
 	return m.recorder
 }
 
+// AddWorktree mocks base method.
+func (m *MockGitService) AddWorktree(ctx context.Context, repoPath, branch, path string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddWorktree", ctx, repoPath, branch, path)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddWorktree indicates an expected call of AddWorktree.
+func (mr *MockGitServiceMockRecorder) AddWorktree(ctx, repoPath, branch, path any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWorktree", reflect.TypeOf((*MockGitService)(nil).AddWorktree), ctx, repoPath, branch, path)
+}
+
 // AuthenticateWithUsernamePassword mocks base method.
 func (m *MockGitService) AuthenticateWithUsernamePassword(ctx context.Context, username, password string) (git.GitService, error) {
 	m.ctrl.T.Helper()
@@ -69,6 +83,34 @@ func (m *MockGitService) Clone(ctx context.Context, remoteURL, localPath string,
 func (mr *MockGitServiceMockRecorder) Clone(ctx, remoteURL, localPath, opts any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockGitService)(nil).Clone), ctx, remoteURL, localPath, opts)
+}
+
+// CreateBranch mocks base method.
+func (m *MockGitService) CreateBranch(ctx context.Context, repoPath, branchName, startPoint string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateBranch", ctx, repoPath, branchName, startPoint)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateBranch indicates an expected call of CreateBranch.
+func (mr *MockGitServiceMockRecorder) CreateBranch(ctx, repoPath, branchName, startPoint any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBranch", reflect.TypeOf((*MockGitService)(nil).CreateBranch), ctx, repoPath, branchName, startPoint)
+}
+
+// Fetch mocks base method.
+func (m *MockGitService) Fetch(ctx context.Context, repoPath, remote string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Fetch", ctx, repoPath, remote)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Fetch indicates an expected call of Fetch.
+func (mr *MockGitServiceMockRecorder) Fetch(ctx, repoPath, remote any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockGitService)(nil).Fetch), ctx, repoPath, remote)
 }
 
 // GetDefaultRemotes mocks base method.
@@ -115,6 +157,21 @@ func (mr *MockGitServiceMockRecorder) Init(ctx, remoteURL, localPath, isBare, op
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Init", reflect.TypeOf((*MockGitService)(nil).Init), ctx, remoteURL, localPath, isBare, opts)
 }
 
+// IsBare mocks base method.
+func (m *MockGitService) IsBare(ctx context.Context, localPath string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsBare", ctx, localPath)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsBare indicates an expected call of IsBare.
+func (mr *MockGitServiceMockRecorder) IsBare(ctx, localPath any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsBare", reflect.TypeOf((*MockGitService)(nil).IsBare), ctx, localPath)
+}
+
 // ListAllFiles mocks base method.
 func (m *MockGitService) ListAllFiles(ctx context.Context, localPath string, filePatterns []string) iter.Seq2[string, error] {
 	m.ctrl.T.Helper()
@@ -155,6 +212,20 @@ func (m *MockGitService) SetDefaultRemotes(ctx context.Context, localPath string
 func (mr *MockGitServiceMockRecorder) SetDefaultRemotes(ctx, localPath, remotes any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDefaultRemotes", reflect.TypeOf((*MockGitService)(nil).SetDefaultRemotes), ctx, localPath, remotes)
+}
+
+// SetRemoteHead mocks base method.
+func (m *MockGitService) SetRemoteHead(ctx context.Context, repoPath, remote string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetRemoteHead", ctx, repoPath, remote)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetRemoteHead indicates an expected call of SetRemoteHead.
+func (mr *MockGitServiceMockRecorder) SetRemoteHead(ctx, repoPath, remote any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRemoteHead", reflect.TypeOf((*MockGitService)(nil).SetRemoteHead), ctx, repoPath, remote)
 }
 
 // SetRemotes mocks base method.

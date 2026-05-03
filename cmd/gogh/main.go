@@ -16,6 +16,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/script"
+	"github.com/kyoh86/gogh/v4/core/worktree"
 	"github.com/kyoh86/gogh/v4/infra/filesystem"
 	"github.com/kyoh86/gogh/v4/infra/git"
 	"github.com/kyoh86/gogh/v4/infra/github"
@@ -116,6 +117,13 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("loading extra: %w", err)
 	}
 
+	// Initialize git service
+	gitService := git.NewService(git.CloneProgressWriter(os.Stdout))
+
+	// Initialize worktree service (infrastructure layer)
+	pathBuilder := worktree.NewPathBuilder()
+	worktreeService := git.NewWorktreeService(gitService, pathBuilder)
+
 	svc := &service.ServiceSet{
 		DefaultNameStore:   defaultNameStore,
 		DefaultNameService: defaultNameService,
@@ -145,7 +153,8 @@ func run(ctx context.Context) error {
 		HostingService:      github.NewHostingService(tokenService, defaultNameService),
 		FinderService:       filesystem.NewFinderService(),
 		AuthenticateService: github.NewAuthenticateService(),
-		GitService:          git.NewService(git.CloneProgressWriter(os.Stdout)),
+		GitService:          gitService,
+		WorktreeService:     worktreeService,
 	}
 	cmd, err := cli.NewApp(ctx, gogh.AppName, fmt.Sprintf("%s-%s (%s)", version, commit, date), svc)
 	if err != nil {

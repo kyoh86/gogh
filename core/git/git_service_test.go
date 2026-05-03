@@ -44,6 +44,11 @@ type MockGitService struct {
 	AuthenticateFunc      func(ctx context.Context, username, password string) (git.GitService, error)
 	CloneFunc             func(ctx context.Context, remoteURL string, localPath string, opts git.CloneOptions) error
 	InitFunc              func(ctx context.Context, remoteURL string, localPath string, isBare bool, opts git.InitOptions) error
+	IsBareFunc            func(ctx context.Context, localPath string) (bool, error)
+	AddWorktreeFunc       func(ctx context.Context, repoPath string, branch string, path string) error
+	FetchFunc             func(ctx context.Context, repoPath string, remote string) error
+	SetRemoteHeadFunc     func(ctx context.Context, repoPath string, remote string) error
+	CreateBranchFunc      func(ctx context.Context, repoPath string, branchName string, startPoint string) error
 	SetRemotesFunc        func(ctx context.Context, localPath string, name string, remotes []string) error
 	SetDefaultRemotesFunc func(ctx context.Context, localPath string, remotes []string) error
 	GetRemotesFunc        func(ctx context.Context, localPath string, name string) ([]string, error)
@@ -69,6 +74,41 @@ func (m *MockGitService) Clone(ctx context.Context, remoteURL string, localPath 
 func (m *MockGitService) Init(ctx context.Context, remoteURL string, localPath string, isBare bool, opts git.InitOptions) error {
 	if m.InitFunc != nil {
 		return m.InitFunc(ctx, remoteURL, localPath, isBare, opts)
+	}
+	return nil
+}
+
+func (m *MockGitService) IsBare(ctx context.Context, localPath string) (bool, error) {
+	if m.IsBareFunc != nil {
+		return m.IsBareFunc(ctx, localPath)
+	}
+	return false, nil
+}
+
+func (m *MockGitService) AddWorktree(ctx context.Context, repoPath string, branch string, path string) error {
+	if m.AddWorktreeFunc != nil {
+		return m.AddWorktreeFunc(ctx, repoPath, branch, path)
+	}
+	return nil
+}
+
+func (m *MockGitService) Fetch(ctx context.Context, repoPath string, remote string) error {
+	if m.FetchFunc != nil {
+		return m.FetchFunc(ctx, repoPath, remote)
+	}
+	return nil
+}
+
+func (m *MockGitService) SetRemoteHead(ctx context.Context, repoPath string, remote string) error {
+	if m.SetRemoteHeadFunc != nil {
+		return m.SetRemoteHeadFunc(ctx, repoPath, remote)
+	}
+	return nil
+}
+
+func (m *MockGitService) CreateBranch(ctx context.Context, repoPath string, branchName string, startPoint string) error {
+	if m.CreateBranchFunc != nil {
+		return m.CreateBranchFunc(ctx, repoPath, branchName, startPoint)
 	}
 	return nil
 }
