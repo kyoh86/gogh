@@ -24,9 +24,6 @@ jobs:
       - name: Check Actor
         if: github.actor != 'kyoh86'
         run: exit 1
-      - name: Check Branch
-        if: github.ref != 'refs/heads/main'
-        run: exit 1
       - name: Wait commit status
         uses: cloudposse/github-action-wait-commit-status@main
         with:
