@@ -7,12 +7,14 @@ import (
 	"io"
 	"iter"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -53,7 +55,7 @@ func (s *GitService) AuthenticateWithUsernamePassword(_ context.Context, usernam
 
 // Clone clones a remote repository to a local path.
 func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, opts coregit.CloneOptions) error {
-	_, err := git.PlainCloneContext(ctx, localPath, false, &git.CloneOptions{
+	_, err := git.PlainCloneContext(ctx, localPath, opts.IsBare, &git.CloneOptions{
 		URL:      remoteURL,
 		Auth:     s.auth,
 		Progress: s.cloneProgressWriter,
@@ -78,6 +80,99 @@ func (s *GitService) Init(_ context.Context, remoteURL, localPath string, isBare
 		URLs: []string{remoteURL},
 	}); err != nil {
 		return err
+	}
+	return nil
+}
+
+// IsBare checks if a repository at the given path is a bare repository.
+func (s *GitService) IsBare(_ context.Context, localPath string) (bool, error) {
+	repo, err := git.PlainOpen(localPath)
+	if err != nil {
+		return false, err
+	}
+	// Try to get the worktree - if it's a bare repository, this will fail
+	_, err = repo.Worktree()
+	if err != nil {
+		// If the error indicates it's a bare repository, return true
+		return strings.Contains(err.Error(), "bare repository") || strings.Contains(err.Error(), "worktree not available"), nil
+	}
+	return false, nil
+}
+
+// AddWorktree creates a new worktree for an existing repository.
+func (s *GitService) AddWorktree(_ context.Context, repoPath string, branch string, path string) error {
+	// Use git worktree add command since go-git doesn't support AddWorktree yet
+	worktreePath := filepath.Join(repoPath, path)
+
+	// First, get the remote's default branch name
+	symbolicRefCmd := exec.Command("git", "symbolic-ref", "refs/remotes/origin/HEAD")
+	symbolicRefCmd.Dir = repoPath
+	refOutput, err := symbolicRefCmd.Output()
+	if err != nil {
+		return fmt.Errorf("getting remote HEAD: %w", err)
+	}
+	remoteHead := strings.TrimSpace(string(refOutput))
+	// Extract branch name from refs/remotes/origin/<branch>
+	remoteBranch := strings.TrimPrefix(remoteHead, "refs/remotes/origin/")
+
+	// Create worktree with the branch
+	// Try to create the branch first, ignore error if it already exists
+	cmd := exec.Command("git", "worktree", "add", "-B", branch, worktreePath, "origin/"+remoteBranch)
+	cmd.Dir = repoPath
+	if err := cmd.Run(); err != nil {
+		// If -B fails, try without -b (branch might already exist)
+		cmd = exec.Command("git", "worktree", "add", worktreePath, branch)
+		cmd.Dir = repoPath
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("adding worktree: %w, output: %s", err, string(output))
+		}
+	}
+	return nil
+}
+
+// Fetch fetches updates from a remote repository.
+func (s *GitService) Fetch(ctx context.Context, repoPath string, remote string) error {
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return err
+	}
+
+	err = repo.FetchContext(ctx, &git.FetchOptions{
+		RemoteName: remote,
+		Auth:       s.auth,
+	})
+	if errors.Is(err, git.NoErrAlreadyUpToDate) {
+		return coregit.ErrAlreadyUpToDate
+	}
+	return err
+}
+
+// CreateBranch creates a new branch from a starting point.
+func (s *GitService) CreateBranch(_ context.Context, repoPath string, branchName string, startPoint string) error {
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return err
+	}
+
+	// Resolve the starting point to a hash
+	hash, err := repo.ResolveRevision(plumbing.Revision(startPoint))
+	if err != nil {
+		return err
+	}
+
+	// Create the branch reference
+	return repo.Storer.SetReference(plumbing.NewHashReference(plumbing.ReferenceName("refs/heads/"+branchName), *hash))
+}
+
+// SetRemoteHead sets the HEAD symbolic reference for a remote.
+func (s *GitService) SetRemoteHead(_ context.Context, repoPath string, remote string) error {
+	// Use git remote set-head to set the symbolic reference
+	cmd := exec.Command("git", "remote", "set-head", remote, "-a")
+	cmd.Dir = repoPath
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("setting remote head: %w, output: %s", err, string(output))
 	}
 	return nil
 }

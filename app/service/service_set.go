@@ -12,6 +12,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/worktree"
 )
 
 type ServiceSet struct {
@@ -44,4 +45,5 @@ type ServiceSet struct {
 	FinderService       workspace.FinderService
 	AuthenticateService auth.AuthenticateService
 	GitService          git.GitService
+	WorktreeService     worktree.Service
 }
