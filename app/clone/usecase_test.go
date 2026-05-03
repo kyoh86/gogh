@@ -95,6 +95,11 @@ func TestUsecase_Execute(t *testing.T) {
 				// set expectations for GitService.Clone
 				mockGit.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "kyoh86", "").Return(mockGit, nil)
 				mockGit.EXPECT().Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				// New bare + worktree flow
+				mockGit.EXPECT().Fetch(gomock.Any(), pseudoPath, "origin").Return(nil)
+				mockGit.EXPECT().SetRemoteHead(gomock.Any(), pseudoPath, "origin").Return(nil)
+				mockGit.EXPECT().CreateBranch(gomock.Any(), pseudoPath, "main", "origin/HEAD").Return(nil)
+				mockGit.EXPECT().AddWorktree(gomock.Any(), pseudoPath, "main", ".worktree/main").Return(nil)
 				mockGit.EXPECT().SetDefaultRemotes(gomock.Any(), pseudoPath, []string{pseudoCloneURL}).Return(nil)
 
 				// Hook finds the repository by reference
@@ -215,7 +220,9 @@ func TestUsecase_Execute(t *testing.T) {
 
 			// Execute test
 			err := usecase.Execute(context.Background(), tt.refWithAlias, Options{
-				TryCloneOptions: try.Options{},
+				TryCloneOptions: try.Options{
+					Worktree: true,
+				},
 			})
 
 			// Verify results

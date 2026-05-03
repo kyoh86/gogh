@@ -43,6 +43,7 @@ type BundleRestoreFlags struct {
 // CloneFlags is a struct that contains flags for cloning a repository.
 type CloneFlags struct {
 	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
+	Worktree          bool          `yaml:"worktree,omitempty" toml:"worktree,omitempty"`
 	DryRun            bool          `yaml:"-" toml:"-"`
 }
 
@@ -55,6 +56,7 @@ type CreateFlags struct {
 	GitignoreTemplate   string        `yaml:"gitignoreTemplate,omitempty" toml:"gitignore-template,omitempty"`
 	CloneRetryTimeout   time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
 	CloneRetryLimit     int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	Worktree            bool          `yaml:"worktree,omitempty" toml:"worktree,omitempty"`
 	DisableWiki         bool          `yaml:"disableWiki,omitempty" toml:"disable-wiki,omitempty"`
 	DisableDownloads    bool          `yaml:"disableDownloads,omitempty" toml:"disable-downloads,omitempty"`
 	IsTemplate          bool          `yaml:"-" toml:"-"`
@@ -102,6 +104,7 @@ type ForkFlags struct {
 	DefaultBranchOnly bool          `yaml:"defaultBranchOnly,omitempty" toml:"default-branch-only,omitempty"`
 	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
 	CloneRetryLimit   int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	Worktree          bool          `yaml:"worktree,omitempty" toml:"worktree,omitempty"`
 }
 
 // Flags is a struct that contains all the flags for the application.
@@ -139,6 +142,7 @@ func DefaultFlags() *Flags {
 	f.BundleRestore.CloneRetryTimeout = 5 * time.Minute
 
 	f.Clone.CloneRetryTimeout = 5 * time.Minute
+	f.Clone.Worktree = true
 
 	f.Repos.Limit = 30
 	f.Repos.Color = "auto"
@@ -146,10 +150,12 @@ func DefaultFlags() *Flags {
 
 	f.Create.CloneRetryTimeout = 5 * time.Minute
 	f.Create.CloneRetryLimit = 3
+	f.Create.Worktree = true
 
 	f.List.Limit = 100
 
 	f.Fork.CloneRetryTimeout = 5 * time.Minute
 	f.Fork.CloneRetryLimit = 3
+	f.Fork.Worktree = true
 	return f
 }

@@ -43,7 +43,8 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		if f.Template == "" {
 			ropt := create.Options{
 				TryCloneOptions: try.Options{
-					Notify: try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					Worktree: f.Worktree,
+					Notify:   try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				RepositoryOptions: create.RepositoryOptions{
 					Description:         f.Description,
@@ -91,8 +92,9 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				svc.GitService,
 			).Execute(ctx, refWithAlias, *tmp, template.CreateFromTemplateOptions{
 				TryCloneOptions: try.Options{
-					Timeout: f.CloneRetryTimeout,
-					Notify:  try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					Worktree: f.Worktree,
+					Timeout:  f.CloneRetryTimeout,
+					Notify:   try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				RepositoryOptions: template.RepositoryOptions{
 					Description:        f.Description,
@@ -118,7 +120,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		Args:    cobra.RangeArgs(0, 1),
 		Example: `  It accepts a short notation for a repository
   (for example, "github.com/kyoh86/example") like below.
-    - "<name>": e.g. "example"; 
+    - "<name>": e.g. "example";
     - "<owner>/<name>": e.g. "kyoh86/example"
   They'll be completed with the default host and owner set by "config set-default{-host|-owner}".
 
@@ -174,5 +176,14 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	cmd.Flags().BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
 	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Create.CloneRetryTimeout, "Timeout for each clone attempt")
 	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
+	cmd.Flags().BoolVarP(&f.Worktree, "worktree", "w", svc.Flags.Create.Worktree, "Use bare + worktree structure (default: true)")
+	cmd.Flags().Bool("no-worktree", false, "Use traditional non-worktree structure (v4 compatible)")
+	// Custom flag parsing to handle --no-worktree
+	cmd.PreRunE = func(cmd *cobra.Command, args []string) error {
+		if cmd.Flags().Changed("no-worktree") {
+			f.Worktree = false
+		}
+		return nil
+	}
 	return cmd, nil
 }
