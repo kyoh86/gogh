@@ -141,6 +141,11 @@ func TestTryClone(t *testing.T) {
 
 				// Clone
 				mgs.EXPECT().Clone(gomock.Any(), repo.CloneURL, localPath, gomock.Any()).Return(nil)
+				// New bare + worktree flow
+				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
+				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
+				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
+				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".worktree/main").Return(nil)
 
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
@@ -259,7 +264,12 @@ func TestTryClone(t *testing.T) {
 
 				// Init for empty repository
 				mls.EXPECT().CreateRepositoryFolder(ref).Return(localPath, nil)
-				mgs.EXPECT().Init(gomock.Any(), repo.CloneURL, localPath, false, gomock.Any()).Return(nil)
+				mgs.EXPECT().Init(gomock.Any(), repo.CloneURL, localPath, true, gomock.Any()).Return(nil)
+				// New bare + worktree flow
+				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
+				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
+				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
+				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".worktree/main").Return(nil)
 
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
@@ -296,6 +306,11 @@ func TestTryClone(t *testing.T) {
 
 				// Clone
 				mgs.EXPECT().Clone(gomock.Any(), repo.CloneURL, localPath, gomock.Any()).Return(nil)
+				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
+				// New bare + worktree flow
+				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
+				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
+				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".worktree/main").Return(nil)
 
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
@@ -341,8 +356,9 @@ func TestTryClone(t *testing.T) {
 				repo,
 				nil, // no alias
 				try.Options{
-					Timeout: 30 * time.Second,
-					Notify:  notify,
+					Timeout:  30 * time.Second,
+					Notify:   notify,
+					Worktree: true,
 				},
 			)
 
