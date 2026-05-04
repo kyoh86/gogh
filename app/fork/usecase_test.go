@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/clone/try"
+	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/fork"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -437,9 +438,9 @@ func TestUsecase_Execute(t *testing.T) {
 
 				opts := fork.Options{
 					TryCloneOptions: try.Options{
-						Worktree: true,
-						Timeout:  30 * time.Second,
-						Notify:   func(msg try.Status) error { return nil },
+						Structure: config.StructureWorktree,
+						Timeout:   30 * time.Second,
+						Notify:    func(msg try.Status) error { return nil },
 					},
 					Target: tc.target,
 				}

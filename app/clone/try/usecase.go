@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/overlay"
@@ -72,8 +73,8 @@ type Options struct {
 	Notify Notify
 	// Timeout is the maximum wait time for each clone attempt.
 	Timeout time.Duration
-	// Worktree uses bare + worktree structure (default: true)
-	Worktree bool
+	// Structure specifies the repository structure (worktree or normal)
+	Structure config.RepositoryStructure
 }
 
 // Execute attempts to clone a repository with retry logic.
@@ -102,12 +103,12 @@ func (uc *Usecase) Execute(
 	}
 
 	// Validate existing repository structure before cloning
-	if err := validateExistingRepoStructure(ctx, gitService, localPath, opts.Worktree); err != nil {
+	if err := validateExistingRepoStructure(ctx, gitService, localPath, opts.Structure.IsWorktree()); err != nil {
 		return err
 	}
 
 	// Perform git clone operation
-	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Worktree, opts.Timeout, opts.Notify); err != nil {
+	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Structure.IsWorktree(), opts.Timeout, opts.Notify); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
 
@@ -331,14 +332,14 @@ func validateExistingRepoStructure(ctx context.Context, gitService git.GitServic
 	if requestWorktree && !isWorktreeStructure {
 		// User wants worktree structure, but existing is normal structure
 		return fmt.Errorf("repository already exists with normal structure at %s\n"+
-			"Cannot clone with --worktree flag. "+
+			"Cannot clone with --structure=worktree flag. "+
 			"Remove the existing repository first if you want to use worktree structure", localPath)
 	}
 
 	if !requestWorktree && isWorktreeStructure {
 		// User wants normal structure, but existing is worktree structure
 		return fmt.Errorf("repository already exists with worktree structure at %s\n"+
-			"Cannot clone with --no-worktree flag. "+
+			"Cannot clone with --structure=normal flag. "+
 			"Remove the existing repository first if you want to use normal structure", localPath)
 	}
 

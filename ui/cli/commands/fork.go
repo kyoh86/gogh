@@ -27,9 +27,9 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 			ctx := cmd.Context()
 			opts := fork.Options{
 				TryCloneOptions: try.Options{
-					Worktree: f.Worktree,
-					Timeout:  f.CloneRetryTimeout,
-					Notify:   try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					Structure: f.Structure,
+					Timeout:   f.CloneRetryTimeout,
+					Notify:    try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				HostingOptions: fork.HostingOptions{
 					DefaultBranchOnly: f.DefaultBranchOnly,
@@ -70,14 +70,6 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Fork.CloneRetryLimit, "The number of retries to clone a repository")
 	cmd.Flags().BoolVarP(&f.DefaultBranchOnly, "default-branch-only", "", svc.Flags.Fork.DefaultBranchOnly, "Only fork the default branch")
 	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Fork.CloneRetryTimeout, "Timeout for each clone attempt")
-	cmd.Flags().BoolVarP(&f.Worktree, "worktree", "w", svc.Flags.Fork.Worktree, "Use bare + worktree structure (default: true)")
-	cmd.Flags().Bool("no-worktree", false, "Use traditional non-worktree structure (v4 compatible)")
-	// Custom flag parsing to handle --no-worktree
-	cmd.PreRunE = func(cmd *cobra.Command, args []string) error {
-		if cmd.Flags().Changed("no-worktree") {
-			f.Worktree = false
-		}
-		return nil
-	}
+	cmd.Flags().VarP(&f.Structure, "structure", "s", `Repository structure to use (default: "worktree", one of "worktree" or "normal")`)
 	return cmd, nil
 }
