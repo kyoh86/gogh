@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/clone/try"
+	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -221,7 +222,7 @@ func TestUsecase_Execute(t *testing.T) {
 			// Execute test
 			err := usecase.Execute(context.Background(), tt.refWithAlias, Options{
 				TryCloneOptions: try.Options{
-					Worktree: true,
+					Structure: config.StructureWorktree,
 				},
 			})
 
