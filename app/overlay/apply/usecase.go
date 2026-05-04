@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/worktree"
 )
 
 // Usecase represents the create use case
@@ -57,7 +58,13 @@ func (uc *Usecase) Apply(ctx context.Context, location *repository.Location, ove
 		return fmt.Errorf("getting overlay with ID '%s': %w", overlayID, err)
 	}
 
-	targetPath := filepath.Join(location.FullPath(), overlay.RelativePath())
+	// Get the worktree path (or repository path for non-worktree structures)
+	repoPath, err := worktree.GetWorktreePath(ctx, location)
+	if err != nil {
+		return fmt.Errorf("getting worktree path: %w", err)
+	}
+
+	targetPath := filepath.Join(repoPath, overlay.RelativePath())
 
 	// Open the overlay source
 	source, err := uc.overlayService.Open(ctx, overlayID)

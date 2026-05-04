@@ -11,6 +11,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/worktree"
 )
 
 // Usecase represents the extra apply use case
@@ -82,6 +83,12 @@ func (uc *Usecase) Execute(ctx context.Context, opts Options) error {
 	// Apply each overlay in the extra
 	fmt.Printf("Applying extra %q to %s\n", opts.Name, location.Ref().String())
 
+	// Get the worktree path (or repository path for non-worktree structures)
+	repoPath, err := worktree.GetWorktreePath(ctx, location)
+	if err != nil {
+		return fmt.Errorf("getting worktree path: %w", err)
+	}
+
 	for _, item := range e.Items() {
 		// Get overlay
 		o, err := uc.overlayService.Get(ctx, item.OverlayID)
@@ -90,7 +97,7 @@ func (uc *Usecase) Execute(ctx context.Context, opts Options) error {
 		}
 
 		// Apply overlay
-		targetPath := filepath.Join(location.FullPath(), o.RelativePath())
+		targetPath := filepath.Join(repoPath, o.RelativePath())
 
 		// Ensure the directory exists
 		targetDir := filepath.Dir(targetPath)

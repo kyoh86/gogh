@@ -16,7 +16,7 @@ func NewScriptCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 	}
 	cmd := &cobra.Command{
 		Use:   "create [flags]",
-		Short: "Create a new script (with $EDITOR)",
+		Short: "Create a new script (with $GOGH_EDITOR or $EDITOR)",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -43,7 +43,7 @@ func NewScriptCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 			tmpFile.Close()
 
 			// Open editor
-			if err := edit(os.Getenv("EDITOR"), tmpFile.Name()); err != nil {
+			if err := edit(tmpFile.Name()); err != nil {
 				return err
 			}
 

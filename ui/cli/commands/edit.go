@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -16,7 +17,15 @@ func lookPath(name string) ([]string, error) {
 	return []string{exe}, nil
 }
 
-func edit(editor, fileName string) error {
+func edit(fileName string) error {
+	editor := os.Getenv("GOGH_EDITOR")
+	if editor == "" {
+		editor = os.Getenv("EDITOR")
+		if editor == "" {
+			return fmt.Errorf("GOGH_EDITOR and EDITOR environment variable is not set")
+		}
+	}
+
 	words, err := shellquote.Split(editor)
 	if err != nil {
 		return err
