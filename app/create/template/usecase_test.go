@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/clone/try"
+	"github.com/kyoh86/gogh/v4/app/config"
 	testtarget "github.com/kyoh86/gogh/v4/app/create/template"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -53,7 +54,7 @@ func TestUsecase_Execute(t *testing.T) {
 			tmp:          repository.NewReference("github.com", "kyoh86", "template-repo"),
 			options: testtarget.CreateFromTemplateOptions{
 				TryCloneOptions: try.Options{
-					Worktree: true,
+					Structure: config.StructureWorktree,
 				},
 				RepositoryOptions: hosting.CreateRepositoryFromTemplateOptions{
 					Description: "New repository from template",
