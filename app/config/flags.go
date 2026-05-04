@@ -8,81 +8,17 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v4/core/repository"
-	"github.com/spf13/pflag"
+	"github.com/kyoh86/gogh/v4/core/repositorystructure"
 )
 
-// RepositoryStructure represents the structure type for repository storage.
-type RepositoryStructure string
+// RepositoryStructure is an alias for repositorystructure.RepositoryStructure.
+type RepositoryStructure = repositorystructure.RepositoryStructure
 
+// Re-export constants for convenience
 const (
-	// StructureWorktree uses bare repository + .worktree directories.
-	StructureWorktree RepositoryStructure = "worktree"
-	// StructureNormal uses traditional git repository structure.
-	StructureNormal RepositoryStructure = "normal"
+	StructureWorktree = repositorystructure.StructureWorktree
+	StructureNormal   = repositorystructure.StructureNormal
 )
-
-// ParseRepositoryStructure parses a string into RepositoryStructure.
-func ParseRepositoryStructure(v string) (RepositoryStructure, error) {
-	switch v {
-	case string(StructureWorktree), "":
-		return StructureWorktree, nil
-	case string(StructureNormal):
-		return StructureNormal, nil
-	default:
-		return "", fmt.Errorf("invalid structure: %q (must be %q or %q)", v, StructureWorktree, StructureNormal)
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s RepositoryStructure) MarshalText() ([]byte, error) {
-	if s == "" {
-		return []byte(StructureWorktree), nil
-	}
-	return []byte(s), nil
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *RepositoryStructure) UnmarshalText(text []byte) error {
-	parsed, err := ParseRepositoryStructure(string(text))
-	if err != nil {
-		return err
-	}
-	*s = parsed
-	return nil
-}
-
-func (s RepositoryStructure) IsWorktree() bool {
-	return s == StructureWorktree
-}
-
-func (s RepositoryStructure) IsNormal() bool {
-	return s == StructureNormal || s == ""
-}
-
-// Set implements pflag.Value interface.
-func (s *RepositoryStructure) Set(v string) error {
-	parsed, err := ParseRepositoryStructure(v)
-	if err != nil {
-		return err
-	}
-	*s = parsed
-	return nil
-}
-
-// String implements pflag.Value interface.
-func (s RepositoryStructure) String() string {
-	if s == "" {
-		return string(StructureWorktree)
-	}
-	return string(s)
-}
-
-// Type implements pflag.Value interface.
-func (s RepositoryStructure) Type() string {
-	return "string"
-}
-
-var _ pflag.Value = (*RepositoryStructure)(nil)
 
 func LocationFormatter(v string) (repository.LocationFormat, error) {
 	switch v {
