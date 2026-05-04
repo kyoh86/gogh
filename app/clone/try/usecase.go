@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/kyoh86/gogh/v4/core/git"
@@ -97,6 +98,11 @@ func (uc *Usecase) Execute(
 	}
 	gitService, err := uc.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
 	if err != nil {
+		return err
+	}
+
+	// Validate existing repository structure before cloning
+	if err := validateExistingRepoStructure(ctx, gitService, localPath, opts.Worktree); err != nil {
 		return err
 	}
 
@@ -287,4 +293,54 @@ func cloneBareWithinTimeout(
 	default:
 		return err // return immediately for unrecoverable errors
 	}
+}
+
+// validateExistingRepoStructure checks if the existing repository structure
+// is compatible with the requested worktree mode.
+func validateExistingRepoStructure(ctx context.Context, gitService git.GitService, localPath string, requestWorktree bool) error {
+	// Check if directory exists
+	if _, err := os.Stat(localPath); err != nil {
+		if os.IsNotExist(err) {
+			// Directory doesn't exist, no conflict
+			return nil
+		}
+		return err
+	}
+
+	// Check if it's a git repository
+	isBare, err := gitService.IsBare(ctx, localPath)
+	if err != nil {
+		// Not a git repository or other error
+		// If it's not a git repo, git clone will handle it
+		return nil
+	}
+
+	// Check if worktree structure exists
+	worktreeDir := filepath.Join(localPath, ".worktree")
+	hasWorktreeDir := false
+	if info, err := os.Stat(worktreeDir); err == nil && info.IsDir() {
+		hasWorktreeDir = true
+	}
+
+	// Determine existing structure
+	// Worktree structure: bare repo + .worktree directory
+	// Normal structure: non-bare repo OR no .worktree directory
+	isWorktreeStructure := isBare && hasWorktreeDir
+
+	// Check for conflicts
+	if requestWorktree && !isWorktreeStructure {
+		// User wants worktree structure, but existing is normal structure
+		return fmt.Errorf("repository already exists with normal structure at %s\n"+
+			"Cannot clone with --worktree flag. "+
+			"Remove the existing repository first if you want to use worktree structure", localPath)
+	}
+
+	if !requestWorktree && isWorktreeStructure {
+		// User wants normal structure, but existing is worktree structure
+		return fmt.Errorf("repository already exists with worktree structure at %s\n"+
+			"Cannot clone with --no-worktree flag. "+
+			"Remove the existing repository first if you want to use normal structure", localPath)
+	}
+
+	return nil
 }
