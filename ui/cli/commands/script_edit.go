@@ -36,7 +36,7 @@ func NewScriptEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 			}
 			tmpFile.Close()
 
-			if err := edit(os.Getenv("EDITOR"), tmpFile.Name()); err != nil {
+			if err := edit(tmpFile.Name()); err != nil {
 				return err
 			}
 

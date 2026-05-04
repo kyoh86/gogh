@@ -14,6 +14,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/script"
 	"github.com/kyoh86/gogh/v4/core/workspace"
+	"github.com/kyoh86/gogh/v4/core/worktree"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -119,9 +120,16 @@ func (uc *Usecase) Invoke(ctx context.Context, location *repository.Location, sc
 
 	g := make(map[string]any, len(globals)+1)
 	maps.Copy(g, globals)
+
+	// Get the worktree path (or repository path for non-worktree structures)
+	repoPath, err := worktree.GetWorktreePath(ctx, location)
+	if err != nil {
+		return fmt.Errorf("getting worktree path: %w", err)
+	}
+
 	// Add domain objects as maps
 	g["repo"] = map[string]any{
-		"full_path": location.FullPath(),
+		"full_path": repoPath,
 		"path":      location.Path(),
 		"host":      location.Host(),
 		"owner":     location.Owner(),
@@ -137,7 +145,7 @@ func (uc *Usecase) Invoke(ctx context.Context, location *repository.Location, sc
 	cmd := commandRunner(exePath, "script", "run")
 	cmd.SetStdout(os.Stdout)
 	cmd.SetStderr(os.Stderr)
-	cmd.SetDir(location.FullPath())
+	cmd.SetDir(repoPath)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

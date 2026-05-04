@@ -13,7 +13,7 @@ import (
 func NewOverlayEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "edit [flags] <overlay-id>",
-		Short: "Edit an existing overlay (with $EDITOR)",
+		Short: "Edit an existing overlay (with $GOGH_EDITOR or $EDITOR)",
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
 			if len(args) > 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -36,7 +36,7 @@ func NewOverlayEditCommand(_ context.Context, svc *service.ServiceSet) (*cobra.C
 			}
 			tmpFile.Close()
 
-			if err := edit(os.Getenv("EDITOR"), tmpFile.Name()); err != nil {
+			if err := edit(tmpFile.Name()); err != nil {
 				return err
 			}
 
