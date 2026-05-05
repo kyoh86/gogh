@@ -12,12 +12,14 @@ import (
 	"github.com/kyoh86/gogh/v4/app/create"
 	"github.com/kyoh86/gogh/v4/app/create/template"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 )
 
 func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.CreateFlags
+	var structure flags.RepositoryStructure
 
 	checkFlags := func(_ context.Context, args []string) (string, error) {
 		if len(args) > 0 {
@@ -43,7 +45,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		if f.Template == "" {
 			ropt := create.Options{
 				TryCloneOptions: try.Options{
-					Structure: f.Structure,
+					Structure: structure,
 					Notify:    try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				RepositoryOptions: create.RepositoryOptions{
@@ -92,7 +94,7 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				svc.GitService,
 			).Execute(ctx, refWithAlias, *tmp, template.CreateFromTemplateOptions{
 				TryCloneOptions: try.Options{
-					Structure: f.Structure,
+					Structure: structure,
 					Timeout:   f.CloneRetryTimeout,
 					Notify:    try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
@@ -176,6 +178,9 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 	cmd.Flags().BoolVarP(&f.DeleteBranchOnMerge, "delete-branch-on-merge", "", svc.Flags.Create.DeleteBranchOnMerge, "Allow automatically deleting head branches when pull requests are merged")
 	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Create.CloneRetryTimeout, "Timeout for each clone attempt")
 	cmd.Flags().IntVarP(&f.CloneRetryLimit, "clone-retry-limit", "", svc.Flags.Create.CloneRetryLimit, "The number of retries to clone a repository")
-	cmd.Flags().VarP(&f.Structure, "structure", "s", `Repository structure to use (default: "worktree", one of "worktree" or "normal")`)
+	if err := flags.StructureFlag(cmd, &structure, svc.Flags.Create.Structure); err != nil {
+		return nil, fmt.Errorf("initializing structure flag: %s", err)
+	}
+
 	return cmd, nil
 }

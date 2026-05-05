@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"go.uber.org/mock/gomock"
 )
 
@@ -17,7 +17,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 	tests := []struct {
 		name             string
 		setup            func(ctrl *gomock.Controller) (string, *git_mock.MockGitService)
-		requestStructure config.RepositoryStructure
+		requestStructure flags.RepositoryStructure
 		expectError      bool
 		errorContains    string
 	}{
@@ -26,7 +26,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 			setup: func(ctrl *gomock.Controller) (string, *git_mock.MockGitService) {
 				return "/nonexistent/path", nil
 			},
-			requestStructure: config.StructureWorktree,
+			requestStructure: flags.StructureWorktree,
 			expectError:      false,
 		},
 		{
@@ -38,7 +38,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 				tmpDir := t.TempDir()
 				return tmpDir, gitService
 			},
-			requestStructure: config.StructureWorktree,
+			requestStructure: flags.StructureWorktree,
 			expectError:      true,
 			errorContains:    "Cannot clone with --structure=worktree flag",
 		},
@@ -55,7 +55,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 				}
 				return tmpDir, gitService
 			},
-			requestStructure: config.StructureNormal,
+			requestStructure: flags.StructureNormal,
 			expectError:      true,
 			errorContains:    "Cannot clone with --structure=normal flag",
 		},
@@ -72,7 +72,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 				}
 				return tmpDir, gitService
 			},
-			requestStructure: config.StructureWorktree,
+			requestStructure: flags.StructureWorktree,
 			expectError:      false,
 		},
 		{
@@ -84,7 +84,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 				tmpDir := t.TempDir()
 				return tmpDir, gitService
 			},
-			requestStructure: config.StructureNormal,
+			requestStructure: flags.StructureNormal,
 			expectError:      false,
 		},
 		{
@@ -96,7 +96,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 				tmpDir := t.TempDir()
 				return tmpDir, gitService
 			},
-			requestStructure: config.StructureNormal,
+			requestStructure: flags.StructureNormal,
 			expectError:      false,
 		},
 		{
@@ -108,7 +108,7 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 				tmpDir := t.TempDir()
 				return tmpDir, gitService
 			},
-			requestStructure: config.StructureWorktree,
+			requestStructure: flags.StructureWorktree,
 			expectError:      false,
 		},
 	}

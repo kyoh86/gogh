@@ -3,9 +3,60 @@ package flags
 import (
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/core/repositorystructure"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
+
+// RepositoryStructure represents the structure type for repository storage.
+type RepositoryStructure string
+
+const (
+	// StructureWorktree uses bare repository + .worktree directories.
+	StructureWorktree RepositoryStructure = "worktree"
+	// StructureNormal uses traditional git repository structure.
+	StructureNormal RepositoryStructure = "normal"
+)
+
+var _ pflag.Value = (*RepositoryStructure)(nil)
+
+func (s RepositoryStructure) String() string {
+	return string(s)
+}
+
+func (s *RepositoryStructure) Set(v string) error {
+	_, err := ParseRepositoryStructure(v)
+	if err != nil {
+		return fmt.Errorf("parse repository structure: %w", err)
+	}
+	*s = RepositoryStructure(v)
+	return nil
+}
+
+func (s RepositoryStructure) Type() string {
+	return "string"
+}
+
+// ParseRepositoryStructure parses a string into RepositoryStructure.
+func ParseRepositoryStructure(v string) (RepositoryStructure, error) {
+	switch v {
+	case string(StructureWorktree), "":
+		return StructureWorktree, nil
+	case string(StructureNormal):
+		return StructureNormal, nil
+	default:
+		return "", fmt.Errorf("invalid structure: %q (must be %q or %q)", v, StructureWorktree, StructureNormal)
+	}
+}
+
+// IsWorktree returns true if the structure is worktree.
+func (s RepositoryStructure) IsWorktree() bool {
+	return s == StructureWorktree
+}
+
+// IsNormal returns true if the structure is normal.
+func (s RepositoryStructure) IsNormal() bool {
+	return s == StructureNormal || s == ""
+}
 
 const StructureShortUsage = `Repository structure to use (default: "worktree", one of "worktree" or "normal").`
 
@@ -25,7 +76,7 @@ Repository structure to use, where [structure] can be one of "worktree" or "norm
 `
 
 // StructureFlag registers the structure flag with a command.
-func StructureFlag(cmd *cobra.Command, structure *repositorystructure.RepositoryStructure, defaultValue string) error {
+func StructureFlag(cmd *cobra.Command, structure *RepositoryStructure, defaultValue string) error {
 	if defaultValue != "" {
 		if err := structure.Set(defaultValue); err != nil {
 			return fmt.Errorf("setting default structure: %w", err)

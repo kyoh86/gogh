@@ -8,16 +8,6 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v4/core/repository"
-	"github.com/kyoh86/gogh/v4/core/repositorystructure"
-)
-
-// RepositoryStructure is an alias for repositorystructure.RepositoryStructure.
-type RepositoryStructure = repositorystructure.RepositoryStructure
-
-// Re-export constants for convenience
-const (
-	StructureWorktree = repositorystructure.StructureWorktree
-	StructureNormal   = repositorystructure.StructureNormal
 )
 
 func LocationFormatter(v string) (repository.LocationFormat, error) {
@@ -52,34 +42,34 @@ type BundleRestoreFlags struct {
 
 // CloneFlags is a struct that contains flags for cloning a repository.
 type CloneFlags struct {
-	CloneRetryTimeout time.Duration       `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
-	Structure         RepositoryStructure `yaml:"structure,omitempty" toml:"structure,omitempty"`
-	DryRun            bool                `yaml:"-" toml:"-"`
+	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
+	Structure         string        `yaml:"structure,omitempty" toml:"structure,omitempty"`
+	DryRun            bool          `yaml:"-" toml:"-"`
 }
 
 // CreateFlags is a struct that contains flags for creating a repository.
 type CreateFlags struct {
-	Template            string              `yaml:"template,omitempty" toml:"template,omitempty"`
-	Description         string              `yaml:"-" toml:"-"`
-	Homepage            string              `yaml:"-" toml:"-"`
-	LicenseTemplate     string              `yaml:"licenseTemplate,omitempty" toml:"license-template,omitempty"`
-	GitignoreTemplate   string              `yaml:"gitignoreTemplate,omitempty" toml:"gitignore-template,omitempty"`
-	CloneRetryTimeout   time.Duration       `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
-	CloneRetryLimit     int                 `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
-	Structure           RepositoryStructure `yaml:"structure,omitempty" toml:"structure,omitempty"`
-	DisableWiki         bool                `yaml:"disableWiki,omitempty" toml:"disable-wiki,omitempty"`
-	DisableDownloads    bool                `yaml:"disableDownloads,omitempty" toml:"disable-downloads,omitempty"`
-	IsTemplate          bool                `yaml:"-" toml:"-"`
-	AutoInit            bool                `yaml:"autoInit,omitempty" toml:"auto-init,omitempty"`
-	DisableProjects     bool                `yaml:"disableProjects,omitempty" toml:"disable-projects,omitempty"`
-	DisableIssues       bool                `yaml:"disableIssues,omitempty" toml:"disable-issues,omitempty"`
-	PreventSquashMerge  bool                `yaml:"preventSquashMerge,omitempty" toml:"prevent-squash-merge,omitempty"`
-	PreventMergeCommit  bool                `yaml:"preventMergeCommit,omitempty" toml:"prevent-merge-commit,omitempty"`
-	PreventRebaseMerge  bool                `yaml:"preventRebaseMerge,omitempty" toml:"prevent-rebase-merge,omitempty"`
-	DeleteBranchOnMerge bool                `yaml:"deleteBranchOnMerge,omitempty" toml:"delete-branch-on-merge,omitempty"`
-	Private             bool                `yaml:"private,omitempty" toml:"private,omitempty"`
-	IncludeAllBranches  bool                `yaml:"includeAllBranches,omitempty" toml:"include-all-branches,omitempty"`
-	DryRun              bool                `yaml:"-" toml:"-"`
+	Template            string        `yaml:"template,omitempty" toml:"template,omitempty"`
+	Description         string        `yaml:"-" toml:"-"`
+	Homepage            string        `yaml:"-" toml:"-"`
+	LicenseTemplate     string        `yaml:"licenseTemplate,omitempty" toml:"license-template,omitempty"`
+	GitignoreTemplate   string        `yaml:"gitignoreTemplate,omitempty" toml:"gitignore-template,omitempty"`
+	CloneRetryTimeout   time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
+	CloneRetryLimit     int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	Structure           string        `yaml:"structure,omitempty" toml:"structure,omitempty"`
+	DisableWiki         bool          `yaml:"disableWiki,omitempty" toml:"disable-wiki,omitempty"`
+	DisableDownloads    bool          `yaml:"disableDownloads,omitempty" toml:"disable-downloads,omitempty"`
+	IsTemplate          bool          `yaml:"-" toml:"-"`
+	AutoInit            bool          `yaml:"autoInit,omitempty" toml:"auto-init,omitempty"`
+	DisableProjects     bool          `yaml:"disableProjects,omitempty" toml:"disable-projects,omitempty"`
+	DisableIssues       bool          `yaml:"disableIssues,omitempty" toml:"disable-issues,omitempty"`
+	PreventSquashMerge  bool          `yaml:"preventSquashMerge,omitempty" toml:"prevent-squash-merge,omitempty"`
+	PreventMergeCommit  bool          `yaml:"preventMergeCommit,omitempty" toml:"prevent-merge-commit,omitempty"`
+	PreventRebaseMerge  bool          `yaml:"preventRebaseMerge,omitempty" toml:"prevent-rebase-merge,omitempty"`
+	DeleteBranchOnMerge bool          `yaml:"deleteBranchOnMerge,omitempty" toml:"delete-branch-on-merge,omitempty"`
+	Private             bool          `yaml:"private,omitempty" toml:"private,omitempty"`
+	IncludeAllBranches  bool          `yaml:"includeAllBranches,omitempty" toml:"include-all-branches,omitempty"`
+	DryRun              bool          `yaml:"-" toml:"-"`
 }
 
 // CwdFlags is a struct that contains flags for the cwd command.
@@ -110,11 +100,11 @@ type ListFlags struct {
 
 // ForkFlags is a struct that contains flags for forking a repository.
 type ForkFlags struct {
-	To                string              `yaml:"-" toml:"-"`
-	DefaultBranchOnly bool                `yaml:"defaultBranchOnly,omitempty" toml:"default-branch-only,omitempty"`
-	CloneRetryTimeout time.Duration       `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
-	CloneRetryLimit   int                 `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
-	Structure         RepositoryStructure `yaml:"structure,omitempty" toml:"structure,omitempty"`
+	To                string        `yaml:"-" toml:"-"`
+	DefaultBranchOnly bool          `yaml:"defaultBranchOnly,omitempty" toml:"default-branch-only,omitempty"`
+	CloneRetryTimeout time.Duration `yaml:"cloneRetryTimeout,omitempty" toml:"clone-retry-timeout,omitempty"`
+	CloneRetryLimit   int           `yaml:"cloneRetryLimit,omitempty" toml:"clone-retry-limit,omitempty"`
+	Structure         string        `yaml:"structure,omitempty" toml:"structure,omitempty"`
 }
 
 // Flags is a struct that contains all the flags for the application.
@@ -152,7 +142,7 @@ func DefaultFlags() *Flags {
 	f.BundleRestore.CloneRetryTimeout = 5 * time.Minute
 
 	f.Clone.CloneRetryTimeout = 5 * time.Minute
-	f.Clone.Structure = StructureWorktree
+	f.Clone.Structure = "worktree"
 
 	f.Repos.Limit = 30
 	f.Repos.Color = "auto"
@@ -160,12 +150,12 @@ func DefaultFlags() *Flags {
 
 	f.Create.CloneRetryTimeout = 5 * time.Minute
 	f.Create.CloneRetryLimit = 3
-	f.Create.Structure = StructureWorktree
+	f.Create.Structure = "worktree"
 
 	f.List.Limit = 100
 
 	f.Fork.CloneRetryTimeout = 5 * time.Minute
 	f.Fork.CloneRetryLimit = 3
-	f.Fork.Structure = StructureWorktree
+	f.Fork.Structure = "worktree"
 	return f
 }
