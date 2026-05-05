@@ -57,21 +57,3 @@ func FormatFields(separator string) Format {
 		}, separator), nil
 	})
 }
-
-// ParseFormat parses a format string and returns the corresponding Format
-func ParseFormat(v string) (Format, error) {
-	switch v {
-	case "", "default":
-		return FormatDefault, nil
-	case "full-path", "full":
-		return FormatFullPath, nil
-	case "json":
-		return FormatJSON, nil
-	case "fields":
-		return FormatFields("\t"), nil
-	}
-	if strings.HasPrefix(v, "fields:") {
-		return FormatFields(v[len("fields:"):]), nil
-	}
-	return nil, fmt.Errorf("invalid worktree format: %q", v)
-}
