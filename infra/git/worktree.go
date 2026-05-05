@@ -8,21 +8,18 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/worktree"
 )
 
 // WorktreeService manages git worktrees
 type WorktreeService struct {
-	gitService  git.GitService
 	pathBuilder worktree.PathBuilder
 }
 
 // NewWorktreeService creates a new WorktreeService
-func NewWorktreeService(gitService git.GitService, pathBuilder worktree.PathBuilder) worktree.Service {
+func NewWorktreeService(pathBuilder worktree.PathBuilder) worktree.Service {
 	return &WorktreeService{
-		gitService:  gitService,
 		pathBuilder: pathBuilder,
 	}
 }
@@ -47,11 +44,19 @@ func (s *WorktreeService) List(ctx context.Context, repo repository.Location) ([
 }
 
 // Add adds a new worktree
-func (s *WorktreeService) Add(ctx context.Context, repo repository.Location, branch string) (worktree.Worktree, error) {
+func (s *WorktreeService) Add(ctx context.Context, repo repository.Location, branch string, opts worktree.AddOptions) (worktree.Worktree, error) {
 	worktreePath := s.pathBuilder.BuildWorktreePath(repo, branch)
 
-	// git worktree add <path> <branch>
-	cmd := exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", worktreePath, branch)
+	var cmd *exec.Cmd
+	// If CreateBranch is requested and branch doesn't exist, use -b flag
+	if opts.CreateBranch && !s.branchExists(ctx, repo.FullPath(), branch) {
+		// git worktree add -b <new-branch> <path> <start-point>
+		cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", "-b", branch, worktreePath, "HEAD")
+	} else {
+		// git worktree add <path> <branch>
+		cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", worktreePath, branch)
+	}
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return worktree.Worktree{}, fmt.Errorf("adding worktree: %w\nOutput: %s", err, string(output))
@@ -62,6 +67,13 @@ func (s *WorktreeService) Add(ctx context.Context, repo repository.Location, bra
 		Branch:     branch,
 		Path:       worktreePath,
 	}, nil
+}
+
+// branchExists checks if a branch exists in the repository
+func (s *WorktreeService) branchExists(ctx context.Context, repoPath, branch string) bool {
+	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "show-ref", "--verify", "--quiet", "refs/heads/"+branch)
+	err := cmd.Run()
+	return err == nil
 }
 
 // Remove removes a worktree

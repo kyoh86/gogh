@@ -22,13 +22,18 @@ type Service interface {
 	List(ctx context.Context, repo repository.Location) ([]Worktree, error)
 
 	// Add a new worktree
-	Add(ctx context.Context, repo repository.Location, branch string) (Worktree, error)
+	Add(ctx context.Context, repo repository.Location, branch string, opts AddOptions) (Worktree, error)
 
 	// Remove a worktree
 	Remove(ctx context.Context, worktree Worktree) error
 
 	// Get worktree for current directory
 	GetFromPath(ctx context.Context, path string) (*Worktree, error)
+}
+
+// AddOptions contains options for adding a worktree
+type AddOptions struct {
+	CreateBranch bool
 }
 
 // GetWorktreePath returns the working directory path for a repository location.

@@ -148,7 +148,7 @@ func (uc *Usecase) List(ctx context.Context, repoRef *string, opts ListOptions) 
 
 // AddOptions contains options for the add operation
 type AddOptions struct {
-	// Reserved for future use
+	CreateBranch bool `yaml:"-" toml:"-"`
 }
 
 // Add adds a new worktree
@@ -176,7 +176,9 @@ func (uc *Usecase) Add(ctx context.Context, repoRef string, branch string, opts 
 		return fmt.Errorf("repository not found: %s", repoRef)
 	}
 
-	_, err = uc.worktreeService.Add(ctx, *repo, branch)
+	_, err = uc.worktreeService.Add(ctx, *repo, branch, worktree.AddOptions{
+		CreateBranch: opts.CreateBranch,
+	})
 	if err != nil {
 		return fmt.Errorf("adding worktree: %w", err)
 	}
