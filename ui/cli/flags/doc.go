@@ -41,7 +41,7 @@
 //
 //  5. Use app/config with string type for YAML/TOML persistence
 //     type Config struct {
-//         MyFlag string `yaml:"myFlag"`
+//     MyFlag string `yaml:"myFlag"`
 //     }
 //
 // # Existing Flag Types
