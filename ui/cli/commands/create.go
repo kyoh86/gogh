@@ -45,8 +45,8 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 		if f.Template == "" {
 			ropt := create.Options{
 				TryCloneOptions: try.Options{
-					Structure: structure,
-					Notify:    try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					Worktree: structure == flags.StructureWorktree,
+					Notify:   try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				RepositoryOptions: create.RepositoryOptions{
 					Description:         f.Description,
@@ -94,9 +94,9 @@ func NewCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Comman
 				svc.GitService,
 			).Execute(ctx, refWithAlias, *tmp, template.CreateFromTemplateOptions{
 				TryCloneOptions: try.Options{
-					Structure: structure,
-					Timeout:   f.CloneRetryTimeout,
-					Notify:    try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					Worktree: structure == flags.StructureWorktree,
+					Timeout:  f.CloneRetryTimeout,
+					Notify:   try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				RepositoryOptions: template.RepositoryOptions{
 					Description:        f.Description,

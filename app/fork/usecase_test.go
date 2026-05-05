@@ -24,7 +24,6 @@ import (
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
-	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"go.uber.org/mock/gomock"
 )
 
@@ -438,9 +437,9 @@ func TestUsecase_Execute(t *testing.T) {
 
 				opts := fork.Options{
 					TryCloneOptions: try.Options{
-						Structure: flags.StructureWorktree,
-						Timeout:   30 * time.Second,
-						Notify:    func(msg try.Status) error { return nil },
+						Worktree: true,
+						Timeout:  30 * time.Second,
+						Notify:   func(msg try.Status) error { return nil },
 					},
 					Target: tc.target,
 				}
