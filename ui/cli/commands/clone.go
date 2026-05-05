@@ -70,9 +70,9 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 			eg.Go(func() error {
 				err := cloneUsecase.Execute(egCtx, ref, clone.Options{
 					TryCloneOptions: try.Options{
-						Notify:    try.RetryLimit(1, nil),
-						Timeout:   f.CloneRetryTimeout,
-						Structure: structure,
+						Notify:   try.RetryLimit(1, nil),
+						Timeout:  f.CloneRetryTimeout,
+						Worktree: structure == flags.StructureWorktree,
 					},
 				})
 				return err

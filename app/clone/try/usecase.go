@@ -13,7 +13,6 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
-	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 )
 
 // Usecase provides common operations for repository manipulation
@@ -73,8 +72,8 @@ type Options struct {
 	Notify Notify
 	// Timeout is the maximum wait time for each clone attempt.
 	Timeout time.Duration
-	// Structure specifies the repository structure (worktree or normal)
-	Structure flags.RepositoryStructure
+	// Use worktree for the repository
+	Worktree bool
 }
 
 // Execute attempts to clone a repository with retry logic.
@@ -103,12 +102,12 @@ func (uc *Usecase) Execute(
 	}
 
 	// Validate existing repository structure before cloning
-	if err := validateExistingRepoStructure(ctx, gitService, localPath, opts.Structure.IsWorktree()); err != nil {
+	if err := validateExistingRepoStructure(ctx, gitService, localPath, opts.Worktree); err != nil {
 		return err
 	}
 
 	// Perform git clone operation
-	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Structure.IsWorktree(), opts.Timeout, opts.Notify); err != nil {
+	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Worktree, opts.Timeout, opts.Notify); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
 

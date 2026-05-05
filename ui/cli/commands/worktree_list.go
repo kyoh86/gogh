@@ -7,7 +7,6 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
 	worktreeapp "github.com/kyoh86/gogh/v4/app/worktree"
-	"github.com/kyoh86/gogh/v4/core/worktree"
 	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +43,7 @@ func NewWorktreeListCommand(ctx context.Context, svc *service.ServiceSet) (*cobr
 				return nil
 			}
 
-			formatter, err := worktree.ParseFormat(format.String())
+			formatter, err := config.WorktreeFormatter(format.String())
 			if err != nil {
 				return fmt.Errorf("invalid format flag: %w", err)
 			}

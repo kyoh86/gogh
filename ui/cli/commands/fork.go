@@ -29,9 +29,9 @@ func NewForkCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command,
 			ctx := cmd.Context()
 			opts := fork.Options{
 				TryCloneOptions: try.Options{
-					Structure: structure,
-					Timeout:   f.CloneRetryTimeout,
-					Notify:    try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
+					Worktree: structure == flags.StructureWorktree,
+					Timeout:  f.CloneRetryTimeout,
+					Notify:   try.RetryLimit(f.CloneRetryLimit, view.TryCloneNotify(ctx, nil)),
 				},
 				HostingOptions: fork.HostingOptions{
 					DefaultBranchOnly: f.DefaultBranchOnly,

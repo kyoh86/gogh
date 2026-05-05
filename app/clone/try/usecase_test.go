@@ -15,7 +15,6 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
-	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"go.uber.org/mock/gomock"
 )
 
@@ -357,9 +356,9 @@ func TestTryClone(t *testing.T) {
 				repo,
 				nil, // no alias
 				try.Options{
-					Timeout:   30 * time.Second,
-					Notify:    notify,
-					Structure: flags.StructureWorktree,
+					Timeout:  30 * time.Second,
+					Notify:   notify,
+					Worktree: true,
 				},
 			)
 

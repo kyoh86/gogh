@@ -3,7 +3,7 @@ package flags
 import (
 	"fmt"
 
-	"github.com/kyoh86/gogh/v4/core/worktree"
+	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -17,7 +17,7 @@ func (f WorktreeFormat) String() string {
 }
 
 func (f *WorktreeFormat) Set(v string) error {
-	_, err := worktree.ParseFormat(v)
+	_, err := config.WorktreeFormatter(v)
 	if err != nil {
 		return fmt.Errorf("parse worktree format: %w", err)
 	}

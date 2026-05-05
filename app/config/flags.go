@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v4/core/repository"
+	"github.com/kyoh86/gogh/v4/core/worktree"
 )
 
 func LocationFormatter(v string) (repository.LocationFormat, error) {
@@ -25,6 +26,23 @@ func LocationFormatter(v string) (repository.LocationFormat, error) {
 		return repository.LocationFormatFields(v[len("fields:"):]), nil
 	}
 	return nil, fmt.Errorf("invalid format: %q", v)
+}
+
+func WorktreeFormatter(v string) (worktree.Format, error) {
+	switch v {
+	case "", "default":
+		return worktree.FormatDefault, nil
+	case "full-path", "full":
+		return worktree.FormatFullPath, nil
+	case "json":
+		return worktree.FormatJSON, nil
+	case "fields":
+		return worktree.FormatFields("\t"), nil
+	}
+	if strings.HasPrefix(v, "fields:") {
+		return worktree.FormatFields(v[len("fields:"):]), nil
+	}
+	return nil, fmt.Errorf("invalid worktree format: %q", v)
 }
 
 // BundleDumpFlags is a struct that contains flags for dumping a bundle.
