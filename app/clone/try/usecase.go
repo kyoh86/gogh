@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 )
 
 // Usecase provides common operations for repository manipulation
@@ -74,7 +74,7 @@ type Options struct {
 	// Timeout is the maximum wait time for each clone attempt.
 	Timeout time.Duration
 	// Structure specifies the repository structure (worktree or normal)
-	Structure config.RepositoryStructure
+	Structure flags.RepositoryStructure
 }
 
 // Execute attempts to clone a repository with retry logic.

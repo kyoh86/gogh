@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/clone/try"
-	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hook"
@@ -24,6 +23,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"go.uber.org/mock/gomock"
 )
 
@@ -222,7 +222,7 @@ func TestUsecase_Execute(t *testing.T) {
 			// Execute test
 			err := usecase.Execute(context.Background(), tt.refWithAlias, Options{
 				TryCloneOptions: try.Options{
-					Structure: config.StructureWorktree,
+					Structure: flags.StructureWorktree,
 				},
 			})
 

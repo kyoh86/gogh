@@ -12,12 +12,14 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/repos"
 	"github.com/kyoh86/gogh/v4/app/service"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
 func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
 	var f config.CloneFlags
+	var structure flags.RepositoryStructure
 	cloneUsecase := clone.NewUsecase(
 		svc.HostingService,
 		svc.WorkspaceService,
@@ -70,7 +72,7 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 					TryCloneOptions: try.Options{
 						Notify:    try.RetryLimit(1, nil),
 						Timeout:   f.CloneRetryTimeout,
-						Structure: f.Structure,
+						Structure: structure,
 					},
 				})
 				return err
@@ -120,7 +122,9 @@ func NewCloneCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Command
 
 	cmd.Flags().BoolVarP(&f.DryRun, "dry-run", "", false, "Displays the operations that would be performed using the specified command without actually running them")
 	cmd.Flags().DurationVarP(&f.CloneRetryTimeout, "clone-retry-timeout", "t", svc.Flags.Clone.CloneRetryTimeout, "Timeout for each clone attempt")
-	cmd.Flags().VarP(&f.Structure, "structure", "s", `Repository structure to use (default: "worktree", one of "worktree" or "normal")`)
+	if err := flags.StructureFlag(cmd, &structure, svc.Flags.Clone.Structure); err != nil {
+		return nil, fmt.Errorf("initializing structure flag: %s", err)
+	}
 
 	return cmd, nil
 }
