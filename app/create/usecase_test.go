@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/clone/try"
-	"github.com/kyoh86/gogh/v4/app/config"
 	testtarget "github.com/kyoh86/gogh/v4/app/create"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -25,6 +24,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/repository_mock"
 	"github.com/kyoh86/gogh/v4/core/script_mock"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"go.uber.org/mock/gomock"
 )
 
@@ -52,7 +52,7 @@ func TestUsecase_Execute(t *testing.T) {
 			refWithAlias: "github.com/kyoh86/new-repo",
 			options: testtarget.Options{
 				TryCloneOptions: try.Options{
-					Structure: config.StructureWorktree,
+					Structure: flags.StructureWorktree,
 				},
 				RepositoryOptions: hosting.CreateRepositoryOptions{
 					Description: "New repository",
