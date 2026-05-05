@@ -122,7 +122,7 @@ func run(ctx context.Context) error {
 
 	// Initialize worktree service (infrastructure layer)
 	pathBuilder := worktree.NewPathBuilder()
-	worktreeService := git.NewWorktreeService(gitService, pathBuilder)
+	worktreeService := git.NewWorktreeService(pathBuilder)
 
 	svc := &service.ServiceSet{
 		DefaultNameStore:   defaultNameStore,

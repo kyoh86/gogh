@@ -12,6 +12,7 @@ import (
 
 // NewWorktreeAddCommand creates a new worktree add command
 func NewWorktreeAddCommand(ctx context.Context, svc *service.ServiceSet) (*cobra.Command, error) {
+	var createBranch bool
 	cmd := &cobra.Command{
 		Use:   "add <repo-ref> <branch>",
 		Short: "Add a new worktree",
@@ -21,7 +22,9 @@ func NewWorktreeAddCommand(ctx context.Context, svc *service.ServiceSet) (*cobra
 			branch := args[1]
 
 			worktreeUsecase := initWorktreeUsecase(svc)
-			opts := worktreeapp.AddOptions{}
+			opts := worktreeapp.AddOptions{
+				CreateBranch: createBranch,
+			}
 
 			logger := log.FromContext(cmd.Context())
 			logger.WithField("repo", repoRef).WithField("branch", branch).Info("Adding worktree")
@@ -34,6 +37,8 @@ func NewWorktreeAddCommand(ctx context.Context, svc *service.ServiceSet) (*cobra
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVarP(&createBranch, "create-branch", "c", false, "Create branch if it doesn't exist")
 
 	return cmd, nil
 }
