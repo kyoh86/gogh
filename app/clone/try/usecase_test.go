@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/kyoh86/gogh/v4/app/clone/try"
-	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
@@ -16,6 +15,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay_mock"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
+	"github.com/kyoh86/gogh/v4/ui/cli/flags"
 	"go.uber.org/mock/gomock"
 )
 
@@ -359,7 +359,7 @@ func TestTryClone(t *testing.T) {
 				try.Options{
 					Timeout:   30 * time.Second,
 					Notify:    notify,
-					Structure: config.StructureWorktree,
+					Structure: flags.StructureWorktree,
 				},
 			)
 
