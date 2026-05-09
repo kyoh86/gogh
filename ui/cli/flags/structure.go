@@ -77,10 +77,12 @@ Repository structure to use, where [structure] can be one of "worktree" or "norm
 
 // StructureFlag registers the structure flag with a command.
 func StructureFlag(cmd *cobra.Command, structure *RepositoryStructure, defaultValue string) error {
-	if defaultValue != "" {
-		if err := structure.Set(defaultValue); err != nil {
-			return fmt.Errorf("setting default structure: %w", err)
-		}
+	// If defaultValue is empty, use "worktree" as default
+	if defaultValue == "" {
+		defaultValue = string(StructureWorktree)
+	}
+	if err := structure.Set(defaultValue); err != nil {
+		return fmt.Errorf("setting default structure: %w", err)
 	}
 	cmd.Flags().VarP(structure, "structure", "s", StructureShortUsage)
 	if err := cmd.RegisterFlagCompletionFunc("structure", CompleteStructure); err != nil {
