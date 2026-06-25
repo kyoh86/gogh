@@ -2,6 +2,8 @@
 
 version: 2
 project_name: gogh
+release:
+  target_commitish: '{{ .Env.GITHUB_SHA }}'
 builds:
   - id: default
     goos:
