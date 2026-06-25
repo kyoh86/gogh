@@ -48,11 +48,27 @@ func (s *WorktreeService) Add(ctx context.Context, repo repository.Location, bra
 	worktreePath := s.pathBuilder.BuildWorktreePath(repo, branch)
 
 	var cmd *exec.Cmd
-	// If CreateBranch is requested and branch doesn't exist, use -b flag
-	if opts.CreateBranch && !s.branchExists(ctx, repo.FullPath(), branch) {
-		// git worktree add -b <new-branch> <path> <start-point>
-		cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", "-b", branch, worktreePath, "HEAD")
+	if opts.CreateBranch {
+		switch {
+		case s.branchExists(ctx, repo.FullPath(), branch):
+			// Branch already exists locally: use it as-is.
+			// git worktree add <path> <branch>
+			cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", worktreePath, branch)
+		case s.remoteBranchExists(ctx, repo.FullPath(), "origin", branch):
+			// Remote branch exists: create local branch from it.
+			// git worktree add -b <branch> <path> origin/<branch>
+			cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", "-b", branch, worktreePath, "origin/"+branch)
+		case s.remoteBranchExists(ctx, repo.FullPath(), "origin", "HEAD"):
+			// Remote default branch exists: create new branch from it.
+			// git worktree add -b <branch> <path> origin/HEAD
+			cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", "-b", branch, worktreePath, "origin/HEAD")
+		default:
+			// Fallback for repositories without origin/HEAD.
+			// git worktree add -b <branch> <path> HEAD
+			cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", "-b", branch, worktreePath, "HEAD")
+		}
 	} else {
+		// No -c flag: use the branch as specified (must exist locally)
 		// git worktree add <path> <branch>
 		cmd = exec.CommandContext(ctx, "git", "-C", repo.FullPath(), "worktree", "add", worktreePath, branch)
 	}
@@ -72,6 +88,13 @@ func (s *WorktreeService) Add(ctx context.Context, repo repository.Location, bra
 // branchExists checks if a branch exists in the repository
 func (s *WorktreeService) branchExists(ctx context.Context, repoPath, branch string) bool {
 	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "show-ref", "--verify", "--quiet", "refs/heads/"+branch)
+	err := cmd.Run()
+	return err == nil
+}
+
+// remoteBranchExists checks if a branch exists on the remote (e.g., origin/branch)
+func (s *WorktreeService) remoteBranchExists(ctx context.Context, repoPath string, remote string, branch string) bool {
+	cmd := exec.CommandContext(ctx, "git", "-C", repoPath, "show-ref", "--verify", "--quiet", "refs/remotes/"+remote+"/"+branch)
 	err := cmd.Run()
 	return err == nil
 }
