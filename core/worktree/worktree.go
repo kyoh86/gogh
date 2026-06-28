@@ -37,11 +37,11 @@ type AddOptions struct {
 }
 
 // GetWorktreePath returns the working directory path for a repository location.
-// For worktree structures (bare repository with .worktree/<branch>), it returns the worktree path.
+// For worktree structures (bare repository with .wt/<branch>), it returns the worktree path.
 // For non-worktree structures, it returns the repository path itself.
 //
 // Examples:
-//   - Worktree structure: "/path/to/github.com/user/repo" -> "/path/to/github.com/user/repo/.worktree/main"
+//   - Worktree structure: "/path/to/github.com/user/repo" -> "/path/to/github.com/user/repo/.wt/main"
 //   - Non-worktree structure: "/path/to/github.com/user/repo" -> "/path/to/github.com/user/repo"
 func GetWorktreePath(ctx context.Context, repo *repository.Location) (string, error) {
 	if repo == nil {
@@ -49,9 +49,9 @@ func GetWorktreePath(ctx context.Context, repo *repository.Location) (string, er
 	}
 
 	repoPath := repo.FullPath()
-	worktreeDir := filepath.Join(repoPath, ".worktree")
+	worktreeDir := filepath.Join(repoPath, DirectoryName)
 
-	// Check if .worktree directory exists
+	// Check if .wt directory exists
 	if info, err := os.Stat(worktreeDir); err == nil && info.IsDir() {
 		// Worktree structure detected
 		// Try to find the main branch worktree
@@ -60,7 +60,7 @@ func GetWorktreePath(ctx context.Context, repo *repository.Location) (string, er
 			return mainWorktreePath, nil
 		}
 
-		// If .worktree/main doesn't exist, return the first subdirectory
+		// If .wt/main doesn't exist, return the first subdirectory
 		entries, err := os.ReadDir(worktreeDir)
 		if err == nil && len(entries) > 0 {
 			for _, entry := range entries {
