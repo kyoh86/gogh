@@ -9,7 +9,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/kyoh86/gogh/v4/app/service"
-	"github.com/kyoh86/gogh/v4/core/workspace"
 	"github.com/spf13/cobra"
 )
 
@@ -62,7 +61,7 @@ func NewHostPathAliasSetCommand(_ context.Context, svc *service.ServiceSet) (*co
 			}
 			aliases := svc.WorkspaceService.GetHostPathAliases()
 			if aliases == nil {
-				aliases = workspace.HostPathAliases{}
+				aliases = map[string]string{}
 			}
 			aliases[host] = alias
 			svc.WorkspaceService.SetHostPathAliases(aliases)
