@@ -54,6 +54,7 @@ func NewConfigShowCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 				"flagsSource":       flagsSource,
 				"workspaceSource":   workspaceSource,
 				"roots":             svc.WorkspaceService.GetRoots(),
+				"hostPathAliases":   svc.WorkspaceService.GetHostPathAliases(),
 				"defaultHost":       svc.DefaultNameService.GetDefaultHost(),
 				"defaultNames":      svc.DefaultNameService.GetMap(),
 				"tokens":            svc.TokenService.Entries(),

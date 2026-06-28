@@ -126,3 +126,17 @@ func (mr *MockLayoutServiceMockRecorder) PathFor(ref any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathFor", reflect.TypeOf((*MockLayoutService)(nil).PathFor), ref)
 }
+
+// PathsFor mocks base method.
+func (m *MockLayoutService) PathsFor(ref repository.Reference) []string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PathsFor", ref)
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// PathsFor indicates an expected call of PathsFor.
+func (mr *MockLayoutServiceMockRecorder) PathsFor(ref any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PathsFor", reflect.TypeOf((*MockLayoutService)(nil).PathsFor), ref)
+}

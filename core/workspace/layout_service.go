@@ -30,6 +30,11 @@ type LayoutService interface {
 	// PathFor returns the path corresponding to the given reference
 	PathFor(ref repository.Reference) string
 
+	// PathsFor returns candidate paths corresponding to the given reference.
+	// The first path is the preferred path for new repositories; following paths
+	// are backward-compatible locations that may already exist.
+	PathsFor(ref repository.Reference) []string
+
 	// CreateRepositoryFolder creates a new folder for the repository
 	CreateRepositoryFolder(reference repository.Reference) (string, error)
 
