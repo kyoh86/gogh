@@ -13,8 +13,9 @@ import (
 type WorkspaceStore struct{}
 
 type tomlWorkspaceStore struct {
-	Roots       []workspace.Root `toml:"roots,omitempty"`
-	PrimaryRoot string           `toml:"primary_root,omitempty"`
+	Roots           []workspace.Root          `toml:"roots,omitempty"`
+	PrimaryRoot     string                    `toml:"primary_root,omitempty"`
+	HostPathAliases workspace.HostPathAliases `toml:"host-path-aliases,omitempty"`
 }
 
 // Load implements store.Store.
@@ -30,6 +31,7 @@ func (w *WorkspaceStore) Load(ctx context.Context, initial func() workspace.Work
 	}
 
 	svc := initial()
+	svc.SetHostPathAliases(v.HostPathAliases)
 	for _, root := range v.Roots {
 		if err := svc.AddRoot(root, root == v.PrimaryRoot); err != nil {
 			return nil, err
@@ -49,8 +51,9 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 		return err
 	}
 	v := tomlWorkspaceStore{
-		Roots:       ws.GetRoots(),
-		PrimaryRoot: ws.GetPrimaryRoot(),
+		Roots:           ws.GetRoots(),
+		PrimaryRoot:     ws.GetPrimaryRoot(),
+		HostPathAliases: ws.GetHostPathAliases(),
 	}
 
 	if err := saveTOMLFile(source, v); err != nil {

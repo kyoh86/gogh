@@ -19,6 +19,8 @@ var (
 
 type Root = string
 
+type HostPathAliases map[string]string
+
 // WorkspaceService manages a collection of repository roots
 type WorkspaceService interface {
 	// GetRoots returns all registered roots
@@ -32,6 +34,12 @@ type WorkspaceService interface {
 
 	// GetPrimaryLayout returns a Layout for the primary root
 	GetPrimaryLayout() LayoutService
+
+	// SetHostPathAliases sets host-to-path aliases used by layouts.
+	SetHostPathAliases(HostPathAliases)
+
+	// GetHostPathAliases returns host-to-path aliases used by layouts.
+	GetHostPathAliases() HostPathAliases
 
 	// SetPrimaryRoot sets the primary root
 	SetPrimaryRoot(Root) error

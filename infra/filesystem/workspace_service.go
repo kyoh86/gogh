@@ -11,10 +11,11 @@ import (
 
 // WorkspaceService manages workspace roots stored in the filesystem
 type WorkspaceService struct {
-	roots       []workspace.Root
-	primaryRoot workspace.Root
-	changed     bool
-	mu          sync.RWMutex
+	roots           []workspace.Root
+	primaryRoot     workspace.Root
+	hostPathAliases workspace.HostPathAliases
+	changed         bool
+	mu              sync.RWMutex
 	// You might need a config file path or other storage mechanism
 }
 
@@ -44,14 +45,31 @@ func (s *WorkspaceService) GetPrimaryRoot() workspace.Root {
 
 // GetLayoutFor returns a Layout for the root
 func (s *WorkspaceService) GetLayoutFor(root workspace.Root) workspace.LayoutService {
-	return NewLayoutService(root)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return NewLayoutServiceWithHostPathAliases(root, s.hostPathAliases)
 }
 
 // GetPrimaryLayout returns a Layout for the primary root
 func (s *WorkspaceService) GetPrimaryLayout() workspace.LayoutService {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return NewLayoutService(s.primaryRoot)
+	return NewLayoutServiceWithHostPathAliases(s.primaryRoot, s.hostPathAliases)
+}
+
+// SetHostPathAliases sets host-to-path aliases used by layouts.
+func (s *WorkspaceService) SetHostPathAliases(aliases workspace.HostPathAliases) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.hostPathAliases = cloneHostPathAliases(aliases)
+	s.changed = true
+}
+
+// GetHostPathAliases returns host-to-path aliases used by layouts.
+func (s *WorkspaceService) GetHostPathAliases() workspace.HostPathAliases {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return cloneHostPathAliases(s.hostPathAliases)
 }
 
 // SetPrimaryRoot sets the specified path as the primary workspace root

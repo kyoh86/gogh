@@ -33,18 +33,20 @@ func (f *FinderService) isDir(path string) (bool, error) {
 // FindByReference implements workspace.FinderService.
 func (f *FinderService) FindByReference(ctx context.Context, ws workspace.WorkspaceService, ref repository.Reference) (*repository.Location, error) {
 	for _, root := range ws.GetRoots() {
-		abs := filepath.Join(root, ref.String())
-		isDir, err := f.isDir(abs)
-		if err != nil {
-			return nil, err
-		}
-		if isDir {
-			return repository.NewLocation(
-				abs,
-				ref.Host(),
-				ref.Owner(),
-				ref.Name(),
-			), nil
+		layout := ws.GetLayoutFor(root)
+		for _, abs := range layout.PathsFor(ref) {
+			isDir, err := f.isDir(abs)
+			if err != nil {
+				return nil, err
+			}
+			if isDir {
+				return repository.NewLocation(
+					abs,
+					ref.Host(),
+					ref.Owner(),
+					ref.Name(),
+				), nil
+			}
 		}
 	}
 	return nil, workspace.ErrNotMatched
