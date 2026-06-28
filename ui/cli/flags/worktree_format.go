@@ -43,7 +43,7 @@ Print worktree in a given format, where [format] can be one of "default",
 - full-path
 
 	A full path of the worktree.  For example:
-	"/root/Projects/github.com/kyoh86/gogh/.worktree/main"
+	"/root/Projects/github.com/kyoh86/gogh/.wt/main"
 
 - json
 
