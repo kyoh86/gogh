@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/app/config"
+	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 	"github.com/kyoh86/gogh/v4/core/workspace_mock"
+	"github.com/kyoh86/gogh/v4/infra/filesystem"
 	"github.com/pelletier/go-toml/v2"
 	"go.uber.org/mock/gomock"
 )
@@ -117,6 +119,7 @@ func TestWorkspaceStore_Load_FileExists(t *testing.T) {
 	createWorkspaceStoreTestTOMLFile(t, configPath, roots, root1)
 
 	// Setup mock expectations
+	mockService.EXPECT().SetHostPathAliases(workspace.HostPathAliases(nil))
 	mockService.EXPECT().AddRoot(root1, true).Return(nil)
 	mockService.EXPECT().AddRoot(root2, false).Return(nil)
 	mockService.EXPECT().MarkSaved()
@@ -192,6 +195,7 @@ func TestWorkspaceStore_Load_AddRootError(t *testing.T) {
 
 	// Setup mock expectations
 	expectedErr := errors.New("test error")
+	mockService.EXPECT().SetHostPathAliases(workspace.HostPathAliases(nil))
 	mockService.EXPECT().AddRoot(root1, true).Return(expectedErr)
 
 	// Call Load
@@ -234,6 +238,7 @@ func TestWorkspaceStore_Save_WithChanges(t *testing.T) {
 	mockService.EXPECT().HasChanges().Return(true)
 	mockService.EXPECT().GetRoots().Return(roots)
 	mockService.EXPECT().GetPrimaryRoot().Return(root1)
+	mockService.EXPECT().GetHostPathAliases().Return(workspace.HostPathAliases(nil))
 	mockService.EXPECT().MarkSaved()
 
 	// Call Save
@@ -256,6 +261,55 @@ func TestWorkspaceStore_Save_WithChanges(t *testing.T) {
 	}
 }
 
+func TestWorkspaceStore_LoadAndSave_HostPathAliases(t *testing.T) {
+	tempDir, cleanup, _, store := setupWorkspaceStoreTestEnvironment(t)
+	defer cleanup()
+
+	root := filepath.Join(tempDir, "root")
+	configPath := filepath.Join(tempDir, "workspace.v4.toml")
+	raw := map[string]any{
+		"roots":             []workspace.Root{root},
+		"primary_root":      root,
+		"host-path-aliases": map[string]string{"github.com": "gh"},
+	}
+	encoded, err := toml.Marshal(raw)
+	if err != nil {
+		t.Fatalf("Failed to encode TOML: %v", err)
+	}
+	if err := os.WriteFile(configPath, encoded, 0o644); err != nil {
+		t.Fatalf("Failed to write TOML file: %v", err)
+	}
+
+	ctx := context.Background()
+	service, err := store.Load(ctx, filesystem.NewWorkspaceService)
+	if err != nil {
+		t.Fatalf("Unexpected error from Load(): %v", err)
+	}
+	layout := service.GetLayoutFor(root)
+	got := layout.PathFor(repository.NewReference("github.com", "kyoh86", "gogh"))
+	want := filepath.Join(root, "gh", "kyoh86", "gogh")
+	if got != want {
+		t.Errorf("Expected aliased path %q, got %q", want, got)
+	}
+
+	if err := store.Save(ctx, service, true); err != nil {
+		t.Fatalf("Unexpected error from Save(): %v", err)
+	}
+	content, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("Failed to read saved TOML file: %v", err)
+	}
+	var saved struct {
+		HostPathAliases workspace.HostPathAliases `toml:"host-path-aliases"`
+	}
+	if err := toml.Unmarshal(content, &saved); err != nil {
+		t.Fatalf("Failed to decode saved TOML: %v", err)
+	}
+	if saved.HostPathAliases["github.com"] != "gh" {
+		t.Errorf("Expected saved host path alias github.com=gh, got %v", saved.HostPathAliases)
+	}
+}
+
 func TestWorkspaceStore_Save_ForceWithoutChanges(t *testing.T) {
 	tempDir, cleanup, mockService, store := setupWorkspaceStoreTestEnvironment(t)
 	defer cleanup()
@@ -268,6 +322,7 @@ func TestWorkspaceStore_Save_ForceWithoutChanges(t *testing.T) {
 	mockService.EXPECT().HasChanges().Return(false)
 	mockService.EXPECT().GetRoots().Return(roots)
 	mockService.EXPECT().GetPrimaryRoot().Return(root1)
+	mockService.EXPECT().GetHostPathAliases().Return(workspace.HostPathAliases(nil))
 	mockService.EXPECT().MarkSaved()
 
 	// Call Save with force=true

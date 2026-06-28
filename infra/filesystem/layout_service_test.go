@@ -171,6 +171,33 @@ func TestLayoutServicePathFor(t *testing.T) {
 	}
 }
 
+func TestLayoutServiceWithHostPathAliases(t *testing.T) {
+	root := "/test/root"
+	layout := testtarget.NewLayoutServiceWithHostPathAliases(root, map[string]string{
+		"github.com": "gh",
+	})
+
+	ref := repository.NewReference("github.com", "kyoh86", "gogh")
+	expected := filepath.Join(root, "gh", "kyoh86", "gogh")
+	if path := layout.PathFor(ref); path != expected {
+		t.Errorf("Expected path %s, got %s", expected, path)
+	}
+
+	for _, path := range []string{
+		filepath.Join(root, "gh", "kyoh86", "gogh"),
+		filepath.Join(root, "github.com", "kyoh86", "gogh"),
+	} {
+		ref, err := layout.ExactMatch(path)
+		if err != nil {
+			t.Errorf("Expected %s to match, got error: %v", path, err)
+			continue
+		}
+		if ref.Host() != "github.com" {
+			t.Errorf("Expected host github.com for %s, got %s", path, ref.Host())
+		}
+	}
+}
+
 func TestLayoutServiceCreateAndDeleteRepository(t *testing.T) {
 	// Create a temporary directory for testing
 	tmpDir, err := os.MkdirTemp("", "layout-test-*")
@@ -217,5 +244,30 @@ func TestLayoutServiceCreateAndDeleteRepository(t *testing.T) {
 	_, err = os.Stat(createdPath)
 	if !os.IsNotExist(err) {
 		t.Errorf("Repository directory still exists after deletion")
+	}
+}
+
+func TestLayoutServiceDeleteRepositoryWithLegacyPathAndHostPathAliases(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "layout-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	layout := testtarget.NewLayoutServiceWithHostPathAliases(tmpDir, map[string]string{
+		"github.com": "gh",
+	})
+	ref := repository.NewReference("github.com", "kyoh86", "gogh")
+	legacyPath := filepath.Join(tmpDir, "github.com", "kyoh86", "gogh")
+	if err := os.MkdirAll(legacyPath, 0o755); err != nil {
+		t.Fatalf("Failed to create legacy repository folder: %v", err)
+	}
+
+	if err := layout.DeleteRepository(ref); err != nil {
+		t.Fatalf("Failed to delete repository: %v", err)
+	}
+
+	if _, err := os.Stat(legacyPath); !os.IsNotExist(err) {
+		t.Errorf("Legacy repository directory still exists after deletion")
 	}
 }

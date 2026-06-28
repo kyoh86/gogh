@@ -54,6 +54,20 @@ func (mr *MockWorkspaceServiceMockRecorder) AddRoot(root, asPrimary any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRoot", reflect.TypeOf((*MockWorkspaceService)(nil).AddRoot), root, asPrimary)
 }
 
+// GetHostPathAliases mocks base method.
+func (m *MockWorkspaceService) GetHostPathAliases() workspace.HostPathAliases {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHostPathAliases")
+	ret0, _ := ret[0].(workspace.HostPathAliases)
+	return ret0
+}
+
+// GetHostPathAliases indicates an expected call of GetHostPathAliases.
+func (mr *MockWorkspaceServiceMockRecorder) GetHostPathAliases() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHostPathAliases", reflect.TypeOf((*MockWorkspaceService)(nil).GetHostPathAliases))
+}
+
 // GetLayoutFor mocks base method.
 func (m *MockWorkspaceService) GetLayoutFor(root workspace.Root) workspace.LayoutService {
 	m.ctrl.T.Helper()
@@ -148,6 +162,18 @@ func (m *MockWorkspaceService) RemoveRoot(root workspace.Root) error {
 func (mr *MockWorkspaceServiceMockRecorder) RemoveRoot(root any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveRoot", reflect.TypeOf((*MockWorkspaceService)(nil).RemoveRoot), root)
+}
+
+// SetHostPathAliases mocks base method.
+func (m *MockWorkspaceService) SetHostPathAliases(arg0 workspace.HostPathAliases) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetHostPathAliases", arg0)
+}
+
+// SetHostPathAliases indicates an expected call of SetHostPathAliases.
+func (mr *MockWorkspaceServiceMockRecorder) SetHostPathAliases(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHostPathAliases", reflect.TypeOf((*MockWorkspaceService)(nil).SetHostPathAliases), arg0)
 }
 
 // SetPrimaryRoot mocks base method.

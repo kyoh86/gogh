@@ -211,10 +211,21 @@ func NewApp(
 	configAuthCommand.GroupID = ""
 	configRootsCommand := typ.Ptr(*rootsCommand)
 	configRootsCommand.GroupID = ""
+	hostPathAliasCommand, err := cmdWithSubs(
+		ctx, svc,
+		commands.NewHostPathAliasCommand,
+		nil,
+		commands.NewHostPathAliasSetCommand,
+		commands.NewHostPathAliasRemoveCommand,
+		commands.NewHostPathAliasListCommand,
+	)
+	if err != nil {
+		return nil, err
+	}
 	configCommand, err := cmdWithSubs(
 		ctx, svc,
 		commands.NewConfigCommand,
-		[]*cobra.Command{configAuthCommand, configRootsCommand},
+		[]*cobra.Command{configAuthCommand, configRootsCommand, hostPathAliasCommand},
 		commands.NewConfigShowCommand,
 		commands.NewSetDefaultHostCommand,
 		commands.NewSetDefaultOwnerCommand,

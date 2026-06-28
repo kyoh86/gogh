@@ -236,6 +236,19 @@ ambiguous repository names will be interpolated:
 
 NOTE: default host will be "github.com" if you don't set it.
 
+### Host Path Aliases
+
+You can shorten host directory names with `config host-path-alias set <host> <alias>`.
+
+For example, the following command stores `github.com/kyoh86/gogh` under `gh/kyoh86/gogh`:
+
+```console
+gogh config host-path-alias set github.com gh
+```
+
+Use `config host-path-alias list` to list aliases and `config host-path-alias remove <host>` to remove one.
+Existing repositories under the original host path are still detected.
+
 ### Flags
 
 You can set flags for each command in the configuration file. The flags are used to set the default
@@ -258,7 +271,8 @@ using `--private=false` in the command line.
 
 ## Directory structures
 
-Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo*.
+Local repositories are placed under `gogh.roots` with named `*host*/*user*/*repo*`.
+If a host path alias is configured, the host path element is replaced with the alias.
 
 ```
 ~/Projects             -- primary root
