@@ -47,9 +47,9 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 			setup: func(ctrl *gomock.Controller) (string, *git_mock.MockGitService) {
 				gitService := git_mock.NewMockGitService(ctrl)
 				gitService.EXPECT().IsBare(gomock.Any(), gomock.Any()).Return(true, nil)
-				// Create temp directory with .worktree subdirectory
+				// Create temp directory with .wt subdirectory
 				tmpDir := t.TempDir()
-				worktreeDir := filepath.Join(tmpDir, ".worktree")
+				worktreeDir := filepath.Join(tmpDir, ".wt")
 				if err := os.Mkdir(worktreeDir, 0o755); err != nil {
 					t.Fatal(err)
 				}
@@ -64,9 +64,9 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 			setup: func(ctrl *gomock.Controller) (string, *git_mock.MockGitService) {
 				gitService := git_mock.NewMockGitService(ctrl)
 				gitService.EXPECT().IsBare(gomock.Any(), gomock.Any()).Return(true, nil)
-				// Create temp directory with .worktree subdirectory
+				// Create temp directory with .wt subdirectory
 				tmpDir := t.TempDir()
-				worktreeDir := filepath.Join(tmpDir, ".worktree")
+				worktreeDir := filepath.Join(tmpDir, ".wt")
 				if err := os.Mkdir(worktreeDir, 0o755); err != nil {
 					t.Fatal(err)
 				}
@@ -88,11 +88,11 @@ func TestValidateExistingRepoStructure(t *testing.T) {
 			expectError:      false,
 		},
 		{
-			name: "bare repo without .worktree, requesting normal - no error",
+			name: "bare repo without .wt, requesting normal - no error",
 			setup: func(ctrl *gomock.Controller) (string, *git_mock.MockGitService) {
 				gitService := git_mock.NewMockGitService(ctrl)
 				gitService.EXPECT().IsBare(gomock.Any(), gomock.Any()).Return(true, nil)
-				// Create temp directory without .worktree subdirectory
+				// Create temp directory without .wt subdirectory
 				tmpDir := t.TempDir()
 				return tmpDir, gitService
 			},

@@ -11,7 +11,7 @@ import (
 type RepositoryStructure string
 
 const (
-	// StructureWorktree uses bare repository + .worktree directories.
+	// StructureWorktree uses bare repository + .wt directories.
 	StructureWorktree RepositoryStructure = "worktree"
 	// StructureNormal uses traditional git repository structure.
 	StructureNormal RepositoryStructure = "normal"
@@ -65,9 +65,9 @@ Repository structure to use, where [structure] can be one of "worktree" or "norm
 
 - worktree
 
-	Use bare repository + .worktree directories structure.
+	Use bare repository + .wt directories structure.
 	The git repository is stored as a bare repository, and working trees
-	are created in .worktree/<branch> directories.
+	are created in .wt/<branch> directories.
 
 - normal
 
