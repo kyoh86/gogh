@@ -16,7 +16,7 @@
 //
 // # Architecture
 //
-// Worktrees use a .worktree/ subdirectory structure. The Service interface provides
+// Worktrees use a .wt/ subdirectory structure. The Service interface provides
 // CRUD operations for worktrees. PathBuilder generates paths preserving branch
 // hierarchy. Format interface supports multiple output formats (default, full-path,
 // json, fields) for displaying worktree information.

@@ -112,7 +112,7 @@ func TestUsecase_Execute(t *testing.T) {
 					CreateBranch(gomock.Any(), pseudoPath, "main", "origin/HEAD").
 					Return(nil)
 				mockGit.EXPECT().
-					AddWorktree(gomock.Any(), pseudoPath, "main", ".worktree/main").
+					AddWorktree(gomock.Any(), pseudoPath, "main", ".wt/main").
 					Return(nil)
 				mockGit.EXPECT().
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).
@@ -248,7 +248,7 @@ func TestUsecase_Execute(t *testing.T) {
 					CreateBranch(gomock.Any(), pseudoPath, "main", "origin/HEAD").
 					Return(nil)
 				mockGit.EXPECT().
-					AddWorktree(gomock.Any(), pseudoPath, "main", ".worktree/main").
+					AddWorktree(gomock.Any(), pseudoPath, "main", ".wt/main").
 					Return(nil)
 				mockGit.EXPECT().
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).

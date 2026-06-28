@@ -13,6 +13,7 @@ import (
 	"github.com/kyoh86/gogh/v4/core/overlay"
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/workspace"
+	worktreecore "github.com/kyoh86/gogh/v4/core/worktree"
 )
 
 // Usecase provides common operations for repository manipulation
@@ -253,8 +254,8 @@ func cloneBareWithinTimeout(
 				return fmt.Errorf("creating main branch: %w", err)
 			}
 		}
-		// Create .worktree/main worktree
-		if err := gitService.AddWorktree(ctx, localPath, "main", ".worktree/main"); err != nil {
+		// Create .wt/main worktree
+		if err := gitService.AddWorktree(ctx, localPath, "main", filepath.Join(worktreecore.DirectoryName, "main")); err != nil {
 			return fmt.Errorf("creating main worktree: %w", err)
 		}
 		return nil
@@ -282,8 +283,8 @@ func cloneBareWithinTimeout(
 		if err := gitService.CreateBranch(ctx, path, "main", "origin/HEAD"); err != nil {
 			return fmt.Errorf("creating main branch: %w", err)
 		}
-		// Create .worktree/main worktree
-		if err := gitService.AddWorktree(ctx, path, "main", ".worktree/main"); err != nil {
+		// Create .wt/main worktree
+		if err := gitService.AddWorktree(ctx, path, "main", filepath.Join(worktreecore.DirectoryName, "main")); err != nil {
 			return fmt.Errorf("creating main worktree: %w", err)
 		}
 		if err := notify(StatusEmpty); err != nil {
@@ -316,15 +317,15 @@ func validateExistingRepoStructure(ctx context.Context, gitService git.GitServic
 	}
 
 	// Check if worktree structure exists
-	worktreeDir := filepath.Join(localPath, ".worktree")
+	worktreeDir := filepath.Join(localPath, worktreecore.DirectoryName)
 	hasWorktreeDir := false
 	if info, err := os.Stat(worktreeDir); err == nil && info.IsDir() {
 		hasWorktreeDir = true
 	}
 
 	// Determine existing structure
-	// Worktree structure: bare repo + .worktree directory
-	// Normal structure: non-bare repo OR no .worktree directory
+	// Worktree structure: bare repo + .wt directory
+	// Normal structure: non-bare repo OR no .wt directory
 	isWorktreeStructure := isBare && hasWorktreeDir
 
 	// Check for conflicts

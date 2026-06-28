@@ -104,15 +104,15 @@ autoload -Uz compinit && compinit
 `gogh` manages repositories in multiple servers that is pairs of an owner and a host name.
 To login in new server or logout, you should use `auth login`.
 
-### Recommended: Add `.worktree` to global git ignore
+### Recommended: Add `.wt` to global git ignore
 
-If you plan to use the worktree feature, it's recommended to add `.worktree` to your global git ignore to prevent it from being tracked by git:
+If you plan to use the worktree feature, it's recommended to add `.wt` to your global git ignore to prevent it from being tracked by git:
 
 ```console
-$ echo ".worktree" >> ~/.gitignore_global
+$ echo ".wt" >> ~/.gitignore_global
 ```
 
-This ensures that the `.worktree` directory (used for storing git worktrees) is not accidentally committed to your repositories.
+This ensures that the `.wt` directory (used for storing git worktrees) is not accidentally committed to your repositories.
 
 ## Available commands
 
@@ -549,17 +549,17 @@ Gogh provides a structured approach to managing worktrees:
 ```console
 # Add a worktree for a feature branch
 $ gogh worktree add github.com/kyoh86/gogh feature/new-ui
-# Creates: ~/Projects/github.com/kyoh86/gogh/.worktree/feature/new-ui
+# Creates: ~/Projects/github.com/kyoh86/gogh/.wt/feature/new-ui
 
 # Add a worktree for a branch with slashes
 $ gogh worktree add github.com/kyoh86/gogh feature/auth
-# Creates: ~/Projects/github.com/kyoh86/gogh/.worktree/feature/auth
+# Creates: ~/Projects/github.com/kyoh86/gogh/.wt/feature/auth
 
 # List all worktrees for a repository
 $ gogh worktree list github.com/kyoh86/gogh
 ~/Projects/github.com/kyoh86/gogh (main)
-~/Projects/github.com/kyoh86/gogh/.worktree/feature/new-ui (branch: feature/new-ui)
-~/Projects/github.com/kyoh86/gogh/.worktree/feature/auth (branch: feature/auth)
+~/Projects/github.com/kyoh86/gogh/.wt/feature/new-ui (branch: feature/new-ui)
+~/Projects/github.com/kyoh86/gogh/.wt/feature/auth (branch: feature/auth)
 
 # Remove a worktree
 $ gogh worktree remove github.com/kyoh86/gogh feature/new-ui
@@ -567,11 +567,11 @@ $ gogh worktree remove github.com/kyoh86/gogh feature/new-ui
 
 ### Directory Structure
 
-Worktrees are stored under the `.worktree` directory in your repository:
+Worktrees are stored under the `.wt` directory in your repository:
 
 ```
 ~/Projects/github.com/kyoh86/gogh/              # Repository root
-├── .worktree/                                   # Worktree directory
+├── .wt/                                   # Worktree directory
 │   ├── main/                                   # Main worktree (optional)
 │   ├── feature-new-ui/                         # Worktree for feature/new-ui
 │   └── feature/                                # Subdirectory for branches with slashes
@@ -581,19 +581,19 @@ Worktrees are stored under the `.worktree` directory in your repository:
 
 ### Recommended: Global Git Ignore
 
-To prevent the `.worktree` directory from being tracked by git, add it to your global git ignore:
+To prevent the `.wt` directory from being tracked by git, add it to your global git ignore:
 
 ```console
-$ echo ".worktree" >> ~/.gitignore_global
+$ echo ".wt" >> ~/.gitignore_global
 ```
 
 ### Branch Names with Slashes
 
 When a branch name contains slashes (e.g., `feature/auth`), Gogh creates subdirectories to preserve the branch hierarchy:
 
-- Branch: `feature-x` → Path: `.worktree/feature-x/`
-- Branch: `feature/auth` → Path: `.worktree/feature/auth/`
-- Branch: `bugfix/crash` → Path: `.worktree/bugfix/crash/`
+- Branch: `feature-x` → Path: `.wt/feature-x/`
+- Branch: `feature/auth` → Path: `.wt/feature/auth/`
+- Branch: `bugfix/crash` → Path: `.wt/bugfix/crash/`
 
 This approach avoids naming conflicts (e.g., `feature-x` vs `feature/x`) and maintains the logical structure of your branches.
 
@@ -633,11 +633,11 @@ $ gogh worktree add github.com/kyoh86/gogh feature/refactor-api
 
 # Work on both features simultaneously
 # Terminal 1:
-cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-new-ui
+cd ~/Projects/github.com/kyoh86/gogh/.wt/feature-new-ui
 # Develop new UI...
 
 # Terminal 2:
-cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-refactor-api
+cd ~/Projects/github.com/kyoh86/gogh/.wt/feature-refactor-api
 # Refactor API...
 ```
 
@@ -645,17 +645,17 @@ cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-refactor-api
 
 ```console
 # You're working on a feature
-$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-new-ui
+$ cd ~/Projects/github.com/kyoh86/gogh/.wt/feature-new-ui
 
 # A critical bug is reported; create a worktree for the fix
 $ gogh worktree add github.com/kyoh86/gogh hotfix/crash-bug
 
 # Fix the bug in the hotfix worktree
-$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/hotfix-crash-bug
+$ cd ~/Projects/github.com/kyoh86/gogh/.wt/hotfix-crash-bug
 # Make the fix, commit, and push
 
 # Return to your feature work
-$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/feature-new-ui
+$ cd ~/Projects/github.com/kyoh86/gogh/.wt/feature-new-ui
 ```
 
 #### Testing Different Branches
@@ -666,10 +666,10 @@ $ gogh worktree add github.com/kyoh86/gogh release/v1.0
 $ gogh worktree add github.com/kyoh86/gogh release/v2.0
 
 # Test against different versions without recompiling
-$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/release-v1.0
+$ cd ~/Projects/github.com/kyoh86/gogh/.wt/release-v1.0
 # Run tests for v1.0...
 
-$ cd ~/Projects/github.com/kyoh86/gogh/.worktree/release-v2.0
+$ cd ~/Projects/github.com/kyoh86/gogh/.wt/release-v2.0
 # Run tests for v2.0...
 ```
 

@@ -114,7 +114,7 @@ func TestUsecase_Execute(t *testing.T) {
 				mockGit.EXPECT().Fetch(gomock.Any(), pseudoPath, "origin").Return(nil)
 				mockGit.EXPECT().SetRemoteHead(gomock.Any(), pseudoPath, "origin").Return(nil)
 				mockGit.EXPECT().CreateBranch(gomock.Any(), pseudoPath, "main", "origin/HEAD").Return(nil)
-				mockGit.EXPECT().AddWorktree(gomock.Any(), pseudoPath, "main", ".worktree/main").Return(nil)
+				mockGit.EXPECT().AddWorktree(gomock.Any(), pseudoPath, "main", ".wt/main").Return(nil)
 				mockGit.EXPECT().SetDefaultRemotes(gomock.Any(), pseudoPath, []string{pseudoCloneURL}).Return(nil)
 
 				// Hook finds the repository by reference

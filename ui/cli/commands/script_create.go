@@ -30,11 +30,28 @@ func NewScriptCreateCommand(_ context.Context, svc *service.ServiceSet) (*cobra.
 
 			// Write initial template
 			initialContent := `-- Gogh script
--- Available globals:
---   gogh.repository.owner: Repository owner
---   gogh.repository.name: Repository name
---   gogh.repository.url: Repository URL
---   gogh.repository.path: Local repository path
+---@class gogh.Repo
+---@field full_path string Local repository full-path
+---@field path string Local repository path
+---@field host string Repository host
+---@field owner string Repository owner
+---@field name string Repository name
+
+---@class gogh.Hook
+---@field id string Hook UUID
+---@field name string Hook name
+---@field repoPattern string Pattern that matched
+---@field triggerEvent string Event that triggered the hook
+---@field operationType string Type of operation that triggered the hook: "script" always.
+---@field operationId string Operation UUID (script UUID)
+
+---@class gogh
+---@field repo gogh.Repo
+---@field hook gogh.Hook
+---@field parent? gogh.Repo|nil
+
+---@type gogh
+_G.gogh = _G.gogh or {}
 
 `
 			if _, err := tmpFile.WriteString(initialContent); err != nil {

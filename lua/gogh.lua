@@ -18,24 +18,5 @@
 ---@field hook gogh.Hook
 ---@field parent? gogh.Repo|nil
 
----@type gogh.Repo
-local repo = {
-  full_path = "",
-  path = "",
-  host = "",
-  owner = "",
-  name = "",
-}
-
----@type gogh.Hook
-local hook = {
-  id = "",
-  name = "",
-  repoPattern = "",
-  triggerEvent = "",
-  operationType = "script",
-  operationId = "",
-}
-
 ---@type gogh
-_G.gogh = { repo = repo, hook = hook }
+_G.gogh = _G.gogh or {}

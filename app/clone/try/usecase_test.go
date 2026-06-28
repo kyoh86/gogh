@@ -145,7 +145,7 @@ func TestTryClone(t *testing.T) {
 				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
-				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".worktree/main").Return(nil)
+				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".wt/main").Return(nil)
 
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
@@ -269,7 +269,7 @@ func TestTryClone(t *testing.T) {
 				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
-				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".worktree/main").Return(nil)
+				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".wt/main").Return(nil)
 
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
@@ -310,7 +310,7 @@ func TestTryClone(t *testing.T) {
 				// New bare + worktree flow
 				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
-				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".worktree/main").Return(nil)
+				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".wt/main").Return(nil)
 
 				// Remote setup
 				mgs.EXPECT().SetDefaultRemotes(gomock.Any(), localPath, []string{repo.CloneURL}).Return(nil)
