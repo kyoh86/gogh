@@ -134,6 +134,62 @@ func TestFindByReference(t *testing.T) {
 	}
 }
 
+func TestFindByReferenceWithHostPathAliases(t *testing.T) {
+	tmpDir := setupTestEnvironment(t)
+	defer os.RemoveAll(tmpDir)
+
+	root := filepath.Join(tmpDir, "root")
+	repoPath := filepath.Join(root, "gh", "kyoh86", "gogh")
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
+		t.Fatalf("Failed to create test repository directory: %v", err)
+	}
+
+	ctrl := gomock.NewController(t)
+	mockWS := workspace_mock.NewMockWorkspaceService(ctrl)
+	layout := filesystem.NewLayoutServiceWithHostPathAliases(root, map[string]string{
+		"github.com": "gh",
+	})
+	mockWS.EXPECT().GetRoots().Return([]workspace.Root{root}).AnyTimes()
+	mockWS.EXPECT().GetLayoutFor(root).Return(layout).AnyTimes()
+
+	finder := filesystem.NewFinderService()
+	loc, err := finder.FindByReference(context.Background(), mockWS, repository.NewReference("github.com", "kyoh86", "gogh"))
+	if err != nil {
+		t.Fatalf("Expected to find repository, got error: %v", err)
+	}
+	if loc.FullPath() != repoPath {
+		t.Errorf("Expected path %s, got %s", repoPath, loc.FullPath())
+	}
+}
+
+func TestFindByReferenceWithLegacyPathAndHostPathAliases(t *testing.T) {
+	tmpDir := setupTestEnvironment(t)
+	defer os.RemoveAll(tmpDir)
+
+	root := filepath.Join(tmpDir, "root")
+	repoPath := filepath.Join(root, "github.com", "kyoh86", "gogh")
+	if err := os.MkdirAll(repoPath, 0o755); err != nil {
+		t.Fatalf("Failed to create test repository directory: %v", err)
+	}
+
+	ctrl := gomock.NewController(t)
+	mockWS := workspace_mock.NewMockWorkspaceService(ctrl)
+	layout := filesystem.NewLayoutServiceWithHostPathAliases(root, map[string]string{
+		"github.com": "gh",
+	})
+	mockWS.EXPECT().GetRoots().Return([]workspace.Root{root}).AnyTimes()
+	mockWS.EXPECT().GetLayoutFor(root).Return(layout).AnyTimes()
+
+	finder := filesystem.NewFinderService()
+	loc, err := finder.FindByReference(context.Background(), mockWS, repository.NewReference("github.com", "kyoh86", "gogh"))
+	if err != nil {
+		t.Fatalf("Expected to find repository, got error: %v", err)
+	}
+	if loc.FullPath() != repoPath {
+		t.Errorf("Expected path %s, got %s", repoPath, loc.FullPath())
+	}
+}
+
 func TestFindByPath(t *testing.T) {
 	// Set up test environment
 	tmpDir := setupTestEnvironment(t)

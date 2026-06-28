@@ -12,6 +12,9 @@ Now gogh is executed in the following context.
 
 {{range .roots}}  {{.}}
 {{end}}
+  Host path aliases:
+  {{range $host, $alias := .hostPathAliases}}  {{$host}}: {{$alias}}
+  {{end}}
 ## Tokens
   (from {{.tokenSource}})
 
