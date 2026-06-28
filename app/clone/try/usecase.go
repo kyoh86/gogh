@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	pathutil "path"
 	"path/filepath"
 	"time"
 
@@ -255,7 +256,7 @@ func cloneBareWithinTimeout(
 			}
 		}
 		// Create .wt/main worktree
-		if err := gitService.AddWorktree(ctx, localPath, "main", filepath.Join(worktreecore.DirectoryName, "main")); err != nil {
+		if err := gitService.AddWorktree(ctx, localPath, "main", pathutil.Join(worktreecore.DirectoryName, "main")); err != nil {
 			return fmt.Errorf("creating main worktree: %w", err)
 		}
 		return nil
@@ -284,7 +285,7 @@ func cloneBareWithinTimeout(
 			return fmt.Errorf("creating main branch: %w", err)
 		}
 		// Create .wt/main worktree
-		if err := gitService.AddWorktree(ctx, path, "main", filepath.Join(worktreecore.DirectoryName, "main")); err != nil {
+		if err := gitService.AddWorktree(ctx, path, "main", pathutil.Join(worktreecore.DirectoryName, "main")); err != nil {
 			return fmt.Errorf("creating main worktree: %w", err)
 		}
 		if err := notify(StatusEmpty); err != nil {
