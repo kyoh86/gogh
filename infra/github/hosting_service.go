@@ -169,7 +169,7 @@ func (s *HostingService) GetTokenFor(ctx context.Context, host, owner string) (s
 			}
 			tokenOwner, token, err = s.getTokenForCore(ctx, host, defaultOwner)
 			if err != nil {
-				return "", token, fmt.Errorf("getting default token: %w", inErr)
+				return "", token, fmt.Errorf("getting default token for %s/%s: %w", host, defaultOwner, err)
 			} else {
 				s.knownOwners[key] = tokenOwner
 			}
