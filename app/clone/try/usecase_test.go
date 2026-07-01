@@ -142,6 +142,7 @@ func TestTryClone(t *testing.T) {
 				// Clone
 				mgs.EXPECT().Clone(gomock.Any(), repo.CloneURL, localPath, gomock.Any()).Return(nil)
 				// New bare + worktree flow
+				mgs.EXPECT().EnsureRemoteFetchRefspec(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
@@ -266,6 +267,7 @@ func TestTryClone(t *testing.T) {
 				mls.EXPECT().CreateRepositoryFolder(ref).Return(localPath, nil)
 				mgs.EXPECT().Init(gomock.Any(), repo.CloneURL, localPath, true, gomock.Any()).Return(nil)
 				// New bare + worktree flow
+				mgs.EXPECT().EnsureRemoteFetchRefspec(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
@@ -308,6 +310,7 @@ func TestTryClone(t *testing.T) {
 				mgs.EXPECT().Clone(gomock.Any(), repo.CloneURL, localPath, gomock.Any()).Return(nil)
 				mgs.EXPECT().SetRemoteHead(gomock.Any(), localPath, "origin").Return(nil)
 				// New bare + worktree flow
+				mgs.EXPECT().EnsureRemoteFetchRefspec(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().Fetch(gomock.Any(), localPath, "origin").Return(nil)
 				mgs.EXPECT().CreateBranch(gomock.Any(), localPath, "main", "origin/HEAD").Return(nil)
 				mgs.EXPECT().AddWorktree(gomock.Any(), localPath, "main", ".wt/main").Return(nil)
@@ -317,6 +320,8 @@ func TestTryClone(t *testing.T) {
 
 				// Parent remote setup
 				mgs.EXPECT().SetRemotes(gomock.Any(), localPath, "upstream", []string{repo.Parent.CloneURL}).Return(nil)
+				mgs.EXPECT().EnsureRemoteFetchRefspec(gomock.Any(), localPath, "upstream").Return(nil)
+				mgs.EXPECT().Fetch(gomock.Any(), localPath, "upstream").Return(nil)
 
 				return mhs, mws, mos, mgs
 			},
@@ -329,9 +334,9 @@ func TestTryClone(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mhs, mws, mgs, mos := tc.setupMocks(ctrl)
+			mhs, mws, mos, mgs := tc.setupMocks(ctrl)
 
-			svc := try.NewUsecase(mhs, mws, mgs, mos)
+			svc := try.NewUsecase(mhs, mws, mos, mgs)
 
 			repo := &hosting.Repository{
 				Ref:      repository.NewReference("github.com", "user", "repo"),

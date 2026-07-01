@@ -216,6 +216,86 @@ func TestSetRemotes(t *testing.T) {
 	}
 }
 
+func TestSetRemotesPreservesFetchRefspec(t *testing.T) {
+	ctx := context.Background()
+	tempDir := setupTempDir(t)
+	defer os.RemoveAll(tempDir)
+
+	service := testtarget.NewService()
+
+	repoPath := filepath.Join(tempDir, "repo")
+	err := service.Init(ctx, "https://github.com/kyoh86/test-repo.git", repoPath, false, coregit.InitOptions{})
+	if err != nil {
+		t.Fatalf("Failed to initialize repository: %v", err)
+	}
+	if err := service.EnsureRemoteFetchRefspec(ctx, repoPath, git.DefaultRemoteName); err != nil {
+		t.Fatalf("Failed to ensure fetch refspec: %v", err)
+	}
+
+	err = service.SetDefaultRemotes(ctx, repoPath, []string{"https://github.com/kyoh86/updated-repo.git"})
+	if err != nil {
+		t.Fatalf("Failed to set default remote: %v", err)
+	}
+
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		t.Fatalf("Failed to open repository: %v", err)
+	}
+	remote, err := repo.Remote(git.DefaultRemoteName)
+	if err != nil {
+		t.Fatalf("Failed to get default remote: %v", err)
+	}
+	if got := remote.Config().URLs[0]; got != "https://github.com/kyoh86/updated-repo.git" {
+		t.Errorf("Expected remote URL %q, got %q", "https://github.com/kyoh86/updated-repo.git", got)
+	}
+	wantFetch := config.RefSpec("+refs/heads/*:refs/remotes/origin/*")
+	if len(remote.Config().Fetch) != 1 || remote.Config().Fetch[0] != wantFetch {
+		t.Errorf("Expected fetch refspec %q, got %v", wantFetch, remote.Config().Fetch)
+	}
+}
+
+func TestEnsureRemoteFetchRefspec(t *testing.T) {
+	ctx := context.Background()
+	tempDir := setupTempDir(t)
+	defer os.RemoveAll(tempDir)
+
+	service := testtarget.NewService()
+
+	repoPath := filepath.Join(tempDir, "repo")
+	err := service.Init(ctx, "https://github.com/kyoh86/test-repo.git", repoPath, false, coregit.InitOptions{})
+	if err != nil {
+		t.Fatalf("Failed to initialize repository: %v", err)
+	}
+
+	err = service.SetRemotes(ctx, repoPath, "upstream", []string{"https://github.com/upstream/test-repo.git"})
+	if err != nil {
+		t.Fatalf("Failed to set upstream remote: %v", err)
+	}
+	if err := service.EnsureRemoteFetchRefspec(ctx, repoPath, "upstream"); err != nil {
+		t.Fatalf("Failed to ensure upstream fetch refspec: %v", err)
+	}
+	if err := service.EnsureRemoteFetchRefspec(ctx, repoPath, "upstream"); err != nil {
+		t.Fatalf("Failed to ensure upstream fetch refspec twice: %v", err)
+	}
+
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		t.Fatalf("Failed to open repository: %v", err)
+	}
+	remote, err := repo.Remote("upstream")
+	if err != nil {
+		t.Fatalf("Failed to get upstream remote: %v", err)
+	}
+	wantFetch := config.RefSpec("+refs/heads/*:refs/remotes/upstream/*")
+	if len(remote.Config().Fetch) != 1 || remote.Config().Fetch[0] != wantFetch {
+		t.Errorf("Expected fetch refspec %q, got %v", wantFetch, remote.Config().Fetch)
+	}
+
+	if err := service.EnsureRemoteFetchRefspec(ctx, repoPath, "missing"); err == nil {
+		t.Fatal("Expected error for missing remote, got nil")
+	}
+}
+
 func TestSetDefaultRemotes(t *testing.T) {
 	ctx := context.Background()
 	tempDir := setupTempDir(t)

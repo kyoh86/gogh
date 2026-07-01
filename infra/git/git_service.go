@@ -148,6 +148,29 @@ func (s *GitService) Fetch(ctx context.Context, repoPath string, remote string) 
 	return err
 }
 
+// EnsureRemoteFetchRefspec configures a remote to create remote-tracking refs when fetched.
+func (s *GitService) EnsureRemoteFetchRefspec(_ context.Context, repoPath string, remote string) error {
+	repo, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return err
+	}
+	cfg, err := repo.Config()
+	if err != nil {
+		return err
+	}
+	if cfg.Remotes == nil {
+		return fmt.Errorf("remote %q not found", remote)
+	}
+	remoteConfig, ok := cfg.Remotes[remote]
+	if !ok {
+		return fmt.Errorf("remote %q not found", remote)
+	}
+	remoteConfig.Fetch = []config.RefSpec{
+		config.RefSpec(fmt.Sprintf("+refs/heads/*:refs/remotes/%s/*", remote)),
+	}
+	return repo.SetConfig(cfg)
+}
+
 // CreateBranch creates a new branch from a starting point.
 func (s *GitService) CreateBranch(_ context.Context, repoPath string, branchName string, startPoint string) error {
 	repo, err := git.PlainOpen(repoPath)
@@ -195,10 +218,14 @@ func (s *GitService) SetRemotes(
 	if cfg.Remotes == nil {
 		cfg.Remotes = map[string]*config.RemoteConfig{}
 	}
-	cfg.Remotes[name] = &config.RemoteConfig{
-		Name: name,
-		URLs: remotes,
+	remoteConfig := cfg.Remotes[name]
+	if remoteConfig == nil {
+		remoteConfig = &config.RemoteConfig{
+			Name: name,
+		}
 	}
+	remoteConfig.URLs = remotes
+	cfg.Remotes[name] = remoteConfig
 	return repo.SetConfig(cfg)
 }
 

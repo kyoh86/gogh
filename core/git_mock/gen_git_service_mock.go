@@ -99,6 +99,20 @@ func (mr *MockGitServiceMockRecorder) CreateBranch(ctx, repoPath, branchName, st
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBranch", reflect.TypeOf((*MockGitService)(nil).CreateBranch), ctx, repoPath, branchName, startPoint)
 }
 
+// EnsureRemoteFetchRefspec mocks base method.
+func (m *MockGitService) EnsureRemoteFetchRefspec(ctx context.Context, repoPath, remote string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureRemoteFetchRefspec", ctx, repoPath, remote)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureRemoteFetchRefspec indicates an expected call of EnsureRemoteFetchRefspec.
+func (mr *MockGitServiceMockRecorder) EnsureRemoteFetchRefspec(ctx, repoPath, remote any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureRemoteFetchRefspec", reflect.TypeOf((*MockGitService)(nil).EnsureRemoteFetchRefspec), ctx, repoPath, remote)
+}
+
 // Fetch mocks base method.
 func (m *MockGitService) Fetch(ctx context.Context, repoPath, remote string) error {
 	m.ctrl.T.Helper()

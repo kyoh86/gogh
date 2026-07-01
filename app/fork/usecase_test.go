@@ -78,7 +78,14 @@ func TestUsecase_Execute(t *testing.T) {
 					Return(targetRefWithAlias, nil).AnyTimes()
 
 				// Fork repository
-				forkedRepo := &hosting.Repository{Ref: targetRef}
+				forkedRepo := &hosting.Repository{
+					Ref:      targetRef,
+					CloneURL: "https://github.com/target/repo.git",
+					Parent: &hosting.ParentRepository{
+						Ref:      sourceRef,
+						CloneURL: "https://github.com/source/repo.git",
+					},
+				}
 				mockHosting.EXPECT().
 					ForkRepository(gomock.Any(), sourceRef, targetRef, gomock.Any()).
 					Return(forkedRepo, nil)
@@ -103,6 +110,9 @@ func TestUsecase_Execute(t *testing.T) {
 					Return(nil)
 				// New bare + worktree flow
 				mockGit.EXPECT().
+					EnsureRemoteFetchRefspec(gomock.Any(), pseudoPath, "origin").
+					Return(nil)
+				mockGit.EXPECT().
 					Fetch(gomock.Any(), pseudoPath, "origin").
 					Return(nil)
 				mockGit.EXPECT().
@@ -116,6 +126,15 @@ func TestUsecase_Execute(t *testing.T) {
 					Return(nil)
 				mockGit.EXPECT().
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).
+					Return(nil)
+				mockGit.EXPECT().
+					SetRemotes(gomock.Any(), pseudoPath, "upstream", []string{forkedRepo.Parent.CloneURL}).
+					Return(nil)
+				mockGit.EXPECT().
+					EnsureRemoteFetchRefspec(gomock.Any(), pseudoPath, "upstream").
+					Return(nil)
+				mockGit.EXPECT().
+					Fetch(gomock.Any(), pseudoPath, "upstream").
 					Return(nil)
 
 				// Hook finds the repository by reference
@@ -213,7 +232,12 @@ func TestUsecase_Execute(t *testing.T) {
 
 				// Fork repository
 				forkedRepo := &hosting.Repository{
-					Ref: repository.NewReference("github.com", "default-owner", "repo"),
+					Ref:      repository.NewReference("github.com", "default-owner", "repo"),
+					CloneURL: "https://github.com/default-owner/repo.git",
+					Parent: &hosting.ParentRepository{
+						Ref:      sourceRef,
+						CloneURL: "https://github.com/source/repo.git",
+					},
 				}
 				mockHosting.EXPECT().
 					ForkRepository(gomock.Any(), sourceRef, defaultRef, gomock.Any()).
@@ -239,6 +263,9 @@ func TestUsecase_Execute(t *testing.T) {
 					Return(nil)
 				// New bare + worktree flow
 				mockGit.EXPECT().
+					EnsureRemoteFetchRefspec(gomock.Any(), pseudoPath, "origin").
+					Return(nil)
+				mockGit.EXPECT().
 					Fetch(gomock.Any(), pseudoPath, "origin").
 					Return(nil)
 				mockGit.EXPECT().
@@ -252,6 +279,15 @@ func TestUsecase_Execute(t *testing.T) {
 					Return(nil)
 				mockGit.EXPECT().
 					SetDefaultRemotes(gomock.Any(), gomock.Any(), []string{forkedRepo.CloneURL}).
+					Return(nil)
+				mockGit.EXPECT().
+					SetRemotes(gomock.Any(), pseudoPath, "upstream", []string{forkedRepo.Parent.CloneURL}).
+					Return(nil)
+				mockGit.EXPECT().
+					EnsureRemoteFetchRefspec(gomock.Any(), pseudoPath, "upstream").
+					Return(nil)
+				mockGit.EXPECT().
+					Fetch(gomock.Any(), pseudoPath, "upstream").
 					Return(nil)
 
 				// Hook finds the repository by reference

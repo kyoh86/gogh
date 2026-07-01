@@ -37,6 +37,9 @@ type GitService interface {
 	// Fetch fetches updates from a remote repository
 	Fetch(ctx context.Context, repoPath string, remote string) error
 
+	// EnsureRemoteFetchRefspec configures a remote to create remote-tracking refs when fetched
+	EnsureRemoteFetchRefspec(ctx context.Context, repoPath string, remote string) error
+
 	// SetRemoteHead sets the HEAD symbolic reference for a remote
 	SetRemoteHead(ctx context.Context, repoPath string, remote string) error
 
