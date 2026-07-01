@@ -111,6 +111,7 @@ func TestUsecase_Execute(t *testing.T) {
 				mockGit.EXPECT().AuthenticateWithUsernamePassword(gomock.Any(), "kyoh86", "").Return(mockGit, nil)
 				mockGit.EXPECT().Clone(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				// New bare + worktree flow
+				mockGit.EXPECT().EnsureRemoteFetchRefspec(gomock.Any(), pseudoPath, "origin").Return(nil)
 				mockGit.EXPECT().Fetch(gomock.Any(), pseudoPath, "origin").Return(nil)
 				mockGit.EXPECT().SetRemoteHead(gomock.Any(), pseudoPath, "origin").Return(nil)
 				mockGit.EXPECT().CreateBranch(gomock.Any(), pseudoPath, "main", "origin/HEAD").Return(nil)
