@@ -50,6 +50,22 @@ Gogh is a GitHub repository manager (ghq-like) with automation features (overlay
 - make install: build/install
 - gofmt: use gofumpt
 
+## Release Flow
+- Always inspect workflows before releasing: `.github/workflows/release.yml` and `.github/workflows/release-on-tag.yml`.
+- Always fetch and inspect remote tags before deciding the next version:
+  `git fetch origin --tags` then `git tag --sort=-version:refname | head`.
+- Do not create or push release tags locally for the normal workflow. The release workflows create the annotated tag and run GoReleaser.
+- If local `HEAD` is not pushed to the target branch, push the branch first. Running a workflow on an old remote commit releases the wrong code.
+- Stable semver bumps use `release.yml` with `method=major`, `minor`, or `patch`.
+  Example: `gh workflow run release.yml --ref main -f method=patch`.
+- Explicit versions and prereleases use `release-on-tag.yml` with `next-version`.
+  Examples: `v5.0.0-alpha.5 -> v5.0.0-alpha.6`, `v5.0.0-beta.1`, `v5.0.0-rc.1`, or a one-off exact tag.
+  Command: `gh workflow run release-on-tag.yml --ref v5 -f next-version=v5.0.0-alpha.6`.
+- Choose the target branch/ref intentionally:
+  `main` for current stable releases, `v5` for v5 prerelease work, or the maintained release branch for older lines.
+- The workflows wait for commit status `releasable`; if that status fails or never appears, do not bypass it by manually tagging.
+- Before triggering a release, summarize the chosen latest tag, next tag, target branch, workflow, and whether the branch needs pushing.
+
 ## Testing Conventions (from CLAUDE.md)
 - Use standard library testing (no testify).
 - Public funcs: *_test.go in separate package.
