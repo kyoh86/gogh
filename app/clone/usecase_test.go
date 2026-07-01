@@ -262,13 +262,14 @@ func TestUsecase_Execute(t *testing.T) {
 			})
 
 			// Verify results
-			if tt.errorContains == "" {
+			switch {
+			case tt.errorContains == "":
 				if err != nil {
 					t.Errorf("Expected no error but got: %v", err)
 				}
-			} else if err == nil {
+			case err == nil:
 				t.Errorf("Expected an error but got none")
-			} else if !strings.Contains(err.Error(), tt.errorContains) && errors.Unwrap(err) == nil {
+			case !strings.Contains(err.Error(), tt.errorContains) && errors.Unwrap(err) == nil:
 				t.Errorf("Expected error containing: %v, got: %v", tt.errorContains, err)
 			}
 		})
