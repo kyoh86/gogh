@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/core/auth"
+	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/git_mock"
 	"github.com/kyoh86/gogh/v4/core/hook"
 	"github.com/kyoh86/gogh/v4/core/hook_mock"
@@ -166,7 +168,7 @@ func TestUsecase_Execute(t *testing.T) {
 			errorContains: "invalid reference format",
 		},
 		{
-			name:         "Error: Repository fetch error",
+			name:         "Success: Direct clone fallback when repository metadata fetch fails",
 			refWithAlias: "github.com/kyoh86/not-found",
 			setupMocks: func(
 				mockHosting *hosting_mock.MockHostingService,
@@ -179,20 +181,53 @@ func TestUsecase_Execute(t *testing.T) {
 				mockRefParser *repository_mock.MockReferenceParser,
 				mockGit *git_mock.MockGitService,
 			) {
-				// Parse reference
+				tmpDir := t.TempDir()
+				ref := repository.NewReference("github.com", "kyoh86", "not-found")
 				mockRefParser.EXPECT().
 					ParseWithAlias("github.com/kyoh86/not-found").
 					Return(&repository.ReferenceWithAlias{
-						Reference: repository.NewReference("github.com", "kyoh86", "not-found"),
+						Reference: ref,
 						Alias:     nil,
-					}, nil)
+					}, nil).
+					Times(2)
 
-				// Repository fetch error
 				mockHosting.EXPECT().
-					GetRepository(gomock.Any(), repository.NewReference("github.com", "kyoh86", "not-found")).
+					GetRepository(gomock.Any(), ref).
 					Return(&hosting.Repository{}, errors.New("repository not found"))
+				mockHosting.EXPECT().
+					GetURLOf(ref).
+					Return(mustParseURL(t, "https://github.com/kyoh86/not-found"), nil)
+
+				pseudoCloneURL := "https://github.com/kyoh86/not-found.git"
+				pseudoPath := filepath.Join(tmpDir, "github.com/kyoh86/not-found")
+				mockLayout.EXPECT().PathFor(ref).Return(pseudoPath)
+				mockWorkspace.EXPECT().GetPrimaryLayout().Return(mockLayout)
+
+				mockGit.EXPECT().
+					Clone(gomock.Any(), pseudoCloneURL, pseudoPath, gomock.Any()).
+					DoAndReturn(func(_ context.Context, _ string, _ string, opts git.CloneOptions) error {
+						if !opts.IsBare {
+							t.Fatalf("expected bare clone for worktree mode")
+						}
+						if !opts.UseSystemGit {
+							t.Fatalf("expected direct fallback to use system git")
+						}
+						return nil
+					})
+				mockGit.EXPECT().AddWorktree(gomock.Any(), pseudoPath, "main", ".wt/main").Return(nil)
+				mockGit.EXPECT().SetDefaultRemotes(gomock.Any(), pseudoPath, []string{pseudoCloneURL}).Return(nil)
+
+				mockFinder.EXPECT().
+					FindByReference(gomock.Any(), gomock.Any(), ref).
+					Return(repository.NewLocation(
+						pseudoPath,
+						"github.com",
+						"kyoh86",
+						"not-found",
+					), nil)
+				mockHook.EXPECT().
+					ListFor(ref, hook.EventPostClone).Return(func(yield func(hook.Hook, error) bool) {})
 			},
-			errorContains: "repository not found",
 		},
 	}
 
@@ -227,11 +262,24 @@ func TestUsecase_Execute(t *testing.T) {
 			})
 
 			// Verify results
-			if err == nil {
+			if tt.errorContains == "" {
+				if err != nil {
+					t.Errorf("Expected no error but got: %v", err)
+				}
+			} else if err == nil {
 				t.Errorf("Expected an error but got none")
-			} else if tt.errorContains != "" && !strings.Contains(err.Error(), tt.errorContains) && errors.Unwrap(err) == nil {
+			} else if !strings.Contains(err.Error(), tt.errorContains) && errors.Unwrap(err) == nil {
 				t.Errorf("Expected error containing: %v, got: %v", tt.errorContains, err)
 			}
 		})
 	}
+}
+
+func mustParseURL(t *testing.T, raw string) *url.URL {
+	t.Helper()
+	u, err := url.Parse(raw)
+	if err != nil {
+		t.Fatalf("parse URL: %v", err)
+	}
+	return u
 }

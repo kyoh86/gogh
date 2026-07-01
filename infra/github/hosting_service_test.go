@@ -3,6 +3,7 @@ package github_test
 import (
 	"context"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/core/auth"
@@ -187,6 +188,9 @@ func TestGetTokenFor(t *testing.T) {
 		_, _, err := service.GetTokenFor(ctx, ref.Host(), ref.Owner())
 		if err == nil {
 			t.Error("Expected error for missing token, got nil")
+		}
+		if !strings.Contains(err.Error(), "getting default token for github.com/default-owner: no token found") {
+			t.Errorf("Expected missing default token error, got %v", err)
 		}
 	})
 }
