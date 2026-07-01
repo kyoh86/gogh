@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/git"
 	"github.com/kyoh86/gogh/v4/core/hosting"
 	"github.com/kyoh86/gogh/v4/core/overlay"
@@ -76,6 +77,8 @@ type Options struct {
 	Timeout time.Duration
 	// Use worktree for the repository
 	Worktree bool
+	// Direct clones without hosting metadata or hosting-managed authentication.
+	Direct bool
 }
 
 // Execute attempts to clone a repository with retry logic.
@@ -93,14 +96,20 @@ func (uc *Usecase) Execute(
 	layout := uc.workspaceService.GetPrimaryLayout()
 	localPath := layout.PathFor(targetRef)
 
-	// Get the user and token for authentication
-	user, token, err := uc.hostingService.GetTokenFor(ctx, repo.Ref.Host(), repo.Ref.Owner())
-	if err != nil {
-		return err
-	}
-	gitService, err := uc.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
-	if err != nil {
-		return err
+	gitService := uc.gitService
+	var err error
+	if !opts.Direct {
+		// Get the user and token for authentication
+		var user string
+		var token auth.Token
+		user, token, err = uc.hostingService.GetTokenFor(ctx, repo.Ref.Host(), repo.Ref.Owner())
+		if err != nil {
+			return err
+		}
+		gitService, err = uc.gitService.AuthenticateWithUsernamePassword(ctx, user, token.AccessToken)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Validate existing repository structure before cloning
@@ -109,7 +118,7 @@ func (uc *Usecase) Execute(
 	}
 
 	// Perform git clone operation
-	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Worktree, opts.Timeout, opts.Notify); err != nil {
+	if err := cloneWithRetry(ctx, gitService, layout, repo.Ref, repo.CloneURL, localPath, opts.Worktree, opts.Direct, opts.Timeout, opts.Notify); err != nil {
 		return fmt.Errorf("cloning: %w", err)
 	}
 
@@ -144,6 +153,7 @@ func cloneWithRetry(
 	ref repository.Reference,
 	cloneURL, localPath string,
 	worktree bool,
+	direct bool,
 	timeout time.Duration,
 	notify Notify,
 ) error {
@@ -161,7 +171,7 @@ func cloneWithRetry(
 	}
 
 	for {
-		if err := cloneCore(ctx, gitService, cloneURL, localPath, timeout, notify, layout, ref); !errors.Is(err, errContinue) {
+		if err := cloneCore(ctx, gitService, cloneURL, localPath, direct, timeout, notify, layout, ref); !errors.Is(err, errContinue) {
 			return err
 		}
 	}
@@ -174,6 +184,7 @@ func cloneWithinTimeout(
 	gitService git.GitService,
 	cloneURL string,
 	localPath string,
+	direct bool,
 	timeout time.Duration,
 	notify Notify,
 	layout workspace.LayoutService,
@@ -181,7 +192,7 @@ func cloneWithinTimeout(
 ) error {
 	toctx, tocancel := context.WithTimeout(ctx, timeout)
 
-	err := gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{})
+	err := gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{UseSystemGit: direct})
 	tocancel()
 	switch {
 	case errors.Is(err, git.ErrRepositoryNotExists), errors.Is(err, context.DeadlineExceeded):
@@ -220,6 +231,7 @@ func cloneBareWithinTimeout(
 	gitService git.GitService,
 	cloneURL string,
 	localPath string,
+	direct bool,
 	timeout time.Duration,
 	notify Notify,
 	layout workspace.LayoutService,
@@ -228,7 +240,8 @@ func cloneBareWithinTimeout(
 	toctx, tocancel := context.WithTimeout(ctx, timeout)
 
 	err := gitService.Clone(toctx, cloneURL, localPath, git.CloneOptions{
-		IsBare: true,
+		IsBare:       true,
+		UseSystemGit: direct,
 	})
 	tocancel()
 	switch {
@@ -245,6 +258,12 @@ func cloneBareWithinTimeout(
 		}
 		return errContinue
 	case err == nil:
+		if direct {
+			if err := gitService.AddWorktree(ctx, localPath, "main", pathutil.Join(worktreecore.DirectoryName, "main")); err != nil {
+				return fmt.Errorf("creating main worktree: %w", err)
+			}
+			return nil
+		}
 		// Create the main worktree
 
 		// Fetch from remote to get remote tracking branches

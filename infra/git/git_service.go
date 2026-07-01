@@ -55,6 +55,9 @@ func (s *GitService) AuthenticateWithUsernamePassword(_ context.Context, usernam
 
 // Clone clones a remote repository to a local path.
 func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath string, opts coregit.CloneOptions) error {
+	if opts.UseSystemGit {
+		return s.cloneWithSystemGit(ctx, remoteURL, localPath, opts)
+	}
 	_, err := git.PlainCloneContext(ctx, localPath, opts.IsBare, &git.CloneOptions{
 		URL:      remoteURL,
 		Auth:     s.auth,
@@ -67,6 +70,32 @@ func (s *GitService) Clone(ctx context.Context, remoteURL string, localPath stri
 		return coregit.ErrRepositoryEmpty
 	}
 	return err
+}
+
+func (s *GitService) cloneWithSystemGit(ctx context.Context, remoteURL string, localPath string, opts coregit.CloneOptions) error {
+	args := []string{"clone"}
+	if opts.IsBare {
+		args = append(args, "--bare")
+	}
+	args = append(args, remoteURL, localPath)
+
+	cmd := exec.CommandContext(ctx, "git", args...)
+	output, err := cmd.CombinedOutput()
+	if err == nil {
+		return nil
+	}
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return ctxErr
+	}
+	msg := string(output)
+	if strings.Contains(msg, "Repository not found") ||
+		strings.Contains(msg, "Authentication failed") ||
+		strings.Contains(msg, "could not read Username") ||
+		strings.Contains(msg, "not found") ||
+		strings.Contains(msg, "access denied") {
+		return coregit.ErrRepositoryNotExists
+	}
+	return fmt.Errorf("git clone: %w, output: %s", err, msg)
 }
 
 // Init initializes a new git repository at the specified local path.
@@ -109,7 +138,24 @@ func (s *GitService) AddWorktree(_ context.Context, repoPath string, branch stri
 	symbolicRefCmd.Dir = repoPath
 	refOutput, err := symbolicRefCmd.Output()
 	if err != nil {
-		return fmt.Errorf("getting remote HEAD: %w", err)
+		currentBranchCmd := exec.Command("git", "branch", "--show-current")
+		currentBranchCmd.Dir = repoPath
+		currentBranchOutput, currentBranchErr := currentBranchCmd.Output()
+		startPoint := strings.TrimSpace(string(currentBranchOutput))
+		if currentBranchErr != nil || startPoint == "" {
+			startPoint = branch
+		}
+		cmd := exec.Command("git", "worktree", "add", "-B", branch, worktreePath, startPoint)
+		cmd.Dir = repoPath
+		if err := cmd.Run(); err != nil {
+			cmd = exec.Command("git", "worktree", "add", worktreePath, branch)
+			cmd.Dir = repoPath
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				return fmt.Errorf("adding worktree: %w, output: %s", err, string(output))
+			}
+		}
+		return nil
 	}
 	remoteHead := strings.TrimSpace(string(refOutput))
 	// Extract branch name from refs/remotes/origin/<branch>

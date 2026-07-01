@@ -75,6 +75,8 @@ type GitService interface {
 type CloneOptions struct {
 	// IsBare specifies whether to create a bare repository
 	IsBare bool
+	// UseSystemGit clones with the git executable instead of the default implementation.
+	UseSystemGit bool
 	// Reserved for future use
 }
 
