@@ -123,6 +123,16 @@ func (uc *Usecase) Execute(
 		if err = gitService.SetRemotes(ctx, localPath, "upstream", []string{repo.Parent.CloneURL}); err != nil {
 			return fmt.Errorf("setting upstream remote: %w", err)
 		}
+		if opts.Worktree {
+			if err = gitService.EnsureRemoteFetchRefspec(ctx, localPath, "upstream"); err != nil {
+				return fmt.Errorf("ensuring upstream fetch refspec: %w", err)
+			}
+			if err = gitService.Fetch(ctx, localPath, "upstream"); err != nil {
+				if !errors.Is(err, git.ErrAlreadyUpToDate) {
+					return fmt.Errorf("fetching from upstream: %w", err)
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -238,6 +248,9 @@ func cloneBareWithinTimeout(
 		// Create the main worktree
 
 		// Fetch from remote to get remote tracking branches
+		if err := gitService.EnsureRemoteFetchRefspec(ctx, localPath, "origin"); err != nil {
+			return fmt.Errorf("ensuring origin fetch refspec: %w", err)
+		}
 		if err := gitService.Fetch(ctx, localPath, "origin"); err != nil {
 			// Ignore "already up-to-date" errors as they indicate successful clone
 			if !errors.Is(err, git.ErrAlreadyUpToDate) {
@@ -270,6 +283,9 @@ func cloneBareWithinTimeout(
 		}
 		// Create the main worktree
 		// Fetch from remote to get remote tracking branches
+		if err := gitService.EnsureRemoteFetchRefspec(ctx, path, "origin"); err != nil {
+			return fmt.Errorf("ensuring origin fetch refspec: %w", err)
+		}
 		if err := gitService.Fetch(ctx, path, "origin"); err != nil {
 			// Ignore "already up-to-date" errors as they indicate successful clone
 			if !errors.Is(err, git.ErrAlreadyUpToDate) {

@@ -47,6 +47,7 @@ type MockGitService struct {
 	IsBareFunc            func(ctx context.Context, localPath string) (bool, error)
 	AddWorktreeFunc       func(ctx context.Context, repoPath string, branch string, path string) error
 	FetchFunc             func(ctx context.Context, repoPath string, remote string) error
+	EnsureFetchFunc       func(ctx context.Context, repoPath string, remote string) error
 	SetRemoteHeadFunc     func(ctx context.Context, repoPath string, remote string) error
 	CreateBranchFunc      func(ctx context.Context, repoPath string, branchName string, startPoint string) error
 	SetRemotesFunc        func(ctx context.Context, localPath string, name string, remotes []string) error
@@ -95,6 +96,13 @@ func (m *MockGitService) AddWorktree(ctx context.Context, repoPath string, branc
 func (m *MockGitService) Fetch(ctx context.Context, repoPath string, remote string) error {
 	if m.FetchFunc != nil {
 		return m.FetchFunc(ctx, repoPath, remote)
+	}
+	return nil
+}
+
+func (m *MockGitService) EnsureRemoteFetchRefspec(ctx context.Context, repoPath string, remote string) error {
+	if m.EnsureFetchFunc != nil {
+		return m.EnsureFetchFunc(ctx, repoPath, remote)
 	}
 	return nil
 }
