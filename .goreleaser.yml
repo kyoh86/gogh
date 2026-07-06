@@ -19,14 +19,18 @@ builds:
     hooks:
       post:
         - make man VERSION={{.Version}} COMMIT={{.ShortCommit}} DATE={{.Date}}
-brews:
-  - install: |
-      bin.install "gogh"
-      man1.install Dir.glob('gogh*.1')
+homebrew_casks:
+  - name: gogh
+    binaries:
+      - gogh
+    manpages:
+      - gogh*.1
     repository:
       owner: kyoh86
       name: homebrew-tap
-    directory: Formula
+    directory: Casks
+    url:
+      verified: github.com/kyoh86/gogh
     homepage: https://github.com/kyoh86/gogh
     description: GO GitHub project manager
     license: MIT
