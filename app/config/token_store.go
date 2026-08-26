@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/kyoh86/gogh/v4/core/auth"
 	"github.com/kyoh86/gogh/v4/core/store"
@@ -16,7 +15,7 @@ type TokenStore struct{}
 type tomlTokenStore map[string]map[string]oauth2.Token
 
 func (d *TokenStore) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_TOKENS_PATH", os.UserCacheDir, "tokens.v4.toml")
+	path, err := AppCachePathFunc("GOGH_TOKENS_PATH", "tokens.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
 	}

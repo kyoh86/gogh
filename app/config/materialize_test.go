@@ -80,6 +80,64 @@ func TestAppContextPath(t *testing.T) {
 	}
 }
 
+func TestAppConfigPath(t *testing.T) {
+	t.Run("specific path wins", func(t *testing.T) {
+		t.Setenv("TEST_GOGH_PATH", "/custom/path")
+		t.Setenv("GOGH_CONFIG_HOME", "/config-home")
+
+		got, err := testtarget.AppConfigPath("TEST_GOGH_PATH", "workspace.v4.toml")
+		if err != nil {
+			t.Fatalf("AppConfigPath() error = %v, want nil", err)
+		}
+		if got != "/custom/path" {
+			t.Errorf("AppConfigPath() = %v, want /custom/path", got)
+		}
+	})
+
+	t.Run("config home fallback", func(t *testing.T) {
+		t.Setenv("TEST_GOGH_PATH", "")
+		t.Setenv("GOGH_CONFIG_HOME", "/config-home")
+
+		got, err := testtarget.AppConfigPath("TEST_GOGH_PATH", "workspace.v4.toml")
+		if err != nil {
+			t.Fatalf("AppConfigPath() error = %v, want nil", err)
+		}
+		want := filepath.Join("/config-home", "workspace.v4.toml")
+		if got != want {
+			t.Errorf("AppConfigPath() = %v, want %v", got, want)
+		}
+	})
+}
+
+func TestAppCachePath(t *testing.T) {
+	t.Run("specific path wins", func(t *testing.T) {
+		t.Setenv("TEST_GOGH_PATH", "/custom/path")
+		t.Setenv("GOGH_CACHE_HOME", "/cache-home")
+
+		got, err := testtarget.AppCachePath("TEST_GOGH_PATH", "tokens.v4.toml")
+		if err != nil {
+			t.Fatalf("AppCachePath() error = %v, want nil", err)
+		}
+		if got != "/custom/path" {
+			t.Errorf("AppCachePath() = %v, want /custom/path", got)
+		}
+	})
+
+	t.Run("cache home fallback", func(t *testing.T) {
+		t.Setenv("TEST_GOGH_PATH", "")
+		t.Setenv("GOGH_CACHE_HOME", "/cache-home")
+
+		got, err := testtarget.AppCachePath("TEST_GOGH_PATH", "tokens.v4.toml")
+		if err != nil {
+			t.Fatalf("AppCachePath() error = %v, want nil", err)
+		}
+		want := filepath.Join("/cache-home", "tokens.v4.toml")
+		if got != want {
+			t.Errorf("AppCachePath() = %v, want %v", got, want)
+		}
+	})
+}
+
 // Mock loader for testing LoadAlternative
 type mockLoader[T store.Content] struct {
 	shouldFail bool

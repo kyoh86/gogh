@@ -12,7 +12,7 @@ import (
 
 // OverlayDir returns the path to the overlay directory.
 func OverlayDir() (string, error) {
-	path, err := AppContextPathFunc("GOGH_OVERLAY_PATH", os.UserConfigDir, "overlay.v4.toml")
+	path, err := AppConfigPathFunc("GOGH_OVERLAY_PATH", "overlay.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search overlay path: %w", err)
 	}

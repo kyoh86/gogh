@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/kyoh86/gogh/v4/core/repository"
 	"github.com/kyoh86/gogh/v4/core/store"
@@ -63,7 +62,7 @@ func (d *DefaultNameStore) Save(ctx context.Context, ds repository.DefaultNameSe
 }
 
 func (*DefaultNameStore) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_DEFAULT_NAMES_PATH", os.UserConfigDir, "default_names.v4.toml")
+	path, err := AppConfigPathFunc("GOGH_DEFAULT_NAMES_PATH", "default_names.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search default names path: %w", err)
 	}

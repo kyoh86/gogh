@@ -13,7 +13,7 @@ import (
 
 // ScriptDir returns the path to the script directory.
 func ScriptDir() (string, error) {
-	path, err := AppContextPathFunc("GOGH_SCRIPT_PATH", os.UserConfigDir, "script.v4.toml")
+	path, err := AppConfigPathFunc("GOGH_SCRIPT_PATH", "script.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search script path: %w", err)
 	}

@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/kyoh86/gogh/v4/core/store"
 )
@@ -48,7 +47,7 @@ func (d *FlagsStore) Save(ctx context.Context, flags *Flags, force bool) error {
 }
 
 func (s *FlagsStore) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_FLAG_PATH", os.UserConfigDir, "flags.v4.toml")
+	path, err := AppConfigPathFunc("GOGH_FLAG_PATH", "flags.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search flags path: %w", err)
 	}

@@ -168,38 +168,44 @@ Or see the manual in [doc/usage/gogh.md](./doc/usage/gogh.md).
 
 - `GOGH_CONFIG_PATH`
     - **(DEPRECATED)** The path to the configuration file.
-    - Default: `${XDG_CONFIG_HOME}/gogh/config.yaml`.
+    - Default: `${GOGH_CONFIG_HOME}/config.yaml` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/config.yaml`.
+- `GOGH_CONFIG_HOME`
+    - The directory for configuration files.
+    - Default: the OS config directory plus `/gogh`.
+- `GOGH_CACHE_HOME`
+    - The directory for cache files.
+    - Default: the OS cache directory plus `/gogh`.
 - `GOGH_DEBUG`
     - Enable debug mode
     - Default: `` (empty)
     - Set to any non-empty value to enable debug mode
 - `GOGH_DEFAULT_NAMES_PATH`
     - The path for the default names
-    - Default: `${XDG_CONFIG_HOME}/gogh/default_names.v4.toml`
+    - Default: `${GOGH_CONFIG_HOME}/default_names.v4.toml` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/default_names.v4.toml`.
 - `GOGH_FLAG_PATH`
     - The path for values for each `gogh` flags
-    - Default: `${XDG_CONFIG_HOME}/gogh/flags.v4.toml`
+    - Default: `${GOGH_CONFIG_HOME}/flags.v4.toml` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/flags.v4.toml`.
 - `GOGH_HOOK_CONTENT_PATH`
     - The path to store hook content
-    - Default: `${XDG_CONFIG_HOME}/gogh/hook.v4/`
+    - Default: `${GOGH_CONFIG_HOME}/script.v4/` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/script.v4/`.
 - `GOGH_HOOK_PATH`
     - The path to store hook configuration
-    - Default: `${XDG_CONFIG_HOME}/gogh/hook.v4.toml`
+    - Default: `${GOGH_CONFIG_HOME}/hook.v4.toml` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/hook.v4.toml`.
 - `GOGH_OVERLAY_CONTENT_PATH`
     - The path to store overlay file contents
-    - Default: `${XDG_CONFIG_HOME}/gogh/overlay.v4/`
+    - Default: `${GOGH_CONFIG_HOME}/overlay.v4/` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/overlay.v4/`.
 - `GOGH_OVERLAY_PATH`
     - The path to store overlay configuration
-    - Default: `${XDG_CONFIG_HOME}/gogh/overlay.v4.toml`
+    - Default: `${GOGH_CONFIG_HOME}/overlay.v4.toml` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/overlay.v4.toml`.
 - `GOGH_SCRIPT_PATH`
     - The path to store script configuration
-    - Default: `${XDG_CONFIG_HOME}/gogh/script.v4.toml`
+    - Default: `${GOGH_CONFIG_HOME}/script.v4.toml` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/script.v4.toml`.
 - `GOGH_TOKENS_PATH`
     - The path for the authentication tokens
-    - Default: `${XDG_CACHE_HOME}/gogh/tokens.v4.toml`
+    - Default: `${GOGH_CACHE_HOME}/tokens.v4.toml` if `GOGH_CACHE_HOME` is set; otherwise the OS cache directory plus `/gogh/tokens.v4.toml`.
 - `GOGH_WORKSPACE_PATH`
     - The path for the workspaces
-    - Default: `${XDG_CONFIG_HOME}/gogh/workspace.v4.toml`
+    - Default: `${GOGH_CONFIG_HOME}/workspace.v4.toml` if `GOGH_CONFIG_HOME` is set; otherwise the OS config directory plus `/gogh/workspace.v4.toml`.
 
 ## Configurations
 
@@ -262,8 +268,7 @@ values for each command. You can set the flags in the configuration file like th
     request-timeout = 5
 ```
 
-The configuration file is located at `${XDG_CONFIG_HOME}/gogh/flags.v4.toml` by default, and you can
-change the path with the `GOGH_FLAG_PATH` environment variable.
+The configuration file is located at `flags.v4.toml` under `GOGH_CONFIG_HOME` when set, or under the OS config directory plus `/gogh` by default. You can change the path with the `GOGH_FLAG_PATH` environment variable.
 
 NOTE: If you set the boolean flags to `true` in the configuration file, you can disable them in the command line by
 using `--<flag>=false`. For example, if you set `--private=true` in the configuration file, you can disable it by

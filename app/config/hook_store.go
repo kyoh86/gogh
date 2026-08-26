@@ -12,7 +12,7 @@ import (
 
 // HookDir returns the path to the hook directory.
 func HookDir() (string, error) {
-	path, err := AppContextPathFunc("GOGH_HOOK_PATH", os.UserConfigDir, "hook.v4.toml")
+	path, err := AppConfigPathFunc("GOGH_HOOK_PATH", "hook.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search hook path: %w", err)
 	}

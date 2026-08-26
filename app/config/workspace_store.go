@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/kyoh86/gogh/v4/core/store"
 	"github.com/kyoh86/gogh/v4/core/workspace"
@@ -64,7 +63,7 @@ func (w *WorkspaceStore) Save(ctx context.Context, ws workspace.WorkspaceService
 }
 
 func (*WorkspaceStore) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_WORKSPACE_PATH", os.UserConfigDir, "workspace.v4.toml")
+	path, err := AppConfigPathFunc("GOGH_WORKSPACE_PATH", "workspace.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search workspace path: %w", err)
 	}

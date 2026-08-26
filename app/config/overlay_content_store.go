@@ -53,7 +53,7 @@ func (cs *OverlayContentStore) Remove(ctx context.Context, overlayID string) err
 }
 
 func (*OverlayContentStore) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_OVERLAY_CONTENT_PATH", os.UserConfigDir, "overlay.v4")
+	path, err := AppConfigPathFunc("GOGH_OVERLAY_CONTENT_PATH", "overlay.v4")
 	if err != nil {
 		return "", fmt.Errorf("search overlay content path: %w", err)
 	}
