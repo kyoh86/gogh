@@ -8,6 +8,7 @@ import (
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/dump"
 	"github.com/kyoh86/gogh/v4/app/service"
+	corefs "github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/spf13/cobra"
 )
 
@@ -21,8 +22,12 @@ func NewBundleDumpCommand(_ context.Context, svc *service.ServiceSet) (*cobra.Co
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := cmd.OutOrStdout()
 			if f.File != "" && f.File != "-" {
+				path, err := corefs.ReplaceTildeWithHome(f.File)
+				if err != nil {
+					return fmt.Errorf("expanding file path: %w", err)
+				}
 				file, err := os.OpenFile(
-					f.File,
+					path,
 					os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
 					0o644,
 				)

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	corefs "github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/core/gogh"
 	"github.com/kyoh86/gogh/v4/core/store"
 )
@@ -21,7 +22,7 @@ import (
 // It will make the path that is formed as {getDir()}/{AppName=gogh}/{rel...}`
 func AppContextPath(envar string, getDir func() (string, error), rel ...string) (string, error) {
 	if env := os.Getenv(envar); env != "" {
-		return env, nil
+		return corefs.ReplaceTildeWithHome(env)
 	}
 	dir, err := getDir()
 	if err != nil {
@@ -34,9 +35,13 @@ var AppContextPathFunc = AppContextPath
 
 func appHomePath(envar, homeEnvar string, getDir func() (string, error), rel ...string) (string, error) {
 	if env := os.Getenv(envar); env != "" {
-		return env, nil
+		return corefs.ReplaceTildeWithHome(env)
 	}
 	if home := os.Getenv(homeEnvar); home != "" {
+		home, err := corefs.ReplaceTildeWithHome(home)
+		if err != nil {
+			return "", err
+		}
 		return filepath.Join(append([]string{home}, rel...)...), nil
 	}
 	return AppContextPathFunc(envar, getDir, rel...)
