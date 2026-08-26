@@ -105,6 +105,50 @@ func TestAddRoot(t *testing.T) {
 	}
 }
 
+func TestWorkspaceServiceTildeRoot(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	service := testtarget.NewWorkspaceService()
+	if err := service.AddRoot("~/repos", true); err != nil {
+		t.Fatalf("failed to add tilde root: %v", err)
+	}
+
+	roots := service.GetRoots()
+	if len(roots) != 1 {
+		t.Fatalf("expected 1 root, got %d", len(roots))
+	}
+	if roots[0] != "~/repos" {
+		t.Errorf("expected stored root to preserve tilde, got %q", roots[0])
+	}
+	if primary := service.GetPrimaryRoot(); primary != "~/repos" {
+		t.Errorf("expected primary root to preserve tilde, got %q", primary)
+	}
+
+	expanded := filepath.Join(home, "repos")
+	if got := service.GetPrimaryLayout().GetRoot(); got != expanded {
+		t.Errorf("expected layout root %q, got %q", expanded, got)
+	}
+
+	if err := service.AddRoot(expanded, false); err == nil {
+		t.Error("expected expanded duplicate root to be rejected")
+	}
+
+	if err := service.SetPrimaryRoot(expanded); err != nil {
+		t.Fatalf("failed to set primary with expanded path: %v", err)
+	}
+	if primary := service.GetPrimaryRoot(); primary != "~/repos" {
+		t.Errorf("expected primary root to keep stored tilde path, got %q", primary)
+	}
+
+	if err := service.RemoveRoot(expanded); err != nil {
+		t.Fatalf("failed to remove tilde root with expanded path: %v", err)
+	}
+	if len(service.GetRoots()) != 0 {
+		t.Errorf("expected roots to be empty after remove, got %v", service.GetRoots())
+	}
+}
+
 func TestSetPrimaryRoot(t *testing.T) {
 	service := testtarget.NewWorkspaceService()
 

@@ -4,8 +4,10 @@ import (
 	"errors"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 
+	corefs "github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/core/workspace"
 )
 
@@ -24,6 +26,29 @@ func NewWorkspaceService() workspace.WorkspaceService {
 	return &WorkspaceService{
 		roots: []workspace.Root{},
 	}
+}
+
+func expandHome(path string) (string, error) {
+	return corefs.ReplaceTildeWithHome(path)
+}
+
+func normalizedRoot(root workspace.Root) (workspace.Root, error) {
+	expanded, err := expandHome(root)
+	if err != nil {
+		return "", err
+	}
+	absPath, err := filepath.Abs(expanded)
+	if err != nil {
+		return "", err
+	}
+	return absPath, nil
+}
+
+func storedRoot(root, normalized workspace.Root) workspace.Root {
+	if root == "~" || strings.HasPrefix(root, "~/") {
+		return root
+	}
+	return normalized
 }
 
 // GetRoots returns all registered workspace roots
@@ -47,14 +72,22 @@ func (s *WorkspaceService) GetPrimaryRoot() workspace.Root {
 func (s *WorkspaceService) GetLayoutFor(root workspace.Root) workspace.LayoutService {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return NewLayoutServiceWithHostPathAliases(root, s.hostPathAliases)
+	normalized, err := normalizedRoot(root)
+	if err != nil {
+		normalized = root
+	}
+	return NewLayoutServiceWithHostPathAliases(normalized, s.hostPathAliases)
 }
 
 // GetPrimaryLayout returns a Layout for the primary root
 func (s *WorkspaceService) GetPrimaryLayout() workspace.LayoutService {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return NewLayoutServiceWithHostPathAliases(s.primaryRoot, s.hostPathAliases)
+	normalized, err := normalizedRoot(s.primaryRoot)
+	if err != nil {
+		normalized = s.primaryRoot
+	}
+	return NewLayoutServiceWithHostPathAliases(normalized, s.hostPathAliases)
 }
 
 // SetHostPathAliases sets host-to-path aliases used by layouts.
@@ -74,23 +107,7 @@ func (s *WorkspaceService) GetHostPathAliases() workspace.HostPathAliases {
 
 // SetPrimaryRoot sets the specified path as the primary workspace root
 func (s *WorkspaceService) SetPrimaryRoot(path workspace.Root) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	found := slices.Contains(s.roots, path)
-
-	if !found {
-		return errors.New("specified path is not registered as a root")
-	}
-
-	s.primaryRoot = path
-	s.changed = true
-	return nil // You would typically persist this change
-}
-
-// AddRoot adds a new workspace root
-func (s *WorkspaceService) AddRoot(root workspace.Root, asPrimary bool) error {
-	absPath, err := filepath.Abs(root)
+	normalizedPath, err := normalizedRoot(path)
 	if err != nil {
 		return err
 	}
@@ -98,16 +115,48 @@ func (s *WorkspaceService) AddRoot(root workspace.Root, asPrimary bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Check for duplicates
-	if slices.Contains(s.roots, absPath) {
-		return errors.New("root already exists")
+	for _, root := range s.roots {
+		normalized, err := normalizedRoot(root)
+		if err != nil {
+			return err
+		}
+		if normalized == normalizedPath {
+			s.primaryRoot = root
+			s.changed = true
+			return nil
+		}
 	}
 
-	s.roots = append(s.roots, absPath)
+	return errors.New("specified path is not registered as a root")
+}
+
+// AddRoot adds a new workspace root
+func (s *WorkspaceService) AddRoot(root workspace.Root, asPrimary bool) error {
+	normalizedPath, err := normalizedRoot(root)
+	if err != nil {
+		return err
+	}
+	storedPath := storedRoot(root, normalizedPath)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Check for duplicates
+	for _, existing := range s.roots {
+		normalized, err := normalizedRoot(existing)
+		if err != nil {
+			return err
+		}
+		if normalized == normalizedPath {
+			return errors.New("root already exists")
+		}
+	}
+
+	s.roots = append(s.roots, storedPath)
 
 	// If this is the first root, make it the primary
 	if len(s.roots) == 1 || asPrimary {
-		s.primaryRoot = absPath
+		s.primaryRoot = storedPath
 	}
 
 	s.changed = true
@@ -117,16 +166,25 @@ func (s *WorkspaceService) AddRoot(root workspace.Root, asPrimary bool) error {
 
 // RemoveRoot removes the specified workspace root
 func (s *WorkspaceService) RemoveRoot(path workspace.Root) error {
+	normalizedPath, err := normalizedRoot(path)
+	if err != nil {
+		return err
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	for i, root := range s.roots {
-		if root == path {
+		normalized, err := normalizedRoot(root)
+		if err != nil {
+			return err
+		}
+		if normalized == normalizedPath {
 			// Remove from slice
 			s.roots = slices.Delete(s.roots, i, i+1)
 
 			// If we removed the primary root, update it
-			if path == s.primaryRoot {
+			if root == s.primaryRoot {
 				if len(s.roots) > 0 {
 					s.primaryRoot = s.roots[0]
 				} else {

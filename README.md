@@ -219,6 +219,9 @@ You can change the roots with `roots add <path>` or `roots remove <path>` and se
 `roots list`. `gogh` uses the primary one to `create`, `fork` or `clone` to put a local repository
 under it. If you want to change the primary, use `roots set-primary <path>`.
 
+Roots can use `~/...`; `gogh` keeps that form in the configuration and expands it to the current
+user's home directory when accessing repositories.
+
 Default: `${HOME}/Projects`.
 
 ### Default Host and Owner

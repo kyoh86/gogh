@@ -107,6 +107,38 @@ func TestAppConfigPath(t *testing.T) {
 			t.Errorf("AppConfigPath() = %v, want %v", got, want)
 		}
 	})
+
+	t.Run("expands tilde in specific path", func(t *testing.T) {
+		home := t.TempDir()
+		t.Setenv("HOME", home)
+		t.Setenv("TEST_GOGH_PATH", "~/custom.toml")
+		t.Setenv("GOGH_CONFIG_HOME", "/config-home")
+
+		got, err := testtarget.AppConfigPath("TEST_GOGH_PATH", "workspace.v4.toml")
+		if err != nil {
+			t.Fatalf("AppConfigPath() error = %v, want nil", err)
+		}
+		want := filepath.Join(home, "custom.toml")
+		if got != want {
+			t.Errorf("AppConfigPath() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("expands tilde in config home", func(t *testing.T) {
+		home := t.TempDir()
+		t.Setenv("HOME", home)
+		t.Setenv("TEST_GOGH_PATH", "")
+		t.Setenv("GOGH_CONFIG_HOME", "~/gogh-config")
+
+		got, err := testtarget.AppConfigPath("TEST_GOGH_PATH", "workspace.v4.toml")
+		if err != nil {
+			t.Fatalf("AppConfigPath() error = %v, want nil", err)
+		}
+		want := filepath.Join(home, "gogh-config", "workspace.v4.toml")
+		if got != want {
+			t.Errorf("AppConfigPath() = %v, want %v", got, want)
+		}
+	})
 }
 
 func TestAppCachePath(t *testing.T) {
@@ -132,6 +164,22 @@ func TestAppCachePath(t *testing.T) {
 			t.Fatalf("AppCachePath() error = %v, want nil", err)
 		}
 		want := filepath.Join("/cache-home", "tokens.v4.toml")
+		if got != want {
+			t.Errorf("AppCachePath() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("expands tilde in cache home", func(t *testing.T) {
+		home := t.TempDir()
+		t.Setenv("HOME", home)
+		t.Setenv("TEST_GOGH_PATH", "")
+		t.Setenv("GOGH_CACHE_HOME", "~/gogh-cache")
+
+		got, err := testtarget.AppCachePath("TEST_GOGH_PATH", "tokens.v4.toml")
+		if err != nil {
+			t.Fatalf("AppCachePath() error = %v, want nil", err)
+		}
+		want := filepath.Join(home, "gogh-cache", "tokens.v4.toml")
 		if got != want {
 			t.Errorf("AppCachePath() = %v, want %v", got, want)
 		}
