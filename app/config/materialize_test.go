@@ -6,11 +6,22 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	testtarget "github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/core/store"
 )
+
+func setHome(t *testing.T, home string) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Setenv("USERPROFILE", home)
+		t.Setenv("HOME", "")
+		return
+	}
+	t.Setenv("HOME", home)
+}
 
 func TestAppContextPath(t *testing.T) {
 	testCases := []struct {
@@ -110,7 +121,7 @@ func TestAppConfigPath(t *testing.T) {
 
 	t.Run("expands tilde in specific path", func(t *testing.T) {
 		home := t.TempDir()
-		t.Setenv("HOME", home)
+		setHome(t, home)
 		t.Setenv("TEST_GOGH_PATH", "~/custom.toml")
 		t.Setenv("GOGH_CONFIG_HOME", "/config-home")
 
@@ -126,7 +137,7 @@ func TestAppConfigPath(t *testing.T) {
 
 	t.Run("expands tilde in config home", func(t *testing.T) {
 		home := t.TempDir()
-		t.Setenv("HOME", home)
+		setHome(t, home)
 		t.Setenv("TEST_GOGH_PATH", "")
 		t.Setenv("GOGH_CONFIG_HOME", "~/gogh-config")
 
@@ -171,7 +182,7 @@ func TestAppCachePath(t *testing.T) {
 
 	t.Run("expands tilde in cache home", func(t *testing.T) {
 		home := t.TempDir()
-		t.Setenv("HOME", home)
+		setHome(t, home)
 		t.Setenv("TEST_GOGH_PATH", "")
 		t.Setenv("GOGH_CACHE_HOME", "~/gogh-cache")
 

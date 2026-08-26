@@ -2,10 +2,21 @@ package filesystem_test
 
 import (
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	testtarget "github.com/kyoh86/gogh/v4/infra/filesystem"
 )
+
+func setHome(t *testing.T, home string) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Setenv("USERPROFILE", home)
+		t.Setenv("HOME", "")
+		return
+	}
+	t.Setenv("HOME", home)
+}
 
 func TestNewWorkspaceService(t *testing.T) {
 	service := testtarget.NewWorkspaceService()
@@ -107,7 +118,7 @@ func TestAddRoot(t *testing.T) {
 
 func TestWorkspaceServiceTildeRoot(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	setHome(t, home)
 
 	service := testtarget.NewWorkspaceService()
 	if err := service.AddRoot("~/repos", true); err != nil {

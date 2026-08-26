@@ -4,12 +4,23 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
 	"github.com/kyoh86/gogh/v4/ui/cli/commands"
 )
+
+func setHome(t *testing.T, home string) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Setenv("USERPROFILE", home)
+		t.Setenv("HOME", "")
+		return
+	}
+	t.Setenv("HOME", home)
+}
 
 func TestNewBundleRestoreCommand(t *testing.T) {
 	// Setup
@@ -26,7 +37,7 @@ func TestNewBundleRestoreCommand(t *testing.T) {
 func TestBundleRestoreCommandExpandsTildeFile(t *testing.T) {
 	ctx := context.Background()
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	setHome(t, home)
 
 	bundlePath := filepath.Join(home, "bundle.txt")
 	if err := os.WriteFile(bundlePath, []byte("github.com/kyoh86/gogh\n"), 0o644); err != nil {
