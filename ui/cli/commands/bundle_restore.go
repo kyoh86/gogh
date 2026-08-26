@@ -10,7 +10,6 @@ import (
 	"github.com/kyoh86/gogh/v4/app/clone/try"
 	"github.com/kyoh86/gogh/v4/app/config"
 	"github.com/kyoh86/gogh/v4/app/service"
-	corefs "github.com/kyoh86/gogh/v4/core/fs"
 	"github.com/kyoh86/gogh/v4/ui/cli/view"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -32,7 +31,7 @@ func NewBundleRestoreCommand(_ context.Context, svc *service.ServiceSet) (*cobra
 	runFunc := func(ctx context.Context) error {
 		in := os.Stdin
 		if f.File != "" && f.File != "-" {
-			path, err := corefs.ReplaceTildeWithHome(f.File)
+			path, err := config.ExpandPath(f.File)
 			if err != nil {
 				return fmt.Errorf("expanding file path: %w", err)
 			}

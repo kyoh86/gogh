@@ -33,12 +33,16 @@ func AppContextPath(envar string, getDir func() (string, error), rel ...string) 
 
 var AppContextPathFunc = AppContextPath
 
+func ExpandPath(path string) (string, error) {
+	return corefs.ReplaceTildeWithHome(path)
+}
+
 func appHomePath(envar, homeEnvar string, getDir func() (string, error), rel ...string) (string, error) {
 	if env := os.Getenv(envar); env != "" {
-		return corefs.ReplaceTildeWithHome(env)
+		return ExpandPath(env)
 	}
 	if home := os.Getenv(homeEnvar); home != "" {
-		home, err := corefs.ReplaceTildeWithHome(home)
+		home, err := ExpandPath(home)
 		if err != nil {
 			return "", err
 		}
