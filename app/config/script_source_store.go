@@ -51,7 +51,7 @@ func (cs *ScriptSourceStore) Remove(ctx context.Context, scriptID string) error 
 }
 
 func (*ScriptSourceStore) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_HOOK_CONTENT_PATH", os.UserConfigDir, "script.v4")
+	path, err := AppConfigPathFunc("GOGH_HOOK_CONTENT_PATH", "script.v4")
 	if err != nil {
 		return "", fmt.Errorf("search script content path: %w", err)
 	}

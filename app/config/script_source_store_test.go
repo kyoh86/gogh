@@ -41,6 +41,7 @@ func TestScriptSourceStore_Source(t *testing.T) {
 	}
 
 	// Test error path by overriding AppContextPathFunc
+	t.Setenv("GOGH_HOOK_CONTENT_PATH", "")
 	originalFunc := config.AppContextPathFunc
 	defer func() {
 		config.AppContextPathFunc = originalFunc

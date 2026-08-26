@@ -50,7 +50,7 @@ func (w *WorkspaceStoreV0) Load(ctx context.Context, initial func() workspace.Wo
 }
 
 func (*WorkspaceStoreV0) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_CONFIG_PATH", os.UserConfigDir, "config.yaml")
+	path, err := AppConfigPathFunc("GOGH_CONFIG_PATH", "config.yaml")
 	if err != nil {
 		return "", fmt.Errorf("search config path: %w", err)
 	}

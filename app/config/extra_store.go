@@ -40,7 +40,7 @@ func NewExtraStore() *ExtraStore {
 
 // Source returns the path to the extra store file
 func (s *ExtraStore) Source() (string, error) {
-	path, err := AppContextPathFunc("GOGH_EXTRA_PATH", os.UserConfigDir, "extra.v4.toml")
+	path, err := AppConfigPathFunc("GOGH_EXTRA_PATH", "extra.v4.toml")
 	if err != nil {
 		return "", fmt.Errorf("search extra path: %w", err)
 	}
